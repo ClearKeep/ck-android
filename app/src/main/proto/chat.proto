@@ -1,0 +1,29 @@
+// client-only protobuf
+// passes through the server as a binary blob to the other clients
+
+syntax = "proto3";
+
+package chat;
+
+message Handshake {
+    string from = 1;
+    bytes signing = 2;
+    bytes agreement = 3;
+}
+
+message Envelope {
+    string from = 1;
+    string to = 2;
+    bytes payload = 3;
+}
+
+message Chit {
+    enum What {
+        HANDSHAKE = 0;
+        ENVELOPE = 1;
+    }
+    What what = 1;
+    uint64 sequence = 2;
+    Handshake handshake = 3;
+    Envelope envelope = 4;
+}
