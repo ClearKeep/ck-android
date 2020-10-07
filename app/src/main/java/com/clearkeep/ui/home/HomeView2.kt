@@ -20,7 +20,7 @@ import com.clearkeep.ui.Screen
 import com.clearkeep.ui.component.AppDrawer
 import com.clearkeep.ui.navigateTo
 import grpc.PscrudGrpc
-import com.clearkeep.clearkeep.R
+import com.clearkeep.ck.R
 @Composable
 fun HomeView2(
     activity: Activity,

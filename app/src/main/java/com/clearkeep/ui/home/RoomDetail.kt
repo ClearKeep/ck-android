@@ -215,7 +215,7 @@ fun hear(
                         )
                     )
                 } catch (e: Exception) {
-                    Log.d("print", e.message)
+                    e.message?.let { Log.d("print", it) }
                 }
 
             }

@@ -37,7 +37,7 @@ import grpc.PscrudGrpc
 import grpc.PscrudOuterClass
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
-import com.clearkeep.clearkeep.R
+import com.clearkeep.ck.R
 
 class LoginActivity : AppCompatActivity() {
 
