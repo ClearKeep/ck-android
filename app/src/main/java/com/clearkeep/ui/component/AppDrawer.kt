@@ -19,7 +19,7 @@ import androidx.ui.material.*
 import androidx.ui.res.stringResource
 import androidx.ui.res.vectorResource
 import androidx.ui.unit.dp
-import com.clearkeep.clearkeep.R
+import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.myapplication.LoginActivity

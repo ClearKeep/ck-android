@@ -12,7 +12,7 @@ import androidx.ui.material.icons.Icons
 import androidx.ui.material.icons.filled.ArrowBack
 import androidx.ui.res.imageResource
 import androidx.ui.unit.dp
-import com.clearkeep.clearkeep.R
+import com.clearkeep.ck.R
 import com.clearkeep.model.Room
 import com.clearkeep.state.backpress.BackButtonHandler
 import com.clearkeep.ui.Screen

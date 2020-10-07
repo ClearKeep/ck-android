@@ -21,7 +21,7 @@ import androidx.ui.text.TextStyle
 import androidx.ui.text.style.TextAlign
 import androidx.ui.unit.dp
 import androidx.ui.unit.sp
-import com.clearkeep.clearkeep.R
+import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.model.Room
