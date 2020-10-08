@@ -2,13 +2,13 @@ package com.clearkeep.ui.activity
 
 import android.os.Bundle
 import android.os.Handler
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
 import androidx.ui.animation.Crossfade
 import androidx.ui.core.setContent
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.Surface
-import chat.Chat
 import com.clearkeep.application.MyApplication
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
@@ -16,13 +16,13 @@ import com.clearkeep.model.Room
 import com.clearkeep.ui.ChatStatus
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.home.*
-import grpc.PscrudGrpc
-import grpc.PscrudOuterClass
+import grpc.SignalKeyDistributionGrpc
+import grpc.Signalc
 import io.grpc.stub.StreamObserver
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var grpcClient: PscrudGrpc.PscrudStub
+    lateinit var grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
     lateinit var mainThreadHandler: Handler
     lateinit var dbLocal: UserRepository
     val rooms = mutableListOf<Room>()
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 when (screen) {
                     is Screen.Home -> HomeView(rooms, this, dbLocal, grpcClient, mainThreadHandler)
                     is Screen.HomeView2 -> HomeView2(this, dbLocal, grpcClient, mainThreadHandler)
-                    is Screen.CreateNewRoom -> CreateNewRoom(rooms)
+                    is Screen.CreateNewRoom -> CreateNewRoom(rooms,dbLocal,grpcClient)
                     is Screen.RoomDetail -> RoomDetail(screen.roomId, grpcClient, mainThreadHandler)
                 }
             }
@@ -57,14 +57,13 @@ class MainActivity : AppCompatActivity() {
 
     // subcribe topic
     private fun subscribe() {
-        val request = PscrudOuterClass.SubscribeRequest.newBuilder()
-            .setTopic(DataStore.username)
-            .setSession(DataStore.session)
+        val request = Signalc.SubscribeAndListenRequest.newBuilder()
+            .setClientId(DataStore.username)
             .build()
 
-        grpcClient.subscribe(request, object : StreamObserver<PscrudOuterClass.Response> {
-            override fun onNext(response: PscrudOuterClass.Response?) {
-                response?.ok?.let { isSuccessful ->
+        grpcClient.subscribe(request, object : StreamObserver<Signalc.BaseResponse> {
+            override fun onNext(response: Signalc.BaseResponse?) {
+                response?.message?.let { isSuccessful ->
                 }
             }
 
@@ -78,18 +77,17 @@ class MainActivity : AppCompatActivity() {
 
     // Listener message from sender
     private fun listen() {
-        val request = PscrudOuterClass.Request.newBuilder()
-            .setSession(DataStore.session)
+        val request = Signalc.SubscribeAndListenRequest.newBuilder()
+            .setClientId(DataStore.username)
             .build()
-        grpcClient.listen(request, object : StreamObserver<PscrudOuterClass.Publication> {
-            override fun onNext(value: PscrudOuterClass.Publication) {
-                    hear(
-                        value.id,
-                        Chat.Chit.parseFrom(value.data),
-                        grpcClient,
-                        mainThreadHandler,
-                        dbLocal
-                    )
+        grpcClient.listen(request, object : StreamObserver<Signalc.Publication> {
+            override fun onNext(value: Signalc.Publication) {
+                hear(
+                    value.senderId,value.message,
+                    grpcClient,
+                    mainThreadHandler,
+                    dbLocal
+                )
             }
 
             override fun onError(t: Throwable?) {
@@ -98,6 +96,13 @@ class MainActivity : AppCompatActivity() {
             override fun onCompleted() {
             }
         })
+    }
+
+    @Composable
+    fun onShowMsg(message: String) {
+        mainThreadHandler.post {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 

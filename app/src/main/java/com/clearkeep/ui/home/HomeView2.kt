@@ -19,12 +19,13 @@ import com.clearkeep.db.UserRepository
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.component.AppDrawer
 import com.clearkeep.ui.navigateTo
-import grpc.PscrudGrpc
 import com.clearkeep.ck.R
+import grpc.SignalKeyDistributionGrpc
+
 @Composable
 fun HomeView2(
     activity: Activity,
-    dbLocal: UserRepository, grpcClient: PscrudGrpc.PscrudStub, mainThreadHandler: Handler,
+    dbLocal: UserRepository, grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub, mainThreadHandler: Handler,
     scaffoldState: ScaffoldState = remember { ScaffoldState() }
 ) {
     Scaffold(

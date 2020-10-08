@@ -25,23 +25,29 @@ import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import androidx.ui.unit.sp
 import com.clearkeep.application.MyApplication
+import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.model.User
 import com.clearkeep.secure.CryptoHelper
 import com.clearkeep.ui.activity.MainActivity
-import com.clearkeep.ui.widget.FilledTextInputComponent
 import com.clearkeep.ui.lightThemeColors
 import com.clearkeep.ui.widget.ButtonGeneral
-import grpc.PscrudGrpc
-import grpc.PscrudOuterClass
+import com.clearkeep.ui.widget.FilledTextInputComponent
+import com.google.protobuf.ByteString
+import grpc.SignalKeyDistributionGrpc
+import grpc.Signalc
 import io.grpc.stub.StreamObserver
-import kotlinx.coroutines.*
-import com.clearkeep.ck.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import org.whispersystems.libsignal.ecc.Curve
+import org.whispersystems.libsignal.util.KeyHelper
 
 class LoginActivity : AppCompatActivity() {
 
-    lateinit var grpcClient: PscrudGrpc.PscrudStub
+    lateinit var grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
     lateinit var dbLocal: UserRepository
     lateinit var mainThreadHandler: Handler
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -163,55 +169,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun login(username: String, pwd: String, dbLocal: UserRepository) {
-        val request = PscrudOuterClass.AuthRequest.newBuilder()
-            .setUsername(username)
-            .setPassword(pwd)
-            .build()
-
-        grpcClient.login(request, object : StreamObserver<PscrudOuterClass.AuthResponse> {
-            override fun onNext(response: PscrudOuterClass.AuthResponse?) {
-                response?.ok?.let { isSuccessful ->
-                    if (isSuccessful) {
-                        onLoginSuccessful(username, response.session)
-                    } else {
-                        onShowMsg("Something went wrong")
-                    }
-                }
-            }
-
-            override fun onError(t: Throwable?) {
-                onShowMsg("Something went wrong")
-            }
-
-            override fun onCompleted() {
-            }
-        })
+        onLoginSuccessful(username, "1")
     }
 
     fun register(username: String, pwd: String) {
-        val request = PscrudOuterClass.AuthRequest.newBuilder()
-            .setUsername(username)
-            .setPassword(pwd)
-            .build()
-
-        grpcClient.register(request, object : StreamObserver<PscrudOuterClass.AuthResponse> {
-            override fun onNext(response: PscrudOuterClass.AuthResponse?) {
-                response?.ok?.let { isSuccessful ->
-                    if (isSuccessful) {
-                        onLoginSuccessful(username, response.session)
-                    } else {
-                        onShowMsg("Something went wrong")
-                    }
-                }
-            }
-
-            override fun onError(t: Throwable?) {
-                onShowMsg("Something went wrong")
-            }
-
-            override fun onCompleted() {
-            }
-        })
+        onLoginSuccessful(username, "1")
     }
 
 
@@ -223,19 +185,54 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun onLoginSuccessful(username: String, session: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            async { dbLocal.deleteAllUser() }.await()
-            // update user for db
-            val user = User()
-            user.firstName = username
-            user.session = session
-            dbLocal.insertUser(user)
-        }
+        val identityKeyPair = KeyHelper.generateIdentityKeyPair()
+        val preKeys = KeyHelper.generatePreKeys(1,1)
+        val signedPrekey = KeyHelper.generateSignedPreKey(identityKeyPair,5)
+        val request = Signalc.SignalRegisterKeysRequest.newBuilder()
+            .setClientId(username)
+            .setRegistrationId(KeyHelper.generateRegistrationId(true))
+            .setDeviceId(112)
+            .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
+            .setPreKey(ByteString.copyFrom(preKeys.get(0).serialize()))
+            .setSignedPreKeyId(5)
+            .setSignedPreKey(
+                ByteString.copyFrom(signedPrekey.serialize() )
+            )
+            .build()
 
-        DataStore.session = session
-        DataStore.username = username
-        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-        finish()
+        grpcClient.registerBundleKey(request, object : StreamObserver<Signalc.BaseResponse> {
+            override fun onNext(response: Signalc.BaseResponse?) {
+                if (null != response?.message && response.message.equals("1")) {
+                    //
+                    CoroutineScope(Dispatchers.IO).launch {
+                        async { dbLocal.deleteAllUser() }.await()
+                        // update user for db
+                        val user = User()
+                        user.firstName = username
+                        user.session = session
+                        dbLocal.insertUser(user)
+                    }
+
+                    DataStore.session = session
+                    DataStore.username = username
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    finish()
+                    //
+                } else {
+                    onShowMsg("Something went wrong")
+                }
+            }
+
+            override fun onError(t: Throwable?) {
+                onShowMsg("Something went wrong")
+            }
+
+            override fun onCompleted() {
+                onShowMsg("Something went wrong")
+            }
+        })
+
+
     }
 
     fun onShowMsg(message: String) {

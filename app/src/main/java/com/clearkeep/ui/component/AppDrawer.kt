@@ -3,7 +3,6 @@ package com.clearkeep.ui.component
 import android.app.Activity
 import android.content.Intent
 import android.os.Handler
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.Composable
 import androidx.compose.MutableState
@@ -20,14 +19,11 @@ import androidx.ui.res.stringResource
 import androidx.ui.res.vectorResource
 import androidx.ui.unit.dp
 import com.clearkeep.ck.R
-import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.myapplication.LoginActivity
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
-import grpc.PscrudGrpc
-import grpc.PscrudOuterClass
-import io.grpc.stub.StreamObserver
+import grpc.SignalKeyDistributionGrpc
 
 @Composable
 fun AppDrawer(
@@ -35,7 +31,7 @@ fun AppDrawer(
     closeDrawer: () -> Unit,
     activity: Activity,
     dbLocal: UserRepository,
-    grpcClient: PscrudGrpc.PscrudStub,mainThreadHandler: Handler
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub, mainThreadHandler: Handler
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         val openDialogLogout = state { false }
@@ -85,7 +81,13 @@ fun AppDrawer(
                     },
                     confirmButton = {
                         Button(onClick = {
-                            logout(grpcClient,mainThreadHandler,dbLocal ,openDialogLogout,stateCloseActivity )
+                            logout(
+                                grpcClient,
+                                mainThreadHandler,
+                                dbLocal,
+                                openDialogLogout,
+                                stateCloseActivity
+                            )
                         }) {
                             Text("Ok")
                         }
@@ -164,33 +166,18 @@ private fun DrawerButton(
 }
 
 // Logout user
-fun logout(grpcClient: PscrudGrpc.PscrudStub, mainThreadHandler: Handler,dbLocal: UserRepository ,
-           openDialogLogout: MutableState<Boolean>, stateCloseActivity: MutableState<Boolean> ) {
-    val request = PscrudOuterClass.Request.newBuilder()
-        .setSession(DataStore.session)
-        .build()
+fun logout(
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
+    mainThreadHandler: Handler,
+    dbLocal: UserRepository,
+    openDialogLogout: MutableState<Boolean>,
+    stateCloseActivity: MutableState<Boolean>
+) {
 
-    grpcClient.logout(request, object : StreamObserver<PscrudOuterClass.Response> {
-        override fun onNext(value: PscrudOuterClass.Response?) {
-            Log.e("Enc", "logout : " + value?.ok)
-            value?.ok?.let { isSuccessful ->
-                mainThreadHandler.post{
-                    dbLocal.deleteAllUser()
-                    openDialogLogout.value = false
-                    stateCloseActivity.value = true
-                }
-            }
-
-        }
-
-        override fun onError(t: Throwable?) {
-            Log.e("Enc", "logout onError")
-
-        }
-
-        override fun onCompleted() {
-            Log.e("Enc", "logout onCompleted")
-        }
-    })
+    mainThreadHandler.post {
+        dbLocal.deleteAllUser()
+        openDialogLogout.value = false
+        stateCloseActivity.value = true
+    }
 }
 

@@ -6,7 +6,7 @@ import android.os.Looper
 import com.clearkeep.db.UserDatabase
 import com.clearkeep.db.UserLocalDataSource
 import com.clearkeep.db.UserRepository
-import grpc.PscrudGrpc
+import grpc.SignalKeyDistributionGrpc
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
@@ -18,7 +18,7 @@ import kotlinx.coroutines.runBlocking
  * Dependency Injection container at the application level.
  */
 interface AppContainer {
-    val grpcClient: PscrudGrpc.PscrudStub
+    val grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
 
     //    val sharedPreferences: SharedPreferences
     val mainThreadHandler: Handler
@@ -31,14 +31,14 @@ interface AppContainer {
  * Variables are initialized lazily and the same instance is shared across the whole app.
  */
 class AppContainerImpl(context: Context) : AppContainer {
-    override val grpcClient: PscrudGrpc.PscrudStub by lazy {
-        val channel = ManagedChannelBuilder.forAddress("jetpack.tel.red", 11912)
-//        val channel = ManagedChannelBuilder.forAddress("10.0.2.2", 11912)
+    override val grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub by lazy {
+//        val channel = ManagedChannelBuilder.forAddress("jetpack.tel.red", 11912)
+        val channel = ManagedChannelBuilder.forAddress("localhost", 50051)
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
             .build()
 
-        PscrudGrpc.newStub(channel)
+        SignalKeyDistributionGrpc.newStub(channel)
     }
 
 //    override val sharedPreferences: SharedPreferences by lazy {
