@@ -13,14 +13,22 @@ import androidx.ui.material.icons.filled.ArrowBack
 import androidx.ui.res.imageResource
 import androidx.ui.unit.dp
 import com.clearkeep.ck.R
+import com.clearkeep.db.UserRepository
 import com.clearkeep.model.Room
 import com.clearkeep.state.backpress.BackButtonHandler
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.FilledTextInputComponent
+import grpc.SignalKeyDistributionGrpc
+import grpc.Signalc
+import io.grpc.stub.StreamObserver
 
 @Composable
-fun CreateNewRoom(rooms: MutableList<Room>) {
+fun CreateNewRoom(
+    rooms: MutableList<Room>,
+    dbLocal: UserRepository,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         TopAppBar(
             title = {
@@ -34,7 +42,7 @@ fun CreateNewRoom(rooms: MutableList<Room>) {
         )
         Surface(color = Color(0xFFfff), modifier = Modifier.weight(1f)) {
             // Center is a composable that centers all the child composables that are passed to it.
-            viewCreateNewRoom(rooms)
+            viewCreateNewRoom(rooms, dbLocal, grpcClient)
         }
     }
     // Event back press on the device
@@ -44,7 +52,11 @@ fun CreateNewRoom(rooms: MutableList<Room>) {
 }
 
 @Composable
-fun viewCreateNewRoom(rooms: MutableList<Room>) {
+fun viewCreateNewRoom(
+    rooms: MutableList<Room>,
+    dbLocal: UserRepository,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
+) {
     val roomId = state { "" }
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -71,9 +83,8 @@ fun viewCreateNewRoom(rooms: MutableList<Room>) {
                 OutlinedButton(
                     onClick = {
                         if (roomId.value.isNotBlank()) {
-                            rooms.add(Room(roomId.value))
+                            createRoomID(roomId.value, rooms, dbLocal, grpcClient)
                         }
-                        navigateTo(Screen.Home)
                     },
                     modifier = Modifier.padding(16.dp) + Modifier.weight(1f)
                 ) {
@@ -99,4 +110,28 @@ fun viewCreateNewRoom(rooms: MutableList<Room>) {
         }
     }
 
+}
+fun createRoomID(
+    roomId: String,
+    rooms: MutableList<Room>,
+    dbLocal: UserRepository,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
+) {
+    val request = Signalc.SignalKeysUserRequest.newBuilder()
+        .setClientId(dbLocal.allUser()?.get(0)?.firstName)
+        .build()
+    grpcClient.getKeyBundleByUserId(
+        request,
+        object : StreamObserver<Signalc.SignalKeysUserResponse> {
+            override fun onNext(response: Signalc.SignalKeysUserResponse?) {
+                rooms.add(Room(roomId))
+                navigateTo(Screen.Home)
+            }
+
+            override fun onError(t: Throwable?) {
+            }
+
+            override fun onCompleted() {
+            }
+        })
 }

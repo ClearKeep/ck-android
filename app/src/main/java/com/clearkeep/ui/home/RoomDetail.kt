@@ -27,20 +27,15 @@ import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.TextUnit
 import androidx.ui.unit.dp
 import androidx.ui.unit.sp
-import chat.Chat
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.model.Message
 import com.clearkeep.secure.CryptoHelper
-import com.clearkeep.secure.TinkPbe
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.HintEditText
-import com.google.gson.Gson
 import com.google.protobuf.ByteString
-import grpc.PscrudGrpc
-import grpc.PscrudOuterClass
-import io.grpc.stub.StreamObserver
+import grpc.SignalKeyDistributionGrpc
 
 
 private var messagesList = ModelList<Message>()
@@ -49,7 +44,7 @@ private var listMsg = mutableMapOf<String, String>()
 @Composable
 fun RoomDetail(
     roomId: String,
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     mainThreadHandler: Handler
 ) {
     val msgState = state { TextFieldValue("") }
@@ -191,39 +186,10 @@ fun previewScreen() {
 
 fun hear(
     id: String,
-    chit: Chat.Chit,
-    grpcClient: PscrudGrpc.PscrudStub,
+    chit: ByteString,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     mainThreadHandler: Handler, dbLocal: UserRepository
 ) {
-    when (chit.what) {
-        Chat.Chit.What.HANDSHAKE -> {
-            receivedHandshake(chit.handshake, grpcClient, mainThreadHandler, dbLocal)
-        }
-        Chat.Chit.What.ENVELOPE -> {
-            mainThreadHandler.post {
-                val keySet = CryptoHelper.getKeySet(chit.envelope.from)
-                val secret = keySet?.let {
-                    CryptoHelper.getSecretKey(it)
-                }
-                Log.e("Enc", "peer: receive envelop" + Gson().toJson(keySet))
-                try {
-                    val strDecr = TinkPbe.decrypt(chit.envelope.payload.toByteArray(), secret)
-                    messagesList.add(
-                        Message(
-                            id,
-                            chit.envelope.from + " : "
-                        )
-                    )
-                } catch (e: Exception) {
-                    e.message?.let { Log.d("print", it) }
-                }
-
-            }
-        }
-        Chat.Chit.What.UNRECOGNIZED -> {
-
-        }
-    }
 }
 
 @Composable
@@ -249,7 +215,7 @@ fun MessageAdapter() {
 }
 
 fun sendMsg(
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     message: String,
     recipient: String,
     mainThreadHandler: Handler
@@ -270,151 +236,53 @@ fun sendMsg(
 }
 
 private fun sendHandshake(
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     recipient: String,
     mainThreadHandler: Handler
 ) {
-    val keySend = CryptoHelper.getKeySendTo(recipient)
-    val handshake = Chat.Handshake.newBuilder()
-        .setFrom(DataStore.username)
-        .setAgreement(ByteString.copyFrom(keySend.agreement))
-        .build()
-    val chit = Chat.Chit.newBuilder()
-        .setWhat(Chat.Chit.What.HANDSHAKE)
-        .setHandshake(handshake)
-        .build()
-    try {
-        sendData(grpcClient, recipient, chit.toByteString(), mainThreadHandler)
-    } catch (e: Exception) {
-    }
 
 }
 
 private fun sendConfirmHandshake(
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     keyConfirm: ByteArray,
     senderID: String,
     mainThreadHandler: Handler
 ) {
-    val handshake = Chat.Handshake.newBuilder()
-        .setFrom(DataStore.username)
-        .setAgreement(ByteString.copyFrom(keyConfirm))
-        .build()
-    val chit = Chat.Chit.newBuilder()
-        .setWhat(Chat.Chit.What.HANDSHAKE)
-        .setHandshake(handshake)
-        .build()
-    try {
-        sendDataAfterHandshake(grpcClient, senderID, chit.toByteString(), mainThreadHandler)
-    } catch (e: Exception) {
 
-    }
 }
 
 private fun sendDataAfterHandshake(
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     recipient: String,
     data: ByteString,
     mainThreadHandler: Handler
 ) {
 
-    val request = PscrudOuterClass.PublishRequest.newBuilder()
-        .setTopic(recipient)
-        .setSession(DataStore.session)
-        .setData(data)
-        .build()
-
-    grpcClient.publish(request, object : StreamObserver<PscrudOuterClass.Response> {
-        override fun onNext(response: PscrudOuterClass.Response?) {
-            Log.d("Enc", response?.ok.toString())
-            response?.ok?.let { isSuccessful ->
-
-            }
-        }
-
-        override fun onError(t: Throwable?) {
-            Log.d("Enc", "onError")
-        }
-
-        override fun onCompleted() {
-            Log.d("Enc", "onCompleted")
-        }
-    })
 
 }
 
-private fun receivedHandshake(
-    handshake: Chat.Handshake, grpcClient: PscrudGrpc.PscrudStub,
-    mainThreadHandler: Handler, dbLocal: UserRepository
-) {
-    val peer = handshake.from
-    if (CryptoHelper.set(handshake.agreement.toByteArray(), peer, dbLocal)) {
-        Log.e("Enc", "peer: resend handshake to " + peer)
-        val keyResendConfirm = CryptoHelper.getKeySet(peer)!!.ourAgreement
-        //for receiver resend handshake to Sender
-        sendConfirmHandshake(grpcClient, keyResendConfirm, peer, mainThreadHandler)
-    } else {
-        Log.e("Enc", "peer: send envelop to " + peer)
-        // for listen hanshake success from Receiver
-        listMsg.get(peer)?.let {
-            sendMessage(it, peer, grpcClient, mainThreadHandler)
-            // Remove message sended
-            listMsg.remove(peer)
-        }
-    }
-}
+
 
 private fun  sendMessage(
     msgSend: String,
-    peer: String, grpcClient: PscrudGrpc.PscrudStub,
+    peer: String, grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     mainThreadHandler: Handler
 ) {
     val keySet = CryptoHelper.getKeySet(peer)
     val secret = keySet?.let {
         CryptoHelper.getSecretKey(it)
     }
-    val msg = TinkPbe.encrypt(msgSend, secret)
-    Log.e("Enc", "Msg send : " + Gson().toJson(keySet))
 
-    val envelope = Chat.Envelope.newBuilder().setFrom(DataStore.username)
-        .setPayload(ByteString.copyFrom(msg))
-        .setTo(peer)
-        .build()
-
-    val chit = Chat.Chit.newBuilder().setWhat(Chat.Chit.What.ENVELOPE)
-        .setEnvelope(envelope)
-        .build()
-    // Sen data
-    sendData(grpcClient, peer, chit.toByteString(), mainThreadHandler)
 }
 
 private fun sendData(
-    grpcClient: PscrudGrpc.PscrudStub,
+    grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
     recipient: String,
     data: ByteString,
     mainThreadHandler: Handler
 ) {
-    val request = PscrudOuterClass.PublishRequest.newBuilder()
-        .setTopic(recipient)
-        .setSession(DataStore.session)
-        .setData(data)
-        .build()
 
-    grpcClient.publish(request, object : StreamObserver<PscrudOuterClass.Response> {
-        override fun onNext(response: PscrudOuterClass.Response?) {
-            Log.d("Enc request", response?.ok.toString())
-            response?.ok?.let { isSuccessful ->
-
-            }
-        }
-
-        override fun onError(t: Throwable?) {
-            Log.d("Enc", "onError")
-        }
-
-        override fun onCompleted() {
-        }
-    })
 
 }
 

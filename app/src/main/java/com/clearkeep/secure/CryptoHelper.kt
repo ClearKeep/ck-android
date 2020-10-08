@@ -1,7 +1,6 @@
 package com.clearkeep.secure
 
 import android.text.TextUtils
-import chat.Chat
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.google.gson.Gson
@@ -39,13 +38,6 @@ object CryptoHelper {
         return keys.get(id)
     }
 
-    fun signing(data: Chat.Handshake): ByteString {
-        return data.signing
-    }
-
-    fun agreement(data: Chat.Handshake): ByteString {
-        return data.agreement
-    }
 
     fun checkHandShaked(id: String): Boolean {
         val keyset = getKeySet(id)
