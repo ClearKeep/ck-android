@@ -28,15 +28,16 @@ import com.clearkeep.application.MyApplication
 import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
+import com.clearkeep.model.Room
 import com.clearkeep.model.User
 import com.clearkeep.secure.CryptoHelper
+import com.clearkeep.ui.Screen
 import com.clearkeep.ui.activity.MainActivity
 import com.clearkeep.ui.lightThemeColors
+import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.ButtonGeneral
 import com.clearkeep.ui.widget.FilledTextInputComponent
 import com.google.protobuf.ByteString
-import grpc.SignalKeyDistributionGrpc
-import grpc.Signalc
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.util.KeyHelper
+import signalc.SignalKeyDistributionGrpc
+import signalc.Signalc
 
 class LoginActivity : AppCompatActivity() {
 
@@ -169,7 +172,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun login(username: String, pwd: String, dbLocal: UserRepository) {
-        onLoginSuccessful(username, "1")
+        onLoginSuccessful("alice", "1")
     }
 
     fun register(username: String, pwd: String) {
@@ -186,15 +189,15 @@ class LoginActivity : AppCompatActivity() {
 
     fun onLoginSuccessful(username: String, session: String) {
         val identityKeyPair = KeyHelper.generateIdentityKeyPair()
-        val preKeys = KeyHelper.generatePreKeys(1,1)
+        val preKeys = KeyHelper.generatePreKeys(0,5)
         val signedPrekey = KeyHelper.generateSignedPreKey(identityKeyPair,5)
         val request = Signalc.SignalRegisterKeysRequest.newBuilder()
             .setClientId(username)
-            .setRegistrationId(KeyHelper.generateRegistrationId(true))
+            .setRegistrationId(KeyHelper.generateRegistrationId(false))
             .setDeviceId(112)
             .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
-            .setPreKey(ByteString.copyFrom(preKeys.get(0).serialize()))
-            .setSignedPreKeyId(5)
+            .setPreKey(ByteString.copyFrom(preKeys.get(2).serialize()))
+            .setSignedPreKeyId(2)
             .setSignedPreKey(
                 ByteString.copyFrom(signedPrekey.serialize() )
             )
@@ -202,7 +205,7 @@ class LoginActivity : AppCompatActivity() {
 
         grpcClient.registerBundleKey(request, object : StreamObserver<Signalc.BaseResponse> {
             override fun onNext(response: Signalc.BaseResponse?) {
-                if (null != response?.message && response.message.equals("1")) {
+                if (null != response?.message && response.message.equals("success")) {
                     //
                     CoroutineScope(Dispatchers.IO).launch {
                         async { dbLocal.deleteAllUser() }.await()

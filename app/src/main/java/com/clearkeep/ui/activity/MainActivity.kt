@@ -16,8 +16,8 @@ import com.clearkeep.model.Room
 import com.clearkeep.ui.ChatStatus
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.home.*
-import grpc.SignalKeyDistributionGrpc
-import grpc.Signalc
+import signalc.SignalKeyDistributionGrpc
+import signalc.Signalc
 import io.grpc.stub.StreamObserver
 
 class MainActivity : AppCompatActivity() {
