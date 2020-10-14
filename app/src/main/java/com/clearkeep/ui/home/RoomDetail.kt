@@ -35,7 +35,7 @@ import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.HintEditText
 import com.google.protobuf.ByteString
-import grpc.SignalKeyDistributionGrpc
+import signalc.SignalKeyDistributionGrpc
 
 
 private var messagesList = ModelList<Message>()

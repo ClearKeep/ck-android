@@ -6,12 +6,12 @@ import android.os.Looper
 import com.clearkeep.db.UserDatabase
 import com.clearkeep.db.UserLocalDataSource
 import com.clearkeep.db.UserRepository
-import grpc.SignalKeyDistributionGrpc
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import signalc.SignalKeyDistributionGrpc
 
 
 /**
@@ -33,7 +33,7 @@ interface AppContainer {
 class AppContainerImpl(context: Context) : AppContainer {
     override val grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub by lazy {
 //        val channel = ManagedChannelBuilder.forAddress("jetpack.tel.red", 11912)
-        val channel = ManagedChannelBuilder.forAddress("localhost", 50051)
+        val channel = ManagedChannelBuilder.forAddress("172.16.9.119", 50051)
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
             .build()

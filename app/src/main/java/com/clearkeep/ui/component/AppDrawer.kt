@@ -23,7 +23,7 @@ import com.clearkeep.db.UserRepository
 import com.clearkeep.myapplication.LoginActivity
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
-import grpc.SignalKeyDistributionGrpc
+import signalc.SignalKeyDistributionGrpc
 
 @Composable
 fun AppDrawer(

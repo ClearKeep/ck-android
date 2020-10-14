@@ -28,7 +28,7 @@ import com.clearkeep.model.Room
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.component.AppDrawer
 import com.clearkeep.ui.navigateTo
-import grpc.SignalKeyDistributionGrpc
+import signalc.SignalKeyDistributionGrpc
 
 @Composable
 fun HomeView(

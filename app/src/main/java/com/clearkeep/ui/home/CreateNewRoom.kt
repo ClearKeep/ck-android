@@ -19,8 +19,8 @@ import com.clearkeep.state.backpress.BackButtonHandler
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.FilledTextInputComponent
-import grpc.SignalKeyDistributionGrpc
-import grpc.Signalc
+import signalc.SignalKeyDistributionGrpc
+import signalc.Signalc
 import io.grpc.stub.StreamObserver
 
 @Composable

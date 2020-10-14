@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package grpc;
+package signalc;
 
 message BaseResponse {
     string message = 1;
