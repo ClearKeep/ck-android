@@ -118,7 +118,7 @@ fun createRoomID(
     grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
 ) {
     val request = Signalc.SignalKeysUserRequest.newBuilder()
-        .setClientId(dbLocal.allUser()?.get(0)?.firstName)
+        .setClientId(roomId)
         .build()
     grpcClient.getKeyBundleByUserId(
         request,

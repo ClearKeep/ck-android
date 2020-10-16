@@ -61,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
         mainThreadHandler = appContainer.mainThreadHandler
 
         CoroutineScope(Dispatchers.Main).launch {
-            val data = async(Dispatchers.IO) { dbLocal.allUser() }
+            /*val data = async(Dispatchers.IO) { dbLocal.allUser() }
             val result = data.await() // suspend
             //update UI
             result?.let {
@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
                     DataStore.username = result[0].firstName!!
                     navigateToHomeActivity()
                 }
-            }
+            }*/
             // init UI login
             setContent {
                 MyApp()
