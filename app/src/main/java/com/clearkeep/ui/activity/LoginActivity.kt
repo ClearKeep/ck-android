@@ -25,6 +25,7 @@ import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import androidx.ui.unit.sp
 import com.clearkeep.application.MyApplication
+import com.clearkeep.application.RESPONSE_SECCESS
 import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
@@ -40,6 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.util.KeyHelper
 import signalc.SignalKeyDistributionGrpc
 import signalc.Signalc
@@ -64,7 +66,8 @@ class LoginActivity : AppCompatActivity() {
             //update UI
             result?.let {
                 if (result.size > 0) {
-                    onGetAccLogin(result.get(0))
+                    DataStore.username = result[0].firstName!!
+                    navigateToHomeActivity()
                 }
             }
             // init UI login
@@ -126,14 +129,14 @@ class LoginActivity : AppCompatActivity() {
                         stringResource(R.string.btn_login),
                         onClick = {
                             if (validateInput(userName.value, pwd.value))
-                                login(userName.value, pwd.value, dbLocal)
+                                onRegister(userName.value, pwd.value)
                         })
 
                     ButtonGeneral(
                         stringResource(R.string.btn_register),
                         onClick = {
                             if (validateInput(userName.value, pwd.value))
-                                register(userName.value, pwd.value)
+                                onRegister(userName.value, pwd.value)
                         })
                 }
 
@@ -168,72 +171,63 @@ class LoginActivity : AppCompatActivity() {
         return true
     }
 
-    fun login(username: String, pwd: String, dbLocal: UserRepository) {
-        onLoginSuccessful("alice", "1")
-    }
+    private fun onRegister(clientID: String, pw: String) {
+        val address = SignalProtocolAddress(clientID, 111)
 
-    fun register(username: String, pwd: String) {
-        onLoginSuccessful(username, "1")
-    }
+        val identityKeyPair = myStore.identityKeyPair
 
+        val preKeys = KeyHelper.generatePreKeys(1,1)
+        val preKey = preKeys.get(0);
+        val signedPrekey = KeyHelper.generateSignedPreKey(identityKeyPair,5)
 
-    fun onGetAccLogin(user: User) {
-        DataStore.session = user.session
-        DataStore.username = user.firstName!!
-        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-        finish()
-    }
+        myStore.storePreKey(preKey.id, preKey)
+        myStore.storeSignedPreKey(signedPrekey.id, signedPrekey)
 
-    fun onLoginSuccessful(username: String, session: String) {
-        val preKeys = KeyHelper.generatePreKeys(0, 5)
-        val prekey = preKeys[0]
-        val signedPreKeyId = prekey.id
-        val signedPrekey = KeyHelper.generateSignedPreKey(myStore.identityKeyPair, signedPreKeyId)
         val request = Signalc.SignalRegisterKeysRequest.newBuilder()
-            .setClientId(username)
-            .setRegistrationId(KeyHelper.generateRegistrationId(false))
-            .setDeviceId(112)
-            .setIdentityKeyPublic(ByteString.copyFrom(myStore.identityKeyPair.publicKey.serialize()))
-            .setPreKey(ByteString.copyFrom(preKeys.get(2).serialize()))
-            .setSignedPreKeyId(2)
+            .setClientId(address.name)
+            .setDeviceId(address.deviceId)
+            .setRegistrationId(myStore.localRegistrationId)
+            .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
+            .setPreKey(ByteString.copyFrom(preKey.serialize()))
+            .setPreKeyId(preKey.id)
+            .setSignedPreKeyId(5)
             .setSignedPreKey(
                 ByteString.copyFrom(signedPrekey.serialize())
             )
+            .setSignedPreKeySignature(ByteString.copyFrom(signedPrekey.signature))
             .build()
 
         grpcClient.registerBundleKey(request, object : StreamObserver<Signalc.BaseResponse> {
             override fun onNext(response: Signalc.BaseResponse?) {
-                if (null != response?.message && response.message.equals("success")) {
-                    //
+                if (null != response?.message && response.message .equals(RESPONSE_SECCESS)) {
                     CoroutineScope(Dispatchers.IO).launch {
                         async { dbLocal.deleteAllUser() }.await()
                         // update user for db
                         val user = User()
-                        user.firstName = username
-                        user.session = session
+                        user.firstName = clientID
                         dbLocal.insertUser(user)
                     }
-
-                    DataStore.session = session
-                    DataStore.username = username
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                    finish()
-                    //
+//                    DataStore.session = user.session
+                    DataStore.username = clientID
+                    navigateToHomeActivity()
                 } else {
                     onShowMsg("Something went wrong")
                 }
             }
 
             override fun onError(t: Throwable?) {
-                onShowMsg("Something went wrong")
+                onShowMsg("Error: ${t.toString()}")
             }
 
             override fun onCompleted() {
-                onShowMsg("Something went wrong")
+                onShowMsg("Completed")
             }
         })
+    }
 
-
+    private fun navigateToHomeActivity() {
+        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+        finish()
     }
 
     fun onShowMsg(message: String) {
