@@ -37,7 +37,7 @@ class AppContainerImpl(context: Context) :
     AppContainer {
     override val grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub by lazy {
 //        val channel = ManagedChannelBuilder.forAddress("jetpack.tel.red", 11912)
-        val channel = ManagedChannelBuilder.forAddress("172.16.9.119", 50051)
+        val channel = ManagedChannelBuilder.forAddress("172.16.0.216", 50051)
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
             .build()

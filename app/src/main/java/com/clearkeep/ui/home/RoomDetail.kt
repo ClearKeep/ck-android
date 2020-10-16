@@ -278,11 +278,14 @@ fun hear(
         val sessionCipher = SessionCipher(myStore, signalProtocolAddress)
         val message = sessionCipher.decrypt(preKeyMessage)
         val result = String(message, StandardCharsets.UTF_8)
-        messagesList.add(
-            Message(
-                senderId, senderId + " : " + result
+        mainThreadHandler.post(Runnable {
+            messagesList.add(
+                Message(
+                    senderId, senderId + " : " + result
+                )
             )
-        )
+        })
+
         println(result)
     } catch (e: Exception) {
         println(e.toString())
