@@ -13,10 +13,13 @@ message SignalRegisterKeysRequest {
 
     bytes identityKeyPublic = 4;
 
-    bytes preKey = 5;
+    int32 preKeyId = 5;
+    bytes preKey = 6;
 
-    int32 signedPreKeyId = 6;
-    bytes signedPreKey = 7;
+    int32 signedPreKeyId = 7;
+    bytes signedPreKey = 8;
+
+    bytes signedPreKeySignature = 9;
 }
 
 message SignalKeysUserRequest {
@@ -30,10 +33,13 @@ message SignalKeysUserResponse {
 
     bytes identityKeyPublic = 4;
 
-    bytes preKey = 5;
+    int32 preKeyId = 5;
+    bytes preKey = 6;
 
-    int32 signedPreKeyId = 6;
-    bytes signedPreKey = 7;
+    int32 signedPreKeyId = 7;
+    bytes signedPreKey = 8;
+
+    bytes signedPreKeySignature = 9;
 }
 
 message PublishRequest {

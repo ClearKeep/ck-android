@@ -28,13 +28,10 @@ import com.clearkeep.application.MyApplication
 import com.clearkeep.ck.R
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
-import com.clearkeep.model.Room
 import com.clearkeep.model.User
-import com.clearkeep.secure.CryptoHelper
-import com.clearkeep.ui.Screen
+import com.clearkeep.store.InMemorySignalProtocolStore
 import com.clearkeep.ui.activity.MainActivity
 import com.clearkeep.ui.lightThemeColors
-import com.clearkeep.ui.navigateTo
 import com.clearkeep.ui.widget.ButtonGeneral
 import com.clearkeep.ui.widget.FilledTextInputComponent
 import com.google.protobuf.ByteString
@@ -43,7 +40,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.util.KeyHelper
 import signalc.SignalKeyDistributionGrpc
 import signalc.Signalc
@@ -53,11 +49,13 @@ class LoginActivity : AppCompatActivity() {
     lateinit var grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub
     lateinit var dbLocal: UserRepository
     lateinit var mainThreadHandler: Handler
+    lateinit var myStore: InMemorySignalProtocolStore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val appContainer = (application as MyApplication).container
         grpcClient = appContainer.grpcClient
         dbLocal = appContainer.dbLocal
+        myStore = appContainer.myStore
         mainThreadHandler = appContainer.mainThreadHandler
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -66,7 +64,6 @@ class LoginActivity : AppCompatActivity() {
             //update UI
             result?.let {
                 if (result.size > 0) {
-                    CryptoHelper.initKeysSession(result.get(0).security)
                     onGetAccLogin(result.get(0))
                 }
             }
@@ -188,18 +185,19 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun onLoginSuccessful(username: String, session: String) {
-        val identityKeyPair = KeyHelper.generateIdentityKeyPair()
-        val preKeys = KeyHelper.generatePreKeys(0,5)
-        val signedPrekey = KeyHelper.generateSignedPreKey(identityKeyPair,5)
+        val preKeys = KeyHelper.generatePreKeys(0, 5)
+        val prekey = preKeys[0]
+        val signedPreKeyId = prekey.id
+        val signedPrekey = KeyHelper.generateSignedPreKey(myStore.identityKeyPair, signedPreKeyId)
         val request = Signalc.SignalRegisterKeysRequest.newBuilder()
             .setClientId(username)
             .setRegistrationId(KeyHelper.generateRegistrationId(false))
             .setDeviceId(112)
-            .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
+            .setIdentityKeyPublic(ByteString.copyFrom(myStore.identityKeyPair.publicKey.serialize()))
             .setPreKey(ByteString.copyFrom(preKeys.get(2).serialize()))
             .setSignedPreKeyId(2)
             .setSignedPreKey(
-                ByteString.copyFrom(signedPrekey.serialize() )
+                ByteString.copyFrom(signedPrekey.serialize())
             )
             .build()
 

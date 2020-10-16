@@ -1,4 +1,4 @@
-package com.clearkeep.data
+package com.clearkeep.application
 
 import android.content.Context
 import android.os.Handler
@@ -6,11 +6,13 @@ import android.os.Looper
 import com.clearkeep.db.UserDatabase
 import com.clearkeep.db.UserLocalDataSource
 import com.clearkeep.db.UserRepository
+import com.clearkeep.store.InMemorySignalProtocolStore
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import org.whispersystems.libsignal.util.KeyHelper
 import signalc.SignalKeyDistributionGrpc
 
 
@@ -23,6 +25,7 @@ interface AppContainer {
     //    val sharedPreferences: SharedPreferences
     val mainThreadHandler: Handler
     val dbLocal: UserRepository
+    val myStore: InMemorySignalProtocolStore
 }
 
 /**
@@ -30,7 +33,8 @@ interface AppContainer {
  *
  * Variables are initialized lazily and the same instance is shared across the whole app.
  */
-class AppContainerImpl(context: Context) : AppContainer {
+class AppContainerImpl(context: Context) :
+    AppContainer {
     override val grpcClient: SignalKeyDistributionGrpc.SignalKeyDistributionStub by lazy {
 //        val channel = ManagedChannelBuilder.forAddress("jetpack.tel.red", 11912)
         val channel = ManagedChannelBuilder.forAddress("172.16.9.119", 50051)
@@ -57,6 +61,13 @@ class AppContainerImpl(context: Context) : AppContainer {
             val userRepository = async { UserRepository.getInstance(userLocal) }.await()
             return@runBlocking userRepository!!
         }
+    }
+
+
+    override val myStore: InMemorySignalProtocolStore by lazy {
+        val identityKeyPair = KeyHelper.generateIdentityKeyPair()
+        val registrationID = KeyHelper.generateRegistrationId(false)
+        InMemorySignalProtocolStore(identityKeyPair, registrationID)
     }
 }
 

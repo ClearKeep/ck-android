@@ -13,6 +13,7 @@ import com.clearkeep.application.MyApplication
 import com.clearkeep.data.DataStore
 import com.clearkeep.db.UserRepository
 import com.clearkeep.model.Room
+import com.clearkeep.store.InMemorySignalProtocolStore
 import com.clearkeep.ui.ChatStatus
 import com.clearkeep.ui.Screen
 import com.clearkeep.ui.home.*
@@ -26,14 +27,15 @@ class MainActivity : AppCompatActivity() {
     lateinit var mainThreadHandler: Handler
     lateinit var dbLocal: UserRepository
     val rooms = mutableListOf<Room>()
+    lateinit var myStore: InMemorySignalProtocolStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val appContainer = (application as MyApplication).container
         grpcClient = appContainer.grpcClient
         mainThreadHandler = appContainer.mainThreadHandler
         dbLocal = appContainer.dbLocal
+        myStore = appContainer.myStore
         subscribe()
         listen()
         setContent {
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                     is Screen.Home -> HomeView(rooms, this, dbLocal, grpcClient, mainThreadHandler)
                     is Screen.HomeView2 -> HomeView2(this, dbLocal, grpcClient, mainThreadHandler)
                     is Screen.CreateNewRoom -> CreateNewRoom(rooms,dbLocal,grpcClient)
-                    is Screen.RoomDetail -> RoomDetail(screen.roomId, grpcClient, mainThreadHandler)
+                    is Screen.RoomDetail -> RoomDetail(screen.roomId, grpcClient,myStore, mainThreadHandler)
                 }
             }
         }
@@ -84,16 +86,17 @@ class MainActivity : AppCompatActivity() {
             override fun onNext(value: Signalc.Publication) {
                 hear(
                     value.senderId,value.message,
-                    grpcClient,
-                    mainThreadHandler,
-                    dbLocal
+                    myStore,
+                    mainThreadHandler
                 )
             }
 
             override fun onError(t: Throwable?) {
+                println("onError ${t.toString()}")
             }
 
             override fun onCompleted() {
+                println("onCompleted")
             }
         })
     }
