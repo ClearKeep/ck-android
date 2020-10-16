@@ -14,8 +14,5 @@ class User {
     @ColumnInfo(name = "session")
     var session: String? = null
 
-    @ColumnInfo(name = "security")
-    var security: String? = null
-
 
 }
