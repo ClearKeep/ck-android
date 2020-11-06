@@ -1,4 +1,4 @@
-package com.clearkeep.chat.single.views
+package com.clearkeep.chat.common_views
 
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
@@ -17,18 +17,16 @@ import androidx.navigation.compose.navigate
 
 @Composable
 fun RoomListScreen(
-    navController: NavHostController,
+    onRoomSelected: (Int, String) -> Unit,
     rooms: List<Room>
 ) {
     ScrollableColumn {
         rooms.forEach {
             Box(Modifier.clickable(
-                onClick = {
-                    navController.navigate("singleChatRoom/${it.remoteId}")
-                }, enabled = true)) {
+                onClick = { onRoomSelected(it.id, it.remoteId) }, enabled = true)) {
                 Column {
                     Row {
-                        Text(text = it.remoteId)
+                        Text(text = it.roomName)
                     }
                 }
                 Divider(color = Color.Black, thickness = 2.dp)

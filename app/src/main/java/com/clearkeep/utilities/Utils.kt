@@ -1,4 +1,7 @@
 package com.clearkeep.utilities
 
-class Utils {
+import java.util.*
+
+fun getCurrentDateTime(): Date {
+    return Calendar.getInstance().time
 }

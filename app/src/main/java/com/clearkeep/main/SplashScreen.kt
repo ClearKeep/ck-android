@@ -14,7 +14,7 @@ import androidx.ui.tooling.preview.Preview
 import com.clearkeep.R
 
 @Composable
-fun SplashView(
+fun SplashScreen(
 ) {
     Column(
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
@@ -37,5 +37,5 @@ fun SplashView(
 @Preview
 @Composable
 fun PreviewApp() {
-    SplashView()
+    SplashScreen()
 }

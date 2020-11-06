@@ -7,8 +7,9 @@ import androidx.activity.viewModels
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.setContent
-import com.clearkeep.login.LoginActivity
-import com.clearkeep.home.HomeActivity
+import com.clearkeep.chat.single.SingleChatActivity
+import com.clearkeep.login.SingleLoginActivity
+import com.clearkeep.login.GroupLoginActivity
 import com.clearkeep.ui.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -22,35 +23,50 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            Splash()
-        }
-
-        handleNextNavigation()
-    }
-
-    private fun handleNextNavigation() {
-        GlobalScope.launch(context = Dispatchers.Main) {
-            delay(1000)
-            if (mainViewModel.isUserRegistered) navigateToHomeActivity() else navigateToLoginActivity()
+            OurView()
         }
     }
 
     @Composable
-    fun Splash() {
+    fun OurView() {
         MaterialTheme(
             colors = lightThemeColors
         ) {
-            SplashView()
+            MainScreen(
+                onOpenSingleChat = {
+                    handleNextNavigation(true)
+                },
+                onOpenGroupChat = {
+                    handleNextNavigation(false)
+                }
+            )
+        }
+    }
+
+    private fun handleNextNavigation(isSingle: Boolean) {
+        GlobalScope.launch(context = Dispatchers.Main) {
+            delay(1000)
+            if (isSingle) {
+                if (mainViewModel.isUserRegistered) navigateToHomeActivity() else navigateToLoginActivity()
+            } else {
+                //if (mainViewModel.isGroupUserRegistered) navigateToGroupActivity() else navigateToGroupLoginActivity()
+                navigateToGroupLoginActivity()
+            }
         }
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, HomeActivity::class.java))
+        startActivity(Intent(this, SingleChatActivity::class.java))
         finish()
     }
 
     private fun navigateToLoginActivity() {
-        startActivity(Intent(this, LoginActivity::class.java))
+        startActivity(Intent(this, SingleLoginActivity::class.java))
+        finish()
+    }
+
+    private fun navigateToGroupLoginActivity() {
+        startActivity(Intent(this, GroupLoginActivity::class.java))
         finish()
     }
 }

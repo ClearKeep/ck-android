@@ -1,9 +1,8 @@
-package com.clearkeep.chat.single.views
+package com.clearkeep.chat.common_views
 
 import android.text.TextUtils
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
@@ -14,17 +13,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
-import com.clearkeep.ui.HintEditText
+import com.clearkeep.ui.FilledTextInputComponent
 
 @Composable
 fun SendBottomCompose(
     onSendMessage: (String) -> Unit
 ) {
-    val msgState = state { TextFieldValue("") }
+    val msgState = state { "" }
 
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -36,19 +34,19 @@ fun SendBottomCompose(
                     + Modifier.weight(0.66f),
             shape = RoundedCornerShape(4.dp)
         ) {
-            HintEditText(
-                hintText = "Next Message",
-                modifier = Modifier.padding(16.dp) + Modifier.fillMaxWidth(),
-                textValue = msgState
+            FilledTextInputComponent(
+                "Next Message",
+                " ",
+                msgState
             )
         }
         Button(
             modifier = Modifier.padding(8.dp),
             onClick = {
-                if (!TextUtils.isEmpty(msgState.value.text)) {
-                    onSendMessage(msgState.value.text)
+                if (!TextUtils.isEmpty(msgState.value)) {
+                    onSendMessage(msgState.value)
                     // clear text
-                    msgState.value = TextFieldValue("")
+                    msgState.value = ""
                 }
             }
         ) {
@@ -66,4 +64,5 @@ fun PreviewApp() {
     SendBottomCompose(
         onSendMessage = {}
     )
+
 }

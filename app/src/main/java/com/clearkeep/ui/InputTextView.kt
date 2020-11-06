@@ -32,23 +32,3 @@ fun FilledTextInputComponent(
         activeColor = Color.Gray
     )
 }
-
-@Composable
-fun HintEditText(
-    hintText: String,
-    modifier: Modifier,
-    textStyle: TextStyle = AmbientTextStyle.current,
-    textValue: MutableState<TextFieldValue>
-) {
-    var text by remember { mutableStateOf(TextFieldValue(hintText)) }
-
-    OutlinedTextField(
-        modifier = modifier,
-        textStyle = textStyle,
-        value = text,
-        onValueChange = {
-            text = it
-        },
-        label = { Text("Label") }
-    )
-}

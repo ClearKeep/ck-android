@@ -8,5 +8,7 @@ class MainViewModel @ViewModelInject constructor(
     loginRepository: LoginRepository
 ): ViewModel() {
 
-    val isUserRegistered = loginRepository.isUserRegistered()
+    val isUserRegistered = loginRepository.isSingleUserRegistered()
+
+    val isGroupUserRegistered = loginRepository.isGroupUserRegistered()
 }

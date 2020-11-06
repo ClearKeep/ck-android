@@ -1,4 +1,4 @@
-package com.clearkeep.chat.repo
+package com.clearkeep.chat.repositories
 
 import com.clearkeep.db.RoomDAO
 import com.clearkeep.db.model.Room
@@ -12,6 +12,12 @@ class RoomRepository @Inject constructor(
     fun getSingleRooms() = roomDAO.getSingleRooms()
 
     fun insertSingleRoom(remoteId: String) {
-        roomDAO.insert(Room(remoteId, false))
+        roomDAO.insert(Room("Peer with $remoteId", remoteId, false))
+    }
+
+    fun getGroupRooms() = roomDAO.getGroupRooms()
+
+    fun insertGroupRoom(groupName: String, groupId: String) {
+        roomDAO.insert(Room(groupName, groupId, true))
     }
 }

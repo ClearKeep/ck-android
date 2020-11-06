@@ -1,37 +1,37 @@
-package com.clearkeep.chat.single
+package com.clearkeep.chat.group
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.chat.repositories.ChatRepository
+import com.clearkeep.chat.repositories.GroupChatRepository
 import com.clearkeep.chat.repositories.RoomRepository
 import com.clearkeep.db.model.Message
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class SingleChatViewModel @Inject constructor(
-    private val chatRepository: ChatRepository,
+class GroupChatViewModel @Inject constructor(
+    private val chatRepository: GroupChatRepository,
     private val roomRepository: RoomRepository
 ): ViewModel() {
 
     fun getMyClientId() = chatRepository.getMyClientId()
 
     fun getMessageList(roomId: Int): LiveData<List<Message>> {
-        return chatRepository.getMessagesFromSender(roomId)
+        return chatRepository.getMessagesFromRoom(roomId)
     }
 
-    fun sendMessage(receiverId: String, message: String) {
+    fun sendMessage(roomId: Int, groupId: String, message: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.sendMessage(receiverId, message)
+            chatRepository.sendMessage(roomId, groupId, message)
         }
     }
 
-    fun insertSingleRoom(remoteId: String) {
+    fun insertGroupRoom(groupName: String, groupId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            roomRepository.insertSingleRoom(remoteId)
+            roomRepository.insertGroupRoom(groupName, groupId)
         }
     }
 
-    fun getSingleRooms() = roomRepository.getSingleRooms()
+    fun getGroupRooms() = roomRepository.getGroupRooms()
 }

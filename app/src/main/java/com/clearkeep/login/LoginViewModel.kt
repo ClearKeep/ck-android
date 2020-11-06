@@ -25,4 +25,15 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
+    fun registerGroup(username: String) {
+        viewModelScope.launch {
+            _loginState.value = LoginProcessing
+            if (loginRepository.registerGroup(username)) {
+                _loginState.value = LoginSuccess
+            } else {
+                _loginState.value = LoginError
+            }
+        }
+    }
 }

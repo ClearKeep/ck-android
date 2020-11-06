@@ -117,7 +117,9 @@ dependencies {
     implementation("org.whispersystems:signal-protocol-android:$signal_version") {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
-
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     // Room components
     implementation "androidx.room:room-runtime:$room_db_version"
     implementation "androidx.room:room-ktx:$room_db_version"
@@ -138,7 +140,7 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
 
     // Test
-    /*testImplementation 'junit:junit:4.+'
+    testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'*/
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }

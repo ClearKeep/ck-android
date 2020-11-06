@@ -14,4 +14,10 @@ interface RoomDAO {
 
     @Query("SELECT * FROM room WHERE is_group = 0")
     fun getSingleRooms(): LiveData<List<Room>>
+
+    @Query("SELECT * FROM room WHERE is_group = 1")
+    fun getGroupRooms(): LiveData<List<Room>>
+
+    @Query("SELECT id FROM room WHERE remote_id = :remoteId LIMIT 1")
+    fun getRoomId(remoteId: String): Int?
 }
