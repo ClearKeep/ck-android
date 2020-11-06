@@ -1,10 +1,12 @@
-package com.clearkeep.chat.repo
+package com.clearkeep.chat.repositories
 
 import android.text.TextUtils
 import com.clearkeep.db.MessageDAO
 import com.clearkeep.db.model.Message
 import com.clearkeep.login.LoginRepository
 import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.db.RoomDAO
+import com.clearkeep.utilities.getCurrentDateTime
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import org.whispersystems.libsignal.IdentityKey
@@ -29,7 +31,8 @@ class ChatRepository @Inject constructor(
     private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
     private val myStore: InMemorySignalProtocolStore,
     private val loginRepository: LoginRepository,
-    private val messageDAO: MessageDAO
+    private val messageDAO: MessageDAO,
+    private val roomDAO: RoomDAO
 ) {
     init {
         subscribe()
@@ -66,7 +69,10 @@ class ChatRepository @Inject constructor(
                 val sessionCipher = SessionCipher(myStore, signalProtocolAddress)
                 val message = sessionCipher.decrypt(preKeyMessage)
                 val result = String(message, StandardCharsets.UTF_8)
-                messageDAO.insert(Message(value.senderId, result))
+
+                val roomId = roomDAO.getRoomId(value.senderId) ?: 0
+                println("decrypt: $result, roomId = $roomId")
+                messageDAO.insert(Message(value.senderId, result, roomId, getCurrentDateTime().time))
             }
 
             override fun onError(t: Throwable?) {
@@ -78,9 +84,9 @@ class ChatRepository @Inject constructor(
         })
     }
 
-    fun getMyName() = loginRepository.getClientId()
+    fun getMyClientId() = loginRepository.getClientId()
 
-    fun getMessagesFromSender(senderId: String) = messageDAO.getMessages(senderId = senderId)
+    fun getMessagesFromSender(roomId: Int) = messageDAO.getMessages(roomId = roomId)
 
     fun sendMessage(receiver: String, msg: String) : Boolean {
         val signalProtocolAddress = SignalProtocolAddress(receiver, 111)
@@ -105,7 +111,7 @@ class ChatRepository @Inject constructor(
         try {
             clientBlocking.publish(request)
         } catch (e: Exception) {
-            println("sendMessage: ${e.toString()}")
+            println("sendMessage: $e")
             return false
         }
 
@@ -143,7 +149,7 @@ class ChatRepository @Inject constructor(
             sessionBuilder.process(retrievedPreKey)
             return true
         } catch (e: Exception) {
-            println("initSessionWithReceiver: ${e.toString()}")
+            println("initSessionWithReceiver: $e")
         }
 
         return false

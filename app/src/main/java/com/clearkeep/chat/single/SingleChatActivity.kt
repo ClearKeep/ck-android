@@ -23,13 +23,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.R
-import com.clearkeep.chat.single.views.EnterReceiverScreen
-import com.clearkeep.chat.single.views.SingleRoomChatScreen
+import com.clearkeep.chat.common_views.EnterReceiverScreen
 import com.clearkeep.ui.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.navigation.compose.navigate
-import com.clearkeep.chat.single.views.RoomListScreen
+import com.clearkeep.chat.common_views.RoomChatScreen
+import com.clearkeep.chat.common_views.RoomListScreen
 
 @AndroidEntryPoint
 class SingleChatActivity : AppCompatActivity() {
@@ -87,17 +87,24 @@ class SingleChatActivity : AppCompatActivity() {
             NavHost(navController, startDestination = "roomListScreen") {
                 composable("roomListScreen") {
                     singleChatViewModel.getSingleRooms().observeAsState().value.let {
-                        it?.let { it1 -> RoomListScreen(navController, it1) }
+                        it?.let { it1 -> RoomListScreen(
+                            onRoomSelected = { roomId, remoteId ->
+                                navController.navigate("singleChatRoom/${roomId}/${remoteId}")
+                            },
+                            it1
+                        ) }
                     }
                 }
                 composable(
-                    "singleChatRoom/{receiverId}",
-                    arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                    "singleChatRoom/{roomId}/{remoteId}",
                 ) { backStackEntry ->
-                    singleChatViewModel.getMessageList(backStackEntry.arguments!!.getString("receiverId")!!).observeAsState().value.let {
-                        SingleRoomChatScreen(
-                            singleChatViewModel,
-                            backStackEntry.arguments!!.getString("receiverId")!!
+                    val roomId = backStackEntry.arguments!!.getInt("roomId")!!
+                    val receiverId = backStackEntry.arguments!!.getString("remoteId")!!
+                    singleChatViewModel.getMessageList(roomId).observeAsState().value.let {
+                        RoomChatScreen(
+                            myClientId = singleChatViewModel.getMyClientId(),
+                            messageList = it ?: emptyList(),
+                            onSendMessage = { message -> singleChatViewModel.sendMessage(receiverId, message)}
                         )
                     }
                 }

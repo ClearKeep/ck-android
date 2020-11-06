@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Room(
+    @ColumnInfo(name = "room_name") val roomName: String,
     @ColumnInfo(name = "remote_id") val remoteId: String,
     @ColumnInfo(name = "is_group") val isGroup: Boolean
 ) {

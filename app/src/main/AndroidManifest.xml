@@ -26,11 +26,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".login.LoginActivity"
+            android:name=".login.SingleLoginActivity"
             android:label="@string/app_name"></activity>
         <activity
-            android:name=".home.HomeActivity"
-            android:windowSoftInputMode="adjustResize" />
+            android:name=".login.GroupLoginActivity"
+            android:label="@string/app_name"></activity>
+        <activity android:name=".chat.group.GroupChatActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
     </application>
 
 </manifest>

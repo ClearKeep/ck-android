@@ -77,3 +77,8 @@ private fun validateInput(context: Context, username: String): Boolean {
     }
     return true
 }
+
+sealed class LoginViewState
+object LoginSuccess : LoginViewState()
+object LoginError : LoginViewState()
+object LoginProcessing : LoginViewState()

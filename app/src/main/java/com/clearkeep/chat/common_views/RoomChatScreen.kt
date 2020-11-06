@@ -1,25 +1,19 @@
-package com.clearkeep.chat.single.views
+package com.clearkeep.chat.common_views
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.clearkeep.chat.single.SingleChatViewModel
 import com.clearkeep.db.model.Message
 
-private var messageListState = mutableStateOf(emptyList<Message>())
-
 @Composable
-fun SingleRoomChatScreen(
-    singleChatViewModel: SingleChatViewModel,
-    receiverId: String
+fun RoomChatScreen(
+    myClientId: String,
+    messageList: List<Message>,
+    onSendMessage: (String) -> Unit
 ) {
-    val onSendMessage: (String) -> Unit = {
-        singleChatViewModel.sendMessage(receiverId, it)
-    }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -27,7 +21,8 @@ fun SingleRoomChatScreen(
             0.66f
         )) {
             MessageListView(
-                state = messageListState
+                messageList = messageList,
+                myClientId = myClientId
             )
         }
         SendBottomCompose(

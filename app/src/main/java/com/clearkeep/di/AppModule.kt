@@ -2,6 +2,7 @@ package com.clearkeep.di
 
 import android.text.TextUtils
 import android.util.Base64
+import com.clearkeep.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.storage.Storage
 import dagger.Module
@@ -14,6 +15,7 @@ import kotlinx.coroutines.asExecutor
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.util.KeyHelper
 import signalc.SignalKeyDistributionGrpc
+import signalc_group.GroupSenderKeyDistributionGrpc
 import javax.inject.Singleton
 
 @InstallIn(ApplicationComponent::class)
@@ -64,7 +66,36 @@ class AppModule {
         return InMemorySignalProtocolStore(identityKeyPair, registrationID, storage)
     }
 
+    @Singleton
+    @Provides
+    fun provideGroupSenderKeyDistributionStub(): GroupSenderKeyDistributionGrpc.GroupSenderKeyDistributionStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL_GROUP, 50052)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        return GroupSenderKeyDistributionGrpc.newStub(channel)
+    }
+
+    @Singleton
+    @Provides
+    fun provideGroupSenderKeyDistributionBlockingStub(): GroupSenderKeyDistributionGrpc.GroupSenderKeyDistributionBlockingStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL_GROUP, 50052)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        return GroupSenderKeyDistributionGrpc.newBlockingStub(channel)
+    }
+
+    @Singleton
+    @Provides
+    fun provideInMemorySenderKeyStore(storage: Storage): InMemorySenderKeyStore {
+        return InMemorySenderKeyStore(storage)
+    }
+
     companion object {
         private const val BASE_URL = "172.16.1.41"
+        private const val BASE_URL_GROUP = "172.16.1.41"
     }
 }
