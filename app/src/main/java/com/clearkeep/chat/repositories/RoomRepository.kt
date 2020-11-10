@@ -18,6 +18,10 @@ class RoomRepository @Inject constructor(
     fun getGroupRooms() = roomDAO.getGroupRooms()
 
     fun insertGroupRoom(groupName: String, groupId: String) {
+        val roomId = roomDAO.getRoomId(groupId)
+        if (roomId != null) {
+            return
+        }
         roomDAO.insert(Room(groupName, groupId, true))
     }
 }

@@ -7,9 +7,11 @@ import androidx.activity.viewModels
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.setContent
+import com.clearkeep.chat.group.GroupChatActivity
 import com.clearkeep.chat.single.SingleChatActivity
 import com.clearkeep.login.SingleLoginActivity
 import com.clearkeep.login.GroupLoginActivity
+import com.clearkeep.ui.CKTheme
 import com.clearkeep.ui.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -29,9 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun OurView() {
-        MaterialTheme(
-            colors = lightThemeColors
-        ) {
+        CKTheme {
             MainScreen(
                 onOpenSingleChat = {
                     handleNextNavigation(true)
@@ -49,24 +49,24 @@ class MainActivity : AppCompatActivity() {
             if (isSingle) {
                 if (mainViewModel.isUserRegistered) navigateToHomeActivity() else navigateToLoginActivity()
             } else {
-                //if (mainViewModel.isGroupUserRegistered) navigateToGroupActivity() else navigateToGroupLoginActivity()
-                navigateToGroupLoginActivity()
+                if (mainViewModel.isGroupUserRegistered) navigateToGroupActivity() else navigateToGroupLoginActivity()
             }
         }
     }
 
     private fun navigateToHomeActivity() {
         startActivity(Intent(this, SingleChatActivity::class.java))
-        finish()
     }
 
     private fun navigateToLoginActivity() {
         startActivity(Intent(this, SingleLoginActivity::class.java))
-        finish()
+    }
+
+    private fun navigateToGroupActivity() {
+        startActivity(Intent(this, GroupChatActivity::class.java))
     }
 
     private fun navigateToGroupLoginActivity() {
         startActivity(Intent(this, GroupLoginActivity::class.java))
-        finish()
     }
 }

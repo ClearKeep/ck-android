@@ -72,7 +72,7 @@ class ChatRepository @Inject constructor(
 
                 val roomId = roomDAO.getRoomId(value.senderId) ?: 0
                 println("decrypt: $result, roomId = $roomId")
-                messageDAO.insert(Message(value.senderId, result, roomId, getCurrentDateTime().time))
+                messageDAO.insert(Message(value.senderId, result, result, roomId, getCurrentDateTime().time))
             }
 
             override fun onError(t: Throwable?) {

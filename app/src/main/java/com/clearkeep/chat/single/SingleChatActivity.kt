@@ -87,24 +87,38 @@ class SingleChatActivity : AppCompatActivity() {
             NavHost(navController, startDestination = "roomListScreen") {
                 composable("roomListScreen") {
                     singleChatViewModel.getSingleRooms().observeAsState().value.let {
-                        it?.let { it1 -> RoomListScreen(
-                            onRoomSelected = { roomId, remoteId ->
-                                navController.navigate("singleChatRoom/${roomId}/${remoteId}")
-                            },
-                            it1
-                        ) }
+                        it?.let { it1 ->
+                            RoomListScreen(
+                                    navController,
+                                    it1,
+                                    onRoomSelected = { room ->
+                                        navController.navigate("singleChatRoom/${room.id}/${room.roomName}/${room.remoteId}")
+                                    },
+                                    onFinishActivity = {
+                                        finish()
+                                    }
+                            )
+                        }
                     }
                 }
                 composable(
-                    "singleChatRoom/{roomId}/{remoteId}",
+                    "singleChatRoom/{roomId}/{roomName}/{remoteId}",
+                        arguments = listOf(
+                                navArgument("roomId") { type = NavType.IntType },
+                                navArgument("roomName") { type = NavType.StringType },
+                                navArgument("remoteId") { type = NavType.StringType }
+                        ),
                 ) { backStackEntry ->
                     val roomId = backStackEntry.arguments!!.getInt("roomId")!!
+                    val roomName = backStackEntry.arguments!!.getString("roomName")!!
                     val receiverId = backStackEntry.arguments!!.getString("remoteId")!!
                     singleChatViewModel.getMessageList(roomId).observeAsState().value.let {
                         RoomChatScreen(
-                            myClientId = singleChatViewModel.getMyClientId(),
-                            messageList = it ?: emptyList(),
-                            onSendMessage = { message -> singleChatViewModel.sendMessage(receiverId, message)}
+                                navController,
+                                myClientId = singleChatViewModel.getMyClientId(),
+                                roomName = roomName,
+                                messageList = it ?: emptyList(),
+                                onSendMessage = { message -> singleChatViewModel.sendMessage(receiverId, message)}
                         )
                     }
                 }

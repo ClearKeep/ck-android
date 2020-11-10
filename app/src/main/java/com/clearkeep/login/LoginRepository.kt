@@ -79,7 +79,7 @@ class LoginRepository @Inject constructor(
 
     fun getGroupClientId() = storage.getString(GROUP_CLIENT_ID)
 
-    suspend fun registerGroup(groupClientID: String) : Boolean {
+    suspend fun registerGroup(groupClientID: String) : Boolean = withContext(Dispatchers.IO) {
         val senderAddress = SignalProtocolAddress(groupClientID, 111)
         val groupSender  =  SenderKeyName("test_group", senderAddress)
         val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
@@ -98,12 +98,12 @@ class LoginRepository @Inject constructor(
             }
             if (null != response?.message && response.message == "success") {
                 storage.setString(GROUP_CLIENT_ID, groupClientID)
-                return true
+                return@withContext true
             }
         } catch (e: Exception) {
             println("register: $e")
         }
 
-        return false
+        return@withContext false
     }
 }

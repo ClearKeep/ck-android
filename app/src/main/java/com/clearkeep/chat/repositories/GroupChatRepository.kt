@@ -6,6 +6,7 @@ import com.clearkeep.db.RoomDAO
 import com.clearkeep.db.model.Message
 import com.clearkeep.login.LoginRepository
 import com.clearkeep.utilities.getCurrentDateTime
+import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -40,14 +41,14 @@ class GroupChatRepository @Inject constructor(
 
         client.subscribe(request, object : StreamObserver<SignalcGroup.BaseResponse> {
             override fun onNext(response: SignalcGroup.BaseResponse?) {
-                println("Test, subscribe onNext ${response?.message}")
+                printlnCK("subscribe onNext ${response?.message}")
             }
 
             override fun onError(t: Throwable?) {
             }
 
             override fun onCompleted() {
-                println("Test, subscribe onCompleted")
+                printlnCK("subscribe onCompleted")
                 listen()
             }
         })
@@ -59,12 +60,12 @@ class GroupChatRepository @Inject constructor(
             .build()
         client.listen(request, object : StreamObserver<SignalcGroup.GroupPublication> {
             override fun onNext(value: SignalcGroup.GroupPublication) {
-                println("Receive a message from : ${value.senderId}")
+                printlnCK("Receive a message from : ${value.senderId}")
                 decryptMessage(value)
             }
 
             override fun onError(t: Throwable?) {
-                println("listen message occurs error: ${t.toString()}")
+                printlnCK("listen message occurs error: ${t.toString()}")
             }
 
             override fun onCompleted() {
@@ -73,20 +74,30 @@ class GroupChatRepository @Inject constructor(
     }
 
     private fun decryptMessage(value: SignalcGroup.GroupPublication) {
-        val senderAddress = SignalProtocolAddress(value.senderId, 111)
-        val groupSender = SenderKeyName(value.groupId, senderAddress)
-        val bobGroupCipher = GroupCipher(myStore, groupSender)
+        try {
+            val senderAddress = SignalProtocolAddress(value.senderId, 111)
+            val groupSender = SenderKeyName(value.groupId, senderAddress)
+            val bobGroupCipher = GroupCipher(myStore, groupSender)
 
-        val initSession = initSession(value, groupSender)
-        if (!initSession) {
-            return
+            val initSession = initSession(value, groupSender)
+            if (!initSession) {
+                return
+            }
+
+            val plaintextFromAlice = bobGroupCipher.decrypt(value.message.toByteArray())
+            val decryptMessage = String(value.message.toByteArray(), StandardCharsets.UTF_8)
+            val result = String(plaintextFromAlice, StandardCharsets.UTF_8)
+            val roomId = roomDAO.getRoomId(value.groupId) ?: 0
+            printlnCK("before decrypt: $decryptMessage")
+            printlnCK("after decrypt: $result, roomId = $roomId")
+            messageDAO.insert(Message(
+                    value.senderId, result,
+                    decryptMessage,
+                    roomId, getCurrentDateTime().time)
+            )
+        } catch (e: Exception) {
+            printlnCK("decrypt error : $e")
         }
-
-        val plaintextFromAlice = bobGroupCipher.decrypt(value.message.toByteArray())
-        val result = String(plaintextFromAlice, StandardCharsets.UTF_8)
-        val roomId = roomDAO.getRoomId(value.groupId) ?: 0
-        println("decrypt: $result, roomId = $roomId")
-        messageDAO.insert(Message(value.senderId, result, roomId, getCurrentDateTime().time))
     }
 
     private fun initSession(value: SignalcGroup.GroupPublication, groupSender: SenderKeyName): Boolean {
@@ -102,7 +113,7 @@ class GroupChatRepository @Inject constructor(
                 val bobSessionBuilder = GroupSessionBuilder(myStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } catch (e: Exception) {
-                println("initSession: $e")
+                printlnCK("initSession: $e")
             }
         }
         return true
@@ -113,26 +124,28 @@ class GroupChatRepository @Inject constructor(
     fun getMessagesFromRoom(roomId: Int) = messageDAO.getMessages(roomId = roomId)
 
     fun sendMessage(roomId: Int, groupId: String, msg: String) : Boolean {
-        val senderAddress = SignalProtocolAddress(loginRepository.getGroupClientId(), 111)
-        val groupSender  =  SenderKeyName(groupId, senderAddress)
-        val aliceGroupCipher = GroupCipher(myStore, groupSender)
-        val ciphertextFromAlice: ByteArray =
-            aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
-
-        val request = SignalcGroup.GroupPublishRequest.newBuilder()
-            .setGroupId(groupId)
-            .setSenderId(loginRepository.getGroupClientId())
-            .setMessage(ByteString.copyFrom(ciphertextFromAlice))
-            .build()
-
         try {
+            val senderAddress = SignalProtocolAddress(loginRepository.getGroupClientId(), 111)
+            val groupSender  =  SenderKeyName(groupId, senderAddress)
+            val aliceGroupCipher = GroupCipher(myStore, groupSender)
+            val ciphertextFromAlice: ByteArray =
+                    aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
+            val messageAfterEncrypted = String(ciphertextFromAlice, StandardCharsets.UTF_8)
+
+            val request = SignalcGroup.GroupPublishRequest.newBuilder()
+                    .setGroupId(groupId)
+                    .setSenderId(loginRepository.getGroupClientId())
+                    .setMessage(ByteString.copyFrom(ciphertextFromAlice))
+                    .build()
             clientBlocking.publish(request)
-            messageDAO.insert(Message(getMyClientId(), msg, roomId, getCurrentDateTime().time))
+            messageDAO.insert(Message(getMyClientId(), msg, messageAfterEncrypted, roomId, getCurrentDateTime().time))
+
+            printlnCK("send message success: $msg, encrypted: $messageAfterEncrypted")
+            return true
         } catch (e: Exception) {
-            println("sendMessage: $e")
-            return false
+            printlnCK("sendMessage: $e")
         }
 
-        return true
+        return false
     }
 }

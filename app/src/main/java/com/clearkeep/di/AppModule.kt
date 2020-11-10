@@ -1,9 +1,8 @@
 package com.clearkeep.di
 
-import android.text.TextUtils
-import android.util.Base64
 import com.clearkeep.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.db.signal.SignalKeyDAO
 import com.clearkeep.utilities.storage.Storage
 import dagger.Module
 import dagger.Provides
@@ -12,8 +11,6 @@ import dagger.hilt.android.components.ApplicationComponent
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
-import org.whispersystems.libsignal.IdentityKeyPair
-import org.whispersystems.libsignal.util.KeyHelper
 import signalc.SignalKeyDistributionGrpc
 import signalc_group.GroupSenderKeyDistributionGrpc
 import javax.inject.Singleton
@@ -46,24 +43,7 @@ class AppModule {
     @Singleton
     @Provides
     fun provideInMemorySignalProtocolStore(storage: Storage): InMemorySignalProtocolStore {
-        val identityKeyPairStr = storage.getString("signal_identity_key")
-        var identityKeyPair: IdentityKeyPair
-        if (!TextUtils.isEmpty(identityKeyPairStr)) {
-            val array: ByteArray = Base64.decode(identityKeyPairStr, Base64.DEFAULT)
-            identityKeyPair = IdentityKeyPair(array)
-        } else {
-            identityKeyPair = KeyHelper.generateIdentityKeyPair()
-            val saveThis = Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT)
-            storage.setString("signal_identity_key", saveThis)
-        }
-
-        var registrationID = storage.getInt("signal_registration_id")
-        if (registrationID == -1) {
-            registrationID = KeyHelper.generateRegistrationId(false)
-            storage.setInt("signal_registration_id", registrationID)
-        }
-
-        return InMemorySignalProtocolStore(identityKeyPair, registrationID, storage)
+        return InMemorySignalProtocolStore(storage)
     }
 
     @Singleton
@@ -90,8 +70,8 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideInMemorySenderKeyStore(storage: Storage): InMemorySenderKeyStore {
-        return InMemorySenderKeyStore(storage)
+    fun provideInMemorySenderKeyStore(signalKeyDAO: SignalKeyDAO): InMemorySenderKeyStore {
+        return InMemorySenderKeyStore(signalKeyDAO)
     }
 
     companion object {
