@@ -1,12 +1,11 @@
 package com.clearkeep.main
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.clearkeep.ui.ButtonGeneral
+import com.clearkeep.ui.base.CKButton
 
 @Composable
 fun MainScreen(
@@ -14,16 +13,18 @@ fun MainScreen(
     onOpenGroupChat: () -> Unit
 ) {
     Column (
-        modifier = Modifier.padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier.padding(horizontal = 20.dp).fillMaxHeight().fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ButtonGeneral(
+        CKButton(
             "SingleChat",
             onClick = {
                 onOpenSingleChat()
             }
         )
-        ButtonGeneral(
+        Spacer(modifier = Modifier.height(20.dp))
+        CKButton(
             "GroupChat",
             onClick = {
                 onOpenGroupChat()

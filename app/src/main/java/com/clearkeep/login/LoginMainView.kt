@@ -18,8 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.ui.ButtonGeneral
-import com.clearkeep.ui.FilledTextInputComponent
+import com.clearkeep.ui.base.CKButton
+import com.clearkeep.ui.base.CKTextField
 
 @Composable
 fun LoginMainView(
@@ -48,18 +48,22 @@ fun LoginMainView(
                 Image(image, imageModifier)
             }
 
-            FilledTextInputComponent(
-                "Username",
-                "",
-                userName
-            )
-            Row() {
-                ButtonGeneral(
-                    stringResource(R.string.btn_register),
-                    onClick = {
-                        if (validateInput(context, userName.value))
-                            onRegisterPressed(userName.value)
-                    })
+            Spacer(Modifier.preferredHeight(30.dp))
+
+            Column (modifier = Modifier.padding(horizontal = 20.dp)) {
+                CKTextField(
+                        "Username",
+                        "",
+                        userName
+                )
+                Spacer(Modifier.preferredHeight(10.dp))
+                CKButton(
+                        stringResource(R.string.btn_register),
+                        onClick = {
+                            if (validateInput(context, userName.value))
+                                onRegisterPressed(userName.value)
+                        }
+                )
             }
 
         }

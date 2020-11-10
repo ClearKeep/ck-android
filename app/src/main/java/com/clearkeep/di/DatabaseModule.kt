@@ -6,6 +6,8 @@ import com.clearkeep.db.MessageDAO
 import com.clearkeep.db.UserDao
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.RoomDAO
+import com.clearkeep.db.signal.SignalKeyDAO
+import com.clearkeep.db.signal.SignalKeyDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,5 +42,20 @@ class DatabaseModule {
     @Provides
     fun provideRoomDAO(db: ClearKeepDatabase): RoomDAO {
         return db.roomDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSignalKeyDatabase(app: Application): SignalKeyDatabase {
+        return Room
+                .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
+                .fallbackToDestructiveMigration()
+                .build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSignalKeyDAO(db: SignalKeyDatabase): SignalKeyDAO {
+        return db.signalKeyDao()
     }
 }

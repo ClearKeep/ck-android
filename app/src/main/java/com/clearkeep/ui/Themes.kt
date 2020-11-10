@@ -1,21 +1,29 @@
 package com.clearkeep.ui
 
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+val ckDividerColor = Color.LightGray
+
 val lightThemeColors = lightColors(
-    primary = Color(0xFFDD0D3C),
-    primaryVariant = Color(0xFFC20029),
-    onPrimary = Color.White,
-    secondary = Color.White,
-    onSecondary = Color.Black,
-    background = Color.White,
-    onBackground = Color.Black,
-    surface = Color.White,
-    onSurface = Color.Black,
-    error = Color(0xFFD00036),
-    onError = Color.White
+        primary = Color.White,
+        primaryVariant = Color.Black,
+        onPrimary = Color.Black,
+
+        secondary = Color.Green,
+        onSecondary = Color.Black,
+
+        background = Color.White,
+        onBackground = Color.Black,
+
+        surface = Color.Blue,
+        onSurface = Color.White,
+
+        error = Color(0xFFD00036),
+        onError = Color.White
 )
 
 /**
@@ -33,3 +41,10 @@ val darkThemeColors = darkColors(
     onBackground = Color.White,
     onSurface = Color.White
 )
+
+@Composable
+fun CKTheme(children: @Composable () -> Unit) {
+    MaterialTheme(colors = lightThemeColors, typography = ckTypography) {
+        children()
+    }
+}

@@ -5,29 +5,57 @@
  */
 package com.clearkeep.chat.signal_store;
 
+import android.text.TextUtils;
+import android.util.Base64;
+
 import com.clearkeep.utilities.storage.Storage;
 
 import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.IdentityKeyPair;
+import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.InvalidKeyIdException;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SessionRecord;
 import org.whispersystems.libsignal.state.SignalProtocolStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import org.whispersystems.libsignal.util.KeyHelper;
 
 import java.util.List;
 
 public class InMemorySignalProtocolStore implements SignalProtocolStore {
 
+  private static final String IDENTITY_KEY = "signal_identity_key";
+
+  private static final String REGISTRATION_KEY = "signal_registration_id";
+
   private final InMemoryPreKeyStore preKeyStore;
+
   private final InMemorySessionStore sessionStore;
+
   private final InMemorySignedPreKeyStore signedPreKeyStore;
 
   private final InMemoryIdentityKeyStore identityKeyStore;
 
-  public InMemorySignalProtocolStore(IdentityKeyPair identityKeyPair, int registrationId, Storage storage) {
-    this.identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, registrationId);
+  public InMemorySignalProtocolStore(Storage storage) throws InvalidKeyException {
+    String identityKeyPairStr = storage.getString(IDENTITY_KEY);
+    IdentityKeyPair identityKeyPair;
+    if (!TextUtils.isEmpty(identityKeyPairStr)) {
+      byte[] array = Base64.decode(identityKeyPairStr, Base64.DEFAULT);
+      identityKeyPair = new IdentityKeyPair(array);
+    } else {
+      identityKeyPair = KeyHelper.generateIdentityKeyPair();
+      String saveThis = Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT);
+      storage.setString(IDENTITY_KEY, saveThis);
+    }
+
+    int registrationID = storage.getInt(REGISTRATION_KEY);
+    if (registrationID == -1) {
+      registrationID = KeyHelper.generateRegistrationId(false);
+      storage.setInt(REGISTRATION_KEY, registrationID);
+    }
+
+    this.identityKeyStore = new InMemoryIdentityKeyStore(identityKeyPair, registrationID);
     this.preKeyStore = new InMemoryPreKeyStore(storage);
     this.sessionStore = new InMemorySessionStore();
     this.signedPreKeyStore = new InMemorySignedPreKeyStore(storage);
