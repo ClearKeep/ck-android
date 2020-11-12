@@ -1,4 +1,4 @@
-package com.clearkeep.chat.common_views
+package com.clearkeep.chat.single.compose
 
 import android.text.TextUtils
 import androidx.compose.foundation.Text
@@ -11,14 +11,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.state
 import androidx.navigation.NavHostController
-import com.clearkeep.chat.single.SingleChatViewModel
+import com.clearkeep.chat.single.PeerChatViewModel
 import com.clearkeep.ui.base.CKButton
 import com.clearkeep.ui.base.CKTextField
 
 @Composable
 fun EnterReceiverScreen(
     navController: NavHostController,
-    singleChatViewModel: SingleChatViewModel
+    singleChatViewModel: PeerChatViewModel
 ) {
     val remoteUser = state { "" }
     Column {

@@ -21,16 +21,14 @@ fun SplashScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column () {
-            Text(
+        Text(
                 text = "Welcome to e2ee app",
                 modifier = Modifier.padding(16.dp)
-            )
-            Text(
+        )
+        Text(
                 text = stringResource(R.string.title_app),
                 style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold)
-            )
-        }
+        )
     }
 }
 

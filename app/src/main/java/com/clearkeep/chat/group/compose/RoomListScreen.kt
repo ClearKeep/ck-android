@@ -1,6 +1,5 @@
-package com.clearkeep.chat.common_views
+package com.clearkeep.chat.group.compose
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,46 +7,31 @@ import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.loadVectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.db.model.Room
 import androidx.navigation.compose.navigate
 import androidx.ui.tooling.preview.Preview
-import com.clearkeep.R
 import com.clearkeep.ui.ckDividerColor
 
 @Composable
 fun RoomListScreen(
         navController: NavHostController,
+        clientId: String,
         rooms: List<Room>,
+        isShowCreateGroupIcon: Boolean = true,
         onRoomSelected: (Room) -> Unit,
-        onFinishActivity: () -> Unit,
 ) {
     Column {
         TopAppBar(
                 title = {
-                    Text(text = "Group Chatting")
-                },
-                navigationIcon = {
-                    IconButton(
-                            onClick = {
-                                /*val popped = navController.popBackStack(navController.graph.startDestination, false)
-                                if (!popped) {
-                                    finish()
-                                }*/
-                                onFinishActivity()
-                            }
-                    ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
-                    }
+                    Text(text = clientId)
                 },
                 actions = {
-                    IconButton(onClick = {
+                    if (isShowCreateGroupIcon) IconButton(onClick = {
                         navController.navigate("createGroup")
                     }) {
                         Icon(asset = Icons.Filled.Add)
