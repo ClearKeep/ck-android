@@ -1,4 +1,4 @@
-package com.clearkeep.chat.common_views
+package com.clearkeep.chat.group.compose
 
 import android.text.TextUtils
 import androidx.compose.foundation.Text
@@ -62,7 +62,7 @@ fun CreateGroupScreen(
                         if (!validateInput(groupName.value, remoteUser.value)) {
                             return@CKButton
                         }
-                        groupChatViewModel.insertGroupRoom(groupName.value, remoteUser.value)
+                        groupChatViewModel.createNewGroup(groupName.value, remoteUser.value)
                         navController.popBackStack(navController.graph.startDestination, false)
                     })
         }

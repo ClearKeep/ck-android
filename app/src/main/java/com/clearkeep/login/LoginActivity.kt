@@ -10,13 +10,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.chat.single.SingleChatActivity
+import com.clearkeep.chat.HomeActivity
 import com.clearkeep.ui.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SingleLoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -62,7 +62,7 @@ class SingleLoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, SingleChatActivity::class.java))
+        startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }
 }

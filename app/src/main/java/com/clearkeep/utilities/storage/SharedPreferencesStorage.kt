@@ -29,4 +29,15 @@ class SharedPreferencesStorage @Inject constructor(@ApplicationContext context: 
     override fun getInt(key: String): Int {
         return sharedPreferences.getInt(key, -1)
     }
+
+    override fun setBoolean(key: String, value: Boolean) {
+        with(sharedPreferences.edit()) {
+            putBoolean(key, value)
+            apply()
+        }
+    }
+
+    override fun getBoolean(key: String): Boolean {
+        return sharedPreferences.getBoolean(key, false)
+    }
 }
