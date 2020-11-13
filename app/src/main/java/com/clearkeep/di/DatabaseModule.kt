@@ -2,10 +2,7 @@ package com.clearkeep.di
 
 import android.app.Application
 import androidx.room.Room
-import com.clearkeep.db.MessageDAO
-import com.clearkeep.db.UserDao
-import com.clearkeep.db.ClearKeepDatabase
-import com.clearkeep.db.RoomDAO
+import com.clearkeep.db.*
 import com.clearkeep.db.signal.SignalKeyDAO
 import com.clearkeep.db.signal.SignalKeyDatabase
 import dagger.Module
@@ -42,6 +39,12 @@ class DatabaseModule {
     @Provides
     fun provideRoomDAO(db: ClearKeepDatabase): RoomDAO {
         return db.roomDao()
+    }
+
+    @Singleton
+    @Provides
+    fun providePeopleDAO(db: ClearKeepDatabase): PeopleDao {
+        return db.peopleDao()
     }
 
     @Singleton

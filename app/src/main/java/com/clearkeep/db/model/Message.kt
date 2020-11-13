@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 @Entity
 data class Message(
         @ColumnInfo(name = "sender_id") val senderId: String,
+        @ColumnInfo(name = "receiver_id") val receiverId: String,
         @ColumnInfo(name = "message") val message: String,
-        @ColumnInfo(name = "encrypted_message") val encryptedMessage: String,
         @ColumnInfo(name = "room_id") val roomId: Int,
         @ColumnInfo(name = "created_time") val createdTime: Long
 ) {

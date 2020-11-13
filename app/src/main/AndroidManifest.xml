@@ -8,15 +8,16 @@
 
     <application
         android:name=".MyApplication"
-        android:usesCleartextTraffic="true"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.DemoJetpackCompose">
-        <activity
-            android:name=".main.MainActivity">
+        android:theme="@style/Theme.DemoJetpackCompose"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".chat.room.RoomActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
+        <activity android:name=".main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,9 +26,10 @@
         </activity>
         <activity
             android:name=".login.LoginActivity"
-            android:label="@string/app_name"></activity>
-        <activity android:name=".chat.HomeActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
+            android:label="@string/app_name" />
+        <activity
+            android:name=".chat.HomeActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
     </application>
 
 </manifest>

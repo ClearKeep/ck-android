@@ -3,28 +3,24 @@ package com.clearkeep.chat.repositories
 import android.text.TextUtils
 import com.clearkeep.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.chat.utils.initSessionUserInGroup
+import com.clearkeep.chat.utils.initSessionUserPeer
 import com.clearkeep.db.MessageDAO
 import com.clearkeep.db.RoomDAO
 import com.clearkeep.db.model.Message
+import com.clearkeep.db.model.Room
 import com.clearkeep.login.LoginRepository
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.SessionBuilder
+import kotlinx.coroutines.*
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.groups.GroupCipher
-import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage
-import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import org.whispersystems.libsignal.state.PreKeyBundle
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import java.nio.charset.StandardCharsets
@@ -39,15 +35,84 @@ class ChatRepository @Inject constructor(
         private val signalProtocolStore: InMemorySignalProtocolStore,
         private val loginRepository: LoginRepository,
         private val messageDAO: MessageDAO,
-        private val roomDAO: RoomDAO
+        private val roomRepository: RoomRepository,
+        private val signalKeyRepository: SignalKeyRepository
 ) {
     init {
         subscribe()
     }
 
+    val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+
     fun getClientId() = loginRepository.getClientId()
 
     fun getMessagesFromRoom(roomId: Int) = messageDAO.getMessages(roomId = roomId)
+
+    fun getMessagesFromAFriend(remoteId: String) = messageDAO.getMessagesFromAFriend(remoteId = remoteId)
+
+    suspend fun sendMessageInPeer(receiver: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            if (!signalKeyRepository.isPeerKeyRegistered()) {
+                signalKeyRepository.peerRegisterClientKey(getClientId())
+            }
+
+            val signalProtocolAddress = SignalProtocolAddress(receiver, 111)
+
+            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
+                val initSuccess = initSessionUserPeer(receiver, signalProtocolAddress, clientBlocking, signalProtocolStore)
+                if (!initSuccess) {
+                    return@withContext false
+                }
+            }
+
+            val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
+            val message: CiphertextMessage =
+                    sessionCipher.encrypt(msg.toByteArray(charset("UTF-8")))
+
+            val request = Signal.PublishRequest.newBuilder()
+                    .setClientId(receiver)
+                    .setFromClientId(loginRepository.getClientId())
+                    .setMessage(ByteString.copyFrom(message.serialize()))
+                    .build()
+
+            clientBlocking.publish(request)
+            insertNewMessage(getClientId(), getClientId(), isGroup = false, msg)
+
+            printlnCK("send message success: $msg")
+        } catch (e: java.lang.Exception) {
+            printlnCK("sendMessage: $e")
+            return@withContext false
+        }
+
+        return@withContext true
+    }
+
+    suspend fun sendMessageToGroup(groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            val senderAddress = SignalProtocolAddress(loginRepository.getClientId(), 111)
+            val groupSender  =  SenderKeyName(groupId, senderAddress)
+
+            val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            val ciphertextFromAlice: ByteArray =
+                    aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
+            val messageAfterEncrypted = String(ciphertextFromAlice, StandardCharsets.UTF_8)
+
+            val request = Signal.PublishRequest.newBuilder()
+                    .setGroupId(groupId)
+                    .setFromClientId(senderAddress.name)
+                    .setMessage(ByteString.copyFrom(ciphertextFromAlice))
+                    .build()
+            clientBlocking.publish(request)
+            insertNewMessage(groupId, getClientId(), isGroup = true, msg)
+
+            printlnCK("send message success: $msg, encrypted: $messageAfterEncrypted")
+            return@withContext true
+        } catch (e: Exception) {
+            printlnCK("sendMessage: $e")
+        }
+
+        return@withContext false
+    }
 
     private fun subscribe() {
         val request = Signal.SubscribeAndListenRequest.newBuilder()
@@ -76,15 +141,17 @@ class ChatRepository @Inject constructor(
         client.listen(request, object : StreamObserver<Signal.Publication> {
             override fun onNext(value: Signal.Publication) {
                 printlnCK("Receive a message from : ${value.fromClientId}, groupId = ${value.groupId}")
-                if (TextUtils.isEmpty(value.groupId)) {
-                    decryptMessageFromPeer(value)
-                } else {
-                    decryptMessageFromGroup(value)
+                scope.launch {
+                    if (TextUtils.isEmpty(value.groupId)) {
+                        decryptMessageFromPeer(value)
+                    } else {
+                        decryptMessageFromGroup(value)
+                    }
                 }
             }
 
             override fun onError(t: Throwable?) {
-                printlnCK("listen message occurs error: ${t.toString()}")
+                printlnCK("Listen message error: ${t.toString()}")
             }
 
             override fun onCompleted() {
@@ -92,15 +159,14 @@ class ChatRepository @Inject constructor(
         })
     }
 
-    // Peer Chat
-    private fun decryptMessageFromPeer(value: Signal.Publication) {
+    private suspend fun decryptMessageFromPeer(value: Signal.Publication) {
         try {
             val senderId = value.fromClientId
             val signalProtocolAddress = SignalProtocolAddress(senderId, 111)
             val preKeyMessage = PreKeySignalMessage(value.message.toByteArray())
 
             if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val initSuccess = initSessionUserPeer(senderId, signalProtocolAddress)
+                val initSuccess = initSessionUserPeer(senderId, signalProtocolAddress, clientBlocking, signalProtocolStore)
                 if (!initSuccess) {
                     return
                 }
@@ -109,159 +175,54 @@ class ChatRepository @Inject constructor(
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
             val message = sessionCipher.decrypt(preKeyMessage)
             val result = String(message, StandardCharsets.UTF_8)
+            printlnCK("decryptMessageFromPeer: $result")
 
-            val roomId = roomDAO.getRoomId(senderId) ?: 0
-            printlnCK("decryptMessageFromPeer: $result, roomId = $roomId")
-            messageDAO.insert(Message(senderId, result, result, roomId, getCurrentDateTime().time))
+            insertNewMessage(senderId, senderId, isGroup = false, result)
         } catch (e: Exception) {
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
 
-    fun sendMessageInPeer(roomId: Int, receiver: String, msg: String) : Boolean {
-        try {
-            val signalProtocolAddress = SignalProtocolAddress(receiver, 111)
-
-            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val initSuccess = initSessionUserPeer(receiver, signalProtocolAddress)
-                if (!initSuccess) {
-                    return false
-                }
-            }
-
-            initSessionUserPeer(receiver, signalProtocolAddress)
-
-            val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
-            val message: CiphertextMessage =
-                sessionCipher.encrypt(msg.toByteArray(charset("UTF-8")))
-            val messageAfterEncrypted = String(message.serialize(), StandardCharsets.UTF_8)
-
-            val request = Signal.PublishRequest.newBuilder()
-                .setClientId(receiver)
-                .setFromClientId(loginRepository.getClientId())
-                .setMessage(ByteString.copyFrom(message.serialize()))
-                .build()
-
-            clientBlocking.publish(request)
-            messageDAO.insert(Message(getClientId(), msg, messageAfterEncrypted, roomId, getCurrentDateTime().time))
-
-            printlnCK("send message success: $msg, encrypted: $messageAfterEncrypted")
-        } catch (e: java.lang.Exception) {
-            printlnCK("sendMessage: $e")
-            return false
-        }
-
-        return true
-    }
-
-    private fun initSessionUserPeer(receiver: String, signalProtocolAddress: SignalProtocolAddress) : Boolean {
-        if (TextUtils.isEmpty(receiver)) {
-            return false
-        }
-        try {
-            val requestUser = Signal.PeerGetClientKeyRequest.newBuilder()
-                    .setClientId(receiver)
-                    .build()
-            val remoteKeyBundle = clientBlocking.peerGetClientKey(requestUser)
-
-            val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
-            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
-            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic.toByteArray(), 0)
-
-            val retrievedPreKey = PreKeyBundle(
-                    remoteKeyBundle.registrationId,
-                    remoteKeyBundle.deviceId,
-                    preKey.id,
-                    preKey.keyPair.publicKey,
-                    remoteKeyBundle.signedPreKeyId,
-                    signedPreKey.keyPair.publicKey,
-                    signedPreKey.signature,
-                    identityKeyPublic
-            )
-
-            val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
-
-            // Build a session with a PreKey retrieved from the server.
-            sessionBuilder.process(retrievedPreKey)
-            return true
-        } catch (e: java.lang.Exception) {
-            printlnCK("initSessionWithReceiver: $e")
-        }
-
-        return false
-    }
-
     // Group
-    private fun decryptMessageFromGroup(value: Signal.Publication) {
+    private suspend fun decryptMessageFromGroup(value: Signal.Publication) {
         try {
             val senderAddress = SignalProtocolAddress(value.fromClientId, 111)
             val groupSender = SenderKeyName(value.groupId, senderAddress)
             val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
 
-            val initSession = initSessionUserInGroup(value, groupSender)
+            val initSession = initSessionUserInGroup(value, groupSender, clientBlocking, senderKeyStore)
             if (!initSession) {
                 return
             }
 
             val plaintextFromAlice = bobGroupCipher.decrypt(value.message.toByteArray())
-            val decryptMessage = String(value.message.toByteArray(), StandardCharsets.UTF_8)
             val result = String(plaintextFromAlice, StandardCharsets.UTF_8)
-            val roomId = roomDAO.getRoomId(value.groupId) ?: 0
-            printlnCK("before decrypt: $decryptMessage")
-            printlnCK("after decrypt: $result, roomId = $roomId")
-            messageDAO.insert(Message(
-                    value.fromClientId, result,
-                    decryptMessage,
-                    roomId, getCurrentDateTime().time)
-            )
+            printlnCK("decryptMessageFromGroup: $result")
+
+            insertNewMessage(value.groupId, value.fromClientId, isGroup = true, result)
         } catch (e: Exception) {
-            printlnCK("decrypt error : $e")
+            printlnCK("decryptMessageFromGroup error : $e")
         }
     }
 
-    fun sendMessageToGroup(roomId: Int, groupId: String, msg: String) : Boolean {
-        try {
-            val senderAddress = SignalProtocolAddress(loginRepository.getClientId(), 111)
-            val groupSender  =  SenderKeyName(groupId, senderAddress)
+    private suspend fun insertNewMessage(remoteId: String, senderId: String, isGroup: Boolean, message: String) {
+        val room = roomRepository.getRoomOrCreateIfNot(getClientId(), remoteId, isGroup)
+        val createTime = getCurrentDateTime().time
+        messageDAO.insert(Message(senderId, getClientId(), message, room.id, createTime))
 
-            val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
-            val ciphertextFromAlice: ByteArray =
-                    aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
-            val messageAfterEncrypted = String(ciphertextFromAlice, StandardCharsets.UTF_8)
+        // update last message in room
+        val updateRoom = Room(
+                id = room.id,
+                roomName = room.roomName,
+                remoteId = room.remoteId,
+                isGroup = room.isGroup,
+                isAccepted = room.isAccepted,
 
-            val request = Signal.PublishRequest.newBuilder()
-                    .setGroupId(groupId)
-                    .setFromClientId(senderAddress.name)
-                    .setMessage(ByteString.copyFrom(ciphertextFromAlice))
-                    .build()
-            clientBlocking.publish(request)
-            messageDAO.insert(Message(getClientId(), msg, messageAfterEncrypted, roomId, getCurrentDateTime().time))
-
-            printlnCK("send message success: $msg, encrypted: $messageAfterEncrypted")
-            return true
-        } catch (e: Exception) {
-            printlnCK("sendMessage: $e")
-        }
-
-        return false
-    }
-
-    private fun initSessionUserInGroup(value: Signal.Publication, groupSender: SenderKeyName): Boolean {
-        val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
-        if (senderKeyRecord.isEmpty) {
-            try {
-                val request = Signal.GroupGetClientKeyRequest.newBuilder()
-                    .setGroupId(value.groupId)
-                    .setClientId(value.fromClientId)
-                    .build()
-                val senderKeyDistribution = clientBlocking.groupGetClientKey(request)
-                val receivedAliceDistributionMessage = SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
-                val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
-                bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
-            } catch (e: Exception) {
-                printlnCK("initSession: $e")
-            }
-        }
-        return true
+                lastPeople = senderId,
+                lastMessage = message,
+                lastUpdatedTime = createTime,
+                isRead = false,
+        )
+        roomRepository.updateRoom(updateRoom)
     }
 }
