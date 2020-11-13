@@ -52,8 +52,8 @@ class AppModule {
     }
 
     companion object {
-        private const val BASE_URL = "172.16.0.216"
-        //private const val BASE_URL = "172.16.1.41"
+        //private const val BASE_URL = "172.16.0.216"
+        private const val BASE_URL = "172.16.1.41"
         private const val PORT = 5000
     }
 }

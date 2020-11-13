@@ -1,4 +1,4 @@
-package com.clearkeep.chat.single.compose
+package com.clearkeep.chat.room
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
@@ -11,21 +11,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.clearkeep.chat.common_views.MessageListView
 import com.clearkeep.chat.common_views.SendBottomCompose
-import com.clearkeep.chat.single.PeerChatViewModel
+import java.lang.IllegalArgumentException
 
 @Composable
-fun PeerChatScreen(
-        navController: NavHostController,
-        myClientId: String,
-        roomName: String,
-        roomId: Int,
-        receiverId: String,
-        singleChatViewModel: PeerChatViewModel
+fun RoomScreen(
+    roomId: Int = 0,
+
+    roomName: String,
+    isGroup: Boolean,
+    remoteId: String,
+    isFromChatHistory: Boolean,
+
+    roomViewModel: RoomViewModel,
+    onFinishActivity: () -> Unit,
 ) {
-    val messageList = singleChatViewModel.getMessageList(roomId).observeAsState()
+    val messageList = if (isFromChatHistory) {
+        roomViewModel.getMessagesInRoom(roomId).observeAsState()
+    } else {
+        roomViewModel.getMessagesWithFriend(remoteId).observeAsState()
+    }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -33,20 +39,28 @@ fun PeerChatScreen(
                 title = {
                     Text(text = roomName)
                 },
+                navigationIcon = {
+                    IconButton(
+                            onClick = {
+                                onFinishActivity()
+                            }
+                    ) {
+                        Icon(asset = Icons.Filled.ArrowBack)
+                    }
+                },
         )
         Column(modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 8.dp) + Modifier.weight(
-                0.66f
+            0.66f
         )) {
             messageList?.let {
                 MessageListView(
                         messageList = it.value ?: emptyList(),
-                        myClientId = myClientId
+                        myClientId = roomViewModel.getClientId()
                 )
             }
         }
         SendBottomCompose(
-                onSendMessage = { message -> singleChatViewModel.sendMessage(roomId, receiverId, message) }
+                onSendMessage = { message -> roomViewModel.sendMessage(isGroup, remoteId, message) }
         )
-        Spacer(modifier = Modifier.height(60.dp))
     }
 }

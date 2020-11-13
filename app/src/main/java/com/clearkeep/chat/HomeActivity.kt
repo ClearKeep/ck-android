@@ -1,5 +1,6 @@
 package com.clearkeep.chat
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -20,17 +21,19 @@ import androidx.navigation.compose.KEY_ROUTE
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.clearkeep.R
 import dagger.hilt.android.AndroidEntryPoint
-import com.clearkeep.ui.CKScaffold
 import androidx.navigation.compose.*
-import com.clearkeep.chat.group.GroupChatScreen
-import com.clearkeep.chat.group.GroupChatViewModel
-import com.clearkeep.chat.single.SingleChatScreen
-import com.clearkeep.chat.single.PeerChatViewModel
+import com.clearkeep.chat.main.chat.ChatHistoryScreen
+import com.clearkeep.chat.main.chat.ChatViewModel
+import com.clearkeep.chat.main.people.PeopleScreen
+import com.clearkeep.chat.main.people.PeopleViewModel
+import com.clearkeep.chat.room.RoomActivity
+import com.clearkeep.db.model.People
+import com.clearkeep.db.model.Room
 import javax.inject.Inject
 
 val items = listOf(
-        Screen.SingleChat,
-        Screen.GroupChat,
+        Screen.Chat,
+        Screen.People,
 )
 
 @AndroidEntryPoint
@@ -38,11 +41,11 @@ class HomeActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val singleViewModel: PeerChatViewModel by viewModels {
+    private val peopleViewModel: PeopleViewModel by viewModels {
         viewModelFactory
     }
 
-    private val groupChatViewModel: GroupChatViewModel by viewModels {
+    private val chatViewModel: ChatViewModel by viewModels {
         viewModelFactory
     }
 
@@ -75,16 +78,49 @@ class HomeActivity : AppCompatActivity() {
                         }
                     }
             ) {
-                NavHost(navController, startDestination = Screen.SingleChat.route) {
-                    composable(Screen.SingleChat.route) { SingleChatScreen(singleViewModel) }
-                    composable(Screen.GroupChat.route) { GroupChatScreen(groupChatViewModel) }
+                NavHost(navController, startDestination = Screen.Chat.route) {
+                    composable(Screen.Chat.route) {
+                        ChatHistoryScreen(
+                                chatViewModel,
+                                onRoomSelected = { room ->
+                                    navigateToRoomScreen(room)
+                                }
+                        )
+                    }
+                    composable(Screen.People.route) {
+                        PeopleScreen(
+                                peopleViewModel,
+                                onFriendSelected = { friend ->
+                                    navigateToRoomScreen(friend)
+                                }
+                        )
+                    }
                 }
             }
         }
     }
+
+    private fun navigateToRoomScreen(room: Room) {
+        val intent = Intent(this, RoomActivity::class.java)
+        intent.putExtra(RoomActivity.CHAT_HISTORY_ID, room.id)
+        intent.putExtra(RoomActivity.ROOM_NAME, room.roomName)
+        intent.putExtra(RoomActivity.REMOTE_ID, room.remoteId)
+        intent.putExtra(RoomActivity.IS_GROUP, room.isGroup)
+        intent.putExtra(RoomActivity.IS_FROM_HISTORY, true)
+        startActivity(intent)
+    }
+
+    private fun navigateToRoomScreen(friend: People) {
+        val intent = Intent(this, RoomActivity::class.java)
+        intent.putExtra(RoomActivity.ROOM_NAME, friend.userName)
+        intent.putExtra(RoomActivity.REMOTE_ID, friend.userName)
+        intent.putExtra(RoomActivity.IS_GROUP, false)
+        intent.putExtra(RoomActivity.IS_FROM_HISTORY, false)
+        startActivity(intent)
+    }
 }
 
 sealed class Screen(val route: String, @StringRes val resourceId: Int, val iconId: VectorAsset) {
-    object SingleChat : Screen("single_chat", R.string.bottom_nav_single, Icons.Filled.Person)
-    object GroupChat : Screen("group_chat", R.string.bottom_nav_group, Icons.Filled.Person)
+    object Chat : Screen("single_chat", R.string.bottom_nav_single, Icons.Filled.Person)
+    object People : Screen("group_chat", R.string.bottom_nav_group, Icons.Filled.Person)
 }

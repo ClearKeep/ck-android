@@ -1,52 +1,41 @@
-package com.clearkeep.chat.group.compose
+package com.clearkeep.chat.main.chat
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.clearkeep.db.model.Room
-import androidx.navigation.compose.navigate
 import androidx.ui.tooling.preview.Preview
 import com.clearkeep.ui.ckDividerColor
 
 @Composable
-fun RoomListScreen(
-        navController: NavHostController,
-        clientId: String,
-        rooms: List<Room>,
-        isShowCreateGroupIcon: Boolean = true,
+fun ChatHistoryScreen(
+        groupChatViewModel: ChatViewModel,
         onRoomSelected: (Room) -> Unit,
 ) {
+    val rooms = groupChatViewModel.getChatHistoryList().observeAsState()
     Column {
         TopAppBar(
                 title = {
-                    Text(text = clientId)
+                    Text(text = "Chat")
                 },
-                actions = {
-                    if (isShowCreateGroupIcon) IconButton(onClick = {
-                        navController.navigate("createGroup")
-                    }) {
-                        Icon(asset = Icons.Filled.Add)
-                    }
-                }
         )
-        LazyColumnFor(
-                items = rooms,
-                contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
-        ) { room ->
-            Surface(color = Color.White) {
-                RoomItem(room, onRoomSelected)
+        rooms?.let {
+            LazyColumnFor(
+                    items = it?.value ?: emptyList(),
+                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
+            ) { room ->
+                Surface(color = Color.White) {
+                    RoomItem(room, onRoomSelected)
+                }
             }
         }
-
     }
 }
 
@@ -64,7 +53,7 @@ fun RoomItem(
                     style = MaterialTheme.typography.h6
             )
         }
-        Text(text = "group id: ${room.remoteId}",
+        Text(text = room.lastMessage,
                 style = MaterialTheme.typography.caption
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -76,7 +65,8 @@ fun RoomItem(
 @Composable
 fun RoomItemPreview() {
     RoomItem(
-            Room("Room Name", "test", true),
+            Room(0, "Room Name", "vandai", false,
+                    true, "vandai", "hello", 0, false),
             onRoomSelected = {}
     )
 }

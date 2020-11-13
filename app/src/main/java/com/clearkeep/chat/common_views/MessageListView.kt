@@ -87,9 +87,7 @@ fun MessageListViewPreview() {
     MessageListView(
             myClientId = "dai",
             messageList = listOf(
-                    Message("dai", "hello",  "hello", 1, 0),
-                    Message("dai1", "hello","hello", 1, 0),
-                    Message("dai1", "hello", "hello",1, 0),
+                    Message("dai", "dai", "hello",  0, 1),
             )
     )
 }

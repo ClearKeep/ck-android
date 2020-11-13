@@ -2,7 +2,6 @@ package com.clearkeep.chat.repositories
 
 import com.clearkeep.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.login.LoginRepository
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.Storage
 import com.google.protobuf.ByteString
@@ -26,14 +25,14 @@ class SignalKeyRepository @Inject constructor(
         private val myStore: InMemorySignalProtocolStore,
         private val senderKeyStore: InMemorySenderKeyStore,
 
-        private val loginRepository: LoginRepository,
         private val roomRepository: RoomRepository,
 ) {
     fun isPeerKeyRegistered() = storage.getBoolean(IS_PEER_SIGNAL_KEY_REGISTERED)
 
-    suspend fun peerRegisterClientKey() : Boolean = withContext(Dispatchers.IO) {
+    suspend fun peerRegisterClientKey(clientId: String) : Boolean = withContext(Dispatchers.IO) {
+        printlnCK("peerRegisterClientKey")
         try {
-            val address = SignalProtocolAddress(loginRepository.getClientId(), 111)
+            val address = SignalProtocolAddress(clientId, 111)
 
             val identityKeyPair = myStore.identityKeyPair
 
@@ -60,6 +59,7 @@ class SignalKeyRepository @Inject constructor(
                 myStore.storePreKey(preKey.id, preKey)
                 myStore.storeSignedPreKey(signedPreKey.id, signedPreKey)
                 storage.setBoolean(IS_PEER_SIGNAL_KEY_REGISTERED, true)
+                printlnCK("peerRegisterClientKey, success")
                 return@withContext true
             }
         } catch (e: Exception) {
@@ -69,8 +69,8 @@ class SignalKeyRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun joinInGroup(roomId: Int, groupID: String) : Boolean = withContext(Dispatchers.IO) {
-        val senderAddress = SignalProtocolAddress(loginRepository.getClientId(), 111)
+    suspend fun joinInGroup(roomId: Int, groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
+        val senderAddress = SignalProtocolAddress(clientId, 111)
         val groupSender  =  SenderKeyName(groupID, senderAddress)
         val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
         val sentAliceDistributionMessage = aliceSessionBuilder.create(groupSender)

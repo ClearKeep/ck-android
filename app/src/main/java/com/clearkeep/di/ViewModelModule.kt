@@ -2,7 +2,9 @@ package com.clearkeep.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.chat.group.GroupChatViewModel
+import com.clearkeep.chat.main.chat.ChatViewModel
+import com.clearkeep.chat.main.people.PeopleViewModel
+import com.clearkeep.chat.room.RoomViewModel
 import com.clearkeep.chat.single.PeerChatViewModel
 import com.clearkeep.login.LoginViewModel
 import com.setel.di.ViewModelKey
@@ -29,8 +31,18 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(GroupChatViewModel::class)
-    abstract fun bindGroupChatViewModel(groupChatViewModel: GroupChatViewModel): ViewModel
+    @ViewModelKey(ChatViewModel::class)
+    abstract fun bindGroupChatViewModel(chatViewModel: ChatViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(PeopleViewModel::class)
+    abstract fun bindPeopleViewModel(peopleViewModel: PeopleViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(RoomViewModel::class)
+    abstract fun bindRoomViewModel(roomViewModel: RoomViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

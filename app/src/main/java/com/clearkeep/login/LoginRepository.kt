@@ -1,5 +1,6 @@
 package com.clearkeep.login
 
+import com.clearkeep.chat.repositories.SignalKeyRepository
 import com.clearkeep.utilities.storage.Storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,6 +14,7 @@ private const val CLIENT_ID = "client_id"
 class LoginRepository @Inject constructor(
         private val storage: Storage,
         private val client: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+        private val signalKeyRepository: SignalKeyRepository
 ) {
     fun isUserRegistered() = storage.getString(CLIENT_ID).isNotEmpty()
 
@@ -20,7 +22,6 @@ class LoginRepository @Inject constructor(
 
     suspend fun register(clientID: String) : Boolean = withContext(Dispatchers.IO) {
         storage.setString(CLIENT_ID, clientID)
-
-        return@withContext true
+        return@withContext signalKeyRepository.peerRegisterClientKey(getClientId())
     }
 }

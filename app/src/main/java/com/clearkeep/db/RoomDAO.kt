@@ -11,23 +11,20 @@ import com.clearkeep.db.model.Room
 @Dao
 interface RoomDAO {
     @Insert(onConflict = REPLACE)
-    fun insert(room: Room)
+    suspend fun insert(room: Room) : Long
 
     @Update
-    fun update(vararg room: Room)
+    suspend fun update(vararg room: Room)
 
-    @Query("SELECT * FROM room WHERE is_group = 0")
-    fun getPeerRooms(): LiveData<List<Room>>
+    @Query("SELECT * FROM room")
+    fun getRooms(): LiveData<List<Room>>
 
-    @Query("SELECT * FROM room WHERE is_group = 1")
-    fun getGroupRooms(): LiveData<List<Room>>
-
-    @Query("SELECT id FROM room WHERE remote_id = :remoteId LIMIT 1")
-    fun getRoomId(remoteId: String): Int?
+    @Query("SELECT * FROM room WHERE remote_id = :remoteId LIMIT 1")
+    suspend fun getRoomFromRemoteId(remoteId: String): Room
 
     @Query("SELECT * FROM room WHERE id = :roomId LIMIT 1")
     fun getRoomFromIdAsState(roomId: Int): LiveData<Room>
 
     @Query("SELECT * FROM room WHERE id = :roomId LIMIT 1")
-    fun getRoomFromId(roomId: Int): Room
+    suspend fun getRoomFromId(roomId: Int): Room
 }
