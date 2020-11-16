@@ -1,24 +1,25 @@
-package com.clearkeep.login
+package com.clearkeep.auth.login
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clearkeep.auth.AuthRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class LoginViewModel @Inject constructor(
-    private val loginRepository: LoginRepository
+    private val loginRepository: AuthRepository
 ): ViewModel() {
     private val _loginState = MutableLiveData<LoginViewState>()
 
     val loginState: LiveData<LoginViewState>
         get() = _loginState
 
-    fun register(username: String) {
+    fun login(username: String, password: String) {
         viewModelScope.launch {
             _loginState.value = LoginProcessing
-            if (loginRepository.register(username)) {
+            if (loginRepository.login(username, password)) {
                 _loginState.value = LoginSuccess
             } else {
                 _loginState.value = LoginError
@@ -26,3 +27,8 @@ class LoginViewModel @Inject constructor(
         }
     }
 }
+
+sealed class LoginViewState
+object LoginSuccess : LoginViewState()
+object LoginError : LoginViewState()
+object LoginProcessing : LoginViewState()

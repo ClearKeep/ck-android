@@ -1,4 +1,4 @@
-package com.clearkeep.chat.common_views
+package com.clearkeep.chat.room.composes
 
 import android.text.TextUtils
 import androidx.compose.foundation.Text
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
-import com.clearkeep.ui.base.CKTextField
+import com.clearkeep.components.base.CKTextField
 
 @Composable
 fun SendBottomCompose(

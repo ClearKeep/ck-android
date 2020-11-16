@@ -2,7 +2,6 @@ package com.clearkeep.chat.repositories
 
 import com.clearkeep.db.RoomDAO
 import com.clearkeep.db.model.Room
-import com.clearkeep.login.LoginRepository
 import com.clearkeep.utilities.getCurrentDateTime
 import javax.inject.Inject
 import javax.inject.Singleton

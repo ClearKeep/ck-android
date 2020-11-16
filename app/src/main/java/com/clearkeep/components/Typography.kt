@@ -1,4 +1,4 @@
-package com.clearkeep.ui
+package com.clearkeep.components
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.graphics.Color

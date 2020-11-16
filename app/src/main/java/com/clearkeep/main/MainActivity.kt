@@ -7,8 +7,8 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.setContent
 import com.clearkeep.chat.HomeActivity
-import com.clearkeep.login.LoginActivity
-import com.clearkeep.ui.CKTheme
+import com.clearkeep.auth.login.LoginActivity
+import com.clearkeep.components.CKTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 

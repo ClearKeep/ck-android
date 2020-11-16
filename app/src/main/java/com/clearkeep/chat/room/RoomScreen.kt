@@ -11,9 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.clearkeep.chat.common_views.MessageListView
-import com.clearkeep.chat.common_views.SendBottomCompose
-import java.lang.IllegalArgumentException
+import com.clearkeep.chat.room.composes.MessageListView
+import com.clearkeep.chat.room.composes.SendBottomCompose
 
 @Composable
 fun RoomScreen(

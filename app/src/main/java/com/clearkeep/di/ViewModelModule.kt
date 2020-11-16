@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.chat.main.chat.ChatViewModel
 import com.clearkeep.chat.main.people.PeopleViewModel
 import com.clearkeep.chat.room.RoomViewModel
-import com.clearkeep.chat.single.PeerChatViewModel
-import com.clearkeep.login.LoginViewModel
+import com.clearkeep.auth.login.LoginViewModel
+import com.clearkeep.auth.register.RegisterViewModel
 import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
@@ -26,8 +26,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(PeerChatViewModel::class)
-    abstract fun bindSingleChatViewModel(singleChatViewModel: PeerChatViewModel): ViewModel
+    @ViewModelKey(RegisterViewModel::class)
+    abstract fun bindRegisterViewModel(registerViewModel: RegisterViewModel): ViewModel
 
     @Binds
     @IntoMap

@@ -6,10 +6,9 @@ import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.chat.utils.initSessionUserInGroup
 import com.clearkeep.chat.utils.initSessionUserPeer
 import com.clearkeep.db.MessageDAO
-import com.clearkeep.db.RoomDAO
 import com.clearkeep.db.model.Message
 import com.clearkeep.db.model.Room
-import com.clearkeep.login.LoginRepository
+import com.clearkeep.repository.UserRepository
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
@@ -31,12 +30,14 @@ import javax.inject.Singleton
 class ChatRepository @Inject constructor(
         private val client: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
         private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
-        private val loginRepository: LoginRepository,
+
         private val messageDAO: MessageDAO,
         private val roomRepository: RoomRepository,
-        private val signalKeyRepository: SignalKeyRepository
+        private val signalKeyRepository: SignalKeyRepository,
+        private val userRepository: UserRepository
 ) {
     init {
         subscribe()
@@ -44,7 +45,7 @@ class ChatRepository @Inject constructor(
 
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
-    fun getClientId() = loginRepository.getClientId()
+    fun getClientId() = userRepository.getUserName()
 
     fun getMessagesFromRoom(roomId: Int) = messageDAO.getMessages(roomId = roomId)
 
@@ -71,12 +72,12 @@ class ChatRepository @Inject constructor(
 
             val request = Signal.PublishRequest.newBuilder()
                     .setClientId(receiver)
-                    .setFromClientId(loginRepository.getClientId())
+                    .setFromClientId(getClientId())
                     .setMessage(ByteString.copyFrom(message.serialize()))
                     .build()
 
             clientBlocking.publish(request)
-            insertNewMessage(getClientId(), getClientId(), isGroup = false, msg)
+            insertNewMessage(receiver, getClientId(), isGroup = false, msg)
 
             printlnCK("send message success: $msg")
         } catch (e: java.lang.Exception) {
@@ -89,7 +90,7 @@ class ChatRepository @Inject constructor(
 
     suspend fun sendMessageToGroup(groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
         try {
-            val senderAddress = SignalProtocolAddress(loginRepository.getClientId(), 111)
+            val senderAddress = SignalProtocolAddress(getClientId(), 111)
             val groupSender  =  SenderKeyName(groupId, senderAddress)
 
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
@@ -116,7 +117,7 @@ class ChatRepository @Inject constructor(
 
     private fun subscribe() {
         val request = Signal.SubscribeAndListenRequest.newBuilder()
-                .setClientId(loginRepository.getClientId())
+                .setClientId(getClientId())
                 .build()
 
         client.subscribe(request, object : StreamObserver<Signal.BaseResponse> {
@@ -136,7 +137,7 @@ class ChatRepository @Inject constructor(
 
     private fun listen() {
         val request = Signal.SubscribeAndListenRequest.newBuilder()
-            .setClientId(loginRepository.getClientId())
+            .setClientId(getClientId())
             .build()
         client.listen(request, object : StreamObserver<Signal.Publication> {
             override fun onNext(value: Signal.Publication) {
