@@ -1,4 +1,4 @@
-package com.clearkeep.login
+package com.clearkeep.auth.login
 
 import android.content.Context
 import android.text.TextUtils
@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ContextAmbient
@@ -17,16 +18,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.ui.tooling.preview.Preview
 import com.clearkeep.R
-import com.clearkeep.ui.base.CKButton
-import com.clearkeep.ui.base.CKTextField
+import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKTextField
 
 @Composable
-fun LoginMainView(
-    onRegisterPressed: (String) -> Unit
+fun LoginScreen(
+    onLoginPressed: (userName: String, password: String) -> Unit,
+    onRegisterPress: () -> Unit
 ) {
     val context = ContextAmbient.current
     val userName = state { "" }
+    val password = state { "" }
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.preferredHeight(24.dp))
@@ -57,32 +61,50 @@ fun LoginMainView(
                         userName
                 )
                 Spacer(Modifier.preferredHeight(10.dp))
+                CKTextField(
+                        "Password",
+                        "",
+                        password
+                )
+                Spacer(Modifier.preferredHeight(20.dp))
                 CKButton(
-                        stringResource(R.string.btn_register),
+                        stringResource(R.string.btn_login),
                         onClick = {
-                            if (validateInput(context, userName.value))
-                                onRegisterPressed(userName.value)
-                        }
+                            if (validateInput(context, userName.value, password.value))
+                                onLoginPressed(userName.value, password.value)
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
+                )
+                Spacer(Modifier.preferredHeight(30.dp))
+                CKButton(
+                    stringResource(R.string.btn_register),
+                    onClick = onRegisterPress,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
                 )
             }
-
         }
     }
 }
 
-private fun validateInput(context: Context, username: String): Boolean {
+private fun validateInput(context: Context, username: String, password: String): Boolean {
+    var error: String? = null
     if (TextUtils.isEmpty(username)) {
-        Toast.makeText(
-            context,
-            "Username cannot be blank",
-            Toast.LENGTH_LONG
-        ).show()
-        return false
+        error = "Username cannot be blank"
+    } else if (TextUtils.isEmpty(password)) {
+        error = "Password cannot be blank"
     }
-    return true
+    if (error != null) {
+        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+    }
+    return error == null
 }
 
-sealed class LoginViewState
-object LoginSuccess : LoginViewState()
-object LoginError : LoginViewState()
-object LoginProcessing : LoginViewState()
+@Preview
+@Composable
+fun LoginScreenPreview(
+) {
+    LoginScreen(
+        onRegisterPress = {},
+        onLoginPressed = { s: String, s1: String -> }
+    )
+}

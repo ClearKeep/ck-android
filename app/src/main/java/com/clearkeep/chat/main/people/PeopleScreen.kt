@@ -13,17 +13,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.clearkeep.chat.group.compose.validateInput
 import com.clearkeep.db.model.People
-import com.clearkeep.ui.base.CKButton
-import com.clearkeep.ui.ckDividerColor
+import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.ckDividerColor
 
 @Composable
 fun PeopleScreen(
         peopleViewModel: PeopleViewModel,
         onFriendSelected: (People) -> Unit,
 ) {
-    val friends = peopleViewModel.getFriendList().observeAsState()
+    val friends = peopleViewModel.getFriendList.observeAsState()
     Column {
         TopAppBar(
                 title = {
@@ -46,7 +45,6 @@ fun PeopleScreen(
                 }
             }
         }
-
     }
 }
 

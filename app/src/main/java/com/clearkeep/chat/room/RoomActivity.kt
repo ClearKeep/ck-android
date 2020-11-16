@@ -5,7 +5,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.ui.CKScaffold
+import com.clearkeep.components.CKScaffold
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

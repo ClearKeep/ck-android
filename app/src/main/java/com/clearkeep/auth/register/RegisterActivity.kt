@@ -1,27 +1,24 @@
-package com.clearkeep.login
+package com.clearkeep.auth.register
 
-import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Stack
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.chat.HomeActivity
-import com.clearkeep.ui.lightThemeColors
+import com.clearkeep.components.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
-
+class RegisterActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val loginViewModel: LoginViewModel by viewModels {
+    private val registerViewModel: RegisterViewModel by viewModels {
         viewModelFactory
     }
 
@@ -35,9 +32,9 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun subscribeUI() {
-        loginViewModel.loginState.observe(this, Observer {
-            if (it == LoginSuccess) {
-                navigateToHomeActivity()
+        registerViewModel.registerState.observe(this, Observer {
+            if (it == RegisterSuccess) {
+                finish()
             }
         })
     }
@@ -45,7 +42,7 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun MyApp() {
         MaterialTheme(
-            colors = lightThemeColors
+                colors = lightThemeColors
         ) {
             AppContent()
         }
@@ -53,21 +50,11 @@ class LoginActivity : AppCompatActivity() {
 
     @Composable
     fun AppContent() {
-        val onRegisterPressed: (String) -> Unit = { loginViewModel.register(it) }
+        val onRegisterPressed: (String, String, String) -> Unit = { userName, password, email -> registerViewModel.register(userName, password, email) }
         Stack() {
-            LoginMainView(
-                onRegisterPressed = onRegisterPressed
+            RegisterScreen(
+                    onRegisterPressed = onRegisterPressed
             )
         }
     }
-
-    private fun navigateToHomeActivity() {
-        startActivity(Intent(this, HomeActivity::class.java))
-        finish()
-    }
 }
-
-
-
-
-

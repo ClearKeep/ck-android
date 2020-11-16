@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.model.Room
 import androidx.ui.tooling.preview.Preview
-import com.clearkeep.ui.ckDividerColor
+import com.clearkeep.components.ckDividerColor
 
 @Composable
 fun ChatHistoryScreen(

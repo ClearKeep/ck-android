@@ -1,4 +1,4 @@
-package com.clearkeep.ui
+package com.clearkeep.components
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface

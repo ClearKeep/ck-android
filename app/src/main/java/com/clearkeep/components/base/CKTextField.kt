@@ -1,4 +1,4 @@
-package com.clearkeep.ui.base
+package com.clearkeep.components.base
 
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.*
