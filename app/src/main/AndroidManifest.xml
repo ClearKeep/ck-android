@@ -15,10 +15,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true">
+        <activity android:name=".screen.chat.create_group.CreateGroupActivity"></activity>
         <activity
-            android:name=".chat.room.RoomActivity"
+            android:name=".screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
-        <activity android:name=".main.MainActivity">
+        <activity android:name=".screen.splash.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,12 +27,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".auth.login.LoginActivity"
+            android:name=".screen.auth.login.LoginActivity"
             android:label="@string/btn_login" />
-        <activity android:name=".auth.register.RegisterActivity"
+        <activity
+            android:name=".screen.auth.register.RegisterActivity"
             android:label="@string/btn_register" />
         <activity
-            android:name=".chat.HomeActivity"
+            android:name=".screen.chat.main.HomeActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
     </application>
 
