@@ -16,15 +16,13 @@ interface RoomDAO {
     @Update
     suspend fun update(vararg room: Room)
 
+    @Query("SELECT * FROM room WHERE remote_id = :remoteId LIMIT 1")
+    suspend fun getRoomByRemoteId(remoteId: String): Room
+
+    @Query("SELECT * FROM room WHERE id = :roomId LIMIT 1")
+    suspend fun getRoomById(roomId: Int): Room
+
+    // tracking
     @Query("SELECT * FROM room")
     fun getRooms(): LiveData<List<Room>>
-
-    @Query("SELECT * FROM room WHERE remote_id = :remoteId LIMIT 1")
-    suspend fun getRoomFromRemoteId(remoteId: String): Room
-
-    @Query("SELECT * FROM room WHERE id = :roomId LIMIT 1")
-    fun getRoomFromIdAsState(roomId: Int): LiveData<Room>
-
-    @Query("SELECT * FROM room WHERE id = :roomId LIMIT 1")
-    suspend fun getRoomFromId(roomId: Int): Room
 }

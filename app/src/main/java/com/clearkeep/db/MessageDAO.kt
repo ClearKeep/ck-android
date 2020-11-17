@@ -13,6 +13,6 @@ interface MessageDAO {
     @Query("SELECT * FROM message WHERE room_id = :roomId ORDER BY created_time ASC")
     fun getMessages(roomId: Int): LiveData<List<Message>>
 
-    @Query("SELECT * FROM message WHERE sender_id = :remoteId OR receiver_id = :remoteId ORDER BY created_time ASC")
-    fun getMessagesFromAFriend(remoteId: String): LiveData<List<Message>>
+    @Query("SELECT * FROM message WHERE sender_id = :senderId OR receiver_id = :receiverId")
+    fun getMessagesFromAFriend(receiverId: String, senderId: String): LiveData<List<Message>>
 }

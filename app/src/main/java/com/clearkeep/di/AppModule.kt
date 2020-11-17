@@ -2,8 +2,8 @@ package com.clearkeep.di
 
 import android.text.TextUtils
 import auth.AuthGrpc
-import com.clearkeep.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.signal.SignalKeyDAO
 import com.clearkeep.repository.UserRepository
 import com.clearkeep.utilities.storage.Storage
@@ -108,8 +108,8 @@ class AppModule {
     }
 
     companion object {
-        private const val BASE_URL = "172.16.0.216"
-        //private const val BASE_URL = "172.16.1.41"
+        //private const val BASE_URL = "172.16.0.216"
+        private const val BASE_URL = "172.16.0.197"
         private const val PORT = 5000
     }
 }
@@ -136,6 +136,14 @@ class CallCredentialsImpl(
                         Metadata.Key.of(HASH_KEY, Metadata.ASCII_STRING_MARSHALLER)
                     headers.put(hashMetaKey, hashKey)
                 }
+
+                val domainMetaKey: Metadata.Key<String> =
+                    Metadata.Key.of("domain", Metadata.ASCII_STRING_MARSHALLER)
+                headers.put(domainMetaKey, "localhost")
+                val ipAddressMetaKey: Metadata.Key<String> =
+                    Metadata.Key.of("ip_address", Metadata.ASCII_STRING_MARSHALLER)
+                headers.put(ipAddressMetaKey, "0.0.0.0")
+
                 applier.apply(headers)
             } catch (e: Throwable) {
                 applier.fail(Status.UNAUTHENTICATED.withCause(e))

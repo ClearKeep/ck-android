@@ -2,11 +2,11 @@ package com.clearkeep.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.chat.main.chat.ChatViewModel
-import com.clearkeep.chat.main.people.PeopleViewModel
-import com.clearkeep.chat.room.RoomViewModel
-import com.clearkeep.auth.login.LoginViewModel
-import com.clearkeep.auth.register.RegisterViewModel
+import com.clearkeep.screen.chat.main.chat.ChatViewModel
+import com.clearkeep.screen.chat.main.people.PeopleViewModel
+import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.screen.auth.register.RegisterViewModel
 import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
