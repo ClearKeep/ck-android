@@ -9,9 +9,7 @@ import javax.inject.Singleton
 class MessageRepository @Inject constructor(
         private val messageDAO: MessageDAO,
 ) {
-    fun getMessages(roomId: Int) = messageDAO.getMessages(roomId)
+    fun getMessages(groupId: String) = messageDAO.getMessages(groupId)
 
     fun insert(message: Message) = messageDAO.insert(message)
-
-    fun getMessagesFromAFriend(receiverId: String) = messageDAO.getMessagesFromAFriend(receiverId, receiverId)
 }

@@ -1,35 +1,51 @@
-package com.clearkeep.screen.chat.create_group
+package com.clearkeep.screen.chat.invite_group
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.clearkeep.components.ckDividerColor
 import com.clearkeep.db.model.People
 
 @Composable
-fun CreateGroupScreen(
-    createGroupViewModel: CreateGroupViewModel,
+fun InviteGroupScreen(
+        navController: NavHostController,
+        inviteGroupViewModel: InviteGroupViewModel,
+
+        onFriendSelected: (List<People>) -> Unit
 ) {
-    val friends = createGroupViewModel.friends.observeAsState()
+    val friends = inviteGroupViewModel.friends.observeAsState()
 
     Column {
         TopAppBar(
-            title = {
-                Text(text = "Create group")
-            },
-            actions = {
-                Text(text = "Continue")
-            }
+                title = {
+                    Text(text = "Create group")
+                },
+                navigationIcon = {
+                    IconButton(
+                            onClick = {
+                                navController.popBackStack(navController.graph.startDestination, false)
+                            }
+                    ) {
+                        Icon(asset = Icons.Filled.ArrowBack)
+                    }
+                },
+                actions = {
+                    Box(modifier = Modifier.clickable(onClick = {
+                        onFriendSelected(emptyList())
+                    })) {
+                        Text(text = "Continue")
+                    }
+                }
         )
         friends?.let {
             LazyColumnFor(
@@ -38,7 +54,7 @@ fun CreateGroupScreen(
             ) { friend ->
                 Surface(color = Color.White) {
                     FriendItem(friend,
-                        onFriendSelected = {people -> {} }
+                        onFriendSelected = {}
                     )
                 }
             }

@@ -10,9 +10,6 @@ interface MessageDAO {
     @Insert(onConflict = REPLACE)
     fun insert(message: Message)
 
-    @Query("SELECT * FROM message WHERE room_id = :roomId ORDER BY created_time ASC")
-    fun getMessages(roomId: Int): LiveData<List<Message>>
-
-    @Query("SELECT * FROM message WHERE sender_id = :senderId OR receiver_id = :receiverId")
-    fun getMessagesFromAFriend(receiverId: String, senderId: String): LiveData<List<Message>>
+    @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time ASC")
+    fun getMessages(groupId: String): LiveData<List<Message>>
 }

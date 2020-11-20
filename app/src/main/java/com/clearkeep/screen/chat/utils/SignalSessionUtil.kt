@@ -21,10 +21,12 @@ import signal.Signal
 import signal.SignalKeyDistributionGrpc
 
 suspend fun initSessionUserPeer(
-        receiver: String, signalProtocolAddress: SignalProtocolAddress,
+        receiver: String,
+        signalProtocolAddress: SignalProtocolAddress,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         signalProtocolStore: InMemorySignalProtocolStore,
 ) : Boolean = withContext(Dispatchers.IO) {
+    printlnCK("initSessionUserPeer with $receiver")
     if (TextUtils.isEmpty(receiver)) {
         return@withContext false
     }
@@ -53,6 +55,7 @@ suspend fun initSessionUserPeer(
 
         // Build a session with a PreKey retrieved from the server.
         sessionBuilder.process(retrievedPreKey)
+        printlnCK("initSessionWithReceiver: success")
         return@withContext true
     } catch (e: Exception) {
         printlnCK("initSessionWithReceiver: $e")
@@ -66,6 +69,7 @@ fun initSessionUserInGroup(
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         senderKeyStore: InMemorySenderKeyStore,
 ): Boolean {
+    printlnCK("initSessionUserInGroup")
     val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
     if (senderKeyRecord.isEmpty) {
         try {

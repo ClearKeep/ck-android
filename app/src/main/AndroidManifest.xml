@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true">
-        <activity android:name=".screen.chat.create_group.CreateGroupActivity"></activity>
+        <activity android:name=".screen.chat.create_group.CreateGroupActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
         <activity
             android:name=".screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />

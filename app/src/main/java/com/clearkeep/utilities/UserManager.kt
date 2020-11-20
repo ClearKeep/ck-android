@@ -1,18 +1,18 @@
-package com.clearkeep.repository
+package com.clearkeep.utilities
 
 import com.clearkeep.utilities.storage.Storage
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val CLIENT_ID = "client_id"
+private const val USER_NAME = "user_name"
 private const val ACCESS_TOKEN = "access_token"
 private const val HASH_KEY = "hash_key"
 
 @Singleton
-class UserRepository @Inject constructor(
+class UserManager @Inject constructor(
         private val storage: Storage,
 ) {
-    fun isUserRegistered() = storage.getString(CLIENT_ID).isNotEmpty()
+    fun isUserRegistered() = storage.getString(USER_NAME).isNotEmpty()
 
     fun saveAccessKey(accessKey: String) {
         storage.setString(ACCESS_TOKEN, accessKey)
@@ -31,10 +31,10 @@ class UserRepository @Inject constructor(
     }
 
     fun saveUserName(userName: String) {
-        storage.setString(CLIENT_ID, userName)
+        storage.setString(USER_NAME, userName)
     }
 
     fun getUserName() : String {
-        return storage.getString(CLIENT_ID)
+        return storage.getString(USER_NAME)
     }
 }

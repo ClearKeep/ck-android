@@ -21,7 +21,7 @@ class PeopleRepository @Inject constructor(
 ) {
     fun getFriends(clientId: String) = liveData {
         val disposable = emitSource(
-                peopleDao.getPeople().map {
+                peopleDao.getFriends().map {
                     Resource.loading(it)
                 }
         )
@@ -34,7 +34,7 @@ class PeopleRepository @Inject constructor(
             insertFriends(friends)
             // Re-establish the emission with success type.
             emitSource(
-                    peopleDao.getPeople().map {
+                    peopleDao.getFriends().map {
                         Resource.success(it)
                     }
             )
@@ -42,11 +42,15 @@ class PeopleRepository @Inject constructor(
             // Any call to `emit` disposes the previous one automatically so we don't
             // need to dispose it here as we didn't get an updated value.
             emitSource(
-                    peopleDao.getPeople().map {
+                    peopleDao.getFriends().map {
                         Resource.error(exception.toString(), it)
                     }
             )
         }
+    }
+
+    suspend fun getFriend(friendId: String) : People {
+        return peopleDao.getFriend(friendId)
     }
 
     private suspend fun insertFriends(friends: List<People>) {

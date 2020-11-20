@@ -7,9 +7,8 @@ import androidx.room.PrimaryKey
 @Entity
 data class Message(
         @ColumnInfo(name = "sender_id") val senderId: String,
-        @ColumnInfo(name = "receiver_id") val receiverId: String,
         @ColumnInfo(name = "message") val message: String,
-        @ColumnInfo(name = "room_id") val roomId: Int,
+        @ColumnInfo(name = "group_id") val groupId: String,
         @ColumnInfo(name = "created_time") val createdTime: Long
 ) {
     @PrimaryKey(autoGenerate = true)

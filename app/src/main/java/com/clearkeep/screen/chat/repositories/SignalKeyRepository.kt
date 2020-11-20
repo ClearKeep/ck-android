@@ -25,7 +25,7 @@ class SignalKeyRepository @Inject constructor(
         private val myStore: InMemorySignalProtocolStore,
         private val senderKeyStore: InMemorySenderKeyStore,
 
-        private val roomRepository: RoomRepository,
+        private val roomRepository: GroupRepository,
 ) {
     fun isPeerKeyRegistered() = storage.getBoolean(IS_PEER_SIGNAL_KEY_REGISTERED)
 
@@ -69,8 +69,8 @@ class SignalKeyRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun registerSenderKeyToGroup(roomId: Int, groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("joinInGroup: $roomId")
+    suspend fun registerSenderKeyToGroup(groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
+        printlnCK("joinInGroup: $groupID")
         val senderAddress = SignalProtocolAddress(clientId, 111)
         val groupSender  =  SenderKeyName(groupID, senderAddress)
         val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
@@ -88,8 +88,8 @@ class SignalKeyRepository @Inject constructor(
                 client.groupRegisterClientKey(request)
             }
             if (null != response?.message && response.message == "success") {
-                printlnCK("joinInGroup: $roomId: success")
-                roomRepository.remarkJoinInRoom(roomId)
+                printlnCK("joinInGroup: $groupID: success")
+                roomRepository.remarkJoinInRoom(groupID)
                 return@withContext true
             }
         } catch (e: Exception) {

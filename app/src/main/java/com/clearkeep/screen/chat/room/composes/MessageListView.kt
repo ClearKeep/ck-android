@@ -79,14 +79,3 @@ fun RoundCornerMessage(message: String, backgroundColor: Color, textColor: Color
         }
     }
 }
-
-@Preview
-@Composable
-fun MessageListViewPreview() {
-    MessageListView(
-            myClientId = "dai",
-            messageList = listOf(
-                    Message("dai", "dai", "hello",  0, 1),
-            )
-    )
-}

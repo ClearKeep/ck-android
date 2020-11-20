@@ -10,7 +10,8 @@
     <string name="invalid_pw">Password cannot be blank</string>
     <string name="error_username_or_password">Username or password is invalid</string>
 
-    <string name="bottom_nav_single">Peer Chat</string>
-    <string name="bottom_nav_group">Group Chat</string>
+    <string name="bottom_nav_single">Chat</string>
+    <string name="bottom_nav_group">Contact</string>
+    <string name="bottom_nav_profile">Profile</string>
 
 </resources>

@@ -5,26 +5,33 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.clearkeep.db.model.Room
-import androidx.ui.tooling.preview.Preview
+import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.components.ckDividerColor
 
 @Composable
 fun ChatHistoryScreen(
-        groupChatViewModel: ChatViewModel,
-        onRoomSelected: (Room) -> Unit,
+        chatViewModel: ChatViewModel,
+        onRoomSelected: (ChatGroup) -> Unit,
+        onCreateGroup: () -> Unit
 ) {
-    val rooms = groupChatViewModel.getChatHistoryList().observeAsState()
+    val rooms = chatViewModel.getChatHistoryList().observeAsState()
     Column {
         TopAppBar(
                 title = {
                     Text(text = "Chat")
                 },
+                actions = {
+                    IconButton(onClick = onCreateGroup) {
+                        Icon(Icons.Filled.Add)
+                    }
+                }
         )
         rooms?.let {
             LazyColumnFor(
@@ -32,24 +39,36 @@ fun ChatHistoryScreen(
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
             ) { room ->
                 Surface(color = Color.White) {
-                    RoomItem(room, onRoomSelected)
+                    RoomItem(
+                            room,
+                            chatViewModel.getClientName(),
+                            onRoomSelected
+                    )
                 }
             }
         }
+        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 
 @Composable
 fun RoomItem(
-        room: Room,
-        onRoomSelected: (Room) -> Unit,
+        room: ChatGroup,
+        ourClientName: String,
+        onRoomSelected: (ChatGroup) -> Unit,
 ) {
+    val roomName = if (room.isGroup()) room.groupName else {
+        val userNameList = room.groupName.split(",")
+        userNameList.firstOrNull { userName ->
+            userName != ourClientName
+        } ?: ""
+    }
     Column(modifier = Modifier
             .clickable(onClick = { onRoomSelected(room) }, enabled = true)
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Row() {
-            Text(text = room.roomName,
+            Text(text = roomName,
                     style = MaterialTheme.typography.h6
             )
         }
@@ -59,14 +78,4 @@ fun RoomItem(
         Spacer(modifier = Modifier.height(8.dp))
         Divider(color = ckDividerColor, thickness = 0.5.dp, modifier = Modifier.padding(start = 20.dp))
     }
-}
-
-@Preview
-@Composable
-fun RoomItemPreview() {
-    RoomItem(
-            Room(0, "Room Name", "vandai", false,
-                    true, "vandai", "hello", 0, false),
-            onRoomSelected = {}
-    )
 }
