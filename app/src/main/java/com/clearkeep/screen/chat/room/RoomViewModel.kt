@@ -1,44 +1,96 @@
 package com.clearkeep.screen.chat.room
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import com.clearkeep.db.model.GROUP_ID_TEMPO
+import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.screen.chat.repositories.ChatRepository
-import com.clearkeep.screen.chat.repositories.RoomRepository
+import com.clearkeep.screen.chat.repositories.GroupRepository
 import com.clearkeep.screen.chat.repositories.SignalKeyRepository
 import com.clearkeep.db.model.Message
-import kotlinx.coroutines.Dispatchers
+import com.clearkeep.screen.chat.main.people.PeopleRepository
+import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class RoomViewModel @Inject constructor(
         private val chatRepository: ChatRepository,
-        private val roomRepository: RoomRepository,
-        private val signalKeyRepository: SignalKeyRepository
+        private val roomRepository: GroupRepository,
+        private val groupRepository: GroupRepository,
+        private val signalKeyRepository: SignalKeyRepository,
+        private val userManager: UserManager,
+        private val peopleRepository: PeopleRepository
 ): ViewModel() {
+    private val _group = MutableLiveData<ChatGroup>()
+
+    val group: LiveData<ChatGroup>
+        get() = _group
+
+    fun getMessages(groupId: String): LiveData<List<Message>> {
+        return chatRepository.getMessagesFromRoom(groupId)
+    }
+
     fun getClientId() = chatRepository.getClientId()
 
-    fun getMessagesInRoom(roomId: Int): LiveData<List<Message>> {
-        return chatRepository.getMessagesFromRoom(roomId)
-    }
+    fun getUserName() = userManager.getUserName()
 
-    fun getMessagesWithFriend(remoteId: String): LiveData<List<Message>> {
-        return chatRepository.getMessagesFromAFriend(remoteId)
-    }
-
-    fun sendMessageToUser(remoteId: String, message: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            chatRepository.sendMessageInPeer(remoteId, message)
+    fun updateGroupWithId(groupId: String) {
+        viewModelScope.launch {
+            _group.value = roomRepository.getGroupByID(groupId)
         }
     }
 
-    fun sendMessageToGroup(roomId: Int, remoteId: String, message: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val isRegisteredGroup = roomRepository.getRoom(roomId)?.isAccepted
-            if (!isRegisteredGroup) {
-                signalKeyRepository.registerSenderKeyToGroup(roomId, remoteId, getClientId())
+    fun updateGroupWithFriendId(friendId: String) {
+        viewModelScope.launch {
+            var existingGroup = roomRepository.getGroupPeerByClientId(listOf(getClientId(), friendId))
+            if (existingGroup == null) {
+                val friend = peopleRepository.getFriend(friendId)
+                existingGroup = roomRepository.getTemporaryGroupWithAFriend(getClientId(), getUserName(),
+                        friendId, friend.userName)
             }
-            chatRepository.sendMessageToGroup(remoteId, message)
+            _group.value = existingGroup
+        }
+    }
+
+    fun sendMessageToUser(receiverId: String, receiverUserName: String, groupId: String, message: String) {
+        if (receiverId.isNullOrEmpty()) {
+            printlnCK("sendMessageToUser: can not send message with receiverId empty")
+            return
+        }
+
+        viewModelScope.launch {
+            var lastGroupId: String = groupId
+            if (lastGroupId == GROUP_ID_TEMPO) {
+                val group = roomRepository.createGroupFromAPI(
+                        getClientId(),
+                        "${getUserName()},$receiverUserName",
+                        listOf(getClientId(), receiverId),
+                        false
+                )
+                if (group != null) {
+                    _group.value = group
+                    lastGroupId = group.id
+                }
+            }
+
+            if (lastGroupId != GROUP_ID_TEMPO) {
+                chatRepository.sendMessageInPeer(receiverId, lastGroupId, message)
+            }
+        }
+    }
+
+    fun sendMessageToGroup(groupId: String, message: String, isRegisteredGroup: Boolean) {
+        viewModelScope.launch {
+            if (!isRegisteredGroup) {
+                signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
+            }
+            chatRepository.sendMessageToGroup(groupId, message)
+        }
+    }
+
+    fun inviteToGroup(invitedFriendId: String, groupId: String) {
+        viewModelScope.launch {
+            groupRepository.inviteToGroupFromAPI(getClientId(),invitedFriendId, groupId)
         }
     }
 }

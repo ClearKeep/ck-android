@@ -7,6 +7,9 @@ import com.clearkeep.screen.chat.main.people.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
+import com.clearkeep.screen.chat.create_group.CreateGroupViewModel
+import com.clearkeep.screen.chat.main.HomeViewModel
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
@@ -41,8 +44,23 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
+    @ViewModelKey(CreateGroupViewModel::class)
+    abstract fun bindCreateGroupViewModel(createGroupViewModel: CreateGroupViewModel): ViewModel
+
+    @Binds
+    @IntoMap
     @ViewModelKey(RoomViewModel::class)
     abstract fun bindRoomViewModel(roomViewModel: RoomViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(HomeViewModel::class)
+    abstract fun bindHomeViewModel(homeViewModel: HomeViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ProfileViewModel::class)
+    abstract fun bindProfileViewModel(profileViewModel: ProfileViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

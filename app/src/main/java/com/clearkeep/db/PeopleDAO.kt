@@ -15,6 +15,9 @@ interface PeopleDao {
     @Insert(onConflict = REPLACE)
     suspend fun insertPeopleList(people: List<People>)
 
+    @Query("SELECT * FROM people WHERE id =:friendId LIMIT 1")
+    suspend fun getFriend(friendId: String): People
+
     @Query("SELECT * FROM people")
-    fun getPeople(): LiveData<List<People>>
+    fun getFriends(): LiveData<List<People>>
 }

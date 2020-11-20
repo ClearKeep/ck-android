@@ -5,7 +5,13 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKScaffold
+import com.clearkeep.screen.chat.invite_group.InviteGroupScreen
+import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,38 +24,58 @@ class RoomActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    private val inviteGroupViewModel: InviteGroupViewModel by viewModels {
+        viewModelFactory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val isFromHistory = intent.getBooleanExtra(IS_FROM_HISTORY, false)
-        val roomName = intent.getStringExtra(ROOM_NAME) ?: ""
-        val remoteId = intent.getStringExtra(REMOTE_ID) ?: ""
-        val isGroup = intent.getBooleanExtra(IS_GROUP, false)
+        val roomId = intent.getStringExtra(GROUP_ID) ?: ""
+        val roomName = intent.getStringExtra(GROUP_NAME) ?: ""
+        val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
-        val roomId = intent.getIntExtra(CHAT_HISTORY_ID, -1)
         setContent {
             CKScaffold {
-                RoomScreen(
-                        roomId,
-                        roomName,
-                        isGroup,
-                        remoteId,
-                        isFromHistory,
-                        roomViewModel,
-                        onFinishActivity = {
-                            finish()
-                        }
-                )
+                val navController = rememberNavController()
+                NavHost(navController, startDestination = "room_screen") {
+                    composable("room_screen") {
+                        RoomScreen(
+                            roomId,
+                            friendId,
+                            roomViewModel,
+                            navController,
+                            onFinishActivity = {
+                                finish()
+                            }
+                        )
+                    }
+                    composable("room_info_screen") {
+                        RoomInfoScreen(
+                                roomViewModel,
+                            navController
+                        )
+                    }
+                    composable("invite_group_screen") {
+                        InviteGroupScreen(
+                                navController,
+                                inviteGroupViewModel,
+                                onFriendSelected = { friends ->
+                                    if (!friends.isNullOrEmpty()) {
+                                        roomViewModel.inviteToGroup(friends[0].id, friendId)
+                                    }
+                                    navController.navigate("enter_group_name")
+                                }
+                        )
+                    }
+                }
             }
         }
     }
 
     companion object {
-        const val CHAT_HISTORY_ID = "room_id"
-
-        const val ROOM_NAME = "room_name"
-        const val REMOTE_ID = "remote_id"
-        const val IS_GROUP = "is_group"
-        const val IS_FROM_HISTORY = "is_from_history"
+        const val GROUP_ID = "room_id"
+        const val GROUP_NAME = "room_name"
+        const val FRIEND_ID = "remote_id"
     }
 }

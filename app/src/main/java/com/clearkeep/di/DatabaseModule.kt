@@ -37,8 +37,8 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideRoomDAO(db: ClearKeepDatabase): RoomDAO {
-        return db.roomDao()
+    fun provideGroupDAO(db: ClearKeepDatabase): GroupDAO {
+        return db.groupDao()
     }
 
     @Singleton

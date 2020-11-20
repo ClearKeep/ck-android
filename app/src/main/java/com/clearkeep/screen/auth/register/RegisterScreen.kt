@@ -72,7 +72,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.preferredHeight(20.dp))
                 CKButton(
-                        stringResource(R.string.btn_login),
+                        stringResource(R.string.btn_register),
                         onClick = {
                             if (validateInput(context, email.value, userName.value, password.value))
                                 onRegisterPressed(userName.value, password.value, email.value)
