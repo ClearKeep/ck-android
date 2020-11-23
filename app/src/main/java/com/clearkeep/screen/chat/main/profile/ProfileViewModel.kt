@@ -6,14 +6,10 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.model.User
 import com.clearkeep.repository.ProfileRepository
-import com.clearkeep.screen.chat.repositories.ChatRepository
-import com.clearkeep.screen.chat.repositories.GroupRepository
 import kotlinx.coroutines.Dispatchers.IO
 import javax.inject.Inject
 
 class ProfileViewModel @Inject constructor(
-        private val chatRepository: ChatRepository,
-        private val roomRepository: GroupRepository,
         private val profileRepository: ProfileRepository
 ): ViewModel() {
 

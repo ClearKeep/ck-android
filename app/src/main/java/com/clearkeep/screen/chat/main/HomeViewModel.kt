@@ -13,6 +13,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val signalKeyRepository: SignalKeyRepository,
     private val profileRepository: ProfileRepository,
+    private val chatRepository: ChatRepository,
 ): ViewModel() {
     private val _loginState = MutableLiveData<PrepareViewState>()
 
@@ -38,6 +39,7 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
 
+            chatRepository.initSubscriber()
             _loginState.value = PrepareSuccess
         }
     }

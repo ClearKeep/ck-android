@@ -37,7 +37,7 @@ class ChatRepository @Inject constructor(
         private val roomRepository: GroupRepository,
         private val userRepository: ProfileRepository
 ) {
-    init {
+    fun initSubscriber() {
         subscribe()
     }
 
@@ -48,8 +48,8 @@ class ChatRepository @Inject constructor(
     fun getMessagesFromRoom(groupId: String) = messageRepository.getMessages(groupId = groupId)
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("sendMessageInPeer: $receiverId")
         val senderId = getClientId()
+        printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId")
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
@@ -84,8 +84,8 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun sendMessageToGroup(groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("sendMessageToGroup: $groupId")
         val senderId = getClientId()
+        printlnCK("sendMessageToGroup: sender $senderId to group $groupId")
         try {
             val senderAddress = SignalProtocolAddress(senderId, 111)
             val groupSender  =  SenderKeyName(groupId, senderAddress)
@@ -93,7 +93,6 @@ class ChatRepository @Inject constructor(
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =
                     aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
-            val messageAfterEncrypted = String(ciphertextFromAlice, StandardCharsets.UTF_8)
 
             val request = Signal.PublishRequest.newBuilder()
                     .setGroupId(groupId)
@@ -103,7 +102,7 @@ class ChatRepository @Inject constructor(
             clientBlocking.publish(request)
             insertNewMessage(groupId, senderId, msg)
 
-            printlnCK("send message success: $msg, encrypted: $messageAfterEncrypted")
+            printlnCK("send message success: $msg")
             return@withContext true
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
@@ -113,13 +112,14 @@ class ChatRepository @Inject constructor(
     }
 
     private fun subscribe() {
+        val ourClientId = getClientId()
         val request = Signal.SubscribeAndListenRequest.newBuilder()
-                .setClientId(getClientId())
+                .setClientId(ourClientId)
                 .build()
 
         client.subscribe(request, object : StreamObserver<Signal.BaseResponse> {
             override fun onNext(response: Signal.BaseResponse?) {
-                printlnCK("subscribe onNext ${response?.message}")
+                printlnCK("subscribe $ourClientId onNext ${response?.message}")
             }
 
             override fun onError(t: Throwable?) {
@@ -162,15 +162,8 @@ class ChatRepository @Inject constructor(
     private suspend fun decryptMessageFromPeer(value: Signal.Publication) {
         try {
             val senderId = value.fromClientId
-            val signalProtocolAddress = SignalProtocolAddress(senderId, 111)
+            val signalProtocolAddress = SignalProtocolAddress(senderId, 222)
             val preKeyMessage = PreKeySignalMessage(value.message.toByteArray())
-
-            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val initSuccess = initSessionUserPeer(senderId, signalProtocolAddress, clientBlocking, signalProtocolStore)
-                if (!initSuccess) {
-                    return
-                }
-            }
 
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
             val message = sessionCipher.decrypt(preKeyMessage)
@@ -186,7 +179,7 @@ class ChatRepository @Inject constructor(
     // Group
     private suspend fun decryptMessageFromGroup(value: Signal.Publication) {
         try {
-            val senderAddress = SignalProtocolAddress(value.fromClientId, 111)
+            val senderAddress = SignalProtocolAddress(value.fromClientId, 222)
             val groupSender = SenderKeyName(value.groupId, senderAddress)
             val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
 
