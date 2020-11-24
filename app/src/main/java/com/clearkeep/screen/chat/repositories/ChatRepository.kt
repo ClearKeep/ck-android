@@ -66,7 +66,7 @@ class ChatRepository @Inject constructor(
                     .build()
 
             clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, msg, receiverId)
+            insertNewMessage(groupId, senderId, receiverId, msg)
 
             printlnCK("send message success: $msg")
         } catch (e: java.lang.Exception) {
@@ -94,7 +94,7 @@ class ChatRepository @Inject constructor(
                     .setMessage(ByteString.copyFrom(ciphertextFromAlice))
                     .build()
             clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, msg, "")
+            insertNewMessage(groupId, senderId, groupId, msg)
 
             printlnCK("send message success: $msg")
             return@withContext true
