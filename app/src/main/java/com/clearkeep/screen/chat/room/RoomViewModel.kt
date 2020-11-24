@@ -25,6 +25,8 @@ class RoomViewModel @Inject constructor(
 ): ViewModel() {
     private val _group = MutableLiveData<ChatGroup>()
 
+    private var isGroupRegistered: Boolean? = null
+
     val group: LiveData<ChatGroup>
         get() = _group
 
@@ -39,7 +41,7 @@ class RoomViewModel @Inject constructor(
     fun updateGroupWithId(groupId: String) {
         viewModelScope.launch {
             _group.value = roomRepository.getGroupByID(groupId)
-            messageRepository.fetchMessageToStore(groupId)
+            //messageRepository.fetchMessageToStore(groupId)
         }
     }
 
@@ -51,7 +53,7 @@ class RoomViewModel @Inject constructor(
                 existingGroup = roomRepository.getTemporaryGroupWithAFriend(getClientId(), getUserName(),
                         friendId, friend.userName)
             } else {
-                messageRepository.fetchMessageToStore(existingGroup.id)
+                //messageRepository.fetchMessageToStore(existingGroup.id)
             }
             _group.value = existingGroup
         }
@@ -86,10 +88,18 @@ class RoomViewModel @Inject constructor(
 
     fun sendMessageToGroup(groupId: String, message: String, isRegisteredGroup: Boolean) {
         viewModelScope.launch {
-            if (!isRegisteredGroup) {
-                signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
-            }
-            chatRepository.sendMessageToGroup(groupId, message)
+            try {
+                if (isGroupRegistered == null) {
+                    isGroupRegistered = signalKeyRepository.isRegisteredGroupKey(groupId, getClientId())
+                }
+                if (!isGroupRegistered!!) {
+                    isGroupRegistered = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
+                }
+
+                if (isGroupRegistered!!) {
+                    chatRepository.sendMessageToGroup(groupId, message)
+                }
+            } catch (e : Exception) {}
         }
     }
 

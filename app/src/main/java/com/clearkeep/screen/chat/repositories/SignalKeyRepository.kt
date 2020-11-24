@@ -5,6 +5,8 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.Storage
 import com.google.protobuf.ByteString
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -97,5 +99,24 @@ class SignalKeyRepository @Inject constructor(
         }
 
         return@withContext false
+    }
+
+    @Throws(Exception::class)
+    suspend fun isRegisteredGroupKey(groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
+        printlnCK("isRegisteredGroupKey: $groupID")
+        try {
+            val request = Signal.GroupGetClientKeyRequest.newBuilder()
+                    .setGroupId(groupID)
+                    .setClientId(clientId)
+                    .build()
+            val response = client.groupGetClientKey(request)
+            return@withContext response != null && response.clientKey != null
+        } catch (e : StatusRuntimeException) {
+            printlnCK("isRegisteredGroupKey: $e")
+            if (e.status.code == Status.NOT_FOUND.code) return@withContext false else throw e
+        } catch (e : Exception) {
+            printlnCK("isRegisteredGroupKey: $e")
+            throw e
+        }
     }
 }
