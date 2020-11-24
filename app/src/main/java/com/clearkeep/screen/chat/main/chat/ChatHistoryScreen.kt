@@ -21,7 +21,7 @@ fun ChatHistoryScreen(
         onRoomSelected: (ChatGroup) -> Unit,
         onCreateGroup: () -> Unit
 ) {
-    val rooms = chatViewModel.getChatHistoryList().observeAsState()
+    val rooms = chatViewModel.groups.observeAsState()
     Column {
         TopAppBar(
                 title = {
@@ -35,7 +35,7 @@ fun ChatHistoryScreen(
         )
         rooms?.let {
             LazyColumnFor(
-                    items = it?.value ?: emptyList(),
+                    items = it?.value?.data ?: emptyList(),
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
             ) { room ->
                 Surface(color = Color.White) {

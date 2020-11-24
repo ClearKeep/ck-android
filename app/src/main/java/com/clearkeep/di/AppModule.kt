@@ -21,6 +21,7 @@ import java.util.concurrent.Executor
 import javax.inject.Singleton
 import io.grpc.Metadata
 import io.grpc.Status
+import message.MessageGrpc
 import user.UserGrpc
 
 @InstallIn(ApplicationComponent::class)
@@ -80,6 +81,17 @@ class AppModule {
                 .build()
 
         return GroupGrpc.newBlockingStub(channel)
+    }
+
+    @Singleton
+    @Provides
+    fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+                .usePlaintext()
+                .executor(Dispatchers.Default.asExecutor())
+                .build()
+
+        return MessageGrpc.newBlockingStub(channel)
     }
 
     @Singleton

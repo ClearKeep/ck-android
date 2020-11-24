@@ -64,7 +64,6 @@ class RoomActivity : AppCompatActivity() {
                                     if (!friends.isNullOrEmpty()) {
                                         roomViewModel.inviteToGroup(friends[0].id, friendId)
                                     }
-                                    navController.navigate("enter_group_name")
                                 }
                         )
                     }

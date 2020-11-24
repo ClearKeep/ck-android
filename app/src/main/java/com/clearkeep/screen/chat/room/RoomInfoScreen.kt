@@ -15,6 +15,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
 
 @Composable
 fun RoomInfoScreen(
@@ -46,6 +47,7 @@ fun RoomInfoScreen(
                 group?.value?.isGroup()?.let {
                     IconButton(
                         onClick = {
+                            navHostController.navigate("invite_group_screen")
                         }
                     ) {
                         Icon(asset = Icons.Filled.Person)

@@ -4,14 +4,18 @@ import android.text.TextUtils
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.printlnCK
+import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.SessionBuilder
+import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.SignalProtocolAddress
+import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
+import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
 import org.whispersystems.libsignal.state.PreKeyRecord
@@ -19,6 +23,41 @@ import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import java.lang.Exception
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
+import java.nio.charset.StandardCharsets
+
+@Throws(Exception::class)
+suspend fun decryptPeerMessage(
+        fromClientId: String, message: ByteString,
+        signalProtocolStore: InMemorySignalProtocolStore,
+) : String = withContext(Dispatchers.IO) {
+    val signalProtocolAddress = SignalProtocolAddress(fromClientId, 222)
+    val preKeyMessage = PreKeySignalMessage(message.toByteArray())
+
+    val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
+    val message = sessionCipher.decrypt(preKeyMessage)
+    return@withContext String(message, StandardCharsets.UTF_8)
+}
+
+@Throws(Exception::class)
+suspend fun decryptGroupMessage(
+        fromClientId: String, groupId: String, message: ByteString,
+        senderKeyStore: InMemorySenderKeyStore,
+        clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+) : String = withContext(Dispatchers.IO) {
+    val senderAddress = SignalProtocolAddress(fromClientId, 222)
+    val groupSender = SenderKeyName(groupId, senderAddress)
+    val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+
+    val initSession = initSessionUserInGroup(
+            groupId, fromClientId, groupSender,
+            clientBlocking, senderKeyStore)
+    if (!initSession) {
+        throw Exception("can not init session in group $groupId")
+    }
+
+    val plaintextFromAlice = bobGroupCipher.decrypt(message.toByteArray())
+    return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
+}
 
 suspend fun initSessionUserPeer(
         receiver: String,
@@ -65,7 +104,7 @@ suspend fun initSessionUserPeer(
 }
 
 fun initSessionUserInGroup(
-        value: Signal.Publication, groupSender: SenderKeyName,
+        groupId: String, fromClientId: String, groupSender: SenderKeyName,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         senderKeyStore: InMemorySenderKeyStore,
 ): Boolean {
@@ -74,8 +113,8 @@ fun initSessionUserInGroup(
     if (senderKeyRecord.isEmpty) {
         try {
             val request = Signal.GroupGetClientKeyRequest.newBuilder()
-                    .setGroupId(value.groupId)
-                    .setClientId(value.fromClientId)
+                    .setGroupId(groupId)
+                    .setClientId(fromClientId)
                     .build()
             val senderKeyDistribution = clientBlocking.groupGetClientKey(request)
             val receivedAliceDistributionMessage = SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())

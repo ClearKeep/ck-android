@@ -9,7 +9,7 @@ import com.clearkeep.db.model.*
     Message::class,
     ChatGroup::class,
     People::class
-], version = 1, exportSchema = false)
+], version = 2, exportSchema = false)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun messageDao(): MessageDAO

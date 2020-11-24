@@ -25,6 +25,8 @@ fun InviteGroupScreen(
 ) {
     val friends = inviteGroupViewModel.friends.observeAsState()
 
+    val selectedItem: ArrayList<People> = ArrayList()
+
     Column {
         TopAppBar(
                 title = {
@@ -41,7 +43,7 @@ fun InviteGroupScreen(
                 },
                 actions = {
                     Box(modifier = Modifier.clickable(onClick = {
-                        onFriendSelected(emptyList())
+                        onFriendSelected(selectedItem)
                     })) {
                         Text(text = "Continue")
                     }
@@ -54,7 +56,9 @@ fun InviteGroupScreen(
             ) { friend ->
                 Surface(color = Color.White) {
                     FriendItem(friend,
-                        onFriendSelected = {}
+                        onFriendSelected = {people ->
+                            selectedItem.add(people)
+                        }
                     )
                 }
             }
