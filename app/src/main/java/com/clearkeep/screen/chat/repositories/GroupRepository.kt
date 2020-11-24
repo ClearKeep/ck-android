@@ -1,15 +1,20 @@
 package com.clearkeep.screen.chat.repositories
 
+import androidx.lifecycle.liveData
+import androidx.lifecycle.map
 import com.clearkeep.db.GroupDAO
 import com.clearkeep.db.converter.SortedStringListConverter
 import com.clearkeep.db.model.GROUP_ID_TEMPO
 import com.clearkeep.db.model.ChatGroup
+import com.clearkeep.repository.ProfileRepository
+import com.clearkeep.repository.utils.Resource
 import com.clearkeep.screen.chat.utils.getGroupType
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,9 +22,49 @@ import javax.inject.Singleton
 class GroupRepository @Inject constructor(
         private val roomDAO: GroupDAO,
         private val groupBlockingStub: GroupGrpc.GroupBlockingStub,
+        private val groupGrpc: GroupGrpc.GroupBlockingStub,
+        private val profileRepository: ProfileRepository
 ) {
+    fun getAllRooms() = liveData {
+        val disposable = emitSource(
+                roomDAO.getRooms().map {
+                    Resource.loading(it)
+                }
+        )
+        try {
+            val groups = getRoomsFromAPI()
+            disposable.dispose()
+            roomDAO.insertGroupList(groups)
+            emitSource(
+                    roomDAO.getRooms().map {
+                        Resource.success(it)
+                    }
+            )
+        } catch(exception: Exception) {
+            printlnCK("getAllRooms: $exception")
+            emitSource(
+                    roomDAO.getRooms().map {
+                        Resource.error(exception.toString(), it)
+                    }
+            )
+        }
+    }
+
+    @Throws(Exception::class)
+    private suspend fun getRoomsFromAPI() : List<ChatGroup>  = withContext(Dispatchers.IO) {
+        val clientId = profileRepository.getClientId()
+        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
+                .setClientId(clientId)
+                .build()
+        val response = groupGrpc.getJoinedGroups(request)
+        return@withContext response.lstGroupList
+                .map { group ->
+                    convertGroupFromResponse(group)
+                }
+    }
+
     suspend fun createGroupFromAPI(createClientId: String, groupName: String, participants: List<String>, isGroup: Boolean): ChatGroup? = withContext(Dispatchers.IO) {
-        printlnCK("createGroup: $groupName")
+        printlnCK("createGroup: $groupName, clients $participants")
         try {
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
                     .setGroupName(groupName)
@@ -42,7 +87,7 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun inviteToGroupFromAPI(ourClientId: String, invitedFriendId: String, groupId: String): Boolean = withContext(Dispatchers.IO) {
-        printlnCK("inviteToGroup")
+        printlnCK("inviteToGroup: $invitedFriendId")
         try {
             val request = GroupOuterClass.InviteToGroupRequest.newBuilder()
                     .setFromClientId(ourClientId)
@@ -51,7 +96,7 @@ class GroupRepository @Inject constructor(
                     .build()
             val response = groupBlockingStub.inviteToGroup(request)
 
-            return@withContext true
+            return@withContext response.success
         } catch (e: Exception) {
             printlnCK("inviteToGroup error: $e")
             return@withContext false
@@ -131,8 +176,6 @@ class GroupRepository @Inject constructor(
 
     suspend fun updateRoom(room: ChatGroup) = roomDAO.update(room)
 
-    fun getAllRooms() = roomDAO.getRooms()
-
     private fun convertGroupFromResponse(response: GroupOuterClass.GroupObjectResponse): ChatGroup {
         return ChatGroup(
                 id = response.groupId,
@@ -146,7 +189,7 @@ class GroupRepository @Inject constructor(
                 clientList = response.lstClientIdList,
 
                 // TODO
-                isJoined = false,
+                isJoined = true,
                 lastClient = "",
                 lastMessage = "",
                 lastUpdatedTime = 0

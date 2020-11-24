@@ -2,12 +2,10 @@ package com.clearkeep.screen.chat.repositories
 
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.screen.chat.utils.initSessionUserInGroup
-import com.clearkeep.screen.chat.utils.initSessionUserPeer
 import com.clearkeep.db.model.Message
 import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.repository.ProfileRepository
-import com.clearkeep.screen.chat.utils.isGroup
+import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
@@ -18,10 +16,8 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.CiphertextMessage
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,8 +40,6 @@ class ChatRepository @Inject constructor(
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     fun getClientId() = userRepository.getClientId()
-
-    fun getMessagesFromRoom(groupId: String) = messageRepository.getMessages(groupId = groupId)
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
@@ -72,7 +66,7 @@ class ChatRepository @Inject constructor(
                     .build()
 
             clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, msg)
+            insertNewMessage(groupId, senderId, msg, receiverId)
 
             printlnCK("send message success: $msg")
         } catch (e: java.lang.Exception) {
@@ -100,7 +94,7 @@ class ChatRepository @Inject constructor(
                     .setMessage(ByteString.copyFrom(ciphertextFromAlice))
                     .build()
             clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, msg)
+            insertNewMessage(groupId, senderId, msg, "")
 
             printlnCK("send message success: $msg")
             return@withContext true
@@ -161,44 +155,28 @@ class ChatRepository @Inject constructor(
 
     private suspend fun decryptMessageFromPeer(value: Signal.Publication) {
         try {
-            val senderId = value.fromClientId
-            val signalProtocolAddress = SignalProtocolAddress(senderId, 222)
-            val preKeyMessage = PreKeySignalMessage(value.message.toByteArray())
+            val result = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
+            insertNewMessage(value.groupId, value.fromClientId, getClientId(), result)
 
-            val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
-            val message = sessionCipher.decrypt(preKeyMessage)
-            val result = String(message, StandardCharsets.UTF_8)
             printlnCK("decryptMessageFromPeer: $result")
-
-            insertNewMessage(value.groupId, senderId, result)
         } catch (e: Exception) {
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
 
-    // Group
     private suspend fun decryptMessageFromGroup(value: Signal.Publication) {
         try {
-            val senderAddress = SignalProtocolAddress(value.fromClientId, 222)
-            val groupSender = SenderKeyName(value.groupId, senderAddress)
-            val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            val result = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
+            insertNewMessage(value.groupId, value.fromClientId, getClientId(), result)
 
-            val initSession = initSessionUserInGroup(value, groupSender, clientBlocking, senderKeyStore)
-            if (!initSession) {
-                return
-            }
-
-            val plaintextFromAlice = bobGroupCipher.decrypt(value.message.toByteArray())
-            val result = String(plaintextFromAlice, StandardCharsets.UTF_8)
             printlnCK("decryptMessageFromGroup: $result")
-
-            insertNewMessage(value.groupId, value.fromClientId, result)
         } catch (e: Exception) {
             printlnCK("decryptMessageFromGroup error : $e")
         }
     }
 
-    private suspend fun insertNewMessage(groupId: String, senderId: String, message: String) {
+    private suspend fun insertNewMessage(groupId: String, senderId: String,
+                                         receiverId: String, message: String) {
         var room: ChatGroup? = roomRepository.getGroupByID(groupId)
         if (room == null) {
             room = roomRepository.getGroupFromAPI(groupId)
@@ -212,7 +190,7 @@ class ChatRepository @Inject constructor(
         }
 
         val createTime = getCurrentDateTime().time
-        messageRepository.insert(Message(senderId, message, room.id, createTime))
+        messageRepository.insert(Message(senderId, message, room.id, createTime, createTime, receiverId))
 
         // update last message in room
         val updateRoom = ChatGroup(

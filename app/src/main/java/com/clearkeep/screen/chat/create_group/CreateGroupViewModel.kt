@@ -15,6 +15,8 @@ class CreateGroupViewModel @Inject constructor(
     private val userRepository: ProfileRepository,
     private val groupRepository: GroupRepository
 ): ViewModel() {
+        private val invitedFriends: MutableList<People> = mutableListOf()
+
         private val _createGroupState = MutableLiveData<CreateGroupState>()
 
         val createGroupState: LiveData<CreateGroupState>
@@ -29,13 +31,16 @@ class CreateGroupViewModel @Inject constructor(
         }
 
         fun setFriendsList(friends: List<People>) {
+                invitedFriends.clear()
+                invitedFriends.addAll(friends)
         }
 
         fun createGroup(groupName: String) {
                 viewModelScope.launch {
                         _createGroupState.value = CreateGroupProcessing
-                        if (groupRepository.createGroupFromAPI(getClientId(), groupName, emptyList(), true) != null) {
-                                _createGroupState.value = CreateGroupProcessing
+                        val invitedFriendsAsString = invitedFriends.map { it.id }
+                        if (groupRepository.createGroupFromAPI(getClientId(), groupName, invitedFriendsAsString, true) != null) {
+                                _createGroupState.value = CreateGroupSuccess
                         } else {
                                 _createGroupState.value = CreateGroupError
                         }

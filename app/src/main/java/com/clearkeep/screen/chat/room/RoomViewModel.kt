@@ -8,6 +8,7 @@ import com.clearkeep.screen.chat.repositories.GroupRepository
 import com.clearkeep.screen.chat.repositories.SignalKeyRepository
 import com.clearkeep.db.model.Message
 import com.clearkeep.screen.chat.main.people.PeopleRepository
+import com.clearkeep.screen.chat.repositories.MessageRepository
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
@@ -19,7 +20,8 @@ class RoomViewModel @Inject constructor(
         private val groupRepository: GroupRepository,
         private val signalKeyRepository: SignalKeyRepository,
         private val userManager: UserManager,
-        private val peopleRepository: PeopleRepository
+        private val peopleRepository: PeopleRepository,
+        private val messageRepository: MessageRepository
 ): ViewModel() {
     private val _group = MutableLiveData<ChatGroup>()
 
@@ -27,7 +29,7 @@ class RoomViewModel @Inject constructor(
         get() = _group
 
     fun getMessages(groupId: String): LiveData<List<Message>> {
-        return chatRepository.getMessagesFromRoom(groupId)
+        return messageRepository.getMessages(groupId)
     }
 
     fun getClientId() = chatRepository.getClientId()
@@ -37,6 +39,7 @@ class RoomViewModel @Inject constructor(
     fun updateGroupWithId(groupId: String) {
         viewModelScope.launch {
             _group.value = roomRepository.getGroupByID(groupId)
+            messageRepository.fetchMessageToStore(groupId)
         }
     }
 
@@ -47,6 +50,8 @@ class RoomViewModel @Inject constructor(
                 val friend = peopleRepository.getFriend(friendId)
                 existingGroup = roomRepository.getTemporaryGroupWithAFriend(getClientId(), getUserName(),
                         friendId, friend.userName)
+            } else {
+                messageRepository.fetchMessageToStore(existingGroup.id)
             }
             _group.value = existingGroup
         }

@@ -10,6 +10,9 @@ interface GroupDAO {
     @Insert(onConflict = REPLACE)
     suspend fun insert(group: ChatGroup) : Long
 
+    @Insert(onConflict = REPLACE)
+    suspend fun insertGroupList(groups: List<ChatGroup>)
+
     @Update
     suspend fun update(vararg group: ChatGroup)
 

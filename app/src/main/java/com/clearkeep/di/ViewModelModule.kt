@@ -8,6 +8,7 @@ import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
 import com.clearkeep.screen.chat.create_group.CreateGroupViewModel
+import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
 import com.clearkeep.screen.chat.main.HomeViewModel
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.setel.di.ViewModelKey
@@ -46,6 +47,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(CreateGroupViewModel::class)
     abstract fun bindCreateGroupViewModel(createGroupViewModel: CreateGroupViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(InviteGroupViewModel::class)
+    abstract fun bindInviteGroupViewModel(inviteGroupViewModel: InviteGroupViewModel): ViewModel
 
     @Binds
     @IntoMap

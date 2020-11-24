@@ -41,12 +41,6 @@ fun EnterGroupNameScreen(
                 groupName
             )
             Spacer(Modifier.preferredHeight(20.dp))
-            CKButton(
-                stringResource(R.string.btn_login),
-                onClick = {
-                },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
-            )
         }
     }
 }
