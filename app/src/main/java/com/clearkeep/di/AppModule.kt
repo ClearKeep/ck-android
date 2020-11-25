@@ -22,6 +22,7 @@ import javax.inject.Singleton
 import io.grpc.Metadata
 import io.grpc.Status
 import message.MessageGrpc
+import notification.NotifyGrpc
 import user.UserGrpc
 
 @InstallIn(ApplicationComponent::class)
@@ -47,6 +48,17 @@ class AppModule {
             .build()
 
         return SignalKeyDistributionGrpc.newBlockingStub(channel)
+    }
+
+    @Singleton
+    @Provides
+    fun provideNotifyStub(): NotifyGrpc.NotifyStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+                .usePlaintext()
+                .executor(Dispatchers.Default.asExecutor())
+                .build()
+
+        return NotifyGrpc.newStub(channel)
     }
 
     @Singleton
@@ -107,8 +119,8 @@ class AppModule {
     }
 
     companion object {
-        //private const val BASE_URL = "172.16.0.216"
-        private const val BASE_URL = "172.16.0.197"
+        private const val BASE_URL = "172.16.0.216"
+        //private const val BASE_URL = "172.16.0.197"
         private const val PORT = 5000
     }
 }

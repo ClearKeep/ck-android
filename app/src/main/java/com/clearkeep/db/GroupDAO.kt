@@ -19,8 +19,8 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup WHERE id = :groupId LIMIT 1")
     suspend fun getGroupById(groupId: String): ChatGroup
 
-    @Query("SELECT * FROM chatgroup WHERE lst_client_id =:clientIdOfString LIMIT 1")
-    suspend fun getGroupPeerByClientId(clientIdOfString: String): ChatGroup
+    @Query("SELECT * FROM chatgroup WHERE group_type =:groupType AND lst_client_id =:clientIdOfString LIMIT 1")
+    suspend fun getGroupPeerByClientId(clientIdOfString: String, groupType:String = "peer"): ChatGroup
 
     // tracking
     @Query("SELECT * FROM chatgroup")

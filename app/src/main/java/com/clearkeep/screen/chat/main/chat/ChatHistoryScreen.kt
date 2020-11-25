@@ -9,11 +9,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.model.ChatGroup
-import com.clearkeep.components.ckDividerColor
+import com.clearkeep.screen.chat.main.composes.CircleAvatar
 
 @Composable
 fun ChatHistoryScreen(
@@ -23,7 +25,7 @@ fun ChatHistoryScreen(
 ) {
     val rooms = chatViewModel.groups.observeAsState()
     Column {
-        TopAppBar(
+        CKTopAppBar(
                 title = {
                     Text(text = "Chat")
                 },
@@ -36,7 +38,7 @@ fun ChatHistoryScreen(
         rooms?.let {
             LazyColumnFor(
                     items = it?.value?.data ?: emptyList(),
-                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
+                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
             ) { room ->
                 Surface(color = Color.White) {
                     RoomItem(
@@ -47,7 +49,6 @@ fun ChatHistoryScreen(
                 }
             }
         }
-        Spacer(modifier = Modifier.height(120.dp))
     }
 }
 
@@ -65,17 +66,22 @@ fun RoomItem(
     }
     Column(modifier = Modifier
             .clickable(onClick = { onRoomSelected(room) }, enabled = true)
-            .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
-        Row() {
-            Text(text = roomName,
+        Row(modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircleAvatar("")
+            Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
+                Text(text = roomName,
                     style = MaterialTheme.typography.h6
-            )
+                )
+                room.lastMessage?.let {
+                    Text(text = it,
+                        style = MaterialTheme.typography.caption
+                    )
+                }
+            }
         }
-        Text(text = room.lastMessage,
-                style = MaterialTheme.typography.caption
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(color = ckDividerColor, thickness = 0.5.dp, modifier = Modifier.padding(start = 20.dp))
+        Spacer(modifier = Modifier.height(15.dp))
     }
 }

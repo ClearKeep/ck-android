@@ -7,6 +7,7 @@ import com.clearkeep.screen.chat.repositories.ChatRepository
 import com.clearkeep.screen.chat.repositories.GroupRepository
 import com.clearkeep.screen.chat.repositories.SignalKeyRepository
 import com.clearkeep.db.model.Message
+import com.clearkeep.db.model.People
 import com.clearkeep.screen.chat.main.people.PeopleRepository
 import com.clearkeep.screen.chat.repositories.MessageRepository
 import com.clearkeep.utilities.UserManager
@@ -30,6 +31,11 @@ class RoomViewModel @Inject constructor(
     val group: LiveData<ChatGroup>
         get() = _group
 
+    val members: LiveData<List<People>> = _group.switchMap { group ->
+        liveData {
+            emit(peopleRepository.getFriends(group.clientList))
+        }
+    }
     fun getMessages(groupId: String): LiveData<List<Message>> {
         return messageRepository.getMessages(groupId)
     }

@@ -20,7 +20,8 @@
         <activity
             android:name=".screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
-        <activity android:name=".screen.splash.SplashActivity">
+        <activity android:name=".screen.splash.SplashActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,9 +30,11 @@
         </activity>
         <activity
             android:name=".screen.auth.login.LoginActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:label="@string/btn_login" />
         <activity
             android:name=".screen.auth.register.RegisterActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:label="@string/btn_register" />
         <activity
             android:name=".screen.chat.main.HomeActivity"

@@ -110,7 +110,9 @@ class SignalKeyRepository @Inject constructor(
                     .setClientId(clientId)
                     .build()
             val response = client.groupGetClientKey(request)
-            return@withContext response != null && response.clientKey != null
+            val ret = response != null && response.clientKey != null
+            printlnCK("isRegisteredGroupKey: $ret")
+            return@withContext ret
         } catch (e : StatusRuntimeException) {
             printlnCK("isRegisteredGroupKey: $e")
             if (e.status.code == Status.NOT_FOUND.code) return@withContext false else throw e

@@ -11,6 +11,8 @@ import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
+import notification.NotifyGrpc
+import notification.NotifyOuterClass
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -25,6 +27,7 @@ import javax.inject.Singleton
 class ChatRepository @Inject constructor(
         private val client: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
         private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+        private val notifyStub: NotifyGrpc.NotifyStub,
 
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
@@ -34,7 +37,8 @@ class ChatRepository @Inject constructor(
         private val userRepository: ProfileRepository
 ) {
     fun initSubscriber() {
-        subscribe()
+        subscribeMessageChannel()
+        subscribeNotificationChannel()
     }
 
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
@@ -105,7 +109,7 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    private fun subscribe() {
+    private fun subscribeMessageChannel() {
         val ourClientId = getClientId()
         val request = Signal.SubscribeAndListenRequest.newBuilder()
                 .setClientId(ourClientId)
@@ -113,23 +117,23 @@ class ChatRepository @Inject constructor(
 
         client.subscribe(request, object : StreamObserver<Signal.BaseResponse> {
             override fun onNext(response: Signal.BaseResponse?) {
-                printlnCK("subscribe $ourClientId onNext ${response?.message}")
+                printlnCK("subscribe message  $ourClientId onNext ${response?.message}")
             }
 
             override fun onError(t: Throwable?) {
             }
 
             override fun onCompleted() {
-                printlnCK("subscribe onCompleted")
-                listen()
+                printlnCK("subscribe message onCompleted")
+                listenMessageChannel()
             }
         })
     }
 
-    private fun listen() {
+    private fun listenMessageChannel() {
         val request = Signal.SubscribeAndListenRequest.newBuilder()
-            .setClientId(getClientId())
-            .build()
+                .setClientId(getClientId())
+                .build()
         client.listen(request, object : StreamObserver<Signal.Publication> {
             override fun onNext(value: Signal.Publication) {
                 printlnCK("Receive a message from : ${value.fromClientId}" +
@@ -146,6 +150,53 @@ class ChatRepository @Inject constructor(
 
             override fun onError(t: Throwable?) {
                 printlnCK("Listen message error: ${t.toString()}")
+            }
+
+            override fun onCompleted() {
+            }
+        })
+    }
+
+    private fun subscribeNotificationChannel() {
+        printlnCK("subscribeNotificationChannel")
+        val ourClientId = getClientId()
+        val request = NotifyOuterClass.SubscribeAndListenRequest.newBuilder()
+                .setClientId(ourClientId)
+                .build()
+
+        notifyStub.subscribe(request, object : StreamObserver<NotifyOuterClass.BaseResponse> {
+            override fun onNext(response: NotifyOuterClass.BaseResponse?) {
+                printlnCK("subscribe notification $ourClientId onNext ${response?.success}")
+            }
+
+            override fun onError(t: Throwable?) {
+            }
+
+            override fun onCompleted() {
+                printlnCK("subscribe notification onCompleted")
+                listenNotificationChannel()
+            }
+        })
+    }
+
+    private fun listenNotificationChannel() {
+        val request = NotifyOuterClass.SubscribeAndListenRequest.newBuilder()
+                .setClientId(getClientId())
+                .build()
+        notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
+            override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
+                value.createdAt
+                printlnCK("Receive a notification from : ${value.refClientId}" +
+                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
+                scope.launch {
+                    if(value.notifyType == "new-group") {
+                        roomRepository.fetchRoomsFromAPI()
+                    }
+                }
+            }
+
+            override fun onError(t: Throwable?) {
+                printlnCK("Listen notification error: ${t.toString()}")
             }
 
             override fun onCompleted() {

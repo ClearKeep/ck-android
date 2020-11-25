@@ -53,6 +53,12 @@ class PeopleRepository @Inject constructor(
         return peopleDao.getFriend(friendId)
     }
 
+    suspend fun getFriends(idList: List<String>): List<People> {
+        return idList.mapNotNull { id ->
+            peopleDao.getFriend(id)
+        }
+    }
+
     private suspend fun insertFriends(friends: List<People>) {
         peopleDao.insertPeopleList(friends)
     }

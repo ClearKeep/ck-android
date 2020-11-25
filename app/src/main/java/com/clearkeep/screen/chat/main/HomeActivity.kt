@@ -9,6 +9,9 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Contacts
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +28,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.clearkeep.R
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.*
+import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.main.chat.ChatHistoryScreen
 import com.clearkeep.screen.chat.main.chat.ChatViewModel
 import com.clearkeep.screen.chat.main.people.PeopleScreen
@@ -43,6 +48,8 @@ val items = listOf(
         Screen.People,
         Screen.Profile,
 )
+
+private val BottomNavigationHeight = 56.dp
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
@@ -68,16 +75,18 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            homeViewModel.loginState.observeAsState().value.let { prepareState ->
-                when (prepareState) {
-                    PrepareSuccess -> {
-                        MainComposable()
-                    }
-                    PrepareProcessing -> {
-                        LoadingComposable()
-                    }
-                    PrepareError -> {
-                        ErrorComposable()
+            CKTheme {
+                homeViewModel.loginState.observeAsState().value.let { prepareState ->
+                    when (prepareState) {
+                        PrepareSuccess -> {
+                            MainComposable()
+                        }
+                        PrepareProcessing -> {
+                            LoadingComposable()
+                        }
+                        PrepareError -> {
+                            ErrorComposable()
+                        }
                     }
                 }
             }
@@ -92,7 +101,7 @@ class HomeActivity : AppCompatActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            CircularProgressIndicator()
+            CKCircularProgressIndicator()
         }
     }
 
@@ -109,7 +118,7 @@ class HomeActivity : AppCompatActivity() {
                 onClick = {
                     homeViewModel.prepareChat()
                 },
-                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
+                modifier = Modifier.padding(vertical = 5.dp)
             )
         }
     }
@@ -117,53 +126,61 @@ class HomeActivity : AppCompatActivity() {
     @Composable
     private fun MainComposable() {
         val navController = rememberNavController()
-        Scaffold (
-            bottomBar = {
-                BottomNavigation {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
-                    items.forEach { screen ->
-                        BottomNavigationItem(
-                            icon = { Icon(screen.iconId) },
-                            label = { Text(stringResource(screen.resourceId)) },
-                            selected = currentRoute == screen.route,
-                            onClick = {
-                                if (currentRoute != screen.route) {
-                                    navController.popBackStack(navController.graph.startDestination, false)
-                                    navController.navigate(screen.route)
-                                }
-                            }
-                        )
+        Scaffold(
+                bottomBar = {
+                    BottomNavigation {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
+                        items.forEach { screen ->
+                            BottomNavigationItem(
+                                    selectedContentColor = MaterialTheme.colors.surface,
+                                    unselectedContentColor = MaterialTheme.colors.onBackground,
+                                    icon = { Icon(screen.iconId) },
+                                    label = { Text(stringResource(screen.resourceId)) },
+                                    selected = currentRoute == screen.route,
+                                    onClick = {
+                                        if (currentRoute != screen.route) {
+                                            navController.popBackStack(navController.graph.startDestination, false)
+                                            navController.navigate(screen.route)
+                                        }
+                                    }
+                            )
+                        }
                     }
                 }
-            }
         ) {
-            NavHost(navController, startDestination = Screen.Chat.route) {
-                composable(Screen.Chat.route) {
-                    ChatHistoryScreen(
-                        chatViewModel,
-                        onRoomSelected = { room ->
-                            navigateToRoomScreen(room)
-                        },
-                        onCreateGroup = {
-                            navigateToCreateGroupScreen()
+            Column {
+                Row(modifier = Modifier.weight(1.0f, true)) {
+                    NavHost(navController, startDestination = Screen.Chat.route) {
+                        composable(Screen.Chat.route) {
+                            ChatHistoryScreen(
+                                chatViewModel,
+                                onRoomSelected = { room ->
+                                    navigateToRoomScreen(room)
+                                },
+                                onCreateGroup = {
+                                    navigateToCreateGroupScreen()
+                                }
+                            )
                         }
-                    )
-                }
-                composable(Screen.People.route) {
-                    PeopleScreen(
-                        peopleViewModel,
-                        onFriendSelected = { friend ->
-                            navigateToRoomScreen(friend)
+                        composable(Screen.People.route) {
+                            PeopleScreen(
+                                peopleViewModel,
+                                onFriendSelected = { friend ->
+                                    navigateToRoomScreen(friend)
+                                }
+                            )
                         }
-                    )
+                        composable(Screen.Profile.route) {
+                            ProfileScreen(
+                                profileViewModel,
+                                onLogout = {}
+                            )
+                        }
+                    }
                 }
-                composable(Screen.Profile.route) {
-                    ProfileScreen(
-                            profileViewModel,
-                            onLogout = {}
-                    )
-                }
+                // TODO: work around issue of scaffold
+                Spacer(modifier = Modifier.height(BottomNavigationHeight))
             }
         }
     }
@@ -171,14 +188,12 @@ class HomeActivity : AppCompatActivity() {
     private fun navigateToRoomScreen(group: ChatGroup) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.GROUP_ID, group.id)
-        intent.putExtra(RoomActivity.GROUP_NAME, group.groupName)
         startActivity(intent)
     }
 
     private fun navigateToRoomScreen(friend: People) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friend.id)
-        intent.putExtra(RoomActivity.GROUP_NAME, friend.userName)
         startActivity(intent)
     }
 
@@ -189,7 +204,7 @@ class HomeActivity : AppCompatActivity() {
 }
 
 sealed class Screen(val route: String, @StringRes val resourceId: Int, val iconId: VectorAsset) {
-    object Chat : Screen("single_chat", R.string.bottom_nav_single, Icons.Filled.Person)
-    object People : Screen("group_chat", R.string.bottom_nav_group, Icons.Filled.Person)
-    object Profile : Screen("profile", R.string.bottom_nav_profile, Icons.Filled.Person)
+    object Chat : Screen("chat_screen", R.string.bottom_nav_single, Icons.Filled.Message)
+    object People : Screen("contact_screen", R.string.bottom_nav_group, Icons.Filled.Contacts)
+    object Profile : Screen("profile_screen", R.string.bottom_nav_profile, Icons.Filled.Person)
 }

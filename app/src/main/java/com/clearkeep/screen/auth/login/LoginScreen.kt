@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextField
 
 @Composable
@@ -75,11 +76,14 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
                 )
                 Spacer(Modifier.preferredHeight(30.dp))
-                CKButton(
-                    stringResource(R.string.btn_register),
-                    onClick = onRegisterPress,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
-                )
+                Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                ) {
+                    CKTextButton(
+                            stringResource(R.string.btn_register),
+                            onClick = onRegisterPress,
+                    )
+                }
             }
         }
     }

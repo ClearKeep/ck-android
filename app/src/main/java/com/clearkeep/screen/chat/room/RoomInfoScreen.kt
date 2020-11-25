@@ -1,35 +1,37 @@
 package com.clearkeep.screen.chat.room
 
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import com.clearkeep.screen.chat.main.composes.CircleAvatar
 
 @Composable
 fun RoomInfoScreen(
     roomViewModel: RoomViewModel,
     navHostController: NavHostController,
 ) {
-    val group = roomViewModel.group.observeAsState()
-    group?.let {
+    val groupState = roomViewModel.group.observeAsState()
+    groupState?.value?.let { group ->
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
             TopAppBar(
                 title = {
-                    Text(text = group?.value?.groupName ?: "")
+                    Text(text = group.groupName)
                 },
                 navigationIcon = {
                     IconButton(
@@ -41,16 +43,56 @@ fun RoomInfoScreen(
                     }
                 },
             )
-            Column(modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 8.dp) + Modifier.weight(
-                0.66f
-            )) {
-                group?.value?.isGroup()?.let {
-                    IconButton(
-                        onClick = {
+            Spacer(modifier = Modifier.height(20.dp))
+            Column(modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircleAvatar("", size = 72.dp)
+                Spacer(modifier = Modifier.height(15.dp))
+                Text(text = group.groupName, style = MaterialTheme.typography.h5)
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                Text(text = "Other features", style = MaterialTheme.typography.body1.copy(color = Color.Gray.copy(alpha = 0.8f)))
+                Spacer(modifier = Modifier.height(20.dp))
+                group.let {
+                    if (it.isGroup()) {
+                        Row(modifier = Modifier.clickable(onClick = {
                             navHostController.navigate("invite_group_screen")
+                        }),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                    color = Color.Gray.copy(alpha = 0.8f),
+                                    shape = CircleShape,
+                                    modifier = Modifier.preferredSize(30.dp, 30.dp).clickable(onClick = {
+                                        navHostController.navigate("invite_group_screen")
+                                    })
+                            ) {
+                                Icon(asset = Icons.Filled.Add)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(text = "Invite Friend", style = MaterialTheme.typography.body2)
                         }
-                    ) {
-                        Icon(asset = Icons.Filled.Person)
+                    }
+                }
+                group.let {
+                    if (it.isGroup()) {
+                        Row(modifier = Modifier.padding(top = 20.dp).clickable(onClick = {
+                            navHostController.navigate("member_group_screen")
+                        }),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                    color = Color.Gray.copy(alpha = 0.8f),
+                                    shape = CircleShape,
+                                    modifier = Modifier.preferredSize(30.dp, 30.dp)
+                            ) {
+                                Icon(asset = Icons.Filled.Person)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(text = "Show members", style = MaterialTheme.typography.body2)
+                        }
                     }
                 }
             }

@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.clearkeep.components.CKScaffold
+import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.chat.invite_group.InviteGroupScreen
 import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,16 +33,19 @@ class CreateGroupActivity : AppCompatActivity() {
 
         setContent {
             val navController = rememberNavController()
-            CKScaffold {
+            CKTheme {
                 NavHost(navController, startDestination = "invite_group") {
                     composable("invite_group") {
                         InviteGroupScreen(
-                                navController,
                                 inviteGroupViewModel,
                                 onFriendSelected = { friends ->
                                     createGroupViewModel.setFriendsList(friends)
                                     navController.navigate("enter_group_name")
-                                }
+                                },
+                                onBackPressed = {
+                                    finish()
+                                },
+                                isSelectionOnly = true
                         )
                     }
                     composable("enter_group_name") {
