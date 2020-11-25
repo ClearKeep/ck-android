@@ -17,4 +17,8 @@ class InviteGroupViewModel @Inject constructor(
         val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
                 emitSource(peopleRepository.getFriends(getClientId()))
         }
+
+        fun inviteFriends(friends: List<People>) {
+                //
+        }
 }

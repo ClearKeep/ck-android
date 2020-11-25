@@ -7,9 +7,8 @@ import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
-import com.clearkeep.components.CKScaffold
+import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.chat.invite_group.InviteGroupScreen
 import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,11 +31,10 @@ class RoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val roomId = intent.getStringExtra(GROUP_ID) ?: ""
-        val roomName = intent.getStringExtra(GROUP_NAME) ?: ""
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
         setContent {
-            CKScaffold {
+            CKTheme {
                 val navController = rememberNavController()
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
@@ -58,13 +56,21 @@ class RoomActivity : AppCompatActivity() {
                     }
                     composable("invite_group_screen") {
                         InviteGroupScreen(
-                                navController,
                                 inviteGroupViewModel,
                                 onFriendSelected = { friends ->
                                     if (!friends.isNullOrEmpty()) {
                                         roomViewModel.inviteToGroup(friends[0].id, friendId)
                                     }
+                                },
+                                onBackPressed = {
+                                    navController.popBackStack()
                                 }
+                        )
+                    }
+                    composable("member_group_screen") {
+                        GroupMemberScreen(
+                                roomViewModel,
+                                navController
                         )
                     }
                 }
@@ -74,7 +80,6 @@ class RoomActivity : AppCompatActivity() {
 
     companion object {
         const val GROUP_ID = "room_id"
-        const val GROUP_NAME = "room_name"
         const val FRIEND_ID = "remote_id"
     }
 }

@@ -4,61 +4,70 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.ckDividerColor
 import com.clearkeep.db.model.People
+import com.clearkeep.screen.chat.main.composes.CircleAvatar
 
 @Composable
 fun InviteGroupScreen(
-        navController: NavHostController,
         inviteGroupViewModel: InviteGroupViewModel,
 
-        onFriendSelected: (List<People>) -> Unit
+        onFriendSelected: (List<People>) -> Unit,
+        onBackPressed: () -> Unit,
+        isSelectionOnly: Boolean = false,
 ) {
     val friends = inviteGroupViewModel.friends.observeAsState()
 
-    val selectedItem: ArrayList<People> = ArrayList()
+    val selectedItem = remember { mutableStateListOf<People>() }
 
     Column {
-        TopAppBar(
+        CKTopAppBar(
                 title = {
-                    Text(text = "Create group")
+                    Text(text = if (isSelectionOnly) "Select friends" else "Invite Friends")
                 },
                 navigationIcon = {
                     IconButton(
-                            onClick = {
-                                navController.popBackStack(navController.graph.startDestination, false)
-                            }
+                            onClick = onBackPressed
                     ) {
                         Icon(asset = Icons.Filled.ArrowBack)
                     }
                 },
                 actions = {
                     Box(modifier = Modifier.clickable(onClick = {
-                        onFriendSelected(selectedItem)
+                        if (isSelectionOnly) {
+                            onFriendSelected(selectedItem)
+                        } else {
+                            inviteGroupViewModel.inviteFriends(selectedItem)
+                        }
                     })) {
-                        Text(text = "Continue")
+                        Text(modifier = Modifier.padding(horizontal = 8.dp), text = if (isSelectionOnly) "Continue" else "Invite")
                     }
                 }
         )
         friends?.let {
             LazyColumnFor(
-                items = it?.value?.data ?: emptyList(),
-                contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
+                    items = it?.value?.data ?: emptyList(),
+                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
             ) { friend ->
                 Surface(color = Color.White) {
                     FriendItem(friend,
-                        onFriendSelected = {people ->
-                            selectedItem.add(people)
-                        }
+                            selectedItem.contains(friend),
+                            onFriendSelected = { people, isAdd ->
+                                if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
+                            }
                     )
                 }
             }
@@ -68,19 +77,38 @@ fun InviteGroupScreen(
 
 @Composable
 fun FriendItem(
-    friend: People,
-    onFriendSelected: (People) -> Unit,
+        friend: People,
+        isSelected: Boolean,
+        onFriendSelected: (people: People, isAdd: Boolean) -> Unit,
 ) {
-    Column(modifier = Modifier
-        .clickable(onClick = { onFriendSelected(friend) }, enabled = true)
-        .padding(horizontal = 20.dp, vertical = 10.dp)
+    Column(modifier = Modifier.selectable(
+            selected = isSelected,
+            onClick = { onFriendSelected(friend, !isSelected) })
+            .padding(horizontal = 20.dp)
     ) {
-        Row() {
-            Text(text = friend.userName,
-                style = MaterialTheme.typography.h6
+        Row(modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircleAvatar("")
+            Column(modifier = Modifier.padding(start = 20.dp).weight(1.0f, true)) {
+                Text(text = friend.userName,
+                        style = MaterialTheme.typography.h6
+                )
+            }
+            RadioButton(
+                    colors = RadioButtonConstants.defaultColors(
+                            selectedColor = MaterialTheme.colors.secondary,
+                            unselectedColor = MaterialTheme.colors.secondary,
+                            disabledColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
+                                    MaterialTheme.colors.onSurface
+                            )
+                    ),
+                    selected = isSelected,
+                    onClick = { onFriendSelected(friend, !isSelected) }
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(color = ckDividerColor, thickness = 0.5.dp, modifier = Modifier.padding(start = 20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+        Divider(color = ckDividerColor, thickness = 0.3.dp, modifier = Modifier.padding(start = 68.dp))
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }

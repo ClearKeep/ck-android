@@ -50,6 +50,15 @@ class GroupRepository @Inject constructor(
         }
     }
 
+    suspend fun fetchRoomsFromAPI() = withContext(Dispatchers.IO) {
+        try {
+            val groups = getRoomsFromAPI()
+            roomDAO.insertGroupList(groups)
+        } catch(exception: Exception) {
+            printlnCK("fetchRoomsFromAPI: $exception")
+        }
+    }
+
     @Throws(Exception::class)
     private suspend fun getRoomsFromAPI() : List<ChatGroup>  = withContext(Dispatchers.IO) {
         val clientId = profileRepository.getClientId()

@@ -30,7 +30,7 @@ class ProfileRepository @Inject constructor(
         try {
             val request = UserOuterClass.Empty.newBuilder().build()
             val response = userStub.getProfile(request)
-            val user = User(response.id, response.username)
+            val user = User(response.id, response.username, response.email, response.firstName, response.lastName)
             userDao.save(user)
             saveClientId(user.id)
 

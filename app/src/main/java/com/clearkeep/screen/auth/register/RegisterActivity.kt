@@ -53,7 +53,10 @@ class RegisterActivity : AppCompatActivity() {
         val onRegisterPressed: (String, String, String) -> Unit = { userName, password, email -> registerViewModel.register(userName, password, email) }
         Stack() {
             RegisterScreen(
-                    onRegisterPressed = onRegisterPressed
+                    onRegisterPressed = onRegisterPressed,
+                    onBackPress = {
+                        finish()
+                    }
             )
         }
     }
