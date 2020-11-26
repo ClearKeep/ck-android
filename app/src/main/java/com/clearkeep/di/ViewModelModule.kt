@@ -11,6 +11,7 @@ import com.clearkeep.screen.chat.create_group.CreateGroupViewModel
 import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
 import com.clearkeep.screen.chat.main.HomeViewModel
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
+import com.clearkeep.screen.chat.search.SearchViewModel
 import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
@@ -67,6 +68,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(ProfileViewModel::class)
     abstract fun bindProfileViewModel(profileViewModel: ProfileViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(SearchViewModel::class)
+    abstract fun bindSearchViewModel(searchViewModel: SearchViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

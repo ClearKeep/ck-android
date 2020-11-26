@@ -59,29 +59,8 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    private suspend fun insertFriends(friends: List<People>) {
-        peopleDao.insertPeopleList(friends)
-    }
-
-    private suspend fun getFriendsFromAPI() : List<People>  = withContext(Dispatchers.IO) {
-        try {
-            val request = UserOuterClass.Empty.newBuilder()
-                    .build()
-            val response = userStub.getUsers(request)
-            return@withContext response.lstUserOrBuilderList
-                    .map { userInfoResponseOrBuilder ->
-                        People(
-                            userInfoResponseOrBuilder.id,
-                            userInfoResponseOrBuilder.username
-                        )
-                    }
-        } catch (e: Exception) {
-            printlnCK("getFriendsFromAPI: $e")
-            return@withContext emptyList()
-        }
-    }
-
-    private suspend fun searchUser(userName: String) : List<People>  = withContext(Dispatchers.IO) {
+    suspend fun searchUser(userName: String) : List<People>  = withContext(Dispatchers.IO) {
+        printlnCK("searchUser: $userName")
         try {
             val request = UserOuterClass.SearchUserRequest.newBuilder()
                     .setKeyword(userName).build()
@@ -95,6 +74,28 @@ class PeopleRepository @Inject constructor(
                     }
         } catch (e: Exception) {
             printlnCK("searchUser: $e")
+            return@withContext emptyList()
+        }
+    }
+
+    private suspend fun insertFriends(friends: List<People>) {
+        peopleDao.insertPeopleList(friends)
+    }
+
+    private suspend fun getFriendsFromAPI() : List<People>  = withContext(Dispatchers.IO) {
+        try {
+            val request = UserOuterClass.Empty.newBuilder()
+                .build()
+            val response = userStub.getUsers(request)
+            return@withContext response.lstUserOrBuilderList
+                .map { userInfoResponseOrBuilder ->
+                    People(
+                        userInfoResponseOrBuilder.id,
+                        userInfoResponseOrBuilder.username
+                    )
+                }
+        } catch (e: Exception) {
+            printlnCK("getFriendsFromAPI: $e")
             return@withContext emptyList()
         }
     }

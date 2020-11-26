@@ -110,6 +110,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:$jetpack_compose_version")
     implementation("androidx.compose.material:material:$jetpack_compose_version")
     implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
+    implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
     implementation("androidx.compose.animation:animation:$jetpack_compose_version")
     implementation "androidx.ui:ui-tooling:$jetpack_compose_version"
     // gRPC

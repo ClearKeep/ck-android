@@ -15,13 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true">
-        <activity android:name=".screen.chat.create_group.CreateGroupActivity"
+        <activity android:name=".screen.chat.search.SearchUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
+        <activity
+            android:name=".screen.chat.create_group.CreateGroupActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
-        <activity android:name=".screen.splash.SplashActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" >
+        <activity
+            android:name=".screen.splash.SplashActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,12 +34,12 @@
         </activity>
         <activity
             android:name=".screen.auth.login.LoginActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:label="@string/btn_login" />
+            android:label="@string/btn_login"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.auth.register.RegisterActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:label="@string/btn_register" />
+            android:label="@string/btn_register"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.chat.main.HomeActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
