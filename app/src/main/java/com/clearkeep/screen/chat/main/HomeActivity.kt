@@ -41,6 +41,7 @@ import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.screen.chat.create_group.CreateGroupActivity
 import com.clearkeep.screen.chat.main.profile.ProfileScreen
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
+import com.clearkeep.screen.chat.search.SearchUserActivity
 import javax.inject.Inject
 
 val items = listOf(
@@ -168,6 +169,9 @@ class HomeActivity : AppCompatActivity() {
                                 peopleViewModel,
                                 onFriendSelected = { friend ->
                                     navigateToRoomScreen(friend)
+                                },
+                                onNavigateToSearch = {
+                                    navigateToSearchScreen()
                                 }
                             )
                         }
@@ -199,6 +203,11 @@ class HomeActivity : AppCompatActivity() {
 
     private fun navigateToCreateGroupScreen() {
         val intent = Intent(this, CreateGroupActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToSearchScreen() {
+        val intent = Intent(this, SearchUserActivity::class.java)
         startActivity(intent)
     }
 }

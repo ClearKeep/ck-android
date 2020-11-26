@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.main.people
 
+import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,11 +20,13 @@ import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.model.People
 import com.clearkeep.components.ckDividerColor
 import com.clearkeep.screen.chat.main.composes.CircleAvatar
+import com.clearkeep.screen.chat.main.composes.InputSearchBox
 
 @Composable
 fun PeopleScreen(
         peopleViewModel: PeopleViewModel,
         onFriendSelected: (People) -> Unit,
+        onNavigateToSearch: () -> Unit
 ) {
     val friends = peopleViewModel.friends.observeAsState()
     Column {
@@ -32,14 +35,22 @@ fun PeopleScreen(
                 Text(text = stringResource(id = R.string.bottom_nav_group))
             },
         )
-        friends?.let {
-            LazyColumnFor(
-                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                    items = it?.value?.data ?: emptyList(),
-                contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
-            ) { friend ->
-                Surface(color = Color.White) {
-                    FriendItem(friend, onFriendSelected)
+        friends?.value?.let { list ->
+            ScrollableColumn(modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 30.dp, end = 20.dp, start = 20.dp, bottom = 30.dp),
+            ) {
+                Box(
+                    modifier = Modifier.padding(bottom = 30.dp).fillMaxWidth()
+                        .clickable(
+                            onClick = onNavigateToSearch
+                        )
+                ) {
+                    InputSearchBox(enabled = false, onValueChange = {})
+                }
+                list.data?.forEachIndexed { _, friend ->
+                    Surface(color = Color.White) {
+                        FriendItem(friend, onFriendSelected)
+                    }
                 }
             }
         }
