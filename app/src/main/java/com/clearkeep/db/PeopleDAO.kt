@@ -16,7 +16,7 @@ interface PeopleDao {
     suspend fun insertPeopleList(people: List<People>)
 
     @Query("SELECT * FROM people WHERE id =:friendId LIMIT 1")
-    suspend fun getFriend(friendId: String): People
+    suspend fun getFriend(friendId: String): People?
 
     @Query("SELECT * FROM people")
     fun getFriends(): LiveData<List<People>>

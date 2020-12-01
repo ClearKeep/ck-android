@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
@@ -32,37 +36,25 @@ fun SendBottomCompose(
             color = Color.White,
             modifier = Modifier.weight(0.66f),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 4.dp)) {
                 CKTextField(
-                        "Next Message",
+                        "Enter message...",
                         " ",
                         msgState
                 )
             }
         }
-        Button(
-            modifier = Modifier.padding(8.dp),
+        IconButton(
             onClick = {
                 if (!TextUtils.isEmpty(msgState.value)) {
                     onSendMessage(msgState.value)
                     // clear text
                     msgState.value = ""
                 }
-            }
+            },
+            modifier = Modifier.padding(8.dp),
         ) {
-            Text(
-                text = "Send",
-                style = TextStyle(fontSize = TextUnit.Sp(16))
-            )
+            Icon(Icons.Filled.Send.copy(defaultHeight = 36.dp, defaultWidth = 36.dp), tint = Color.Blue)
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewApp() {
-    SendBottomCompose(
-        onSendMessage = {}
-    )
-
 }

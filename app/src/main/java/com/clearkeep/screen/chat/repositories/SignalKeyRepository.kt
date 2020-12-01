@@ -57,7 +57,7 @@ class SignalKeyRepository @Inject constructor(
                     .build()
 
             val response = client.peerRegisterClientKey(request)
-            if (null != response?.message && response.message == "success") {
+            if (response?.success != false) {
                 myStore.storePreKey(preKey.id, preKey)
                 myStore.storeSignedPreKey(signedPreKey.id, signedPreKey)
                 storage.setBoolean(IS_PEER_SIGNAL_KEY_REGISTERED, true)
@@ -89,7 +89,7 @@ class SignalKeyRepository @Inject constructor(
             val response = withContext(Dispatchers.IO) {
                 client.groupRegisterClientKey(request)
             }
-            if (null != response?.message && response.message == "success") {
+            if (response?.success != false) {
                 printlnCK("joinInGroup: $groupID: success")
                 roomRepository.remarkJoinInRoom(groupID)
                 return@withContext true

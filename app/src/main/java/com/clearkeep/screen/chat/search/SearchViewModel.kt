@@ -11,7 +11,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
 ) : ViewModel() {
-    var debouncePeriod: Long = 1000
+    private val debouncePeriod: Long = 1000
 
     private var searchJob: Job? = null
 

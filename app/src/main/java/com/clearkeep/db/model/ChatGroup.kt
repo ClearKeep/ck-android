@@ -1,14 +1,17 @@
 package com.clearkeep.db.model
 
 import androidx.annotation.NonNull
+import androidx.annotation.Nullable
 import androidx.room.*
+import com.clearkeep.db.converter.MessageConverter
+import com.clearkeep.db.converter.PeopleListConverter
 import com.clearkeep.db.converter.SortedStringListConverter
 import com.clearkeep.screen.chat.utils.isGroup
 
 const val GROUP_ID_TEMPO = "id_not_create"
 
 @Entity
-@TypeConverters(SortedStringListConverter::class)
+@TypeConverters(SortedStringListConverter::class, MessageConverter::class, PeopleListConverter::class)
 data class ChatGroup(
         @NonNull
         @PrimaryKey val id: String,
@@ -20,13 +23,14 @@ data class ChatGroup(
         @ColumnInfo(name = "updated_by_client_id") val updateBy: String,
         @ColumnInfo(name = "updated_at") val updateAt: Long,
 
-        @ColumnInfo(name = "lst_client_id") val clientList: List<String>,
+        @ColumnInfo(name = "lst_client") val clientList: List<People>,
 
         @ColumnInfo(name = "is_registered_to_group") val isJoined: Boolean = false,
 
-        @ColumnInfo(name = "last_client") val lastClient: String,
-        @ColumnInfo(name = "last_message") val lastMessage: String,
-        @ColumnInfo(name = "last_updated_time") val lastUpdatedTime: Long,
+        @Nullable
+        @ColumnInfo(name = "last_message") val lastMessage: Message?,
+
+        @ColumnInfo(name = "last_message_at") val lastMessageAt: Long,
 ) {
         fun isGroup() = isGroup(groupType)
 

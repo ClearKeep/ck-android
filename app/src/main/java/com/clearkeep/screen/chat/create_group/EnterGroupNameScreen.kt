@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextField
 
 @Composable
@@ -27,9 +28,9 @@ fun EnterGroupNameScreen(
                     Text(text = "Create group")
                 },
                 actions = {
-                    Box(modifier = Modifier.clickable(onClick = {createGroupViewModel.createGroup(groupName.value)})) {
-                        Text(text = "Continue")
-                    }
+                    CKTextButton(title = "Create",
+                        onClick = {createGroupViewModel.createGroup(groupName.value)}
+                    )
                 }
         )
         Spacer(Modifier.preferredHeight(30.dp))

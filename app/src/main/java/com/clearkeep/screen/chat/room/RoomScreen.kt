@@ -6,12 +6,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
@@ -54,11 +57,10 @@ fun RoomObserverView(
     group?.value?.let { group ->
         val messageList = roomViewModel.getMessages(group.id).observeAsState()
         val groupName = if (group.isGroup()) group.groupName else {
-            val userNameList = group.groupName.split(",")
-            userNameList.firstOrNull { userName ->
-                userName != roomViewModel.getUserName()
-            } ?: ""
-    }
+            group.clientList.first { client ->
+                client.id != roomViewModel.getClientId()
+            }.userName
+        }
         Column(
                 modifier = Modifier.fillMaxSize()
         ) {
@@ -67,7 +69,11 @@ fun RoomObserverView(
                         Box(modifier = Modifier.clickable(onClick = {
                             navHostController.navigate("room_info_screen")
                         })) {
-                            Text(text = groupName)
+                            Text(text = groupName,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                            )
                         }
                     },
                     navigationIcon = {
@@ -85,8 +91,10 @@ fun RoomObserverView(
             )) {
                 messageList?.value?.let { messages ->
                     MessageListView(
-                            messageList = messages,
-                            myClientId = roomViewModel.getClientId()
+                        messageList = messages,
+                        clients = group.clientList,
+                        myClientId = roomViewModel.getClientId(),
+                        group.isGroup()
                     )
                 }
             }
@@ -97,10 +105,10 @@ fun RoomObserverView(
                         if (isGroup) {
                             roomViewModel.sendMessageToGroup(groupResult.id, message, groupResult.isJoined)
                         } else {
-                            val friendId = groupResult.clientList.firstOrNull { clientId ->
-                                clientId != roomViewModel.getClientId()
-                            } ?: ""
-                            roomViewModel.sendMessageToUser(friendId, groupName, groupResult.id, message)
+                            val friend = groupResult.clientList.first { client ->
+                                client.id != roomViewModel.getClientId()
+                            }
+                            roomViewModel.sendMessageToUser(friend, groupResult.id, message)
                         }
                     }
             )

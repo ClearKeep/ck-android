@@ -29,7 +29,14 @@ fun ProfileScreen(
         CircleAvatar("", size = 72.dp)
         Spacer(Modifier.preferredHeight(20.dp))
         profile?.value?.let { user ->
-            Text(text = user.userName ?: "", style = MaterialTheme.typography.h5)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = user.userName ?: "", style = MaterialTheme.typography.h5)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(text = user.email ?: "", style = MaterialTheme.typography.body2)
+            }
         }
     }
 }

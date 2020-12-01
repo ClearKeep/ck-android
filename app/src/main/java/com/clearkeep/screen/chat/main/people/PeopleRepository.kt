@@ -49,8 +49,9 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    suspend fun getFriend(friendId: String) : People {
-        return peopleDao.getFriend(friendId)
+    suspend fun getFriend(friendId: String) : People? = withContext(Dispatchers.IO) {
+        val friend = peopleDao.getFriend(friendId)
+        return@withContext friend ?: getFriendFromAPI(friendId)
     }
 
     suspend fun getFriends(idList: List<String>): List<People> {
@@ -97,6 +98,21 @@ class PeopleRepository @Inject constructor(
         } catch (e: Exception) {
             printlnCK("getFriendsFromAPI: $e")
             return@withContext emptyList()
+        }
+    }
+
+    private suspend fun getFriendFromAPI(friendId: String) : People?  = withContext(Dispatchers.IO) {
+        try {
+            val request = UserOuterClass.GetUserRequest.newBuilder().setClientId(friendId)
+                .build()
+            val response = userStub.getUserInfo(request)
+            return@withContext People(
+                response.id,
+                response.username
+            )
+        } catch (e: Exception) {
+            printlnCK("getFriendsFromAPI: $e")
+            return@withContext null
         }
     }
 }

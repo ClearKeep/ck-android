@@ -30,6 +30,10 @@ suspend fun decryptPeerMessage(
         fromClientId: String, message: ByteString,
         signalProtocolStore: InMemorySignalProtocolStore,
 ) : String = withContext(Dispatchers.IO) {
+    if (message.isEmpty) {
+        return@withContext ""
+    }
+
     val signalProtocolAddress = SignalProtocolAddress(fromClientId, 222)
     val preKeyMessage = PreKeySignalMessage(message.toByteArray())
 
@@ -44,6 +48,10 @@ suspend fun decryptGroupMessage(
         senderKeyStore: InMemorySenderKeyStore,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
 ) : String = withContext(Dispatchers.IO) {
+    if (message.isEmpty) {
+        return@withContext ""
+    }
+
     val senderAddress = SignalProtocolAddress(fromClientId, 222)
     val groupSender = SenderKeyName(groupId, senderAddress)
     val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)

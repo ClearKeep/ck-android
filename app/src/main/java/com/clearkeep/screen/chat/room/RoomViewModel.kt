@@ -33,11 +33,11 @@ class RoomViewModel @Inject constructor(
 
     val members: LiveData<List<People>> = _group.switchMap { group ->
         liveData {
-            emit(peopleRepository.getFriends(group.clientList))
+            emit(peopleRepository.getFriends(group.clientList.map { it.id }))
         }
     }
     fun getMessages(groupId: String): LiveData<List<Message>> {
-        return messageRepository.getMessages(groupId)
+        return messageRepository.getMessagesAsState(groupId)
     }
 
     fun getClientId() = chatRepository.getClientId()
@@ -46,38 +46,45 @@ class RoomViewModel @Inject constructor(
 
     fun updateGroupWithId(groupId: String) {
         viewModelScope.launch {
-            _group.value = roomRepository.getGroupByID(groupId)
-            //messageRepository.fetchMessageToStore(groupId)
+            val ret = roomRepository.getGroupByID(groupId)
+            _group.value = ret
+            updateMessagesFromRemote(groupId, ret.lastMessageAt)
         }
     }
 
     fun updateGroupWithFriendId(friendId: String) {
         viewModelScope.launch {
-            var existingGroup = roomRepository.getGroupPeerByClientId(listOf(getClientId(), friendId))
+            val friend = peopleRepository.getFriend(friendId) ?: People(friendId, "")
+            var existingGroup = roomRepository.getGroupPeerByClientId(friend)
             if (existingGroup == null) {
-                val friend = peopleRepository.getFriend(friendId)
-                existingGroup = roomRepository.getTemporaryGroupWithAFriend(getClientId(), getUserName(),
-                        friendId, friend.userName)
+                existingGroup = roomRepository.getTemporaryGroupWithAFriend(
+                    People(getClientId(), getUserName()),
+                    People(friendId, friend.userName)
+                )
             } else {
-                //messageRepository.fetchMessageToStore(existingGroup.id)
+                updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageAt)
             }
             _group.value = existingGroup
         }
     }
 
-    fun sendMessageToUser(receiverId: String, receiverUserName: String, groupId: String, message: String) {
-        if (receiverId.isNullOrEmpty()) {
-            printlnCK("sendMessageToUser: can not send message with receiverId empty")
-            return
+    private suspend fun updateMessagesFromRemote(groupId: String, lastMessageAt: Long) {
+        val messages = messageRepository.getMessages(groupId)
+        val preLastMessage = messages.takeLast(2).firstOrNull()
+        if (preLastMessage != null && preLastMessage.createdTime > 0 && preLastMessage.createdTime < lastMessageAt) {
+            printlnCK("load message: from time $preLastMessage to $lastMessageAt")
+            messageRepository.fetchMessageFromAPI(groupId, preLastMessage.createdTime, 0)
         }
+    }
 
+    fun sendMessageToUser(receiverPeople: People, groupId: String, message: String) {
         viewModelScope.launch {
             var lastGroupId: String = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val group = roomRepository.createGroupFromAPI(
                         getClientId(),
-                        "${getUserName()},$receiverUserName",
-                        listOf(getClientId(), receiverId),
+                        "${getUserName()},${receiverPeople.userName}",
+                        listOf(getClientId(), receiverPeople.id),
                         false
                 )
                 if (group != null) {
@@ -87,7 +94,7 @@ class RoomViewModel @Inject constructor(
             }
 
             if (lastGroupId != GROUP_ID_TEMPO) {
-                chatRepository.sendMessageInPeer(receiverId, lastGroupId, message)
+                chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message)
             }
         }
     }

@@ -19,7 +19,7 @@ private val craneFontFamily = fontFamily(fonts = listOf(light, regular, medium, 
 val captionTextStyle = TextStyle(
     fontFamily = craneFontFamily,
     fontWeight = FontWeight.W400,
-    fontSize = 16.sp
+    fontSize = 12.sp
 )
 
 val ckTypography = Typography(
@@ -51,7 +51,7 @@ val ckTypography = Typography(
     h6 = TextStyle(
         fontFamily = craneFontFamily,
         fontWeight = FontWeight.W400,
-        fontSize = 20.sp
+        fontSize = 16.sp
     ),
     subtitle1 = TextStyle(
         fontFamily = craneFontFamily,
@@ -80,7 +80,7 @@ val ckTypography = Typography(
     ),
     caption = TextStyle(
         fontFamily = craneFontFamily,
-        fontWeight = FontWeight.W500,
+        fontWeight = FontWeight.W400,
         fontSize = 12.sp,
             color = Color.DarkGray
     ),

@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.KEY_ROUTE
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -137,7 +138,7 @@ class HomeActivity : AppCompatActivity() {
                                     selectedContentColor = MaterialTheme.colors.surface,
                                     unselectedContentColor = MaterialTheme.colors.onBackground,
                                     icon = { Icon(screen.iconId) },
-                                    label = { Text(stringResource(screen.resourceId)) },
+                                    label = { Text(stringResource(screen.resourceId), style = MaterialTheme.typography.body2.copy(fontSize = 10.sp)) },
                                     selected = currentRoute == screen.route,
                                     onClick = {
                                         if (currentRoute != screen.route) {
