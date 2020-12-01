@@ -16,6 +16,12 @@ interface MessageDAO {
     @Query("DELETE FROM message WHERE group_id =:groupId")
     suspend fun deleteMessageFromGroupId(groupId: String)
 
+    @Query("SELECT * FROM message WHERE id = :messageId")
+    suspend fun getMessage(messageId: String): Message?
+
     @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time ASC")
-    fun getMessages(groupId: String): LiveData<List<Message>>
+    suspend fun getMessages(groupId: String): List<Message>
+
+    @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time ASC")
+    fun getMessagesAsState(groupId: String): LiveData<List<Message>>
 }

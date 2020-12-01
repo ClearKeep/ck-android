@@ -15,9 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.ckDividerColor
+import com.clearkeep.components.colorTest
 import com.clearkeep.db.model.People
 import com.clearkeep.screen.chat.main.composes.CircleAvatar
 
@@ -35,27 +38,41 @@ fun InviteGroupScreen(
 
     Column {
         CKTopAppBar(
-                title = {
-                    Text(text = if (isSelectionOnly) "Select friends" else "Invite Friends")
-                },
-                navigationIcon = {
-                    IconButton(
-                            onClick = onBackPressed
-                    ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+            title = {
+                Text(text = if (isSelectionOnly) "Select friends" else "Invite Friends")
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = onBackPressed
+                ) {
+                    Icon(asset = Icons.Filled.ArrowBack)
+                }
+            },
+            actions = {
+                /*Box(modifier = Modifier.clickable(onClick = {
+                    if (isSelectionOnly) {
+                        onFriendSelected(selectedItem)
+                    } else {
+                        inviteGroupViewModel.inviteFriends(selectedItem)
                     }
-                },
-                actions = {
-                    Box(modifier = Modifier.clickable(onClick = {
+                })) {
+                    Text(modifier = Modifier.padding(horizontal = 8.dp),
+                        text = if (isSelectionOnly) "Next" else "Invite",
+                        style = MaterialTheme.typography.body2.copy(
+                            color = Color.Blue
+                        )
+                    )
+                }*/
+                CKTextButton(title = if (isSelectionOnly) "Next" else "Invite",
+                    onClick = {
                         if (isSelectionOnly) {
                             onFriendSelected(selectedItem)
                         } else {
                             inviteGroupViewModel.inviteFriends(selectedItem)
                         }
-                    })) {
-                        Text(modifier = Modifier.padding(horizontal = 8.dp), text = if (isSelectionOnly) "Continue" else "Invite")
                     }
-                }
+                )
+            }
         )
         friends?.let {
             LazyColumnFor(
@@ -92,15 +109,15 @@ fun FriendItem(
             CircleAvatar("")
             Column(modifier = Modifier.padding(start = 20.dp).weight(1.0f, true)) {
                 Text(text = friend.userName,
-                        style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
                 )
             }
             RadioButton(
                     colors = RadioButtonConstants.defaultColors(
-                            selectedColor = MaterialTheme.colors.secondary,
-                            unselectedColor = MaterialTheme.colors.secondary,
+                            selectedColor = Color.Blue,
+                            unselectedColor = colorTest,
                             disabledColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
-                                    MaterialTheme.colors.onSurface
+                                colorTest
                             )
                     ),
                     selected = isSelected,

@@ -6,11 +6,12 @@ import com.clearkeep.db.model.Message
 import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.screen.chat.utils.*
-import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
+import message.MessageGrpc
+import message.MessageOuterClass
 import notification.NotifyGrpc
 import notification.NotifyOuterClass
 import org.whispersystems.libsignal.SessionCipher
@@ -18,7 +19,6 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.CiphertextMessage
-import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,6 +28,8 @@ class ChatRepository @Inject constructor(
         private val client: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
         private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         private val notifyStub: NotifyGrpc.NotifyStub,
+        private val messageGrpc: MessageGrpc.MessageStub,
+        private val messageBlockingGrpc: MessageGrpc.MessageBlockingStub,
 
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
@@ -41,11 +43,17 @@ class ChatRepository @Inject constructor(
         subscribeNotificationChannel()
     }
 
+    fun unsubscriber(flag: Boolean) {
+        isSubscriber = flag
+    }
+
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+
+    var isSubscriber: Boolean = true
 
     fun getClientId() = userRepository.getClientId()
 
-    suspend fun sendMessageInPeer(receiverId: String, groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(receiverId: String, groupId: String, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
         printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId")
         try {
@@ -60,19 +68,19 @@ class ChatRepository @Inject constructor(
 
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
             val message: CiphertextMessage =
-                    sessionCipher.encrypt(msg.toByteArray(charset("UTF-8")))
+                    sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
-            val request = Signal.PublishRequest.newBuilder()
+            val request = MessageOuterClass.PublishRequest.newBuilder()
                     .setClientId(receiverId)
                     .setFromClientId(senderId)
                     .setGroupId(groupId)
                     .setMessage(ByteString.copyFrom(message.serialize()))
                     .build()
 
-            clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, receiverId, msg)
+            val response = messageBlockingGrpc.publish(request)
+            insertNewMessage(response, plainMessage)
 
-            printlnCK("send message success: $msg")
+            printlnCK("send message success: $plainMessage")
         } catch (e: java.lang.Exception) {
             printlnCK("sendMessage: $e")
             return@withContext false
@@ -81,7 +89,7 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun sendMessageToGroup(groupId: String, msg: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageToGroup(groupId: String, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId")
         try {
@@ -90,17 +98,17 @@ class ChatRepository @Inject constructor(
 
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =
-                    aliceGroupCipher.encrypt(msg.toByteArray(charset("UTF-8")))
+                    aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
-            val request = Signal.PublishRequest.newBuilder()
+            val request = MessageOuterClass.PublishRequest.newBuilder()
                     .setGroupId(groupId)
                     .setFromClientId(senderAddress.name)
                     .setMessage(ByteString.copyFrom(ciphertextFromAlice))
                     .build()
-            clientBlocking.publish(request)
-            insertNewMessage(groupId, senderId, groupId, msg)
+            val response = messageBlockingGrpc.publish(request)
+            insertNewMessage(response, plainMessage)
 
-            printlnCK("send message success: $msg")
+            printlnCK("send message success: $plainMessage")
             return@withContext true
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
@@ -111,13 +119,14 @@ class ChatRepository @Inject constructor(
 
     private fun subscribeMessageChannel() {
         val ourClientId = getClientId()
-        val request = Signal.SubscribeAndListenRequest.newBuilder()
+        printlnCK("subscribeMessageChannel: $ourClientId")
+        val request = MessageOuterClass.SubscribeAndListenRequest.newBuilder()
                 .setClientId(ourClientId)
                 .build()
 
-        client.subscribe(request, object : StreamObserver<Signal.BaseResponse> {
-            override fun onNext(response: Signal.BaseResponse?) {
-                printlnCK("subscribe message  $ourClientId onNext ${response?.message}")
+        messageGrpc.subscribe(request, object : StreamObserver<MessageOuterClass.BaseResponse> {
+            override fun onNext(response: MessageOuterClass.BaseResponse?) {
+                printlnCK("subscribe message  $ourClientId onNext ${response?.success}")
             }
 
             override fun onError(t: Throwable?) {
@@ -131,13 +140,16 @@ class ChatRepository @Inject constructor(
     }
 
     private fun listenMessageChannel() {
-        val request = Signal.SubscribeAndListenRequest.newBuilder()
+        val request = MessageOuterClass.SubscribeAndListenRequest.newBuilder()
                 .setClientId(getClientId())
                 .build()
-        client.listen(request, object : StreamObserver<Signal.Publication> {
-            override fun onNext(value: Signal.Publication) {
+        messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
+            override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
                 printlnCK("Receive a message from : ${value.fromClientId}" +
                         ", groupId = ${value.groupId} groupType = ${value.groupType}")
+                if (!isSubscriber) {
+                    return
+                }
                 scope.launch {
                     // TODO
                     if (!isGroup(value.groupType)) {
@@ -204,29 +216,81 @@ class ChatRepository @Inject constructor(
         })
     }
 
-    private suspend fun decryptMessageFromPeer(value: Signal.Publication) {
+    private suspend fun decryptMessageFromPeer(value: MessageOuterClass.MessageObjectResponse) {
         try {
-            val result = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
-            insertNewMessage(value.groupId, value.fromClientId, getClientId(), result)
+            val plainMessage = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
+            insertNewMessage(value, plainMessage)
 
-            printlnCK("decryptMessageFromPeer: $result")
+            printlnCK("decryptMessageFromPeer: $plainMessage")
         } catch (e: Exception) {
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
 
-    private suspend fun decryptMessageFromGroup(value: Signal.Publication) {
+    private suspend fun decryptMessageFromGroup(value: MessageOuterClass.MessageObjectResponse) {
         try {
-            val result = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
-            insertNewMessage(value.groupId, value.fromClientId, getClientId(), result)
+            val plainMessage = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
+            insertNewMessage(value, plainMessage)
 
-            printlnCK("decryptMessageFromGroup: $result")
+            printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
             printlnCK("decryptMessageFromGroup error : $e")
         }
     }
 
-    private suspend fun insertNewMessage(groupId: String, senderId: String,
+    private suspend fun insertNewMessage(value: MessageOuterClass.MessageObjectResponse, messageString: String) {
+        val groupId = value.groupId
+        var room: ChatGroup? = roomRepository.getGroupByID(groupId)
+        if (room == null) {
+            room = roomRepository.getGroupFromAPI(groupId)
+            if (room != null) {
+                roomRepository.insertGroup(room)
+            }
+        }
+
+        if (room == null) {
+            printlnCK("insertNewMessage error: can not a room with id $groupId")
+            return
+        }
+
+        val messageRecord = convertMessageResponse(value, messageString)
+        messageRepository.insert(messageRecord)
+
+        // update last message in room
+        val updateRoom = ChatGroup(
+            id = room.id,
+            groupName = room.groupName,
+            groupAvatar = room.groupAvatar,
+            groupType = room.groupType,
+            createBy = room.createBy,
+            createdAt = room.createdAt,
+            updateBy = room.updateBy,
+            updateAt = room.updateAt,
+            clientList = room.clientList,
+
+            // update
+            isJoined = true,
+
+            lastMessage = messageRecord,
+            lastMessageAt = messageRecord.createdTime
+        )
+        roomRepository.updateRoom(updateRoom)
+    }
+
+    private fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String): Message {
+        return Message(
+            value.id,
+            value.groupId,
+            value.groupType,
+            value.fromClientId,
+            value.clientId,
+            decryptedMessage,
+            value.createdAt,
+            value.updatedAt,
+        )
+    }
+
+    /*private suspend fun insertNewMessage(groupId: String, senderId: String,
                                          receiverId: String, message: String) {
         var room: ChatGroup? = roomRepository.getGroupByID(groupId)
         if (room == null) {
@@ -263,5 +327,5 @@ class ChatRepository @Inject constructor(
                 lastUpdatedTime = createTime
         )
         roomRepository.updateRoom(updateRoom)
-    }
+    }*/
 }

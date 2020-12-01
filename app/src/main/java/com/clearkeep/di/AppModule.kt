@@ -108,6 +108,17 @@ class AppModule {
 
     @Singleton
     @Provides
+    fun provideMessageStub(): MessageGrpc.MessageStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        return MessageGrpc.newStub(channel)
+    }
+
+    @Singleton
+    @Provides
     fun provideInMemorySignalProtocolStore(storage: Storage): InMemorySignalProtocolStore {
         return InMemorySignalProtocolStore(storage)
     }
@@ -119,8 +130,8 @@ class AppModule {
     }
 
     companion object {
-        //private const val BASE_URL = "172.16.0.216"
-        private const val BASE_URL = "172.16.0.197"
+        private const val BASE_URL = "172.16.0.216"
+        //private const val BASE_URL = "172.16.0.197"
         private const val PORT = 5000
     }
 }

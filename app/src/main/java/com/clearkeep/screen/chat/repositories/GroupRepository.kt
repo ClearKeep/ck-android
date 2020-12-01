@@ -6,15 +6,21 @@ import com.clearkeep.db.GroupDAO
 import com.clearkeep.db.converter.SortedStringListConverter
 import com.clearkeep.db.model.GROUP_ID_TEMPO
 import com.clearkeep.db.model.ChatGroup
+import com.clearkeep.db.model.Message
+import com.clearkeep.db.model.People
 import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.repository.utils.Resource
-import com.clearkeep.screen.chat.utils.getGroupType
+import com.clearkeep.screen.chat.main.people.PeopleRepository
+import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
+import message.MessageOuterClass
+import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,11 +29,17 @@ class GroupRepository @Inject constructor(
         private val roomDAO: GroupDAO,
         private val groupBlockingStub: GroupGrpc.GroupBlockingStub,
         private val groupGrpc: GroupGrpc.GroupBlockingStub,
-        private val profileRepository: ProfileRepository
+
+        private val profileRepository: ProfileRepository,
+        private val messageRepository: MessageRepository,
+
+        private val senderKeyStore: InMemorySenderKeyStore,
+        private val signalProtocolStore: InMemorySignalProtocolStore,
+        private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
 ) {
     fun getAllRooms() = liveData {
         val disposable = emitSource(
-                roomDAO.getRooms().map {
+                roomDAO.getRoomsAsState().map {
                     Resource.loading(it)
                 }
         )
@@ -36,14 +48,14 @@ class GroupRepository @Inject constructor(
             disposable.dispose()
             roomDAO.insertGroupList(groups)
             emitSource(
-                    roomDAO.getRooms().map {
+                    roomDAO.getRoomsAsState().map {
                         Resource.success(it)
                     }
             )
         } catch(exception: Exception) {
             printlnCK("getAllRooms: $exception")
             emitSource(
-                    roomDAO.getRooms().map {
+                    roomDAO.getRoomsAsState().map {
                         Resource.error(exception.toString(), it)
                     }
             )
@@ -51,6 +63,7 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun fetchRoomsFromAPI() = withContext(Dispatchers.IO) {
+        printlnCK("fetchRoomsFromAPI")
         try {
             val groups = getRoomsFromAPI()
             roomDAO.insertGroupList(groups)
@@ -61,11 +74,13 @@ class GroupRepository @Inject constructor(
 
     @Throws(Exception::class)
     private suspend fun getRoomsFromAPI() : List<ChatGroup>  = withContext(Dispatchers.IO) {
+        printlnCK("getRoomsFromAPI")
         val clientId = profileRepository.getClientId()
         val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
                 .setClientId(clientId)
                 .build()
         val response = groupGrpc.getJoinedGroups(request)
+        printlnCK("getRoomsFromAPI, ${response.lstGroupList}")
         return@withContext response.lstGroupList
                 .map { group ->
                     convertGroupFromResponse(group)
@@ -122,29 +137,27 @@ class GroupRepository @Inject constructor(
 
             return@withContext convertGroupFromResponse(response)
         } catch (e: Exception) {
-            printlnCK("createGroup error: $e")
+            printlnCK("getGroupFromAPI error: $e")
             return@withContext null
         }
     }
 
-    fun getTemporaryGroupWithAFriend(createClientId: String, createClientName: String,
-                                     friendID: String, friendName: String): ChatGroup {
+    fun getTemporaryGroupWithAFriend(createPeople: People, receiverPeople: People): ChatGroup {
         return ChatGroup(
                 id = GROUP_ID_TEMPO,
-                groupName = listOf(createClientName, friendName).joinToString (separator = ","),
+                groupName = receiverPeople.userName,
                 groupAvatar = "",
                 groupType = "peer",
-                createBy = createClientId,
+                createBy = createPeople.id,
                 createdAt = 0,
-                updateBy = createClientId,
+                updateBy = createPeople.id,
                 updateAt = 0,
-                clientList = listOf(createClientId, friendID).sortedBy { it },
+                clientList = listOf(createPeople, receiverPeople),
 
                 // TODO
                 isJoined = false,
-                lastClient = "",
-                lastMessage = "",
-                lastUpdatedTime = 0
+                lastMessage = null,
+                lastMessageAt = 0
         )
     }
 
@@ -154,9 +167,12 @@ class GroupRepository @Inject constructor(
 
     suspend fun getGroupByID(groupId: String) = roomDAO.getGroupById(groupId)
 
-    suspend fun getGroupPeerByClientId(clientIds: List<String>): ChatGroup {
-        val strSorted = SortedStringListConverter().saveList(clientIds)
-        return roomDAO.getGroupPeerByClientId(strSorted)
+    suspend fun getGroupPeerByClientId(friend: People): ChatGroup? {
+        return friend?.let {
+            roomDAO.getPeerGroups().firstOrNull {
+                it.clientList.contains(friend)
+            }
+        }
     }
 
     suspend fun remarkJoinInRoom(groupId: String) : Boolean {
@@ -175,9 +191,8 @@ class GroupRepository @Inject constructor(
                 // update
                 isJoined = true,
 
-                lastClient = group.lastClient,
                 lastMessage = group.lastMessage,
-                lastUpdatedTime = group.lastUpdatedTime
+                lastMessageAt = group.lastMessageAt
         )
         roomDAO.update(updateGroup)
         return true
@@ -185,7 +200,7 @@ class GroupRepository @Inject constructor(
 
     suspend fun updateRoom(room: ChatGroup) = roomDAO.update(room)
 
-    private fun convertGroupFromResponse(response: GroupOuterClass.GroupObjectResponse): ChatGroup {
+    private suspend fun convertGroupFromResponse(response: GroupOuterClass.GroupObjectResponse): ChatGroup {
         return ChatGroup(
                 id = response.groupId,
                 groupName = response.groupName,
@@ -195,13 +210,59 @@ class GroupRepository @Inject constructor(
                 createdAt = response.createdAt,
                 updateBy = response.updatedByClientId,
                 updateAt = response.updatedAt,
-                clientList = response.lstClientIdList,
+                clientList = response.lstClientList.map {
+                    People(
+                        id = it.id,
+                        userName = it.username
+                    )
+                },
 
                 // TODO
                 isJoined = true,
-                lastClient = "",
-                lastMessage = "",
-                lastUpdatedTime = 0
+                lastMessage = convertMessageResponseFromGroup(response.lastMessage, clientBlocking, senderKeyStore, signalProtocolStore, messageRepository),
+                lastMessageAt = response.lastMessageAt
         )
+    }
+
+    private suspend fun convertMessageResponseFromGroup(
+            messageResponse: GroupOuterClass.MessageObjectResponse,
+
+            clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+            senderKeyStore: InMemorySenderKeyStore,
+            signalProtocolStore: InMemorySignalProtocolStore,
+            messageRepository: MessageRepository,
+    ): Message? {
+        if (messageResponse.id.isNullOrEmpty()) {
+            return null
+        }
+
+        val oldMessage = messageRepository.getMessage(messageResponse.id)
+        if (oldMessage != null) {
+            return oldMessage
+        }
+
+        val decryptedMessage = try {
+            if (!isGroup(messageResponse.groupType)) {
+                decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
+            } else {
+                decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId, messageResponse.message, senderKeyStore, clientBlocking)
+            }
+        } catch (e: Exception) {
+            printlnCK("convertMessageResponseFromGroup error : $e")
+            "error"
+        }
+
+        val newMessage = Message(
+                messageResponse.id,
+                messageResponse.groupId,
+                messageResponse.groupType,
+                messageResponse.fromClientId,
+                messageResponse.clientId,
+                decryptedMessage,
+                messageResponse.createdAt,
+                messageResponse.updatedAt,
+        )
+        messageRepository.insert(newMessage)
+        return newMessage
     }
 }

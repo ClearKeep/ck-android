@@ -6,8 +6,8 @@ import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.decryptGroupMessage
 import com.clearkeep.screen.chat.utils.decryptPeerMessage
+import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.printlnCK
-import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import message.MessageGrpc
@@ -26,48 +26,48 @@ class MessageRepository @Inject constructor(
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
 ) {
-    fun getMessages(groupId: String) = messageDAO.getMessages(groupId)
+    fun getMessagesAsState(groupId: String) = messageDAO.getMessagesAsState(groupId)
+
+    suspend fun getMessages(groupId: String) = messageDAO.getMessages(groupId)
+
+    suspend fun getMessage(messageId: String) = messageDAO.getMessage(messageId)
 
     suspend fun insert(message: Message) = messageDAO.insert(message)
 
-    suspend fun fetchMessageToStore(groupId: String) = withContext(Dispatchers.IO) {
-        val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
-                .setGroupId(groupId)
-                .setOffSet(0)
-                .setLastMessageAt(0)
-                .build()
-        val responses = messageGrpc.getMessagesInGroup(request)
-        messageDAO.deleteMessageFromGroupId(groupId)
-        messageDAO.insertMessages(responses.lstMessageList.map { convertMessageResponse(it) })
-    }
-
-    private suspend fun convertMessageResponse(messageResponse: MessageOuterClass.MessageObjectResponse) : Message {
-        return Message(
-                senderId = messageResponse.fromClientId,
-                message = decryptMessage(messageResponse.fromClientId, messageResponse.message),
-                groupId = messageResponse.groupId,
-                createdTime = messageResponse.createdAt,
-                updatedTime = messageResponse.updatedAt,
-                receiverId = messageResponse.clientId,
-        )
-    }
-
-    private suspend fun decryptMessage(fromClientId: String, message: ByteString): String {
-        printlnCK("get message from $fromClientId")
-        return try {
-            decryptPeerMessage(fromClientId, message, signalProtocolStore)
-        } catch (e: Exception) {
-            printlnCK("decryptMessageFromPeer error : $e")
-            "encrypt error"
+    suspend fun fetchMessageFromAPI(groupId: String, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
+        try {
+            val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
+                    .setGroupId(groupId)
+                    .setOffSet(offSet)
+                    .setLastMessageAt(lastMessageAt)
+                    .build()
+            val responses = messageGrpc.getMessagesInGroup(request)
+            messageDAO.insertMessages(responses.lstMessageList.mapNotNull { convertMessageResponse(it) })
+        } catch(exception: Exception) {
+            printlnCK("fetchMessageFromAPI: $exception")
         }
     }
 
-    /*private fun decryptMessageFromGroup(fromClientId: String, groupId: String, message: String): String {
+    private suspend fun convertMessageResponse(messageResponse: MessageOuterClass.MessageObjectResponse) : Message? {
         return try {
-            decryptGroupMessage(fromClientId, groupId, message, senderKeyStore, clientBlocking)
+            val decryptedMessage = if (!isGroup(messageResponse.groupType)) {
+                decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
+            } else {
+                decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId, messageResponse.message, senderKeyStore, clientBlocking)
+            }
+            return Message(
+                messageResponse.id,
+                messageResponse.groupId,
+                messageResponse.groupType,
+                messageResponse.fromClientId,
+                messageResponse.clientId,
+                decryptedMessage,
+                messageResponse.createdAt,
+                messageResponse.updatedAt,
+            )
         } catch (e: Exception) {
-            printlnCK("decryptMessageFromGroup error : $e")
-            "encrypt error"
+            printlnCK("MessageRepository: convertMessageResponse error : $e")
+            return null
         }
-    }*/
+    }
 }

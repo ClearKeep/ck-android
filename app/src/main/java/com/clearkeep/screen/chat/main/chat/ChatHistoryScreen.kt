@@ -12,10 +12,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.model.ChatGroup
 import com.clearkeep.screen.chat.main.composes.CircleAvatar
+import com.clearkeep.utilities.getTimeAsString
 
 @Composable
 fun ChatHistoryScreen(
@@ -59,10 +63,9 @@ fun RoomItem(
         onRoomSelected: (ChatGroup) -> Unit,
 ) {
     val roomName = if (room.isGroup()) room.groupName else {
-        val userNameList = room.groupName.split(",")
-        userNameList.firstOrNull { userName ->
-            userName != ourClientName
-        } ?: ""
+        room.clientList.first { client ->
+            client.id != ourClientName
+        }.userName
     }
     Column(modifier = Modifier
             .clickable(onClick = { onRoomSelected(room) }, enabled = true)
@@ -70,13 +73,23 @@ fun RoomItem(
         Row(modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleAvatar("")
+            CircleAvatar("", isGroup = room.isGroup())
             Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
-                Text(text = roomName,
-                    style = MaterialTheme.typography.h6
-                )
-                room.lastMessage?.let {
-                    Text(text = it,
+                Row {
+                    Text(text = roomName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1.0f, true)
+                    )
+                    room.lastMessage?.let { lastMessage ->
+                        Text(text = getTimeAsString(lastMessage.createdTime),
+                            style = MaterialTheme.typography.caption.copy(fontSize = 8.sp)
+                        )
+                    }
+                }
+                room.lastMessage?.let { lastMessage ->
+                    Text(text = lastMessage.message,
                         style = MaterialTheme.typography.caption
                     )
                 }

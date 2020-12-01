@@ -10,27 +10,35 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.clearkeep.db.model.Message
+import com.clearkeep.db.model.People
+import com.clearkeep.utilities.getTimeAsString
 
 @Composable
 fun MessageListView(
     messageList: List<Message>,
-    myClientId: String
+    clients: List<People>,
+    myClientId: String,
+    isGroup: Boolean
 ) {
     LazyColumnFor(
-            items = messageList,
+        items = messageList,
+        contentPadding = PaddingValues(top = 30.dp, bottom = 30.dp),
     ) { item ->
         val isMyMessage = myClientId == item.senderId
+        val userName = clients.firstOrNull {
+            it.id == item.senderId
+        }?.userName ?: item.senderId
         Column {
             Row(
                     modifier = Modifier.fillMaxWidth().padding(
-                            start = if (isMyMessage) 0.dp else 60.dp,
-                            end = if (isMyMessage) 60.dp else 0.dp,
+                            start = if (isMyMessage) 60.dp else 0.dp,
+                            end = if (isMyMessage) 0.dp else 60.dp,
                     ),
-                    horizontalArrangement = if (isMyMessage) Arrangement.Start else Arrangement.End,
+                    horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start,
             ) {
-                if (isMyMessage) OurMessage(item) else FriendMessage(item)
+                if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
@@ -42,23 +50,33 @@ fun OurMessage(message: Message) {
     Column {
         RoundCornerMessage(
                 message = message.message,
-                backgroundColor = MaterialTheme.colors.secondary,
-                textColor = MaterialTheme.colors.onSecondary,
+                backgroundColor = Color(0xff5640fd),
+                textColor = Color.White,
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = getTimeAsString(message.createdTime),
+            style = MaterialTheme.typography.caption.copy(fontSize = 8.sp)
         )
     }
 }
 
 @Composable
-fun FriendMessage(message: Message) {
+fun FriendMessage(message: Message, username: String, isGroup: Boolean) {
     Column {
-        Text(
-                text = message.senderId,
+        if (isGroup) Text(
+                text = username,
                 style = MaterialTheme.typography.caption
         )
         RoundCornerMessage(
                 message = message.message,
-                backgroundColor = MaterialTheme.colors.surface,
-                textColor = MaterialTheme.colors.onSurface,
+                backgroundColor = Color(0xfff2f2f2),
+                textColor = Color.Black,
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = getTimeAsString(message.createdTime),
+            style = MaterialTheme.typography.caption.copy(fontSize = 8.sp)
         )
     }
 }

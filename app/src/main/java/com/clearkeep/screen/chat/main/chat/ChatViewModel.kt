@@ -15,7 +15,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
         private val roomRepository: GroupRepository,
         private val profileRepository: ProfileRepository,
-        private val userManager: UserManager
+        private val userManager: UserManager,
 ): ViewModel() {
     fun getClientId() = profileRepository.getClientId()
 
