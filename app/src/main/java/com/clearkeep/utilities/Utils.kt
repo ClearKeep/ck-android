@@ -10,7 +10,7 @@ fun getCurrentDateTime(): Date {
 fun getTimeAsString(timeMs: Long) : String {
     val formatter = SimpleDateFormat("EEE HH:mm")
 
-    return formatter.format(Date(timeMs * 1000))
+    return formatter.format(Date(timeMs))
 }
 
 fun printlnCK(str: String) {

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.model.ChatGroup
-import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.repository.utils.Resource
 import com.clearkeep.screen.chat.repositories.GroupRepository
 import com.clearkeep.utilities.UserManager
@@ -14,10 +13,9 @@ import javax.inject.Inject
 
 class ChatViewModel @Inject constructor(
         private val roomRepository: GroupRepository,
-        private val profileRepository: ProfileRepository,
         private val userManager: UserManager,
 ): ViewModel() {
-    fun getClientId() = profileRepository.getClientId()
+    fun getClientId() = userManager.getClientId()
 
     fun getClientName() = userManager.getUserName()
 

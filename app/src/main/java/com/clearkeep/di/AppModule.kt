@@ -2,10 +2,13 @@ package com.clearkeep.di
 
 import android.text.TextUtils
 import auth.AuthGrpc
+import com.clearkeep.db.signal.SignalIdentityKeyDAO
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.signal.SignalKeyDAO
+import com.clearkeep.db.signal.SignalPreKeyDAO
 import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.Storage
 import dagger.Module
 import dagger.Provides
@@ -119,13 +122,18 @@ class AppModule {
 
     @Singleton
     @Provides
-    fun provideInMemorySignalProtocolStore(storage: Storage): InMemorySignalProtocolStore {
-        return InMemorySignalProtocolStore(storage)
+    fun provideInMemorySignalProtocolStore(
+            preKeyDAO: SignalPreKeyDAO,
+            signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    ): InMemorySignalProtocolStore {
+        return InMemorySignalProtocolStore(preKeyDAO, signalIdentityKeyDAO)
     }
 
     @Singleton
     @Provides
-    fun provideInMemorySenderKeyStore(signalKeyDAO: SignalKeyDAO): InMemorySenderKeyStore {
+    fun provideInMemorySenderKeyStore(
+            signalKeyDAO: SignalKeyDAO,
+    ): InMemorySenderKeyStore {
         return InMemorySenderKeyStore(signalKeyDAO)
     }
 

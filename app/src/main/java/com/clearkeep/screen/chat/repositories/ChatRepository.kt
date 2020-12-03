@@ -4,8 +4,8 @@ import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.model.Message
 import com.clearkeep.db.model.ChatGroup
-import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
@@ -25,7 +25,6 @@ import javax.inject.Singleton
 
 @Singleton
 class ChatRepository @Inject constructor(
-        private val client: SignalKeyDistributionGrpc.SignalKeyDistributionStub,
         private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         private val notifyStub: NotifyGrpc.NotifyStub,
         private val messageGrpc: MessageGrpc.MessageStub,
@@ -36,22 +35,16 @@ class ChatRepository @Inject constructor(
 
         private val messageRepository: MessageRepository,
         private val roomRepository: GroupRepository,
-        private val userRepository: ProfileRepository
+        private val userManager: UserManager
 ) {
     fun initSubscriber() {
         subscribeMessageChannel()
         subscribeNotificationChannel()
     }
 
-    fun unsubscriber(flag: Boolean) {
-        isSubscriber = flag
-    }
-
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
-    var isSubscriber: Boolean = true
-
-    fun getClientId() = userRepository.getClientId()
+    fun getClientId() = userManager.getClientId()
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: String, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
@@ -147,9 +140,6 @@ class ChatRepository @Inject constructor(
             override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
                 printlnCK("Receive a message from : ${value.fromClientId}" +
                         ", groupId = ${value.groupId} groupType = ${value.groupType}")
-                if (!isSubscriber) {
-                    return
-                }
                 scope.launch {
                     // TODO
                     if (!isGroup(value.groupType)) {
@@ -289,43 +279,4 @@ class ChatRepository @Inject constructor(
             value.updatedAt,
         )
     }
-
-    /*private suspend fun insertNewMessage(groupId: String, senderId: String,
-                                         receiverId: String, message: String) {
-        var room: ChatGroup? = roomRepository.getGroupByID(groupId)
-        if (room == null) {
-            room = roomRepository.getGroupFromAPI(groupId)
-            if (room != null) {
-                roomRepository.insertGroup(room)
-            }
-        }
-
-        if (room == null) {
-            return
-        }
-
-        val createTime = getCurrentDateTime().time
-        messageRepository.insert(Message(senderId, message, room.id, createTime, createTime, receiverId))
-
-        // update last message in room
-        val updateRoom = ChatGroup(
-                id = room.id,
-                groupName = room.groupName,
-                groupAvatar = room.groupAvatar,
-                groupType = room.groupType,
-                createBy = room.createBy,
-                createdAt = room.createdAt,
-                updateBy = room.updateBy,
-                updateAt = room.updateAt,
-                clientList = room.clientList,
-
-                // update
-                isJoined = true,
-
-                lastClient = senderId,
-                lastMessage = message,
-                lastUpdatedTime = createTime
-        )
-        roomRepository.updateRoom(updateRoom)
-    }*/
 }

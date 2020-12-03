@@ -23,8 +23,6 @@ data class SignalSenderKey(
         if (groupId != other.groupId) return false
         if (senderName != other.senderName) return false
         if (deviceId != other.deviceId) return false
-        /*if (!senderKey.contentEquals(other.senderKey)) return false
-        if (id != other.id) return false*/
 
         return true
     }
@@ -33,8 +31,6 @@ data class SignalSenderKey(
         var result = groupId.hashCode()
         result = 31 * result + senderName.hashCode()
         result = 31 * result + deviceId
-        /*result = 31 * result + senderKey.contentHashCode()
-        result = 31 * result + id*/
         return result
     }
 }

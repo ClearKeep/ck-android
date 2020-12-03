@@ -2,17 +2,17 @@ package com.clearkeep.screen.chat.create_group
 
 import androidx.lifecycle.*
 import com.clearkeep.db.model.People
-import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.repository.utils.Resource
 import com.clearkeep.screen.chat.main.people.PeopleRepository
 import com.clearkeep.screen.chat.repositories.GroupRepository
+import com.clearkeep.utilities.UserManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CreateGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
-    private val userRepository: ProfileRepository,
+    private val userManager: UserManager,
     private val groupRepository: GroupRepository
 ): ViewModel() {
         private val invitedFriends: MutableList<String> = mutableListOf()
@@ -24,7 +24,7 @@ class CreateGroupViewModel @Inject constructor(
 
         val selectedFriends: List<People> = emptyList()
 
-        fun getClientId() = userRepository.getClientId()
+        fun getClientId() = userManager.getClientId()
 
         val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
                 emitSource(peopleRepository.getFriends(getClientId()))
