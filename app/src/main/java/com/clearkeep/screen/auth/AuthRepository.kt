@@ -14,8 +14,6 @@ class AuthRepository @Inject constructor(
     private val userManager: UserManager,
     private val authBlockingStub: AuthGrpc.AuthBlockingStub,
 ) {
-    fun isUserRegistered() = userManager.isUserRegistered()
-
     suspend fun register(userName: String, password: String, email: String) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("register: $userName")
         try {

@@ -2,7 +2,11 @@ package com.clearkeep.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.clearkeep.db.model.*
+import com.clearkeep.db.clear_keep.dao.GroupDAO
+import com.clearkeep.db.clear_keep.dao.MessageDAO
+import com.clearkeep.db.clear_keep.dao.PeopleDao
+import com.clearkeep.db.clear_keep.dao.UserDao
+import com.clearkeep.db.clear_keep.model.*
 
 @Database(entities = [
     User::class,

@@ -9,8 +9,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
-import com.clearkeep.screen.chat.invite_group.InviteGroupScreen
-import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
+import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
+import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
+import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
+import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

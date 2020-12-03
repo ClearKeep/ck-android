@@ -2,16 +2,16 @@ package com.clearkeep.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.screen.chat.main.chat.ChatViewModel
-import com.clearkeep.screen.chat.main.people.PeopleViewModel
+import com.clearkeep.screen.chat.home.chat_history.ChatViewModel
+import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
-import com.clearkeep.screen.chat.create_group.CreateGroupViewModel
-import com.clearkeep.screen.chat.invite_group.InviteGroupViewModel
-import com.clearkeep.screen.chat.main.HomeViewModel
-import com.clearkeep.screen.chat.main.profile.ProfileViewModel
-import com.clearkeep.screen.chat.search.SearchViewModel
+import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
+import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
+import com.clearkeep.screen.chat.home.HomeViewModel
+import com.clearkeep.screen.chat.home.profile.ProfileViewModel
+import com.clearkeep.screen.chat.contact_search.SearchViewModel
 import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds

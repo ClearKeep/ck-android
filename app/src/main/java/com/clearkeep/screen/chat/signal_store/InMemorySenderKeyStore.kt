@@ -1,9 +1,7 @@
 package com.clearkeep.screen.chat.signal_store
 
-import com.clearkeep.db.signal.SignalKeyDAO
-import com.clearkeep.db.signal.model.SignalSenderKey
-import com.clearkeep.utilities.UserManager
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.db.signal_key.dao.SignalKeyDAO
+import com.clearkeep.db.signal_key.model.SignalSenderKey
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.groups.state.SenderKeyStore

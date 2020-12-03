@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clearkeep.db.model.Message
-import com.clearkeep.db.model.People
+import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.utilities.getTimeAsString
 
 @Composable

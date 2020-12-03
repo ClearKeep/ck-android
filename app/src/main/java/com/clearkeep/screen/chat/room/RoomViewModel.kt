@@ -1,15 +1,15 @@
 package com.clearkeep.screen.chat.room
 
 import androidx.lifecycle.*
-import com.clearkeep.db.model.GROUP_ID_TEMPO
-import com.clearkeep.db.model.ChatGroup
-import com.clearkeep.screen.chat.repositories.ChatRepository
-import com.clearkeep.screen.chat.repositories.GroupRepository
-import com.clearkeep.screen.chat.repositories.SignalKeyRepository
-import com.clearkeep.db.model.Message
-import com.clearkeep.db.model.People
-import com.clearkeep.screen.chat.main.people.PeopleRepository
-import com.clearkeep.screen.chat.repositories.MessageRepository
+import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.screen.repo.ChatRepository
+import com.clearkeep.screen.repo.GroupRepository
+import com.clearkeep.screen.repo.SignalKeyRepository
+import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.screen.repo.PeopleRepository
+import com.clearkeep.screen.repo.MessageRepository
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
@@ -107,6 +107,7 @@ class RoomViewModel @Inject constructor(
                 }
                 if (!isGroupRegistered!!) {
                     isGroupRegistered = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
+                    roomRepository.remarkJoinInRoom(groupId)
                 }
 
                 if (isGroupRegistered!!) {
