@@ -11,7 +11,7 @@ import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.main.HomeActivity
+import com.clearkeep.screen.chat.home.HomeActivity
 import com.clearkeep.components.lightThemeColors
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

@@ -2,14 +2,12 @@ package com.clearkeep.di
 
 import android.text.TextUtils
 import auth.AuthGrpc
-import com.clearkeep.db.signal.SignalIdentityKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.db.signal.SignalKeyDAO
-import com.clearkeep.db.signal.SignalPreKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.utilities.UserManager
-import com.clearkeep.utilities.printlnCK
-import com.clearkeep.utilities.storage.Storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

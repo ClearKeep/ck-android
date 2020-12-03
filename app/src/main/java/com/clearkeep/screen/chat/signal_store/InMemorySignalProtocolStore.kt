@@ -6,8 +6,8 @@
 package com.clearkeep.screen.chat.signal_store
 
 import androidx.annotation.WorkerThread
-import com.clearkeep.db.signal.SignalIdentityKeyDAO
-import com.clearkeep.db.signal.SignalPreKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import org.whispersystems.libsignal.state.SignalProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress

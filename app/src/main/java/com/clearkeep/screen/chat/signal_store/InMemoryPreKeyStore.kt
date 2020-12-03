@@ -5,9 +5,8 @@
  */
 package com.clearkeep.screen.chat.signal_store
 
-import com.clearkeep.db.signal.SignalPreKeyDAO
-import com.clearkeep.db.signal.model.SignalPreKey
-import com.clearkeep.utilities.UserManager
+import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.db.signal_key.model.SignalPreKey
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.PreKeyStore
