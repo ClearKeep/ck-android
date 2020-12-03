@@ -2,13 +2,17 @@ package com.clearkeep.screen.chat.signal_store
 
 import com.clearkeep.db.signal.SignalKeyDAO
 import com.clearkeep.db.signal.model.SignalSenderKey
+import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.storage.Storage
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.groups.state.SenderKeyStore
 import java.io.IOException
 import java.util.*
 
-class InMemorySenderKeyStore(private val signalKeyDAO: SignalKeyDAO) : SenderKeyStore {
+class InMemorySenderKeyStore(
+        private val signalKeyDAO: SignalKeyDAO,
+) : SenderKeyStore {
 
     private val store: MutableMap<SenderKeyName, SenderKeyRecord> = HashMap()
 

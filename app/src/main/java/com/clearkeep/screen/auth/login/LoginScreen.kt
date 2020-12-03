@@ -32,7 +32,10 @@ fun LoginScreen(
     val userName = state { "" }
     val password = state { "" }
     Row(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(Modifier.preferredHeight(24.dp))
 
             val image = imageResource(R.drawable.phone)

@@ -7,6 +7,7 @@ import javax.inject.Singleton
 private const val USER_NAME = "user_name"
 private const val ACCESS_TOKEN = "access_token"
 private const val HASH_KEY = "hash_key"
+private const val CLIENT_ID = "client_id"
 
 @Singleton
 class UserManager @Inject constructor(
@@ -36,5 +37,13 @@ class UserManager @Inject constructor(
 
     fun getUserName() : String {
         return storage.getString(USER_NAME)
+    }
+
+    fun saveClientId(clientId: String) {
+        storage.setString(CLIENT_ID, clientId)
+    }
+
+    fun getClientId() : String {
+        return storage.getString(CLIENT_ID)
     }
 }

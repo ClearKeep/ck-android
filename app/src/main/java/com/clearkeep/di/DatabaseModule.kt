@@ -3,8 +3,10 @@ package com.clearkeep.di
 import android.app.Application
 import androidx.room.Room
 import com.clearkeep.db.*
+import com.clearkeep.db.signal.SignalIdentityKeyDAO
 import com.clearkeep.db.signal.SignalKeyDAO
 import com.clearkeep.db.signal.SignalKeyDatabase
+import com.clearkeep.db.signal.SignalPreKeyDAO
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -60,5 +62,17 @@ class DatabaseModule {
     @Provides
     fun provideSignalKeyDAO(db: SignalKeyDatabase): SignalKeyDAO {
         return db.signalKeyDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSignalPreKeyDAO(db: SignalKeyDatabase): SignalPreKeyDAO {
+        return db.signalPreKeyDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideSignalIdentityKeyDAO(db: SignalKeyDatabase): SignalIdentityKeyDAO {
+        return db.signalIdentityKeyDao()
     }
 }

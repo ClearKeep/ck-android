@@ -2,17 +2,17 @@ package com.clearkeep.screen.chat.invite_group
 
 import androidx.lifecycle.*
 import com.clearkeep.db.model.People
-import com.clearkeep.repository.ProfileRepository
 import com.clearkeep.repository.utils.Resource
 import com.clearkeep.screen.chat.main.people.PeopleRepository
+import com.clearkeep.utilities.UserManager
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 class InviteGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
-    private val userRepository: ProfileRepository,
+    private val userManager: UserManager
 ): ViewModel() {
-        fun getClientId() = userRepository.getClientId()
+        fun getClientId() = userManager.getClientId()
 
         val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
                 emitSource(peopleRepository.getFriends(getClientId()))

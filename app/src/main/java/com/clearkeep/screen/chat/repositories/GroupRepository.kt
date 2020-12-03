@@ -14,6 +14,7 @@ import com.clearkeep.screen.chat.main.people.PeopleRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
@@ -30,7 +31,7 @@ class GroupRepository @Inject constructor(
         private val groupBlockingStub: GroupGrpc.GroupBlockingStub,
         private val groupGrpc: GroupGrpc.GroupBlockingStub,
 
-        private val profileRepository: ProfileRepository,
+        private val userManager: UserManager,
         private val messageRepository: MessageRepository,
 
         private val senderKeyStore: InMemorySenderKeyStore,
@@ -75,7 +76,7 @@ class GroupRepository @Inject constructor(
     @Throws(Exception::class)
     private suspend fun getRoomsFromAPI() : List<ChatGroup>  = withContext(Dispatchers.IO) {
         printlnCK("getRoomsFromAPI")
-        val clientId = profileRepository.getClientId()
+        val clientId = userManager.getClientId()
         val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
                 .setClientId(clientId)
                 .build()
