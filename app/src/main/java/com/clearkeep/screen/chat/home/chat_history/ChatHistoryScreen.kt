@@ -47,7 +47,7 @@ fun ChatHistoryScreen(
                 Surface(color = Color.White) {
                     RoomItem(
                             room,
-                            chatViewModel.getClientName(),
+                            chatViewModel.getClientId(),
                             onRoomSelected
                     )
                 }
@@ -59,12 +59,12 @@ fun ChatHistoryScreen(
 @Composable
 fun RoomItem(
         room: ChatGroup,
-        ourClientName: String,
+        ourClientId: String,
         onRoomSelected: (ChatGroup) -> Unit,
 ) {
     val roomName = if (room.isGroup()) room.groupName else {
         room.clientList.first { client ->
-            client.id != ourClientName
+            client.id != ourClientId
         }.userName
     }
     Column(modifier = Modifier
