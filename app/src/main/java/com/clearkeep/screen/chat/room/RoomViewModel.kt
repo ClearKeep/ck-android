@@ -12,6 +12,7 @@ import com.clearkeep.screen.repo.PeopleRepository
 import com.clearkeep.screen.repo.MessageRepository
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,7 +33,7 @@ class RoomViewModel @Inject constructor(
         get() = _group
 
     val members: LiveData<List<People>> = _group.switchMap { group ->
-        liveData {
+        liveData(context = viewModelScope.coroutineContext) {
             emit(peopleRepository.getFriends(group.clientList.map { it.id }))
         }
     }

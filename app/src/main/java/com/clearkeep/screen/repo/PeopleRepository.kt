@@ -54,8 +54,8 @@ class PeopleRepository @Inject constructor(
         return@withContext friend ?: getFriendFromAPI(friendId)
     }
 
-    suspend fun getFriends(idList: List<String>): List<People> {
-        return idList.mapNotNull { id ->
+    suspend fun getFriends(idList: List<String>): List<People> = withContext(Dispatchers.IO) {
+        return@withContext idList.mapNotNull { id ->
             peopleDao.getFriend(id)
         }
     }
@@ -111,7 +111,7 @@ class PeopleRepository @Inject constructor(
                 response.username
             )
         } catch (e: Exception) {
-            printlnCK("getFriendsFromAPI: $e")
+            printlnCK("getFriendFromAPI: $e")
             return@withContext null
         }
     }
