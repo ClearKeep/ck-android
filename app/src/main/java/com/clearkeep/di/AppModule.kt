@@ -24,7 +24,9 @@ import io.grpc.Metadata
 import io.grpc.Status
 import message.MessageGrpc
 import notification.NotifyGrpc
+import notify_push.NotifyPushGrpc
 import user.UserGrpc
+import video_call.VideoCallGrpc
 
 @InstallIn(ApplicationComponent::class)
 @Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])
@@ -116,6 +118,30 @@ class AppModule {
             .build()
 
         return MessageGrpc.newStub(channel)
+    }
+
+    @Singleton
+    @Provides
+    fun provideNotifyPushBlockingStub(userManager: UserManager): NotifyPushGrpc.NotifyPushBlockingStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+                .usePlaintext()
+                .executor(Dispatchers.Default.asExecutor())
+                .build()
+
+        return NotifyPushGrpc.newBlockingStub(channel)
+                .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
+    }
+
+    @Singleton
+    @Provides
+    fun provideVideoCallBlockingStub(userManager: UserManager): VideoCallGrpc.VideoCallBlockingStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+                .usePlaintext()
+                .executor(Dispatchers.Default.asExecutor())
+                .build()
+
+        return VideoCallGrpc.newBlockingStub(channel)
+                .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
     }
 
     @Singleton

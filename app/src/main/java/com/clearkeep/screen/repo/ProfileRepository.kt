@@ -6,6 +6,8 @@ import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import notify_push.NotifyPushGrpc
+import notify_push.NotifyPushOuterClass
 import user.UserGrpc
 import user.UserOuterClass
 import javax.inject.Inject
@@ -15,6 +17,7 @@ import javax.inject.Singleton
 class ProfileRepository @Inject constructor(
         private val userDao: UserDao,
         private val userStub: UserGrpc.UserBlockingStub,
+        private val notifyPushBlockingStub: NotifyPushGrpc.NotifyPushBlockingStub,
         private val userManager: UserManager
 ) {
     suspend fun getProfile() : User?  = withContext(Dispatchers.IO) {
@@ -34,6 +37,22 @@ class ProfileRepository @Inject constructor(
         } catch (e: Exception) {
             printlnCK("getProfile: $e")
             return@withContext null
+        }
+    }
+
+    suspend fun registerToken(token: String) : Boolean  = withContext(Dispatchers.IO) {
+        printlnCK("registerToken: token = $token")
+        try {
+            val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
+                    .setDeviceId("111")
+                    .setDeviceType("android")
+                    .setToken(token)
+                    .build()
+            val response = notifyPushBlockingStub.registerToken(request)
+            return@withContext response.success
+        } catch (e: Exception) {
+            printlnCK("registerToken: $e")
+            return@withContext false
         }
     }
 }

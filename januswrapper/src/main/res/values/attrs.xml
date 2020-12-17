@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="buttonSpeakerOn" format="reference" />
+    <attr name="buttonSpeakerOff" format="reference" />
+    <attr name="buttonSpeakerDescription" format="string" />
+    <attr name="buttonMuteOn" format="reference" />
+    <attr name="buttonMuteOff" format="reference" />
+    <attr name="buttonMuteDescription" format="string" />
+    <attr name="buttonEndCall" format="reference" />
+    <attr name="buttonEndCallDescription" format="string" />
+    <attr name="buttonAnswer" format="reference" />
+    <attr name="buttonAnswerDescription" format="string" />
+    <attr name="actionBarIcon" format="reference" />
+    <attr name="appCallBackgroundColor" format="color"/>
+    <attr name="appCallTextColor" format="color"/>
+
+</resources>

@@ -63,9 +63,9 @@ fun RoomItem(
         onRoomSelected: (ChatGroup) -> Unit,
 ) {
     val roomName = if (room.isGroup()) room.groupName else {
-        room.clientList.first { client ->
+        room.clientList.firstOrNull { client ->
             client.id != ourClientId
-        }.userName
+        }?.userName ?: ""
     }
     Column(modifier = Modifier
             .clickable(onClick = { onRoomSelected(room) }, enabled = true)
