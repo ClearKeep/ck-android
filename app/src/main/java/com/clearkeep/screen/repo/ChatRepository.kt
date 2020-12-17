@@ -116,7 +116,7 @@ class ChatRepository @Inject constructor(
     private fun subscribeMessageChannel() {
         val ourClientId = getClientId()
         printlnCK("subscribeMessageChannel: $ourClientId")
-        val request = MessageOuterClass.SubscribeAndListenRequest.newBuilder()
+        val request = MessageOuterClass.SubscribeRequest.newBuilder()
                 .setClientId(ourClientId)
                 .build()
 
@@ -136,7 +136,7 @@ class ChatRepository @Inject constructor(
     }
 
     private fun listenMessageChannel() {
-        val request = MessageOuterClass.SubscribeAndListenRequest.newBuilder()
+        val request = MessageOuterClass.ListenRequest.newBuilder()
                 .setClientId(getClientId())
                 .build()
         messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
@@ -165,7 +165,7 @@ class ChatRepository @Inject constructor(
     private fun subscribeNotificationChannel() {
         printlnCK("subscribeNotificationChannel")
         val ourClientId = getClientId()
-        val request = NotifyOuterClass.SubscribeAndListenRequest.newBuilder()
+        val request = NotifyOuterClass.SubscribeRequest.newBuilder()
                 .setClientId(ourClientId)
                 .build()
 
@@ -185,7 +185,7 @@ class ChatRepository @Inject constructor(
     }
 
     private fun listenNotificationChannel() {
-        val request = NotifyOuterClass.SubscribeAndListenRequest.newBuilder()
+        val request = NotifyOuterClass.ListenRequest.newBuilder()
                 .setClientId(getClientId())
                 .build()
         notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {

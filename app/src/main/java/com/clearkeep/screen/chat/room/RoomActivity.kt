@@ -4,15 +4,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.compose.ui.platform.setContent
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
+import com.clearkeep.januswrapper.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
+import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -78,6 +81,20 @@ class RoomActivity : AppCompatActivity() {
                 }
             }
         }
+
+        subscriber()
+    }
+
+    private fun subscriber() {
+        roomViewModel.requestCallState.observe(this, Observer {
+            if (it.status == Status.SUCCESS) {
+                it.data?.let { it1 -> navigateToInComingCallActivity(it1) }
+            }
+        })
+    }
+
+    private fun navigateToInComingCallActivity(groupId: String) {
+        AppCall.call(this, groupId, roomViewModel.getClientId(), "Dai", "", false)
     }
 
     companion object {

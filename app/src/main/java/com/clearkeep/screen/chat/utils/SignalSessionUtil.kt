@@ -88,14 +88,14 @@ suspend fun initSessionUserPeer(
         val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic.toByteArray(), 0)
 
         val retrievedPreKey = PreKeyBundle(
-                remoteKeyBundle.registrationId,
-                remoteKeyBundle.deviceId,
-                preKey.id,
-                preKey.keyPair.publicKey,
-                remoteKeyBundle.signedPreKeyId,
-                signedPreKey.keyPair.publicKey,
-                signedPreKey.signature,
-                identityKeyPublic
+            remoteKeyBundle.registrationId,
+            signalProtocolAddress.deviceId,
+            preKey.id,
+            preKey.keyPair.publicKey,
+            remoteKeyBundle.signedPreKeyId,
+            signedPreKey.keyPair.publicKey,
+            signedPreKey.signature,
+            identityKeyPublic
         )
 
         val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)

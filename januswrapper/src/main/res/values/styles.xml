@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FastGo.Call" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="buttonSpeakerOn">@drawable/ic_string_ee_sound_on</item>
+        <item name="buttonSpeakerOff">@drawable/ic_string_ee_sound_off</item>
+        <item name="buttonSpeakerDescription">Speaker</item>
+        <item name="buttonMuteOn">@drawable/ic_string_ee_mute_on</item>
+        <item name="buttonMuteOff">@drawable/ic_string_ee_mute_off</item>
+        <item name="buttonMuteDescription">Mute</item>
+        <item name="buttonEndCall">@drawable/ic_string_ee_call</item>
+        <item name="buttonEndCallDescription">Decline</item>
+        <item name="buttonAnswer">@drawable/ic_string_ee_answer</item>
+        <item name="buttonAnswerDescription">Accept</item>
+        <item name="actionBarIcon">@drawable/ic_string_ee_back</item>
+        <item name="appCallBackgroundColor">@color/appCallBackground</item>
+        <item name="appCallTextColor">@android:color/white</item>
+
+    </style>
+</resources>

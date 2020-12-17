@@ -3,16 +3,13 @@ package com.clearkeep.screen.chat.room
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.screen.repo.ChatRepository
-import com.clearkeep.screen.repo.GroupRepository
-import com.clearkeep.screen.repo.SignalKeyRepository
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.repo.PeopleRepository
-import com.clearkeep.screen.repo.MessageRepository
+import com.clearkeep.screen.repo.*
 import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,11 +18,19 @@ class RoomViewModel @Inject constructor(
         private val roomRepository: GroupRepository,
         private val groupRepository: GroupRepository,
         private val signalKeyRepository: SignalKeyRepository,
+        private val videoCallRepository: VideoCallRepository,
+
         private val userManager: UserManager,
+
         private val peopleRepository: PeopleRepository,
         private val messageRepository: MessageRepository
 ): ViewModel() {
     private val _group = MutableLiveData<ChatGroup>()
+
+    private val _requestCallState = MutableLiveData<Resource<String>>()
+
+    val requestCallState: LiveData<Resource<String>>
+        get() = _requestCallState
 
     private var isGroupRegistered: Boolean? = null
 
@@ -43,7 +48,7 @@ class RoomViewModel @Inject constructor(
 
     fun getClientId() = chatRepository.getClientId()
 
-    fun getUserName() = userManager.getUserName()
+    private fun getUserName() = userManager.getUserName()
 
     fun updateGroupWithId(groupId: String) {
         viewModelScope.launch {
@@ -121,6 +126,14 @@ class RoomViewModel @Inject constructor(
     fun inviteToGroup(invitedFriendId: String, groupId: String) {
         viewModelScope.launch {
             groupRepository.inviteToGroupFromAPI(getClientId(),invitedFriendId, groupId)
+        }
+    }
+
+    fun requestCall(groupId: String) {
+        viewModelScope.launch {
+            _requestCallState.value = Resource.loading(null)
+            val success = videoCallRepository.requestVideoCall(groupId)
+            _requestCallState.value = if (success) Resource.success(groupId) else Resource.error("error", groupId)
         }
     }
 }

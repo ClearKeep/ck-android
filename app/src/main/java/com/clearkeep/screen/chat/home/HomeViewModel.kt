@@ -7,13 +7,18 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.screen.repo.ProfileRepository
 import com.clearkeep.screen.repo.ChatRepository
 import com.clearkeep.screen.repo.SignalKeyRepository
+import com.clearkeep.utilities.FIREBASE_TOKEN
+import com.clearkeep.utilities.storage.Storage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
         private val signalKeyRepository: SignalKeyRepository,
         private val profileRepository: ProfileRepository,
         private val chatRepository: ChatRepository,
+        private val storage: Storage
 ): ViewModel() {
     private val _loginState = MutableLiveData<PrepareViewState>()
 
@@ -41,6 +46,15 @@ class HomeViewModel @Inject constructor(
 
             chatRepository.initSubscriber()
             _loginState.value = PrepareSuccess
+
+            pushFireBaseTokenToServer()
+        }
+    }
+
+    private suspend fun pushFireBaseTokenToServer() = withContext(Dispatchers.IO) {
+        val token = storage.getString(FIREBASE_TOKEN)
+        if (!token.isNullOrEmpty()) {
+            profileRepository.registerToken(token)
         }
     }
 }
