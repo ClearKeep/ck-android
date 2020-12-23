@@ -24,7 +24,9 @@ import org.webrtc.PeerConnection;
 import org.webrtc.VideoTrack;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import computician.janusclientapi.IJanusGatewayCallbacks;
 import computician.janusclientapi.IJanusPluginCallbacks;
 import computician.janusclientapi.IPluginHandleWebRTCCallbacks;
@@ -49,8 +51,9 @@ public class InCallForegroundService extends Service {
 
     public interface CallListener {
         void onCallStateChanged(String status, CallState state);
-        void onLocalStream(VideoTrack videoTrack);
-        void onRemoteStream(BigInteger remoteClientId, VideoTrack videoTrack);
+        void onLocalStream(VideoTrack localTrack, List<VideoTrack> remoteTracks);
+        void onRemoteStreamAdd(VideoTrack localTrack, VideoTrack remoteTrack, BigInteger remoteClientId);
+        void onStreamRemoved(VideoTrack localTrack, BigInteger remoteClientId);
     }
 
     private static final String TAG = "InCallForegroundService";
@@ -69,7 +72,7 @@ public class InCallForegroundService extends Service {
 
     String mUserNameInConversation;
 
-    String mGroupId;
+    Long mGroupId;
 
     String mOurClientId;
 
@@ -80,6 +83,8 @@ public class InCallForegroundService extends Service {
     // janus
     private JanusServer janusServer;
     private CallListener mListener;
+    private VideoTrack localStream;
+    private Map<BigInteger, VideoTrack> remoteStreams = new HashMap<>();
 
     public class LocalBinder extends Binder {
         public InCallForegroundService getService() {
@@ -106,6 +111,13 @@ public class InCallForegroundService extends Service {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+        unregisterReceiver(mEndCallReceiver);
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
@@ -113,14 +125,11 @@ public class InCallForegroundService extends Service {
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME);
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION);
         /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/
-        mGroupId = "1234";
+        mGroupId = Long.valueOf(1234);
         mOurClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID);
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus);
 
         return START_NOT_STICKY;
-    }
-
-    public void answer() {
     }
 
     public void executeMakeCall(EGLContext con) {
@@ -139,22 +148,10 @@ public class InCallForegroundService extends Service {
         return mBinder;
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy");
-
-        // TODO
-        unregisterReceiver(mEndCallReceiver);
-        janusServer.Destroy();
-        janusServer = null;
-    }
-
     public void hangup() {
-        /*if (mCurrentCall != null) {
-            mCurrentCall.hangup();
-            stopSelf();
-        }*/
+        if (janusServer != null) {
+            janusServer.Destroy();
+        }
         stopSelf();
     }
 
@@ -212,12 +209,12 @@ public class InCallForegroundService extends Service {
 
     class ListenerAttachCallbacks implements IJanusPluginCallbacks{
         final private BigInteger mRemoteClientId;
-        final private Integer groupId;
+        final private Long groupId;
         private JanusPluginHandle listener_handle = null;
 
-        public ListenerAttachCallbacks(String groupId, BigInteger remoteClientId){
+        public ListenerAttachCallbacks(Long groupId, BigInteger remoteClientId){
             this.mRemoteClientId = remoteClientId;
-            this.groupId = Integer.parseInt(groupId);
+            this.groupId = groupId;
         }
 
         @Override
@@ -290,7 +287,7 @@ public class InCallForegroundService extends Service {
                 }
             }
             catch(Exception ex) {
-                Log.e("Test", ex.toString());
+                Log.e(TAG, ex.toString());
             }
         }
 
@@ -301,7 +298,8 @@ public class InCallForegroundService extends Service {
 
         @Override
         public void onRemoteStream(MediaStream stream) {
-            mListener.onRemoteStream(mRemoteClientId, stream.videoTracks.get(0));
+            remoteStreams.put(mRemoteClientId, stream.videoTracks.get(0));
+            mListener.onRemoteStreamAdd(localStream, stream.videoTracks.get(0), mRemoteClientId);
         }
 
         @Override
@@ -340,13 +338,14 @@ public class InCallForegroundService extends Service {
 
         @Override
         public void success(JanusPluginHandle janusPluginHandle) {
-            Log.e("Test", "JanusPublisherPluginCallbacks, success");
+            Log.e(TAG, "JanusPublisherPluginCallbacks, success");
             handle = janusPluginHandle;
             joinRoomAsPublisher();
         }
 
         @Override
         public void onMessage(JSONObject msg, JSONObject jsep) {
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onMessage: " + msg.toString());
             try
             {
                 String event = msg.getString("videoroom");
@@ -360,8 +359,8 @@ public class InCallForegroundService extends Service {
                             attachRemoteClient(remoteId);
                         }
                     }
-                } else if(event.equals("destroyed")) {
-
+                } else if(event.equals("hangup")) {
+                    //hangup();
                 } else if(event.equals("event")) {
                     if(msg.has(PUBLISHERS)){
                         JSONArray pubs = msg.getJSONArray(PUBLISHERS);
@@ -370,9 +369,11 @@ public class InCallForegroundService extends Service {
                             attachRemoteClient(new BigInteger(pub.getString("id")));
                         }
                     } else if(msg.has("leaving")) {
-
+                        BigInteger id = new BigInteger(msg.getString("leaving"));
+                        mListener.onStreamRemoved(localStream, id);
                     } else if(msg.has("unpublished")) {
-
+                        BigInteger id = new BigInteger(msg.getString("unpublished"));
+                        mListener.onStreamRemoved(localStream, id);
                     } else {
                         //todo error
                     }
@@ -382,17 +383,21 @@ public class InCallForegroundService extends Service {
                 }
             }
             catch (Exception ex) {
-                Log.e("Test", "onMessage: error =" + ex.toString());
+                Log.e(TAG, "JanusPublisherPluginCallbacks, onMessage: error =" + ex.toString());
             }
         }
 
         @Override
         public void onLocalStream(MediaStream stream) {
-            mListener.onLocalStream(stream.videoTracks.get(0));
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onLocalStream");
+            localStream = stream.videoTracks.get(0);
+            List<VideoTrack> list = new ArrayList<VideoTrack>(remoteStreams.values());
+            mListener.onLocalStream(localStream, list);
         }
 
         @Override
         public void onRemoteStream(MediaStream stream) {
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onRemoteStream");
         }
 
         @Override
@@ -405,10 +410,12 @@ public class InCallForegroundService extends Service {
 
         @Override
         public void onCleanup() {
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onCleanup");
         }
 
         @Override
         public void onDetached() {
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onDetached");
         }
 
         @Override
@@ -418,6 +425,7 @@ public class InCallForegroundService extends Service {
 
         @Override
         public void onCallbackError(String error) {
+            Log.e(TAG, "JanusPublisherPluginCallbacks, onCallbackError: " + error);
         }
 
         private void createOffer() {
@@ -436,7 +444,7 @@ public class InCallForegroundService extends Service {
                             msg.put("jsep", obj);
                             handle.sendMessage(new PluginHandleSendMessageCallbacks(msg));
                         }catch (Exception ex) {
-                            Log.e("Test", ex.toString());
+                            Log.e(TAG, "createOffer: " + ex.toString());
                         }
                     }
 
@@ -474,14 +482,13 @@ public class InCallForegroundService extends Service {
                 try
                 {
                     obj.put(REQUEST, "join");
-                    obj.put("room", Integer.parseInt(mGroupId));
+                    obj.put("room", mGroupId);
                     obj.put("ptype", "publisher");
                     obj.put("display", mOurClientId);
                     msg.put(MESSAGE, obj);
                 }
-                catch(Exception ex)
-                {
-                    Log.e("Test", "joinRoomAsPublisher: error =" + ex.toString());
+                catch(Exception ex) {
+                    Log.e(TAG, "joinRoomAsPublisher: " + ex.toString());
                 }
                 handle.sendMessage(new PluginHandleSendMessageCallbacks(msg));
             }

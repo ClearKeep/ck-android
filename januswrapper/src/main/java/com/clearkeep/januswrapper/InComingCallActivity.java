@@ -14,7 +14,7 @@ import static com.clearkeep.januswrapper.utils.Constants.*;
 public class InComingCallActivity extends Activity implements View.OnClickListener {
     private String mUserNameInConversation;
     private String mAvatarInConversation;
-    private String mGroupId;
+    private Long mGroupId;
     private String mReceiverId;
 
     private ImageView imgAnswer;
@@ -29,7 +29,7 @@ public class InComingCallActivity extends Activity implements View.OnClickListen
 
         mUserNameInConversation = getIntent().getStringExtra(EXTRA_USER_NAME);
         mAvatarInConversation = getIntent().getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION);
-        mGroupId = getIntent().getStringExtra(EXTRA_GROUP_ID);
+        mGroupId = getIntent().getLongExtra(EXTRA_GROUP_ID, 0);
         mReceiverId = getIntent().getStringExtra(EXTRA_OUR_CLIENT_ID);
 
         initViews();

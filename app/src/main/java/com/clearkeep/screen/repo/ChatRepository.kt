@@ -49,9 +49,9 @@ class ChatRepository @Inject constructor(
 
     fun getClientId() = userManager.getClientId()
 
-    suspend fun sendMessageInPeer(receiverId: String, groupId: String, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
-        printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId")
+        printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId, groupId= $groupId")
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
@@ -85,12 +85,12 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun sendMessageToGroup(groupId: String, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageToGroup(groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId")
         try {
             val senderAddress = SignalProtocolAddress(senderId, 111)
-            val groupSender  =  SenderKeyName(groupId, senderAddress)
+            val groupSender  =  SenderKeyName(groupId.toString(), senderAddress)
 
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =

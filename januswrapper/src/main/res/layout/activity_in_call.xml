@@ -38,60 +38,65 @@
             android:text="@string/title_call_screen" />
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/tvUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/rlToolbar"
-        android:layout_centerHorizontal="true"
-        android:textColor="?attr/appCallTextColor"
-        tools:textColor="@android:color/white"
-        android:textSize="30sp"
-        android:layout_marginTop="7dp"
-        tools:text="Kitagawa Keiko" />
-
     <RelativeLayout
-        android:id="@+id/statusContainer"
+        android:id="@+id/containerUserInfo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvUserName"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="30dp">
+        android:layout_height="match_parent"
+        android:layout_below="@id/rlToolbar"
+        android:layout_above="@id/bottomButtonContainer">
         <TextView
-            android:id="@+id/tvCallState"
+            android:id="@+id/tvUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:textColor="?attr/appCallTextColor"
             tools:textColor="@android:color/white"
-            android:textSize="16sp"
-            tools:text="@string/text_calling" />
+            android:textSize="30sp"
+            android:layout_marginTop="7dp"
+            tools:text="Kitagawa Keiko" />
 
-        <Chronometer
-            android:id="@+id/chronometer"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/statusContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?attr/appCallTextColor"
-            tools:textColor="@android:color/white"
-            android:visibility="gone"
-            android:layout_centerHorizontal="true"/>
-    </RelativeLayout>
+            android:layout_below="@id/tvUserName"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="30dp">
+            <TextView
+                android:id="@+id/tvCallState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:textColor="?attr/appCallTextColor"
+                tools:textColor="@android:color/white"
+                android:textSize="16sp"
+                tools:text="@string/text_calling" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/statusContainer"
-        android:layout_above="@id/bottomButtonContainer"
-        android:background="@android:color/transparent"
-        android:gravity="center_horizontal">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imgThumb"
-            android:layout_width="wrap_content"
+            <Chronometer
+                android:id="@+id/chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/appCallTextColor"
+                tools:textColor="@android:color/white"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_thumb_test"
-            app:civ_border_color="@android:color/transparent"
-            app:civ_border_width="0.5dp"/>
-    </LinearLayout>
+            android:layout_below="@id/statusContainer"
+            android:background="@android:color/transparent"
+            android:gravity="center_horizontal">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgThumb"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_thumb_test"
+                app:civ_border_color="@android:color/transparent"
+                app:civ_border_width="0.5dp"/>
+        </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/bottomButtonContainer"

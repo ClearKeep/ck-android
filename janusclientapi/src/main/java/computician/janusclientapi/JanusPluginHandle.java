@@ -365,14 +365,14 @@ public class JanusPluginHandle {
 
     public void hangUp() {
         try {
-            if (remoteStream != null) {
+            /*if (remoteStream != null) {
                 remoteStream.dispose();
                 remoteStream = null;
             }
             if (myStream != null) {
                 myStream.dispose();
                 myStream = null;
-            }
+            }*/
             if (pc != null && pc.signalingState() != PeerConnection.SignalingState.CLOSED)
                 pc.close();
             pc = null;

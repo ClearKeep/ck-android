@@ -21,7 +21,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val avatar = remoteMessage.data["from_client_avatar"]
         val fromClientId = remoteMessage.data["from_client_id"]
         val fromClientName = remoteMessage.data["from_client_name"]
-        AppCall.inComingCall(this, groupId, userManager.getClientId(), fromClientName, avatar)
+        if (groupId != null) {
+            AppCall.inComingCall(this, groupId.toLong(), userManager.getClientId(), fromClientName, avatar)
+        }
     }
 
     override fun onNewToken(token: String) {
