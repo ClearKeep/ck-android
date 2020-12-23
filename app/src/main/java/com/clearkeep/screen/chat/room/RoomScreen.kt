@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.room
 
-import android.text.TextUtils
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,38 +20,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
-import java.lang.IllegalArgumentException
 import androidx.navigation.compose.*
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun RoomScreen(
-        groupId: String?,
-        friendId: String?,
-
-        roomViewModel: RoomViewModel,
-        navHostController: NavHostController,
-        onFinishActivity: () -> Unit,
-) {
-    if (TextUtils.isEmpty(groupId) && TextUtils.isEmpty(friendId)) {
-        throw IllegalArgumentException("Can not load room with both groupId and friendId is empty")
-    }
-    if (!groupId.isNullOrEmpty()) {
-        roomViewModel.updateGroupWithId(groupId)
-    } else if (!friendId.isNullOrEmpty()) {
-        roomViewModel.updateGroupWithFriendId(friendId)
-    }
-
-    RoomObserverView(
-            roomViewModel = roomViewModel,
-            navHostController = navHostController,
-            onFinishActivity = onFinishActivity
-    )
-}
-
-@Composable
-fun RoomObserverView(
         roomViewModel: RoomViewModel,
         navHostController: NavHostController,
         onFinishActivity: () -> Unit,

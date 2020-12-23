@@ -44,7 +44,7 @@ suspend fun decryptPeerMessage(
 
 @Throws(Exception::class)
 suspend fun decryptGroupMessage(
-        fromClientId: String, groupId: String, message: ByteString,
+        fromClientId: String, groupId: Long, message: ByteString,
         senderKeyStore: InMemorySenderKeyStore,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
 ) : String = withContext(Dispatchers.IO) {
@@ -53,7 +53,7 @@ suspend fun decryptGroupMessage(
     }
 
     val senderAddress = SignalProtocolAddress(fromClientId, 222)
-    val groupSender = SenderKeyName(groupId, senderAddress)
+    val groupSender = SenderKeyName(groupId.toString(), senderAddress)
     val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
 
     val initSession = initSessionUserInGroup(
@@ -112,7 +112,7 @@ suspend fun initSessionUserPeer(
 }
 
 fun initSessionUserInGroup(
-        groupId: String, fromClientId: String, groupSender: SenderKeyName,
+        groupId: Long, fromClientId: String, groupSender: SenderKeyName,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         senderKeyStore: InMemorySenderKeyStore,
 ): Boolean {

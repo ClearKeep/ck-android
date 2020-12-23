@@ -26,15 +26,15 @@ class MessageRepository @Inject constructor(
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
 ) {
-    fun getMessagesAsState(groupId: String) = messageDAO.getMessagesAsState(groupId)
+    fun getMessagesAsState(groupId: Long) = messageDAO.getMessagesAsState(groupId)
 
-    suspend fun getMessages(groupId: String) = messageDAO.getMessages(groupId)
+    suspend fun getMessages(groupId: Long) = messageDAO.getMessages(groupId)
 
     suspend fun getMessage(messageId: String) = messageDAO.getMessage(messageId)
 
     suspend fun insert(message: Message) = messageDAO.insert(message)
 
-    suspend fun fetchMessageFromAPI(groupId: String, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
+    suspend fun fetchMessageFromAPI(groupId: Long, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
         try {
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)

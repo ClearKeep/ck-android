@@ -111,7 +111,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun inviteToGroupFromAPI(ourClientId: String, invitedFriendId: String, groupId: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun inviteToGroupFromAPI(ourClientId: String, invitedFriendId: String, groupId: Long): Boolean = withContext(Dispatchers.IO) {
         printlnCK("inviteToGroup: $invitedFriendId")
         try {
             val request = GroupOuterClass.InviteToGroupRequest.newBuilder()
@@ -128,7 +128,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun getGroupFromAPI(groupId: String): ChatGroup? = withContext(Dispatchers.IO) {
+    suspend fun getGroupFromAPI(groupId: Long): ChatGroup? = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
         try {
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
@@ -166,7 +166,7 @@ class GroupRepository @Inject constructor(
         groupDAO.insert(group)
     }
 
-    suspend fun getGroupByID(groupId: String) = groupDAO.getGroupById(groupId)
+    suspend fun getGroupByID(groupId: Long) = groupDAO.getGroupById(groupId)
 
     suspend fun getGroupPeerByClientId(friend: People): ChatGroup? {
         return friend.let {
@@ -176,7 +176,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun remarkJoinInRoom(groupId: String) : Boolean {
+    suspend fun remarkJoinInRoom(groupId: Long) : Boolean {
         val group = groupDAO.getGroupById(groupId)
         val updateGroup = ChatGroup(
                 id = group.id,

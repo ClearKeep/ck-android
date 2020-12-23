@@ -69,17 +69,17 @@ class SignalKeyRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun registerSenderKeyToGroup(groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("joinInGroup: $groupID")
         val senderAddress = SignalProtocolAddress(clientId, 111)
-        val groupSender  =  SenderKeyName(groupID, senderAddress)
+        val groupSender  =  SenderKeyName(groupID.toString(), senderAddress)
         val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
         val sentAliceDistributionMessage = aliceSessionBuilder.create(groupSender)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
             .setClientId(senderAddress.name)
             .setDeviceId(senderAddress.deviceId)
-            .setGroupId(groupSender.groupId)
+            .setGroupId(groupID)
             .setClientKeyDistribution(ByteString.copyFrom(sentAliceDistributionMessage.serialize()))
             .build()
 
@@ -99,7 +99,7 @@ class SignalKeyRepository @Inject constructor(
     }
 
     @Throws(Exception::class)
-    suspend fun isRegisteredGroupKey(groupID: String, clientId: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun isRegisteredGroupKey(groupID: Long, clientId: String) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("isRegisteredGroupKey: $groupID")
         try {
             val request = Signal.GroupGetClientKeyRequest.newBuilder()

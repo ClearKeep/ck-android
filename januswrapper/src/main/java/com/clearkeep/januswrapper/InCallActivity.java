@@ -26,6 +26,11 @@ import org.webrtc.VideoRenderer;
 import org.webrtc.VideoRendererGui;
 import org.webrtc.VideoTrack;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 import static com.clearkeep.januswrapper.utils.Constants.*;
 
@@ -46,11 +51,12 @@ public class InCallActivity extends Activity implements View.OnClickListener, In
     private TextView tvUserName;
     private TextView tvCallState;
     private View answerButtonContainer;
+    private View containerUserInfo;
     private Chronometer mChronometer;
 
     private GLSurfaceView surfaceView;
     private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
+    private Map<BigInteger, VideoRenderer.Callbacks> remoteRenders = new HashMap<>();
     private boolean mIsSurfaceCreated = false;
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -142,6 +148,7 @@ public class InCallActivity extends Activity implements View.OnClickListener, In
         imgThumb = findViewById(R.id.imgThumb);
         tvCallState = findViewById(R.id.tvCallState);
         answerButtonContainer = findViewById(R.id.answerButtonContainer);
+        containerUserInfo = findViewById(R.id.containerUserInfo);
         tvUserName = findViewById(R.id.tvUserName);
         mChronometer = findViewById(R.id.chronometer);
         imgBack.setOnClickListener(this);
@@ -159,9 +166,6 @@ public class InCallActivity extends Activity implements View.OnClickListener, In
             mIsSurfaceCreated = true;
             executeCall();
         });
-
-        localRender = VideoRendererGui.create(0, 0, 25, 25, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
-        remoteRender = VideoRendererGui.create(27, 27, 70, 70, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
     }
 
     private void executeCall() {
@@ -226,13 +230,66 @@ public class InCallActivity extends Activity implements View.OnClickListener, In
     }
 
     @Override
-    public void onLocalStream(VideoTrack videoTrack) {
-        videoTrack.addRenderer(new VideoRenderer(localRender));
+    public void onLocalStream(VideoTrack localTrack, List<VideoTrack> remoteTracks) {
+        updateRenderPosition(localTrack);
     }
 
     @Override
-    public void onRemoteStream(BigInteger remoteClientId, VideoTrack videoTrack) {
-        videoTrack.addRenderer(new VideoRenderer(remoteRender));
+    public void onRemoteStreamAdd(VideoTrack localTrack, VideoTrack remoteTrack, BigInteger remoteClientId) {
+        VideoRenderer.Callbacks oldRemoteRender = remoteRenders.get(remoteClientId);
+        if (oldRemoteRender == null) {
+            VideoRenderer.Callbacks remoteRender = VideoRendererGui.create(0, 0, 25, 25, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
+            remoteRenders.put(remoteClientId, remoteRender);
+            remoteTrack.addRenderer(new VideoRenderer(remoteRender));
+        }
+        updateRenderPosition(localTrack);
+    }
+
+    @Override
+    public void onStreamRemoved(VideoTrack localTrack, BigInteger remoteClientId) {
+        VideoRenderer.Callbacks render = remoteRenders.remove(remoteClientId);
+        if (render != null) {
+            VideoRendererGui.remove(render);
+        }
+
+        if (remoteRenders.size() == 0) {
+            finishAndRemoveFromTask();
+            return;
+        }
+
+        updateRenderPosition(localTrack);
+    }
+
+    private void updateRenderPosition(VideoTrack localTrack) {
+        List<VideoRenderer.Callbacks> list = new ArrayList<VideoRenderer.Callbacks>(remoteRenders.values());
+
+        Boolean isShowAvatar = list.size() == 0;
+        showOrHideAvatar(isShowAvatar);
+        if (list.size() == 1) {
+            VideoRendererGui.update(list.get(0), 0, 0, 100, 100, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
+        } else if (list.size() == 2) {
+            VideoRendererGui.update(list.get(0), 0, 0, 100, 50, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
+            VideoRendererGui.update(list.get(1), 0, 50, 100, 50, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true);
+        }
+
+        if (localRender != null) {
+            VideoRendererGui.remove(localRender);
+        }
+        localRender = VideoRendererGui.create(5, 5, 25, 25, VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false);
+        localTrack.addRenderer(new VideoRenderer(localRender));
+    }
+
+    private void showOrHideAvatar(Boolean isShowAvatar) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (isShowAvatar) {
+                    containerUserInfo.setVisibility(View.VISIBLE);
+                } else {
+                    containerUserInfo.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     @Override
@@ -276,7 +333,7 @@ public class InCallActivity extends Activity implements View.OnClickListener, In
         intent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, mAvatarInConversation);
         intent.putExtra(EXTRA_USER_NAME, mUserNameInConversation);
 
-        String callId = getIntent().getStringExtra(EXTRA_GROUP_ID);
+        Long callId = getIntent().getLongExtra(EXTRA_GROUP_ID, 0);
         intent.putExtra(EXTRA_GROUP_ID, callId);
         String ourClientId = getIntent().getStringExtra(EXTRA_OUR_CLIENT_ID);
         intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId);

@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 data class Message(
     @NonNull
     @PrimaryKey val id: String,
-    @ColumnInfo(name = "group_id") val groupId: String,
+    @ColumnInfo(name = "group_id") val groupId: Long,
     @ColumnInfo(name = "group_type") val groupType: String,
     @ColumnInfo(name = "sender_id") val senderId: String,
     @ColumnInfo(name = "receiver_id") val receiverId: String,

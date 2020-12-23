@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.januswrapper.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
@@ -35,8 +36,10 @@ class RoomActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val roomId = intent.getStringExtra(GROUP_ID) ?: ""
+        val roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
+
+        roomViewModel.initRoom(roomId, friendId)
 
         setContent {
             CKTheme {
@@ -44,8 +47,6 @@ class RoomActivity : AppCompatActivity() {
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         RoomScreen(
-                            roomId,
-                            friendId,
                             roomViewModel,
                             navController,
                             onFinishActivity = {
@@ -64,7 +65,7 @@ class RoomActivity : AppCompatActivity() {
                                 inviteGroupViewModel,
                                 onFriendSelected = { friends ->
                                     if (!friends.isNullOrEmpty()) {
-                                        roomViewModel.inviteToGroup(friends[0].id, friendId)
+                                        roomViewModel.inviteToGroup(friends[0].id, roomId)
                                     }
                                 },
                                 onBackPressed = {
@@ -93,8 +94,13 @@ class RoomActivity : AppCompatActivity() {
         })
     }
 
-    private fun navigateToInComingCallActivity(groupId: String) {
-        AppCall.call(this, groupId, roomViewModel.getClientId(), "Dai", "", false)
+    private fun navigateToInComingCallActivity(group: ChatGroup) {
+        val roomName = if (group.isGroup()) group.groupName else {
+            group.clientList.firstOrNull { client ->
+                client.id != roomViewModel.getClientId()
+            }?.userName ?: ""
+        }
+        AppCall.call(this, group.id, roomViewModel.getClientId(), roomName, "", false)
     }
 
     companion object {

@@ -8,13 +8,13 @@ import com.clearkeep.db.clear_keep.converter.PeopleListConverter
 import com.clearkeep.db.clear_keep.converter.SortedStringListConverter
 import com.clearkeep.screen.chat.utils.isGroup
 
-const val GROUP_ID_TEMPO = "id_not_create"
+const val GROUP_ID_TEMPO = (-1).toLong()
 
 @Entity
 @TypeConverters(SortedStringListConverter::class, MessageConverter::class, PeopleListConverter::class)
 data class ChatGroup(
         @NonNull
-        @PrimaryKey val id: String,
+        @PrimaryKey val id: Long,
         @ColumnInfo(name = "group_name") val groupName: String,
         @ColumnInfo(name = "group_avatar") val groupAvatar: String?,
         @ColumnInfo(name = "group_type") val groupType: String,
