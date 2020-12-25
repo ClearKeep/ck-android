@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.chat.home.HomeActivity
 import com.clearkeep.components.lightThemeColors
+import com.clearkeep.januswrapper.AppCall
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -71,7 +72,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToRegisterActivity() {
-        startActivity(Intent(this, RegisterActivity::class.java))
+        /*startActivity(Intent(this, RegisterActivity::class.java))*/
+        AppCall.call(this, 1234L, "android", "dai", "", false)
     }
 }
 
