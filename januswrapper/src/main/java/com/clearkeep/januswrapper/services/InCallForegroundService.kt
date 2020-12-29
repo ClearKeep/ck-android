@@ -26,6 +26,7 @@ import org.webrtc.VideoTrack
 import java.math.BigInteger
 import java.util.*
 
+
 class InCallForegroundService : Service() {
     enum class CallState {
         CALLING, RINGING, ANSWERED, BUSY, ENDED, CALL_NOT_READY
@@ -52,11 +53,12 @@ class InCallForegroundService : Service() {
         private set
 
     // janus
+    private val remoteStreams: MutableMap<BigInteger, VideoTrack> = HashMap()
     private var janusServer: JanusServer? = null
     private var mListener: CallListener? = null
     private var localStream: MediaStream? = null
     private var localTrack: VideoTrack? = null
-    private val remoteStreams: MutableMap<BigInteger, VideoTrack> = HashMap()
+    private var handle: JanusPluginHandle? = null
 
     inner class LocalBinder : Binder() {
         val service: InCallForegroundService
@@ -127,10 +129,12 @@ class InCallForegroundService : Service() {
         localStream?.audioTracks?.get(0)?.setEnabled(!isMute)
     }
 
+    fun switchCamera() {
+        handle?.switchCamera()
+    }
+
     fun hangup() {
-        if (janusServer != null) {
-            janusServer!!.Destroy()
-        }
+        janusServer?.Destroy()
         stopSelf()
     }
 
@@ -200,7 +204,7 @@ class InCallForegroundService : Service() {
             try {
                 val event = msg.getString("videoroom")
                 if (event == "attached" && jsep != null) {
-                    listenerHandle!!.createAnswer(object : IPluginHandleWebRTCCallbacks {
+                    listenerHandle?.createAnswer(object : IPluginHandleWebRTCCallbacks {
                         override fun onSuccess(obj: JSONObject) {
                             try {
                                 val mymsg = JSONObject()
@@ -210,7 +214,7 @@ class InCallForegroundService : Service() {
                                 mymsg.put(Constants.MESSAGE, body)
                                 mymsg.put("jsep", obj)
                                 mymsg.put("token", "a1b2c3d4")
-                                listenerHandle!!.sendMessage(PluginHandleSendMessageCallbacks(mymsg))
+                                listenerHandle?.sendMessage(PluginHandleSendMessageCallbacks(mymsg))
                             } catch (ex: Exception) {
                             }
                         }
@@ -243,7 +247,7 @@ class InCallForegroundService : Service() {
         override fun onLocalStream(stream: MediaStream) {}
         override fun onRemoteStream(stream: MediaStream) {
             remoteStreams[mRemoteClientId] = stream.videoTracks[0]
-            mListener!!.onRemoteStreamAdd(localTrack, stream.videoTracks[0], mRemoteClientId)
+            mListener?.onRemoteStreamAdd(localTrack, stream.videoTracks[0], mRemoteClientId)
         }
 
         override fun onDataOpen(data: Any) {}
@@ -258,8 +262,6 @@ class InCallForegroundService : Service() {
     }
 
     inner class JanusPublisherPluginCallbacks : IJanusPluginCallbacks {
-        private var handle: JanusPluginHandle? = null
-
         override fun success(janusPluginHandle: JanusPluginHandle) {
             Log.e(TAG, "JanusPublisherPluginCallbacks, success")
             handle = janusPluginHandle
@@ -293,11 +295,11 @@ class InCallForegroundService : Service() {
                         }
                         msg.has("leaving") -> {
                             val id = BigInteger(msg.getString("leaving"))
-                            mListener!!.onStreamRemoved(localTrack, id)
+                            mListener?.onStreamRemoved(localTrack, id)
                         }
                         msg.has("unpublished") -> {
                             val id = BigInteger(msg.getString("unpublished"))
-                            mListener!!.onStreamRemoved(localTrack, id)
+                            mListener?.onStreamRemoved(localTrack, id)
                         }
                         else -> {
                             //todo error
@@ -305,7 +307,7 @@ class InCallForegroundService : Service() {
                     }
                 }
                 if (jsep != null) {
-                    handle!!.handleRemoteJsep(PluginHandleWebRTCCallbacks(null, jsep, false))
+                    handle?.handleRemoteJsep(PluginHandleWebRTCCallbacks(null, jsep, false))
                 }
             } catch (ex: Exception) {
                 Log.e(TAG, "JanusPublisherPluginCallbacks, onMessage: error =$ex")
@@ -317,7 +319,7 @@ class InCallForegroundService : Service() {
             localStream = stream
             localTrack = stream.videoTracks[0]
             val list: List<VideoTrack> = ArrayList(remoteStreams.values)
-            mListener!!.onLocalStream(localTrack, list)
+            mListener?.onLocalStream(localTrack, list)
         }
 
         override fun onRemoteStream(stream: MediaStream) {
@@ -343,59 +345,55 @@ class InCallForegroundService : Service() {
         }
 
         private fun createOffer() {
-            if (handle != null) {
-                handle!!.createOffer(object : IPluginHandleWebRTCCallbacks {
-                    override fun onSuccess(obj: JSONObject) {
-                        try {
-                            val msg = JSONObject()
-                            val body = JSONObject()
-                            body.put(Constants.REQUEST, "configure")
-                            body.put("audio", true)
-                            body.put("video", true)
-                            msg.put(Constants.MESSAGE, body)
-                            msg.put("jsep", obj)
-                            handle!!.sendMessage(PluginHandleSendMessageCallbacks(msg))
-                        } catch (ex: Exception) {
-                            Log.e(TAG, "createOffer: $ex")
-                        }
+            handle?.createOffer(object : IPluginHandleWebRTCCallbacks {
+                override fun onSuccess(obj: JSONObject) {
+                    try {
+                        val msg = JSONObject()
+                        val body = JSONObject()
+                        body.put(Constants.REQUEST, "configure")
+                        body.put("audio", true)
+                        body.put("video", true)
+                        msg.put(Constants.MESSAGE, body)
+                        msg.put("jsep", obj)
+                        handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
+                    } catch (ex: Exception) {
+                        Log.e(TAG, "createOffer: $ex")
                     }
+                }
 
-                    override fun getJsep(): JSONObject? {
-                        return null
-                    }
+                override fun getJsep(): JSONObject? {
+                    return null
+                }
 
-                    override fun getMedia(): JanusMediaConstraints {
-                        val cons = JanusMediaConstraints()
-                        cons.recvAudio = false
-                        cons.recvVideo = false
-                        cons.sendAudio = true
-                        return cons
-                    }
+                override fun getMedia(): JanusMediaConstraints {
+                    val cons = JanusMediaConstraints()
+                    cons.recvAudio = false
+                    cons.recvVideo = false
+                    cons.sendAudio = true
+                    return cons
+                }
 
-                    override fun getTrickle(): Boolean {
-                        return true
-                    }
+                override fun getTrickle(): Boolean {
+                    return true
+                }
 
-                    override fun onCallbackError(error: String) {}
-                })
-            }
+                override fun onCallbackError(error: String) {}
+            })
         }
 
         private fun joinRoomAsPublisher() {
-            if (handle != null) {
-                val obj = JSONObject()
-                val msg = JSONObject()
-                try {
-                    obj.put(Constants.REQUEST, "join")
-                    obj.put("room", mGroupId)
-                    obj.put("ptype", "publisher")
-                    obj.put("display", mOurClientId)
-                    msg.put(Constants.MESSAGE, obj)
-                } catch (ex: Exception) {
-                    Log.e(TAG, "joinRoomAsPublisher: $ex")
-                }
-                handle!!.sendMessage(PluginHandleSendMessageCallbacks(msg))
+            val obj = JSONObject()
+            val msg = JSONObject()
+            try {
+                obj.put(Constants.REQUEST, "join")
+                obj.put("room", mGroupId)
+                obj.put("ptype", "publisher")
+                obj.put("display", mOurClientId)
+                msg.put(Constants.MESSAGE, obj)
+            } catch (ex: Exception) {
+                Log.e(TAG, "joinRoomAsPublisher: $ex")
             }
+            handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
         }
 
         private fun attachRemoteClient(remoteId: BigInteger) {

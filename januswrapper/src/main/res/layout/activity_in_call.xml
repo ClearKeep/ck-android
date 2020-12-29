@@ -122,6 +122,12 @@
             android:src="?attr/buttonMuteOff"
             tools:src="@drawable/ic_string_ee_mute_off" />
         <ImageView
+            android:id="@+id/imgSwitchCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:src="@android:drawable/ic_menu_camera" />
+        <ImageView
             android:id="@+id/imgEnd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
