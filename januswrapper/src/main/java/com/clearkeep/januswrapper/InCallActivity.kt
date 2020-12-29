@@ -43,6 +43,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     private lateinit var imgSpeaker: ImageView
     private lateinit var imgMute: ImageView
     private lateinit var imgEnd: ImageView
+    private lateinit var imgSwitchCamera: ImageView
 
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
@@ -147,6 +148,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         imgSpeaker = findViewById(R.id.imgSpeaker)
         imgMute = findViewById(R.id.imgMute)
         imgEnd = findViewById(R.id.imgEnd)
+        imgSwitchCamera = findViewById(R.id.imgSwitchCamera)
 
         imgThumb = findViewById(R.id.imgThumb)
         tvCallState = findViewById(R.id.tvCallState)
@@ -158,6 +160,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         imgSpeaker.setOnClickListener(this)
         imgMute.setOnClickListener(this)
         imgEnd.setOnClickListener(this)
+        imgSwitchCamera.setOnClickListener(this)
 
         updateConversationInformation()
         surfaceView = findViewById(R.id.glview)
@@ -236,6 +239,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
             VideoRendererGui.remove(render)
         }
         if (remoteRenders.isEmpty()) {
+            mService?.hangup()
             finishAndRemoveFromTask()
             return
         }
@@ -289,6 +293,9 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
                 mIsMute = !mIsMute
                 enableMute(mIsMute)
                 mService?.mute(mIsMute)
+            }
+            R.id.imgSwitchCamera -> {
+                mService?.switchCamera()
             }
         }
     }

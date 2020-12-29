@@ -22,6 +22,7 @@ public class JanusPluginHandle {
     private SessionDescription mySdp = null;
     private PeerConnection pc = null;
     private DataChannel dataChannel = null;
+    private VideoCapturerAndroid capturer = null;
     private boolean trickle = true;
     private boolean iceDone = false;
     private boolean sdpSent = false;
@@ -309,7 +310,6 @@ public class JanusPluginHandle {
                 audioTrack = sessionFactory.createAudioTrack(AUDIO_TRACK_ID, source);
             }
             if (callbacks.getMedia().getSendVideo()) {
-                VideoCapturerAndroid capturer = null;
                 switch (callbacks.getMedia().getCamera()) {
                     case back:
                         capturer = VideoCapturerAndroid.create(VideoCapturerAndroid.getNameOfBackFacingDevice());
@@ -393,6 +393,12 @@ public class JanusPluginHandle {
         hangUp();
         JSONObject obj = new JSONObject();
         server.sendMessage(obj, JanusMessageType.detach, id);
+    }
+
+    public void switchCamera() {
+        if (capturer != null) {
+            capturer.switchCamera(null);
+        }
     }
 
     private void onLocalSdp(SessionDescription sdp, IPluginHandleWebRTCCallbacks callbacks) {
