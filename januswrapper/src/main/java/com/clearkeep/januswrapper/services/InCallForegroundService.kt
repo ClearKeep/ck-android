@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.opengl.EGLContext
 import android.os.Binder
 import android.os.Build
@@ -38,9 +39,12 @@ class InCallForegroundService : Service() {
     }
 
     private val mBinder: IBinder = LocalBinder()
-    var mIsInComingCall = false
-    var mAvatarInConversation: String? = null
-    var mUserNameInConversation: String? = null
+    private var mIsInComingCall = false
+    private var mAvatarInConversation: String? = null
+    private var mUserNameInConversation: String? = null
+    private var mIsSpeakerOn = false
+    private var mIsMuting = false
+
     var mGroupId: Long? = null
     var mOurClientId: String? = null
     private var mCurrentCallStatus: String? = null
@@ -50,7 +54,8 @@ class InCallForegroundService : Service() {
     // janus
     private var janusServer: JanusServer? = null
     private var mListener: CallListener? = null
-    private var localStream: VideoTrack? = null
+    private var localStream: MediaStream? = null
+    private var localTrack: VideoTrack? = null
     private val remoteStreams: MutableMap<BigInteger, VideoTrack> = HashMap()
 
     inner class LocalBinder : Binder() {
@@ -72,6 +77,9 @@ class InCallForegroundService : Service() {
         val intentFilter = IntentFilter()
         intentFilter.addAction(ACTION_END_CALL)
         registerReceiver(mEndCallReceiver, intentFilter)
+
+        setSpeakerphoneOn(false)
+        mute(false)
     }
 
     override fun onDestroy() {
@@ -86,7 +94,8 @@ class InCallForegroundService : Service() {
         mIsInComingCall = intent.getBooleanExtra(Constants.EXTRA_FROM_IN_COMING_CALL, false)
         mUserNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
-        /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/mGroupId = java.lang.Long.valueOf(1234)
+        /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/
+        mGroupId = java.lang.Long.valueOf(1223)
         mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
         return START_NOT_STICKY
@@ -104,6 +113,18 @@ class InCallForegroundService : Service() {
 
     override fun onBind(intent: Intent): IBinder {
         return mBinder
+    }
+
+    fun setSpeakerphoneOn(isOn: Boolean) {
+        mIsSpeakerOn = isOn
+        val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+        audioManager.mode = AudioManager.MODE_IN_CALL
+        audioManager.isSpeakerphoneOn = isOn
+    }
+
+    fun mute(isMute: Boolean) {
+        mIsMuting = isMute
+        localStream?.audioTracks?.get(0)?.setEnabled(!isMute)
     }
 
     fun hangup() {
@@ -222,7 +243,7 @@ class InCallForegroundService : Service() {
         override fun onLocalStream(stream: MediaStream) {}
         override fun onRemoteStream(stream: MediaStream) {
             remoteStreams[mRemoteClientId] = stream.videoTracks[0]
-            mListener!!.onRemoteStreamAdd(localStream, stream.videoTracks[0], mRemoteClientId)
+            mListener!!.onRemoteStreamAdd(localTrack, stream.videoTracks[0], mRemoteClientId)
         }
 
         override fun onDataOpen(data: Any) {}
@@ -272,11 +293,11 @@ class InCallForegroundService : Service() {
                         }
                         msg.has("leaving") -> {
                             val id = BigInteger(msg.getString("leaving"))
-                            mListener!!.onStreamRemoved(localStream, id)
+                            mListener!!.onStreamRemoved(localTrack, id)
                         }
                         msg.has("unpublished") -> {
                             val id = BigInteger(msg.getString("unpublished"))
-                            mListener!!.onStreamRemoved(localStream, id)
+                            mListener!!.onStreamRemoved(localTrack, id)
                         }
                         else -> {
                             //todo error
@@ -293,9 +314,10 @@ class InCallForegroundService : Service() {
 
         override fun onLocalStream(stream: MediaStream) {
             Log.e(TAG, "JanusPublisherPluginCallbacks, onLocalStream")
-            localStream = stream.videoTracks[0]
+            localStream = stream
+            localTrack = stream.videoTracks[0]
             val list: List<VideoTrack> = ArrayList(remoteStreams.values)
-            mListener!!.onLocalStream(localStream, list)
+            mListener!!.onLocalStream(localTrack, list)
         }
 
         override fun onRemoteStream(stream: MediaStream) {
@@ -409,7 +431,7 @@ class InCallForegroundService : Service() {
     companion object {
         private const val TAG = "InCallForegroundService"
         private const val NOTIFICATION_ID = 101
-        private const val CHANNEL_ID = "fast_go_call_01"
-        private const val ACTION_END_CALL = "fg.action.end.call"
+        private const val CHANNEL_ID = "ck_call_01"
+        private const val ACTION_END_CALL = "ck.action.end.call"
     }
 }
