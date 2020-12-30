@@ -44,10 +44,26 @@
         android:layout_height="match_parent"
         android:layout_below="@id/rlToolbar"
         android:layout_above="@id/bottomButtonContainer">
+        <LinearLayout
+            android:id="@+id/avatarContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:gravity="center_horizontal">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgThumb"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_thumb_test"
+                app:civ_border_color="@android:color/transparent"
+                app:civ_border_width="0.5dp"/>
+        </LinearLayout>
+
         <TextView
             android:id="@+id/tvUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/avatarContainer"
             android:layout_centerHorizontal="true"
             android:textColor="?attr/appCallTextColor"
             tools:textColor="@android:color/white"
@@ -69,34 +85,22 @@
                 android:layout_centerHorizontal="true"
                 android:textColor="?attr/appCallTextColor"
                 tools:textColor="@android:color/white"
+                tools:visibility="gone"
                 android:textSize="16sp"
                 tools:text="@string/text_calling" />
-
-            <Chronometer
-                android:id="@+id/chronometer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="?attr/appCallTextColor"
-                tools:textColor="@android:color/white"
-                android:visibility="gone"
-                android:layout_centerHorizontal="true"/>
         </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/statusContainer"
-            android:background="@android:color/transparent"
-            android:gravity="center_horizontal">
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imgThumb"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_thumb_test"
-                app:civ_border_color="@android:color/transparent"
-                app:civ_border_width="0.5dp"/>
-        </LinearLayout>
     </RelativeLayout>
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rlToolbar"
+        android:textColor="?attr/appCallTextColor"
+        tools:textColor="@android:color/white"
+        android:visibility="gone"
+        tools:visibility="visible"
+        android:layout_centerHorizontal="true"/>
 
     <LinearLayout
         android:id="@+id/bottomButtonContainer"

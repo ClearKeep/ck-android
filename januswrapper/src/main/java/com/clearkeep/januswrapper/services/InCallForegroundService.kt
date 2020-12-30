@@ -10,9 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.opengl.EGLContext
-import android.os.Binder
-import android.os.Build
-import android.os.IBinder
+import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.clearkeep.januswrapper.InCallActivity
@@ -26,17 +24,26 @@ import org.webrtc.VideoTrack
 import java.math.BigInteger
 import java.util.*
 
+enum class CallState {
+    CALLING,
+    RINGING,
+    ANSWERED,
+    BUSY,
+    ENDED,
+    CALL_NOT_READY
+}
 
 class InCallForegroundService : Service() {
-    enum class CallState {
-        CALLING, RINGING, ANSWERED, BUSY, ENDED, CALL_NOT_READY
-    }
-
     interface CallListener {
-        fun onCallStateChanged(status: String?, state: CallState)
+        fun onCallStateChanged(status: String, state: CallState)
         fun onLocalStream(localTrack: VideoTrack?, remoteTracks: List<VideoTrack>?)
         fun onRemoteStreamAdd(localTrack: VideoTrack?, remoteTrack: VideoTrack, remoteClientId: BigInteger)
         fun onStreamRemoved(localTrack: VideoTrack?, remoteClientId: BigInteger)
+    }
+
+    inner class LocalBinder : Binder() {
+        val service: InCallForegroundService
+            get() = this@InCallForegroundService
     }
 
     private val mBinder: IBinder = LocalBinder()
@@ -45,25 +52,20 @@ class InCallForegroundService : Service() {
     private var mUserNameInConversation: String? = null
     private var mIsSpeakerOn = false
     private var mIsMuting = false
+    private var mLastTimeConnectedCall: Long = -1
 
-    var mGroupId: Long? = null
-    var mOurClientId: String? = null
-    private var mCurrentCallStatus: String? = null
-    var currentState: CallState? = null
-        private set
+    private var mGroupId: Long = -1
+    private lateinit var mOurClientId: String
+    private lateinit var mCurrentCallStatus: String
+    private lateinit var mCurrentCallState: CallState
 
     // janus
     private val remoteStreams: MutableMap<BigInteger, VideoTrack> = HashMap()
     private var janusServer: JanusServer? = null
-    private var mListener: CallListener? = null
+    private val mListeners: ArrayList<CallListener> = ArrayList()
     private var localStream: MediaStream? = null
     private var localTrack: VideoTrack? = null
     private var handle: JanusPluginHandle? = null
-
-    inner class LocalBinder : Binder() {
-        val service: InCallForegroundService
-            get() = this@InCallForegroundService
-    }
 
     private val mEndCallReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -71,11 +73,15 @@ class InCallForegroundService : Service() {
         }
     }
 
+    override fun onBind(intent: Intent): IBinder {
+        return mBinder
+    }
+
     override fun onCreate() {
         Log.d(TAG, "onCreate")
         super.onCreate()
         mCurrentCallStatus = getString(R.string.text_calling)
-        currentState = CallState.CALLING
+        mCurrentCallState = CallState.CALLING
         val intentFilter = IntentFilter()
         intentFilter.addAction(ACTION_END_CALL)
         registerReceiver(mEndCallReceiver, intentFilter)
@@ -97,14 +103,31 @@ class InCallForegroundService : Service() {
         mUserNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
         /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/
-        mGroupId = java.lang.Long.valueOf(1223)
-        mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
+        mGroupId = java.lang.Long.valueOf(1226)
+        mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)!!
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
         return START_NOT_STICKY
     }
 
-    fun executeMakeCall(con: EGLContext?) {
-        Log.i(TAG, "executeMakeCall, groupID = $mGroupId, our client id = $mOurClientId")
+    fun makeCall(con: EGLContext) {
+        Log.i(TAG, "makeCall, groupID = $mGroupId, our client id = $mOurClientId")
+        if (janusServer != null) {
+            return
+        }
+        janusServer = JanusServer(JanusGatewayCallbacksImpl())
+        janusServer!!.initializeMediaContext(this, true, true, true, con)
+        janusServer!!.Connect()
+
+        val handler = Handler(mainLooper)
+        handler.postDelayed({
+            if (remoteStreams.isEmpty()) {
+                updateCallingState(CallState.CALL_NOT_READY)
+            }
+        }, 30 * 1000)
+    }
+
+    fun answer(con: EGLContext) {
+        Log.i(TAG, "answer, groupID = $mGroupId, our client id = $mOurClientId")
         if (janusServer != null) {
             return
         }
@@ -113,11 +136,8 @@ class InCallForegroundService : Service() {
         janusServer!!.Connect()
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        return mBinder
-    }
-
     fun setSpeakerphoneOn(isOn: Boolean) {
+        Log.i(TAG, "setSpeakerphoneOn, isOn = $isOn")
         mIsSpeakerOn = isOn
         val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         audioManager.mode = AudioManager.MODE_IN_CALL
@@ -125,31 +145,104 @@ class InCallForegroundService : Service() {
     }
 
     fun mute(isMute: Boolean) {
+        Log.i(TAG, "mute, isMute = $isMute")
         mIsMuting = isMute
         localStream?.audioTracks?.get(0)?.setEnabled(!isMute)
     }
 
     fun switchCamera() {
+        Log.i(TAG, "switchCamera")
         handle?.switchCamera()
     }
 
     fun hangup() {
+        Log.i(TAG, "hangup")
         janusServer?.Destroy()
         stopSelf()
     }
 
     fun registerCallListener(listener: CallListener) {
-        mListener = listener
+        mListeners.add(listener)
+        notifyListeners()
     }
 
     fun unregisterCallListener(listener: CallListener) {
-        mListener = null
+        mListeners.remove(listener)
     }
 
-    private fun notifyStartForeground(title: String?, content: String?) {
+    private fun notifyListeners() {
+        if (mListeners.isNotEmpty()) {
+            for (callListener in mListeners) {
+                callListener.onCallStateChanged(mCurrentCallStatus, mCurrentCallState)
+            }
+        }
+    }
+
+    fun isSpeakerOn(): Boolean {
+        return mIsSpeakerOn
+    }
+
+    fun isMuting(): Boolean {
+        return mIsMuting
+    }
+
+    fun getCurrentState(): CallState {
+        return mCurrentCallState
+    }
+
+    fun getLastTimeConnectedCall(): Long {
+        return mLastTimeConnectedCall
+    }
+
+    private fun updateCallingState(signalingState: CallState) {
+        mCurrentCallState = signalingState
+        mCurrentCallStatus = getStatusFromState(mCurrentCallState)
+        Log.d(TAG, "updateCallingState: status=" + mCurrentCallStatus + ", state: " + mCurrentCallState.name)
+
+        if (mCurrentCallState == CallState.ANSWERED) {
+            mLastTimeConnectedCall = SystemClock.elapsedRealtime()
+        }
+
+        notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
+        notifyListeners()
+        if (mCurrentCallState == CallState.BUSY
+            || mCurrentCallState == CallState.ENDED
+            ||  mCurrentCallState == CallState.CALL_NOT_READY) {
+            hangup()
+        }
+    }
+
+    private fun getStatusFromState(mCurrentCallState: CallState): String {
+        var ret = ""
+        when (mCurrentCallState) {
+            CallState.CALLING -> {
+                ret = getString(R.string.text_calling)
+            }
+            CallState.RINGING -> {
+                ret = getString(R.string.text_ringing)
+            }
+            CallState.ANSWERED -> {
+                ret = getString(R.string.text_started)
+            }
+            CallState.BUSY -> {
+                ret = getString(R.string.text_busy)
+            }
+            CallState.ENDED -> {
+                ret = getString(R.string.text_end)
+            }
+            CallState.CALL_NOT_READY -> {
+                ret = getString(R.string.text_end)
+            }
+        }
+        return ret
+    }
+
+    private fun notifyStartForeground(title: String, content: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID,
-                    "channel_voice", NotificationManager.IMPORTANCE_HIGH)
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "channel_voice", NotificationManager.IMPORTANCE_HIGH
+            )
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
@@ -158,7 +251,10 @@ class InCallForegroundService : Service() {
         notificationIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         notificationIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
         notificationIntent.putExtra(Constants.EXTRA_USER_NAME, mUserNameInConversation)
-        notificationIntent.putExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION, mAvatarInConversation)
+        notificationIntent.putExtra(
+            Constants.EXTRA_AVATAR_USER_IN_CONVERSATION,
+            mAvatarInConversation
+        )
         if (mIsInComingCall) {
             notificationIntent.putExtra(Constants.EXTRA_GROUP_ID, mGroupId)
             notificationIntent.setClassName(packageName, InCallActivity::class.java.name)
@@ -167,8 +263,10 @@ class InCallForegroundService : Service() {
             notificationIntent.setClassName(packageName, InCallActivity::class.java.name)
         }
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
-        val pi = PendingIntent.getBroadcast(this, 0,
-                Intent(ACTION_END_CALL), 0)
+        val pi = PendingIntent.getBroadcast(
+            this, 0,
+            Intent(ACTION_END_CALL), 0
+        )
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
                 .setContentText(content)
@@ -181,7 +279,53 @@ class InCallForegroundService : Service() {
         startForeground(NOTIFICATION_ID, builder.build())
     }
 
-    internal inner class ListenerAttachCallbacks(private val groupId: Long?, private val mRemoteClientId: BigInteger) : IJanusPluginCallbacks {
+    private fun handleOnRemoteStreamAdded(remoteClientId: BigInteger, remoteStream: MediaStream) {
+        Log.i(TAG, "handleOnRemoteStreamAdded, remoteClientId = $remoteClientId")
+        remoteStreams[remoteClientId] = remoteStream.videoTracks[0]
+
+        if (mCurrentCallState != CallState.ANSWERED) {
+            updateCallingState(CallState.ANSWERED)
+        }
+        if (mListeners.isNotEmpty()) {
+            for (callListener in mListeners) {
+                callListener.onRemoteStreamAdd(
+                    localTrack,
+                    remoteStream.videoTracks[0],
+                    remoteClientId
+                )
+            }
+        }
+    }
+
+    private fun handleOnRemoteStreamRemoved(remoteClientId: BigInteger) {
+        Log.i(TAG, "handleOnRemoteStreamRemoved, remoteClientId = $remoteClientId")
+        remoteStreams.remove(remoteClientId)
+
+        if (remoteStreams.isEmpty()) {
+            updateCallingState(CallState.ENDED)
+        }
+        if (mListeners.isNotEmpty()) {
+            for (callListener in mListeners) {
+                callListener.onStreamRemoved(localTrack, remoteClientId)
+            }
+        }
+    }
+
+    private fun handleOnLocalStreamConnected(localStream: MediaStream) {
+        this.localStream = localStream
+        localTrack = localStream.videoTracks[0]
+        val list: List<VideoTrack> = ArrayList(remoteStreams.values)
+        if (mListeners.isNotEmpty()) {
+            for (callListener in mListeners) {
+                callListener.onLocalStream(localTrack, list)
+            }
+        }
+    }
+
+    internal inner class ListenerAttachCallbacks(
+        private val groupId: Long?,
+        private val mRemoteClientId: BigInteger
+    ) : IJanusPluginCallbacks {
         private var listenerHandle
         : JanusPluginHandle? = null
         override fun success(handle: JanusPluginHandle) {
@@ -196,13 +340,14 @@ class InCallForegroundService : Service() {
                 msg.put(Constants.MESSAGE, body)
                 handle.sendMessage(PluginHandleSendMessageCallbacks(msg))
             } catch (ex: Exception) {
-                Log.e("Test", ex.toString())
+                Log.e(TAG, ex.toString())
             }
         }
 
         override fun onMessage(msg: JSONObject, jsep: JSONObject?) {
             try {
                 val event = msg.getString("videoroom")
+                Log.i(TAG, "ListenerAttachCallbacks#event = $event, message = $msg")
                 if (event == "attached" && jsep != null) {
                     listenerHandle?.createAnswer(object : IPluginHandleWebRTCCallbacks {
                         override fun onSuccess(obj: JSONObject) {
@@ -245,9 +390,9 @@ class InCallForegroundService : Service() {
         }
 
         override fun onLocalStream(stream: MediaStream) {}
+
         override fun onRemoteStream(stream: MediaStream) {
-            remoteStreams[mRemoteClientId] = stream.videoTracks[0]
-            mListener?.onRemoteStreamAdd(localTrack, stream.videoTracks[0], mRemoteClientId)
+            handleOnRemoteStreamAdded(mRemoteClientId, stream)
         }
 
         override fun onDataOpen(data: Any) {}
@@ -263,13 +408,13 @@ class InCallForegroundService : Service() {
 
     inner class JanusPublisherPluginCallbacks : IJanusPluginCallbacks {
         override fun success(janusPluginHandle: JanusPluginHandle) {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, success")
+            Log.i(TAG, "JanusPublisherPluginCallbacks, success")
             handle = janusPluginHandle
             joinRoomAsPublisher()
         }
 
         override fun onMessage(msg: JSONObject, jsep: JSONObject?) {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onMessage: $msg")
+            Log.i(TAG, "JanusPublisherPluginCallbacks, onMessage: $msg")
             try {
                 val event = msg.getString("videoroom")
                 if (event == "joined") {
@@ -295,11 +440,11 @@ class InCallForegroundService : Service() {
                         }
                         msg.has("leaving") -> {
                             val id = BigInteger(msg.getString("leaving"))
-                            mListener?.onStreamRemoved(localTrack, id)
+                            handleOnRemoteStreamRemoved(id)
                         }
                         msg.has("unpublished") -> {
                             val id = BigInteger(msg.getString("unpublished"))
-                            mListener?.onStreamRemoved(localTrack, id)
+                            handleOnRemoteStreamRemoved(id)
                         }
                         else -> {
                             //todo error
@@ -315,25 +460,22 @@ class InCallForegroundService : Service() {
         }
 
         override fun onLocalStream(stream: MediaStream) {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onLocalStream")
-            localStream = stream
-            localTrack = stream.videoTracks[0]
-            val list: List<VideoTrack> = ArrayList(remoteStreams.values)
-            mListener?.onLocalStream(localTrack, list)
+            Log.i(TAG, "JanusPublisherPluginCallbacks, onLocalStream")
+            handleOnLocalStreamConnected(stream)
         }
 
         override fun onRemoteStream(stream: MediaStream) {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onRemoteStream")
+            Log.i(TAG, "JanusPublisherPluginCallbacks, onRemoteStream")
         }
 
         override fun onDataOpen(data: Any) {}
         override fun onData(data: Any) {}
         override fun onCleanup() {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onCleanup")
+            Log.i(TAG, "JanusPublisherPluginCallbacks, onCleanup")
         }
 
         override fun onDetached() {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onDetached")
+            Log.i(TAG, "JanusPublisherPluginCallbacks, onDetached")
         }
 
         override fun getPlugin(): JanusSupportedPluginPackages {
@@ -341,7 +483,7 @@ class InCallForegroundService : Service() {
         }
 
         override fun onCallbackError(error: String) {
-            Log.e(TAG, "JanusPublisherPluginCallbacks, onCallbackError: $error")
+            Log.w(TAG, "JanusPublisherPluginCallbacks, onCallbackError: $error")
         }
 
         private fun createOffer() {
