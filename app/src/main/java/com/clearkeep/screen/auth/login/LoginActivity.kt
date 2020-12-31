@@ -72,8 +72,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToRegisterActivity() {
-        startActivity(Intent(this, RegisterActivity::class.java))
-        /*AppCall.call(this, 1223L, "android", "dai", "", false)*/
+        /*startActivity(Intent(this, RegisterActivity::class.java))*/
+        AppCall.call(this, 1223L, "android", "dai", "", false)
     }
 }
 

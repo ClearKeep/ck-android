@@ -36,14 +36,22 @@
             android:textColor="?attr/appCallTextColor"
             tools:textColor="@android:color/white"
             android:text="@string/title_call_screen" />
+
+        <ImageView
+            android:id="@+id/imgSwitchCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:src="@android:drawable/ic_menu_rotate" />
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/containerUserInfo"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/rlToolbar"
-        android:layout_above="@id/bottomButtonContainer">
+        android:layout_height="wrap_content"
+        android:layout_below="@id/rlToolbar">
         <LinearLayout
             android:id="@+id/avatarContainer"
             android:layout_width="match_parent"
@@ -125,12 +133,6 @@
             android:layout_marginStart="15dp"
             android:src="?attr/buttonMuteOff"
             tools:src="@drawable/ic_string_ee_mute_off" />
-        <ImageView
-            android:id="@+id/imgSwitchCamera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:src="@android:drawable/ic_menu_camera" />
         <ImageView
             android:id="@+id/imgEnd"
             android:layout_width="wrap_content"

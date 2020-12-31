@@ -24,6 +24,7 @@ import org.webrtc.VideoTrack
 import java.math.BigInteger
 import java.util.*
 
+
 enum class CallState {
     CALLING,
     RINGING,
@@ -37,7 +38,11 @@ class InCallForegroundService : Service() {
     interface CallListener {
         fun onCallStateChanged(status: String, state: CallState)
         fun onLocalStream(localTrack: VideoTrack?, remoteTracks: List<VideoTrack>?)
-        fun onRemoteStreamAdd(localTrack: VideoTrack?, remoteTrack: VideoTrack, remoteClientId: BigInteger)
+        fun onRemoteStreamAdd(
+            localTrack: VideoTrack?,
+            remoteTrack: VideoTrack,
+            remoteClientId: BigInteger
+        )
         fun onStreamRemoved(localTrack: VideoTrack?, remoteClientId: BigInteger)
     }
 
@@ -69,6 +74,10 @@ class InCallForegroundService : Service() {
 
     private val mEndCallReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            if (mCurrentCallState != CallState.ENDED) {
+                mCurrentCallState == CallState.ENDED
+                notifyListeners()
+            }
             hangup()
         }
     }
@@ -103,7 +112,7 @@ class InCallForegroundService : Service() {
         mUserNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
         /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/
-        mGroupId = java.lang.Long.valueOf(1226)
+        mGroupId = java.lang.Long.valueOf(1234)
         mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)!!
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
         return START_NOT_STICKY
@@ -118,12 +127,11 @@ class InCallForegroundService : Service() {
         janusServer!!.initializeMediaContext(this, true, true, true, con)
         janusServer!!.Connect()
 
-        val handler = Handler(mainLooper)
-        handler.postDelayed({
+        /*mHandler.postDelayed({
             if (remoteStreams.isEmpty()) {
                 updateCallingState(CallState.CALL_NOT_READY)
             }
-        }, 30 * 1000)
+        }, 30 * 1000)*/
     }
 
     fun answer(con: EGLContext) {
@@ -194,10 +202,21 @@ class InCallForegroundService : Service() {
         return mLastTimeConnectedCall
     }
 
+    fun getRemoteStreams() : Map<BigInteger, VideoTrack> {
+        return remoteStreams
+    }
+
+    fun getLocalTrack() : VideoTrack? {
+        return localTrack
+    }
+
     private fun updateCallingState(signalingState: CallState) {
         mCurrentCallState = signalingState
         mCurrentCallStatus = getStatusFromState(mCurrentCallState)
-        Log.d(TAG, "updateCallingState: status=" + mCurrentCallStatus + ", state: " + mCurrentCallState.name)
+        Log.d(
+            TAG,
+            "updateCallingState: status=" + mCurrentCallStatus + ", state: " + mCurrentCallState.name
+        )
 
         if (mCurrentCallState == CallState.ANSWERED) {
             mLastTimeConnectedCall = SystemClock.elapsedRealtime()
@@ -255,13 +274,10 @@ class InCallForegroundService : Service() {
             Constants.EXTRA_AVATAR_USER_IN_CONVERSATION,
             mAvatarInConversation
         )
-        if (mIsInComingCall) {
-            notificationIntent.putExtra(Constants.EXTRA_GROUP_ID, mGroupId)
-            notificationIntent.setClassName(packageName, InCallActivity::class.java.name)
-        } else {
-            notificationIntent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, mOurClientId)
-            notificationIntent.setClassName(packageName, InCallActivity::class.java.name)
-        }
+        notificationIntent.putExtra(Constants.EXTRA_GROUP_ID, mGroupId)
+        notificationIntent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, mOurClientId)
+        notificationIntent.setClassName(packageName, InCallActivity::class.java.name)
+
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
         val pi = PendingIntent.getBroadcast(
             this, 0,
@@ -554,7 +570,10 @@ class InCallForegroundService : Service() {
         }
 
         override fun getIceServers(): List<IceServer> {
-            return ArrayList()
+            val iceServers = ArrayList<IceServer>()
+            val server = IceServer("stun:stun.l.google.com:19302")
+            iceServers.add(server)
+            return iceServers
         }
 
         override fun getIpv6Support(): Boolean {

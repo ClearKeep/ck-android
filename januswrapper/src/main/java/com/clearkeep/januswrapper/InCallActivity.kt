@@ -76,6 +76,8 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
+        java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
+        java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
         super.onCreate(savedInstanceState)
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
@@ -182,24 +184,35 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     private fun startCall() {
         if (mIsSurfaceCreated && mBound) {
-            val con = VideoRendererGui.getEGLContext()
-            if (mFromComingCall) {
-                mService?.answer(con)
-            } else {
-                mService?.makeCall(con)
+            val currentState = mService!!.getCurrentState()
+            if (CallState.ANSWERED != currentState) {
+                val con = VideoRendererGui.getEGLContext()
+                if (mFromComingCall) {
+                    mService?.answer(con)
+                } else {
+                    mService?.makeCall(con)
+                }
             }
         }
     }
 
     private fun updateMediaUIWithService() {
         if (mService != null) {
-            val currentState = mService!!.getCurrentState()
-            if (CallState.ANSWERED == currentState) {
-            }
             mIsMute = mService!!.isMuting()
             mIsSpeaker = mService!!.isSpeakerOn()
             enableMute(mIsMute)
             enableSpeaker(mIsSpeaker)
+
+            val currentState = mService!!.getCurrentState()
+            if (CallState.ANSWERED == currentState) {
+                val remoteStreams = mService!!.getRemoteStreams()
+                remoteStreams.forEach {(id, remoteTrack) ->
+                    val remoteRender: Callbacks = createVideoRender()
+                    remoteRenders[id] = remoteRender
+                    remoteTrack.addRenderer(VideoRenderer(remoteRender))
+                }
+                updateRenderPosition(mService!!.getLocalTrack())
+            }
         }
     }
 
@@ -238,24 +251,30 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         remoteTrack: VideoTrack,
         remoteClientId: BigInteger
     ) {
+        Log.i("Test", "onRemoteStreamAdd $remoteClientId")
         val oldRemoteRender = remoteRenders[remoteClientId]
         if (oldRemoteRender == null) {
             @Suppress("INACCESSIBLE_TYPE")
-            val remoteRender: Callbacks = VideoRendererGui.create(
-                0,
-                0,
-                25,
-                25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                true
-            )
+            val remoteRender: Callbacks = createVideoRender()
             remoteRenders[remoteClientId] = remoteRender
             remoteTrack.addRenderer(VideoRenderer(remoteRender))
         }
         updateRenderPosition(localTrack)
     }
 
+    private fun createVideoRender(): Callbacks {
+        return VideoRendererGui.create(
+            25,
+            25,
+            25,
+            25,
+            VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+            true
+        )
+    }
+
     override fun onStreamRemoved(localTrack: VideoTrack?, remoteClientId: BigInteger) {
+        Log.i("Test", "onStreamRemoved $remoteClientId")
         val render = remoteRenders.remove(remoteClientId)
         if (render != null) {
             VideoRendererGui.remove(render)
@@ -267,43 +286,33 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     }
 
     private fun updateRenderPosition(localTrack: VideoTrack?) {
-        val list: List<Callbacks> = ArrayList(remoteRenders.values)
-        val isShowAvatar = list.isEmpty()
-        showOrHideAvatar(isShowAvatar)
-        if (list.size == 1) {
-            VideoRendererGui.update(
-                list[0],
-                0,
-                0,
-                100,
-                100,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                true
-            )
-        } else if (list.size == 2) {
-            VideoRendererGui.update(
-                list[0],
-                0,
-                0,
-                100,
-                50,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                true
-            )
-            VideoRendererGui.update(
-                list[1],
-                0,
-                50,
-                100,
-                50,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                true
-            )
-        }
         if (localRender != null) {
             VideoRendererGui.remove(localRender)
         }
-        if (remoteRenders.isEmpty()) {
+
+        val list: List<Callbacks> = ArrayList(remoteRenders.values)
+        val isShowAvatar = list.isEmpty()
+        showOrHideAvatar(isShowAvatar)
+        Log.i("Test", "updateRenderPosition, list = ${list.size}")
+
+        if (list.size == 1) {
+            VideoRendererGui.update(list[0], 0, 25, 25, 25,
+                    VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+        } else if (list.size == 2) {
+            VideoRendererGui.update(list[0], 0, 25, 25, 25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            VideoRendererGui.update(list[1], 25, 25, 25, 25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+        } else if (list.size == 3) {
+            VideoRendererGui.update(list[0], 0, 25, 25, 25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            VideoRendererGui.update(list[1], 25, 25, 25, 25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            VideoRendererGui.update(list[2], 50, 25, 25, 25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+        }
+
+        if (list.isEmpty()) {
             @Suppress("INACCESSIBLE_TYPE")
             localRender = VideoRendererGui.create(
                 0,
@@ -316,8 +325,8 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         } else {
             @Suppress("INACCESSIBLE_TYPE")
             localRender = VideoRendererGui.create(
-                5,
-                5,
+                0,
+                0,
                 25,
                 25,
                 VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
