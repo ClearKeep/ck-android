@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Subscriptions -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    // call video permissions
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -28,8 +27,9 @@
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config">
-        <activity android:name=".screen.chat.contact_search.SearchUserActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"></activity>
+        <activity
+            android:name=".screen.chat.contact_search.SearchUserActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.chat.group_create.CreateGroupActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />

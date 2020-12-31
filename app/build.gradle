@@ -51,6 +51,10 @@ android {
         kotlinCompilerExtensionVersion "$jetpack_compose_version"
     }
 
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
 }
 protobuf {
     protoc {

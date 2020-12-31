@@ -60,6 +60,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
                 finishAndRemoveFromTask()
             }
             R.id.imgAnswer -> {
+                finishAndRemoveFromTask()
                 AppCall.call(this, mGroupId, mReceiverId, "Dai", "", true)
             }
         }
