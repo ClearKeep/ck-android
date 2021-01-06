@@ -3,17 +3,23 @@ package com.clearkeep.januswrapper
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PictureInPictureParams
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.TypedArray
+import android.graphics.Point
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.text.TextUtils
 import android.util.Log
+import android.util.Rational
+import android.view.Display
 import android.view.View
+import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.clearkeep.januswrapper.common.AvatarImageTask
@@ -32,11 +38,6 @@ import java.util.*
 
 
 class InCallActivity : Activity(), View.OnClickListener, CallListener {
-    // input
-    private var mFromComingCall = false
-    private var mUserNameInConversation: String? = null
-    private var mAvatarInConversation: String? = null
-
     private var mIsMute = false
     private var mIsSpeaker = false
     private var mIsSurfaceCreated = false
@@ -57,8 +58,8 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     private val connection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(
-            className: ComponentName,
-            service: IBinder
+                className: ComponentName,
+                service: IBinder
         ) {
             val binder = service as LocalBinder
             mService = binder.service
@@ -76,22 +77,18 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
-        java.lang.System.setProperty("java.net.preferIPv6Addresses", "false");
-        java.lang.System.setProperty("java.net.preferIPv4Stack", "true");
+        System.setProperty("java.net.preferIPv6Addresses", "false")
+        System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
 
-        mFromComingCall = intent.getBooleanExtra(Constants.EXTRA_FROM_IN_COMING_CALL, false)
-        mUserNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
-        mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
-
         val a: TypedArray = theme.obtainStyledAttributes(
-            intArrayOf(
-                R.attr.buttonSpeakerOn, R.attr.buttonSpeakerOff,
-                R.attr.buttonMuteOn, R.attr.buttonMuteOff
-            )
+                intArrayOf(
+                        R.attr.buttonSpeakerOn, R.attr.buttonSpeakerOff,
+                        R.attr.buttonMuteOn, R.attr.buttonMuteOff
+                )
         )
         try {
             mResIdSpeakerOn = a.getResourceId(0, R.drawable.ic_string_ee_sound_on)
@@ -120,11 +117,13 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
             startCall()
         }
 
-        if (!TextUtils.isEmpty(mUserNameInConversation)) {
-            binding.tvUserName.text = mUserNameInConversation
+        val userNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
+        val avatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
+        if (!TextUtils.isEmpty(userNameInConversation)) {
+            binding.tvUserName.text = userNameInConversation
         }
-        if (!TextUtils.isEmpty(mAvatarInConversation)) {
-            AvatarImageTask(binding.imgThumb).execute(mAvatarInConversation)
+        if (!TextUtils.isEmpty(avatarInConversation)) {
+            AvatarImageTask(binding.imgThumb).execute(avatarInConversation)
         }
     }
 
@@ -132,21 +131,21 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if ((ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                             != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                )
+                            this,
+                            Manifest.permission.CAMERA
+                    )
                             != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.MODIFY_AUDIO_SETTINGS
-                )
+                            this,
+                            Manifest.permission.MODIFY_AUDIO_SETTINGS
+                    )
                             != PackageManager.PERMISSION_GRANTED)) {
                 ActivityCompat.requestPermissions(
-                    this, arrayOf(
+                        this, arrayOf(
                         Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.CAMERA,
                         Manifest.permission.MODIFY_AUDIO_SETTINGS
-                    ),
-                    REQUEST_PERMISSIONS
+                ),
+                        REQUEST_PERMISSIONS
                 )
                 return
             }
@@ -155,9 +154,9 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<String>,
+            grantResults: IntArray
     ) {
         if (requestCode == REQUEST_PERMISSIONS &&
                 grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -184,14 +183,18 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     private fun startCall() {
         if (mIsSurfaceCreated && mBound) {
+            val remoteStreams = mService!!.getRemoteStreams()
+            remoteStreams.forEach { (id, remoteTrack) ->
+                val remoteRender: Callbacks = createVideoRender()
+                remoteRenders[id] = remoteRender
+                remoteTrack.addRenderer(VideoRenderer(remoteRender))
+            }
+            updateRenderPosition(mService!!.getLocalTrack())
+
             val currentState = mService!!.getCurrentState()
             if (CallState.ANSWERED != currentState) {
                 val con = VideoRendererGui.getEGLContext()
-                if (mFromComingCall) {
-                    mService?.answer(con)
-                } else {
-                    mService?.makeCall(con)
-                }
+                mService?.startCall(con)
             }
         }
     }
@@ -202,17 +205,6 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
             mIsSpeaker = mService!!.isSpeakerOn()
             enableMute(mIsMute)
             enableSpeaker(mIsSpeaker)
-
-            val currentState = mService!!.getCurrentState()
-            if (CallState.ANSWERED == currentState) {
-                val remoteStreams = mService!!.getRemoteStreams()
-                remoteStreams.forEach {(id, remoteTrack) ->
-                    val remoteRender: Callbacks = createVideoRender()
-                    remoteRenders[id] = remoteRender
-                    remoteTrack.addRenderer(VideoRenderer(remoteRender))
-                }
-                updateRenderPosition(mService!!.getLocalTrack())
-            }
         }
     }
 
@@ -221,18 +213,18 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         binding.tvCallState.visibility = View.GONE
     }
 
-    override fun onCallStateChanged(status: String, callState: CallState) {
-        if (CallState.CALLING == callState || CallState.RINGING == callState) {
+    override fun onCallStateChanged(status: String, state: CallState) {
+        if (CallState.CALLING == state || CallState.RINGING == state) {
             runOnUiThread { binding.tvCallState.text = status }
-        } else if (CallState.BUSY == callState || CallState.ENDED == callState || CallState.CALL_NOT_READY == callState) {
+        } else if (CallState.BUSY == state || CallState.ENDED == state || CallState.CALL_NOT_READY == state) {
             runOnUiThread { binding.tvCallState.text = status }
             finishAndRemoveFromTask()
-        } else if (CallState.ANSWERED == callState) {
+        } else if (CallState.ANSWERED == state) {
             if (mService != null) {
                 runOnUiThread {
                     displayCountUpClockOfConversation()
                     val lastTimeConnectedCall = mService!!.getLastTimeConnectedCall()
-                    Log.i("Test", "lastTimeConnectedCall=$lastTimeConnectedCall");
+                    Log.i("Test", "lastTimeConnectedCall=$lastTimeConnectedCall")
                     if (lastTimeConnectedCall > 0) {
                         binding.chronometer.base = lastTimeConnectedCall
                         binding.chronometer.start()
@@ -247,9 +239,9 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     }
 
     override fun onRemoteStreamAdd(
-        localTrack: VideoTrack?,
-        remoteTrack: VideoTrack,
-        remoteClientId: BigInteger
+            localTrack: VideoTrack?,
+            remoteTrack: VideoTrack,
+            remoteClientId: BigInteger
     ) {
         Log.i("Test", "onRemoteStreamAdd $remoteClientId")
         val oldRemoteRender = remoteRenders[remoteClientId]
@@ -264,12 +256,12 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     private fun createVideoRender(): Callbacks {
         return VideoRendererGui.create(
-            25,
-            25,
-            25,
-            25,
-            VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-            true
+                25,
+                25,
+                25,
+                25,
+                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                true
         )
     }
 
@@ -295,42 +287,46 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         showOrHideAvatar(isShowAvatar)
         Log.i("Test", "updateRenderPosition, list = ${list.size}")
 
-        if (list.size == 1) {
-            VideoRendererGui.update(list[0], 0, 25, 25, 25,
-                    VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
-        } else if (list.size == 2) {
-            VideoRendererGui.update(list[0], 0, 25, 25, 25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
-            VideoRendererGui.update(list[1], 25, 25, 25, 25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
-        } else if (list.size == 3) {
-            VideoRendererGui.update(list[0], 0, 25, 25, 25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
-            VideoRendererGui.update(list[1], 25, 25, 25, 25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
-            VideoRendererGui.update(list[2], 50, 25, 25, 25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+        when (list.size) {
+            1 -> {
+                VideoRendererGui.update(list[0], 0, 0, 100, 100,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            }
+            2 -> {
+                VideoRendererGui.update(list[0], 0, 0, 100, 50,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                VideoRendererGui.update(list[1], 0, 50, 100, 50,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            }
+            3 -> {
+                VideoRendererGui.update(list[0], 0, 0, 50, 50,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                VideoRendererGui.update(list[1], 0, 50, 50, 50,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                VideoRendererGui.update(list[2], 50, 50, 50, 50,
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+            }
         }
 
         if (list.isEmpty()) {
             @Suppress("INACCESSIBLE_TYPE")
             localRender = VideoRendererGui.create(
-                0,
-                0,
-                100,
-                100,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                false
+                    0,
+                    0,
+                    100,
+                    100,
+                    VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                    false
             )
         } else {
             @Suppress("INACCESSIBLE_TYPE")
             localRender = VideoRendererGui.create(
-                0,
-                0,
-                25,
-                25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                false
+                    0,
+                    0,
+                    25,
+                    25,
+                    VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
+                    false
             )
         }
         localTrack?.addRenderer(VideoRenderer(localRender))
@@ -346,6 +342,31 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         }
     }
 
+    override fun onUserLeaveHint() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            enterPictureInPictureMode()
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean,
+                                               newConfig: Configuration) {
+        if (isInPictureInPictureMode) {
+            // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
+            binding.imgBack.visibility = View.GONE
+            binding.imgSpeaker.visibility = View.GONE
+            binding.imgMute.visibility = View.GONE
+            binding.imgEnd.visibility = View.GONE
+            binding.imgSwitchCamera.visibility = View.GONE
+        } else {
+            // Restore the full-screen UI.
+            binding.imgBack.visibility = View.VISIBLE
+            binding.imgSpeaker.visibility = View.VISIBLE
+            binding.imgMute.visibility = View.VISIBLE
+            binding.imgEnd.visibility = View.VISIBLE
+            binding.imgSwitchCamera.visibility = View.VISIBLE
+        }
+    }
+
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
@@ -353,7 +374,20 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
                 finishAndRemoveFromTask()
             }
             R.id.imgBack -> {
-                finishAndRemoveFromTask()
+                /*finishAndRemoveFromTask()*/
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        /*val metrics = windowManager.currentWindowMetrics
+                        val size = metrics.bounds
+                        val width: Int = size.width()
+                        val height: Int = size.height()*/
+                        val aspectRatio = Rational(3, 4)
+                        val params = PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
+                        enterPictureInPictureMode(params)
+                    } else {
+                        enterPictureInPictureMode()
+                    }
+                }
             }
             R.id.imgSpeaker -> {
                 mIsSpeaker = !mIsSpeaker
@@ -390,6 +424,14 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     }
 
     private fun finishAndRemoveFromTask() {
+        if (localRender != null) {
+            VideoRendererGui.remove(localRender)
+        }
+        val list: List<Callbacks> = ArrayList(remoteRenders.values)
+        for (render in list) {
+            VideoRendererGui.remove(render)
+        }
+        remoteRenders.clear()
         unBindCallService()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
@@ -412,18 +454,22 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
     }
 
     private fun startServiceAsForeground() {
-        val intent = Intent(applicationContext, InCallForegroundService::class.java)
-        intent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, mFromComingCall)
-        intent.putExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION, mAvatarInConversation)
-        intent.putExtra(Constants.EXTRA_USER_NAME, mUserNameInConversation)
-        val callId = getIntent().getLongExtra(Constants.EXTRA_GROUP_ID, 0)
-        intent.putExtra(Constants.EXTRA_GROUP_ID, callId)
-        val ourClientId = getIntent().getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
-        intent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, ourClientId)
+        val isFromComingCall = intent.getBooleanExtra(Constants.EXTRA_FROM_IN_COMING_CALL, false)
+        val userNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
+        val avatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
+        val callId = intent.getLongExtra(Constants.EXTRA_GROUP_ID, 0)
+        val ourClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
+
+        val serviceIntent = Intent(applicationContext, InCallForegroundService::class.java)
+        serviceIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, isFromComingCall)
+        serviceIntent.putExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION, avatarInConversation)
+        serviceIntent.putExtra(Constants.EXTRA_USER_NAME, userNameInConversation)
+        serviceIntent.putExtra(Constants.EXTRA_GROUP_ID, callId)
+        serviceIntent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, ourClientId)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            applicationContext.startForegroundService(intent)
+            applicationContext.startForegroundService(serviceIntent)
         } else {
-            applicationContext.startService(intent)
+            applicationContext.startService(serviceIntent)
         }
     }
 
