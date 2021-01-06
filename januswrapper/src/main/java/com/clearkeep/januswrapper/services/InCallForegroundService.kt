@@ -118,7 +118,15 @@ class InCallForegroundService : Service() {
         return START_NOT_STICKY
     }
 
-    fun makeCall(con: EGLContext) {
+    fun startCall(con: EGLContext) {
+        if (mIsInComingCall) {
+            answer(con)
+        } else {
+            makeCall(con)
+        }
+    }
+
+    private fun makeCall(con: EGLContext) {
         Log.i(TAG, "makeCall, groupID = $mGroupId, our client id = $mOurClientId")
         if (janusServer != null) {
             return
@@ -134,7 +142,7 @@ class InCallForegroundService : Service() {
         }, 30 * 1000)*/
     }
 
-    fun answer(con: EGLContext) {
+    private fun answer(con: EGLContext) {
         Log.i(TAG, "answer, groupID = $mGroupId, our client id = $mOurClientId")
         if (janusServer != null) {
             return
@@ -165,6 +173,7 @@ class InCallForegroundService : Service() {
 
     fun hangup() {
         Log.i(TAG, "hangup")
+        sendEndServiceBroadcast()
         janusServer?.Destroy()
         stopSelf()
     }
@@ -208,6 +217,12 @@ class InCallForegroundService : Service() {
 
     fun getLocalTrack() : VideoTrack? {
         return localTrack
+    }
+
+    private fun sendEndServiceBroadcast() {
+        val intent = Intent(Constants.ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED)
+        intent.putExtra(Constants.EXTRA_SERVICE_IS_AVAILABLE, false)
+        sendBroadcast(intent)
     }
 
     private fun updateCallingState(signalingState: CallState) {
@@ -268,8 +283,8 @@ class InCallForegroundService : Service() {
         val notificationIntent = Intent()
         notificationIntent.putExtra("is_from_notification", true)
         notificationIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        notificationIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
-        notificationIntent.putExtra(Constants.EXTRA_USER_NAME, mUserNameInConversation)
+        /*notificationIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
+        notificationIntent.putExtra(Constants.EXTRA_USER_NAME, mUserNameInConversation)*/
         notificationIntent.putExtra(
             Constants.EXTRA_AVATAR_USER_IN_CONVERSATION,
             mAvatarInConversation
