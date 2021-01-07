@@ -9,7 +9,7 @@ public class JanusMediaConstraints {
         private int maxHeight, minHeight, maxWidth, minWidth, maxFramerate, minFramerate;
 
         public JanusVideo() {
-            maxFramerate = 15;
+            maxFramerate = 30;
             minFramerate = 0;
             maxHeight = 240;
             minHeight = 0;
