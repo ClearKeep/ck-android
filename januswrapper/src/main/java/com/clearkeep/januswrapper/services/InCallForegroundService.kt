@@ -16,6 +16,8 @@ import androidx.core.app.NotificationCompat
 import com.clearkeep.januswrapper.InCallActivity
 import com.clearkeep.januswrapper.R
 import com.clearkeep.januswrapper.utils.Constants
+import com.clearkeep.januswrapper.utils.Constants.MESSAGE
+import com.clearkeep.januswrapper.utils.Constants.REQUEST
 import computician.janusclientapi.*
 import org.json.JSONObject
 import org.webrtc.MediaStream
@@ -39,9 +41,9 @@ class InCallForegroundService : Service() {
         fun onCallStateChanged(status: String, state: CallState)
         fun onLocalStream(localTrack: VideoTrack?, remoteTracks: List<VideoTrack>?)
         fun onRemoteStreamAdd(
-            localTrack: VideoTrack?,
-            remoteTrack: VideoTrack,
-            remoteClientId: BigInteger
+                localTrack: VideoTrack?,
+                remoteTrack: VideoTrack,
+                remoteClientId: BigInteger
         )
         fun onStreamRemoved(localTrack: VideoTrack?, remoteClientId: BigInteger)
     }
@@ -71,6 +73,7 @@ class InCallForegroundService : Service() {
     private var localStream: MediaStream? = null
     private var localTrack: VideoTrack? = null
     private var handle: JanusPluginHandle? = null
+    var lastTimeStampOfUpdateBitrate: Long = 0
 
     private val mEndCallReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -229,8 +232,8 @@ class InCallForegroundService : Service() {
         mCurrentCallState = signalingState
         mCurrentCallStatus = getStatusFromState(mCurrentCallState)
         Log.d(
-            TAG,
-            "updateCallingState: status=" + mCurrentCallStatus + ", state: " + mCurrentCallState.name
+                TAG,
+                "updateCallingState: status=" + mCurrentCallStatus + ", state: " + mCurrentCallState.name
         )
 
         if (mCurrentCallState == CallState.ANSWERED) {
@@ -274,8 +277,8 @@ class InCallForegroundService : Service() {
     private fun notifyStartForeground(title: String, content: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
-                "channel_voice", NotificationManager.IMPORTANCE_HIGH
+                    CHANNEL_ID,
+                    "channel_voice", NotificationManager.IMPORTANCE_HIGH
             )
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
@@ -286,8 +289,8 @@ class InCallForegroundService : Service() {
         /*notificationIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
         notificationIntent.putExtra(Constants.EXTRA_USER_NAME, mUserNameInConversation)*/
         notificationIntent.putExtra(
-            Constants.EXTRA_AVATAR_USER_IN_CONVERSATION,
-            mAvatarInConversation
+                Constants.EXTRA_AVATAR_USER_IN_CONVERSATION,
+                mAvatarInConversation
         )
         notificationIntent.putExtra(Constants.EXTRA_GROUP_ID, mGroupId)
         notificationIntent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, mOurClientId)
@@ -295,8 +298,8 @@ class InCallForegroundService : Service() {
 
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
         val pi = PendingIntent.getBroadcast(
-            this, 0,
-            Intent(ACTION_END_CALL), 0
+                this, 0,
+                Intent(ACTION_END_CALL), 0
         )
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
@@ -320,9 +323,9 @@ class InCallForegroundService : Service() {
         if (mListeners.isNotEmpty()) {
             for (callListener in mListeners) {
                 callListener.onRemoteStreamAdd(
-                    localTrack,
-                    remoteStream.videoTracks[0],
-                    remoteClientId
+                        localTrack,
+                        remoteStream.videoTracks[0],
+                        remoteClientId
                 )
             }
         }
@@ -354,8 +357,8 @@ class InCallForegroundService : Service() {
     }
 
     internal inner class ListenerAttachCallbacks(
-        private val groupId: Long?,
-        private val mRemoteClientId: BigInteger
+            private val groupId: Long?,
+            private val mRemoteClientId: BigInteger
     ) : IJanusPluginCallbacks {
         private var listenerHandle
         : JanusPluginHandle? = null
@@ -364,11 +367,11 @@ class InCallForegroundService : Service() {
             try {
                 val body = JSONObject()
                 val msg = JSONObject()
-                body.put(Constants.REQUEST, "join")
+                body.put(REQUEST, "join")
                 body.put("room", groupId)
                 body.put("ptype", "listener")
                 body.put("feed", mRemoteClientId)
-                msg.put(Constants.MESSAGE, body)
+                msg.put(MESSAGE, body)
                 handle.sendMessage(PluginHandleSendMessageCallbacks(msg))
             } catch (ex: Exception) {
                 Log.e(TAG, ex.toString())
@@ -385,9 +388,9 @@ class InCallForegroundService : Service() {
                             try {
                                 val mymsg = JSONObject()
                                 val body = JSONObject()
-                                body.put(Constants.REQUEST, "start")
+                                body.put(REQUEST, "start")
                                 body.put("room", groupId)
-                                mymsg.put(Constants.MESSAGE, body)
+                                mymsg.put(MESSAGE, body)
                                 mymsg.put("jsep", obj)
                                 mymsg.put("token", "a1b2c3d4")
                                 listenerHandle?.sendMessage(PluginHandleSendMessageCallbacks(mymsg))
@@ -459,7 +462,8 @@ class InCallForegroundService : Service() {
                         }
                     }
                 } else if (event == "hangup") {
-                    //hangup();
+                    Log.e(TAG, "JanusPublisherPluginCallbacks, onMessage: hangup")
+                    hangup();
                 } else if (event == "event") {
                     when {
                         msg.has(Constants.PUBLISHERS) -> {
@@ -481,6 +485,9 @@ class InCallForegroundService : Service() {
                             //todo error
                         }
                     }
+                } else if (event == "slow_link" && msg.has("current-bitrate")) {
+                    val currentBitrate: Int = Integer.parseInt(msg.getString("current-bitrate"))
+                    configBitrate(currentBitrate + BITRATE_STEP)
                 }
                 if (jsep != null) {
                     handle?.handleRemoteJsep(PluginHandleWebRTCCallbacks(null, jsep, false))
@@ -523,10 +530,10 @@ class InCallForegroundService : Service() {
                     try {
                         val msg = JSONObject()
                         val body = JSONObject()
-                        body.put(Constants.REQUEST, "configure")
+                        body.put(REQUEST, "configure")
                         body.put("audio", true)
                         body.put("video", true)
-                        msg.put(Constants.MESSAGE, body)
+                        msg.put(MESSAGE, body)
                         msg.put("jsep", obj)
                         handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
                     } catch (ex: Exception) {
@@ -558,15 +565,38 @@ class InCallForegroundService : Service() {
             val obj = JSONObject()
             val msg = JSONObject()
             try {
-                obj.put(Constants.REQUEST, "join")
+                obj.put(REQUEST, "join")
                 obj.put("room", mGroupId)
                 obj.put("ptype", "publisher")
                 obj.put("display", mOurClientId)
-                msg.put(Constants.MESSAGE, obj)
+                msg.put(MESSAGE, obj)
             } catch (ex: Exception) {
                 Log.e(TAG, "joinRoomAsPublisher: $ex")
             }
             handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
+        }
+
+        private fun configBitrate(newBitrate: Int) {
+            val now = System.currentTimeMillis()
+            if (now - lastTimeStampOfUpdateBitrate < MIN_DURATION_UPDATE_BITRATE) {
+                Log.w(TAG, "configBitrate: config just requested before")
+                return
+            }
+            if (newBitrate > MAX_BITRATE) {
+                Log.w(TAG, "configBitrate: bitrate is maximum")
+                return
+            }
+            lastTimeStampOfUpdateBitrate = now
+            try {
+                val msg = JSONObject()
+                val body = JSONObject()
+                body.put(REQUEST, "configure")
+                body.put("bitrate", newBitrate)
+                msg.put(MESSAGE, body)
+                handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
+            } catch (ex: java.lang.Exception) {
+                Log.e(TAG, "configBitrate: $ex")
+            }
         }
 
         private fun attachRemoteClient(remoteId: BigInteger) {
@@ -607,5 +637,8 @@ class InCallForegroundService : Service() {
         private const val NOTIFICATION_ID = 101
         private const val CHANNEL_ID = "ck_call_01"
         private const val ACTION_END_CALL = "ck.action.end.call"
+        private const val MIN_DURATION_UPDATE_BITRATE = 5 * 1000 // Second
+        private const val MAX_BITRATE = 1024 * 1000
+        private const val BITRATE_STEP = 128 * 1000
     }
 }
