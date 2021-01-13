@@ -369,7 +369,7 @@ class InCallForegroundService : Service() {
                 val msg = JSONObject()
                 body.put(REQUEST, "join")
                 body.put("room", groupId)
-                body.put("ptype", "listener")
+                body.put("ptype", "subscriber")
                 body.put("feed", mRemoteClientId)
                 msg.put(MESSAGE, body)
                 handle.sendMessage(PluginHandleSendMessageCallbacks(msg))
@@ -487,7 +487,7 @@ class InCallForegroundService : Service() {
                     }
                 } else if (event == "slow_link" && msg.has("current-bitrate")) {
                     val currentBitrate: Int = Integer.parseInt(msg.getString("current-bitrate"))
-                    configBitrate(currentBitrate + BITRATE_STEP)
+                    /*configBitrate(currentBitrate + BITRATE_STEP)*/
                 }
                 if (jsep != null) {
                     handle?.handleRemoteJsep(PluginHandleWebRTCCallbacks(null, jsep, false))
@@ -533,6 +533,7 @@ class InCallForegroundService : Service() {
                         body.put(REQUEST, "configure")
                         body.put("audio", true)
                         body.put("video", true)
+                        body.put("bitrate", 800 * 1000)
                         msg.put(MESSAGE, body)
                         msg.put("jsep", obj)
                         handle?.sendMessage(PluginHandleSendMessageCallbacks(msg))
