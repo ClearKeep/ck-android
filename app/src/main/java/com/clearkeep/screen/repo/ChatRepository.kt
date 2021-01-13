@@ -136,12 +136,14 @@ class ChatRepository @Inject constructor(
     }
 
     private fun listenMessageChannel() {
+        val ourClientId = getClientId()
+        printlnCK("listenMessageChannel: $ourClientId")
         val request = MessageOuterClass.ListenRequest.newBuilder()
-                .setClientId(getClientId())
+                .setClientId(ourClientId)
                 .build()
         messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
             override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
-                printlnCK("Receive a message from : ${value.fromClientId}" +
+                printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
                         ", groupId = ${value.groupId} groupType = ${value.groupType}")
                 scope.launch {
                     // TODO
@@ -185,13 +187,15 @@ class ChatRepository @Inject constructor(
     }
 
     private fun listenNotificationChannel() {
+        val ourClientId = getClientId()
+        printlnCK("listenNotificationChannel: $ourClientId")
         val request = NotifyOuterClass.ListenRequest.newBuilder()
-                .setClientId(getClientId())
+                .setClientId(ourClientId)
                 .build()
         notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
             override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
                 value.createdAt
-                printlnCK("Receive a notification from : ${value.refClientId}" +
+                printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
                         ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
                 scope.launch {
                     if(value.notifyType == "new-group") {
@@ -251,21 +255,22 @@ class ChatRepository @Inject constructor(
 
         // update last message in room
         val updateRoom = ChatGroup(
-            id = room.id,
-            groupName = room.groupName,
-            groupAvatar = room.groupAvatar,
-            groupType = room.groupType,
-            createBy = room.createBy,
-            createdAt = room.createdAt,
-            updateBy = room.updateBy,
-            updateAt = room.updateAt,
-            clientList = room.clientList,
+                id = room.id,
+                groupName = room.groupName,
+                groupAvatar = room.groupAvatar,
+                groupType = room.groupType,
+                createBy = room.createBy,
+                createdAt = room.createdAt,
+                updateBy = room.updateBy,
+                updateAt = room.updateAt,
+                rtcToken = room.rtcToken,
+                clientList = room.clientList,
 
-            // update
-            isJoined = true,
+                // update
+                isJoined = true,
 
-            lastMessage = messageRecord,
-            lastMessageAt = messageRecord.createdTime
+                lastMessage = messageRecord,
+                lastMessageAt = messageRecord.createdTime
         )
         groupRepository.updateRoom(updateRoom)
     }

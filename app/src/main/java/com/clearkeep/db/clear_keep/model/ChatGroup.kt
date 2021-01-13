@@ -22,6 +22,7 @@ data class ChatGroup(
         @ColumnInfo(name = "created_at") val createdAt: Long,
         @ColumnInfo(name = "updated_by_client_id") val updateBy: String,
         @ColumnInfo(name = "updated_at") val updateAt: Long,
+        @ColumnInfo(name = "group_rtc_token") val rtcToken: String,
 
         @ColumnInfo(name = "lst_client") val clientList: List<People>,
 

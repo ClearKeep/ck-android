@@ -16,6 +16,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     private var mAvatarInConversation: String? = null
     private var mGroupId: Long? = null
     private var mReceiverId: String? = null
+    private lateinit var mToken: String
     private lateinit var imgAnswer: ImageView
     private lateinit var imgEnd: ImageView
     private lateinit var imgThumb: CircleImageView
@@ -27,6 +28,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
         mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
         mGroupId = intent.getLongExtra(Constants.EXTRA_GROUP_ID, 0)
         mReceiverId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
+        mToken = intent.getStringExtra(Constants.EXTRA_GROUP_TOKEN)!!
         initViews()
     }
 
@@ -61,7 +63,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
             }
             R.id.imgAnswer -> {
                 finishAndRemoveFromTask()
-                AppCall.call(this, mGroupId, mReceiverId, "Dai", "", true)
+                AppCall.call(this, mToken, mGroupId, mReceiverId, mUserNameInConversation, mAvatarInConversation, true)
             }
         }
     }

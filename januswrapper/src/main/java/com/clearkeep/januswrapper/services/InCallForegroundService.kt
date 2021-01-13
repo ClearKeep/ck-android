@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat
 import com.clearkeep.januswrapper.InCallActivity
 import com.clearkeep.januswrapper.R
 import com.clearkeep.januswrapper.utils.Constants
+import com.clearkeep.januswrapper.utils.Constants.EXTRA_GROUP_ID
 import com.clearkeep.januswrapper.utils.Constants.MESSAGE
 import com.clearkeep.januswrapper.utils.Constants.REQUEST
 import computician.janusclientapi.*
@@ -55,6 +56,7 @@ class InCallForegroundService : Service() {
 
     private val mBinder: IBinder = LocalBinder()
     private var mIsInComingCall = false
+    private lateinit var mGroupToken: String
     private var mAvatarInConversation: String? = null
     private var mUserNameInConversation: String? = null
     private var mIsSpeakerOn = false
@@ -111,12 +113,13 @@ class InCallForegroundService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.i(TAG, "onStartCommand")
         super.onStartCommand(intent, flags, startId)
+        mGroupToken = intent.getStringExtra(Constants.EXTRA_GROUP_TOKEN) ?: ""
         mIsInComingCall = intent.getBooleanExtra(Constants.EXTRA_FROM_IN_COMING_CALL, false)
         mUserNameInConversation = intent.getStringExtra(Constants.EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
-        /*mGroupId = intent.getStringExtra(EXTRA_GROUP_ID);*/
-        mGroupId = java.lang.Long.valueOf(1234)
-        mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)!!
+        mGroupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
+        /*mGroupId = java.lang.Long.valueOf(1234)*/
+        mOurClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID) ?: ""
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
         return START_NOT_STICKY
     }
@@ -130,7 +133,7 @@ class InCallForegroundService : Service() {
     }
 
     private fun makeCall(con: EGLContext) {
-        Log.i(TAG, "makeCall, groupID = $mGroupId, our client id = $mOurClientId")
+        Log.i(TAG, "makeCall, groupID = $mGroupId, our client id = $mOurClientId, token = $mGroupToken")
         if (janusServer != null) {
             return
         }
@@ -146,7 +149,7 @@ class InCallForegroundService : Service() {
     }
 
     private fun answer(con: EGLContext) {
-        Log.i(TAG, "answer, groupID = $mGroupId, our client id = $mOurClientId")
+        Log.i(TAG, "answer, groupID = $mGroupId, our client id = $mOurClientId, token = $mGroupToken")
         if (janusServer != null) {
             return
         }
@@ -392,7 +395,6 @@ class InCallForegroundService : Service() {
                                 body.put("room", groupId)
                                 mymsg.put(MESSAGE, body)
                                 mymsg.put("jsep", obj)
-                                mymsg.put("token", "a1b2c3d4")
                                 listenerHandle?.sendMessage(PluginHandleSendMessageCallbacks(mymsg))
                             } catch (ex: Exception) {
                             }
@@ -613,6 +615,11 @@ class InCallForegroundService : Service() {
         override fun onDestroy() {}
         override fun getServerUri(): String {
             return Constants.JANUS_URI
+        }
+
+        override fun getToken(): String {
+            return mGroupToken
+            /*return "a1b2c3d4"*/
         }
 
         override fun getIceServers(): List<IceServer> {

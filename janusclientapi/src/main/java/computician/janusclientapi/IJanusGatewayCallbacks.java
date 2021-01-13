@@ -14,6 +14,8 @@ public interface IJanusGatewayCallbacks extends IJanusCallbacks {
 
     public String getServerUri();
 
+    public String getToken();
+
     public List<PeerConnection.IceServer> getIceServers();
 
     public Boolean getIpv6Support();

@@ -102,10 +102,10 @@ suspend fun initSessionUserPeer(
 
         // Build a session with a PreKey retrieved from the server.
         sessionBuilder.process(retrievedPreKey)
-        printlnCK("initSessionWithReceiver: success")
+        printlnCK("initSessionUserPeer: success")
         return@withContext true
     } catch (e: Exception) {
-        printlnCK("initSessionWithReceiver: $e")
+        printlnCK("initSessionUserPeer: $e")
     }
 
     return@withContext false
