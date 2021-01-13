@@ -84,10 +84,12 @@ class PeopleRepository @Inject constructor(
     }
 
     private suspend fun getFriendsFromAPI() : List<People>  = withContext(Dispatchers.IO) {
+        printlnCK("getFriendsFromAPI")
         try {
             val request = UserOuterClass.Empty.newBuilder()
                 .build()
             val response = userStub.getUsers(request)
+            printlnCK("getFriendsFromAPI: $response")
             return@withContext response.lstUserOrBuilderList
                 .map { userInfoResponseOrBuilder ->
                     People(
