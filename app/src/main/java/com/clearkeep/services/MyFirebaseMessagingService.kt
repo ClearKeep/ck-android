@@ -16,18 +16,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.w("Test", "onMessageReceived" + remoteMessage.data.toString())
+        Log.w(TAG, "onMessageReceived" + remoteMessage.data.toString())
         val groupId = remoteMessage.data["group_id"]
-        val avatar = remoteMessage.data["from_client_avatar"]
+        val avatar = remoteMessage.data["from_client_avatar"] ?: ""
         val fromClientId = remoteMessage.data["from_client_id"]
         val fromClientName = remoteMessage.data["from_client_name"]
-        if (groupId != null) {
-            AppCall.inComingCall(this, groupId.toLong(), userManager.getClientId(), fromClientName, avatar)
+        val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+        if (groupId != null && !rtcToken.isNullOrEmpty()) {
+            AppCall.inComingCall(this, rtcToken, groupId.toLong(), userManager.getClientId(), fromClientName, "")
         }
     }
 
     override fun onNewToken(token: String) {
-        Log.w("Test", "onNewToken" + token)
+        Log.w(TAG, "onNewToken: $token")
         super.onNewToken(token)
+    }
+
+    companion object {
+        private const val TAG = "MyFirebaseService"
     }
 }

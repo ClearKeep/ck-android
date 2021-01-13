@@ -61,6 +61,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
                 className: ComponentName,
                 service: IBinder
         ) {
+            Log.i("Test", "onServiceConnected")
             val binder = service as LocalBinder
             mService = binder.service
             mService!!.registerCallListener(this@InCallActivity)
@@ -183,13 +184,13 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
 
     private fun startCall() {
         if (mIsSurfaceCreated && mBound) {
-            val remoteStreams = mService!!.getRemoteStreams()
+            /*val remoteStreams = mService!!.getRemoteStreams()
             remoteStreams.forEach { (id, remoteTrack) ->
                 val remoteRender: Callbacks = createVideoRender()
                 remoteRenders[id] = remoteRender
                 remoteTrack.addRenderer(VideoRenderer(remoteRender))
             }
-            updateRenderPosition(mService!!.getLocalTrack())
+            updateRenderPosition(mService!!.getLocalTrack())*/
 
             val currentState = mService!!.getCurrentState()
             if (CallState.ANSWERED != currentState) {
@@ -459,6 +460,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         val avatarInConversation = intent.getStringExtra(Constants.EXTRA_AVATAR_USER_IN_CONVERSATION)
         val callId = intent.getLongExtra(Constants.EXTRA_GROUP_ID, 0)
         val ourClientId = intent.getStringExtra(Constants.EXTRA_OUR_CLIENT_ID)
+        val token = intent.getStringExtra(Constants.EXTRA_GROUP_TOKEN)
 
         val serviceIntent = Intent(applicationContext, InCallForegroundService::class.java)
         serviceIntent.putExtra(Constants.EXTRA_FROM_IN_COMING_CALL, isFromComingCall)
@@ -466,6 +468,7 @@ class InCallActivity : Activity(), View.OnClickListener, CallListener {
         serviceIntent.putExtra(Constants.EXTRA_USER_NAME, userNameInConversation)
         serviceIntent.putExtra(Constants.EXTRA_GROUP_ID, callId)
         serviceIntent.putExtra(Constants.EXTRA_OUR_CLIENT_ID, ourClientId)
+        serviceIntent.putExtra(Constants.EXTRA_GROUP_TOKEN, token)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             applicationContext.startForegroundService(serviceIntent)
         } else {

@@ -153,6 +153,7 @@ class GroupRepository @Inject constructor(
                 createdAt = 0,
                 updateBy = createPeople.id,
                 updateAt = 0,
+                rtcToken = "",
                 clientList = listOf(createPeople, receiverPeople),
 
                 // TODO
@@ -187,6 +188,7 @@ class GroupRepository @Inject constructor(
                 createdAt = group.createdAt,
                 updateBy = group.updateBy,
                 updateAt = group.updateAt,
+                rtcToken = group.rtcToken,
                 clientList = group.clientList,
 
                 // update
@@ -211,6 +213,7 @@ class GroupRepository @Inject constructor(
                 createdAt = response.createdAt,
                 updateBy = response.updatedByClientId,
                 updateAt = response.updatedAt,
+                rtcToken = response.groupRtcToken,
                 clientList = response.lstClientList.map {
                     People(
                         id = it.id,
