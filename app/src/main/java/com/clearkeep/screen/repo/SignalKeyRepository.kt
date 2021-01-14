@@ -30,7 +30,7 @@ class SignalKeyRepository @Inject constructor(
     fun isPeerKeyRegistered() = storage.getBoolean(IS_PEER_SIGNAL_KEY_REGISTERED)
 
     suspend fun peerRegisterClientKey(clientId: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("peerRegisterClientKey")
+        printlnCK("peerRegisterClientKey, clientId = $clientId")
         try {
             val address = SignalProtocolAddress(clientId, 111)
 

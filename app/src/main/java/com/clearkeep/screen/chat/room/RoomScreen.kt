@@ -3,10 +3,7 @@ package com.clearkeep.screen.chat.room
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.VideoCall
@@ -14,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,10 +37,8 @@ fun RoomScreen(
             }?.userName ?: ""
         }
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
-        Column(
+        Stack(
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                     modifier = Modifier.fillMaxSize()
@@ -70,6 +66,7 @@ fun RoomScreen(
                         },
                         actions = {
                             IconButton(
+                                    /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
                                     onClick = {
                                         roomViewModel.requestCall(group.id)
                                     }
@@ -110,8 +107,21 @@ fun RoomScreen(
                 )
             }
             requestCallViewState?.value?.let {
-                if (it.status == Status.LOADING) {
-                    Text(text = "Requesting call")
+                printlnCK("status = ${it.status}")
+                if (Status.LOADING == it.status) {
+                    Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Row(
+                                verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(color = Color.Blue)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(text = "requesting...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                        }
+                    }
                 }
             }
         }

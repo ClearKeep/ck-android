@@ -19,7 +19,6 @@ class RoomViewModel @Inject constructor(
         private val roomRepository: GroupRepository,
         private val groupRepository: GroupRepository,
         private val signalKeyRepository: SignalKeyRepository,
-        private val videoCallRepository: VideoCallRepository,
 
         private val userManager: UserManager,
 
@@ -169,8 +168,7 @@ class RoomViewModel @Inject constructor(
             }
 
             if (lastGroupId != GROUP_ID_TEMPO) {
-                val success = videoCallRepository.requestVideoCall(lastGroupId)
-                _requestCallState.value = if (success) Resource.success(_group.value) else Resource.error("error", _group.value)
+                _requestCallState.value = Resource.success(_group.value)
             } else {
                 _requestCallState.value = Resource.error("error", _group.value)
             }

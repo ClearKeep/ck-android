@@ -5,7 +5,9 @@ import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.repo.PeopleRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class PeopleViewModel @Inject constructor(
@@ -16,5 +18,12 @@ class PeopleViewModel @Inject constructor(
 
     val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
         emitSource(peopleRepository.getFriends(getClientId()))
+    }
+
+    fun updatePeople() {
+        printlnCK("get people")
+        viewModelScope.launch {
+            peopleRepository.updatePeople()
+        }
     }
 }

@@ -10,16 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.setContent
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.components.base.CKButton
 import com.clearkeep.screen.chat.home.HomeActivity
 import com.clearkeep.components.lightThemeColors
-import com.clearkeep.januswrapper.AppCall
-import com.clearkeep.januswrapper.common.InCallServiceLiveData
+import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

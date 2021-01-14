@@ -165,6 +165,7 @@ class HomeActivity : AppCompatActivity() {
                             )
                         }
                         composable(Screen.People.route) {
+                            //peopleViewModel.updatePeople()
                             PeopleScreen(
                                 peopleViewModel,
                                 onFriendSelected = { friend ->
