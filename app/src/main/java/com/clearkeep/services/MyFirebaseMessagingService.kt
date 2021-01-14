@@ -1,7 +1,7 @@
 package com.clearkeep.services
 
 import android.util.Log
-import com.clearkeep.januswrapper.AppCall
+import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.UserManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

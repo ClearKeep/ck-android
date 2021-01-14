@@ -29,6 +29,7 @@ class ProfileRepository @Inject constructor(
         try {
             val request = UserOuterClass.Empty.newBuilder().build()
             val response = userStub.getProfile(request)
+            printlnCK("getProfile: $response")
             val user = User(response.id, response.username, response.email, response.firstName, response.lastName)
             userDao.save(user)
             userManager.saveClientId(user.id)
@@ -49,6 +50,7 @@ class ProfileRepository @Inject constructor(
                     .setToken(token)
                     .build()
             val response = notifyPushBlockingStub.registerToken(request)
+            printlnCK("registerToken: $response")
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("registerToken: $e")

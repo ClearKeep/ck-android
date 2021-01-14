@@ -49,6 +49,14 @@ class PeopleRepository @Inject constructor(
         }
     }
 
+    suspend fun updatePeople() {
+        try {
+            val friends = getFriendsFromAPI()
+            insertFriends(friends)
+        } catch(exception: IOException) {
+        }
+    }
+
     suspend fun getFriend(friendId: String) : People? = withContext(Dispatchers.IO) {
         val friend = peopleDao.getFriend(friendId)
         return@withContext friend ?: getFriendFromAPI(friendId)

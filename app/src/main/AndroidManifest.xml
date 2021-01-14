@@ -67,18 +67,20 @@
         </service>
 
         <service
-            android:name=".januswrapper.services.InCallForegroundService"
+            android:name=".services.InCallForegroundService"
             android:foregroundServiceType="camera|microphone" />
 
         <activity
-            android:name=".januswrapper.InCallActivity"
+            android:name=".screen.videojanus.InCallActivity"
             android:supportsPictureInPicture="true"
             android:configChanges=
                 "screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".januswrapper.InComingCallActivity"
+            android:name=".screen.videojanus.InComingCallActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.FastGo.Call" />
 
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.

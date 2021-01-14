@@ -1,0 +1,11 @@
+<resources>
+    <string name="text_notification_calling">Calling by janus</string>
+    <string name="text_calling">Calling</string>
+    <string name="text_ringing">Ringing</string>
+    <string name="text_starting">Starting</string>
+    <string name="text_started">Started</string>
+    <string name="text_busy">Busy</string>
+    <string name="text_end">End</string>
+
+    <string name="title_call_screen">Free Call</string>
+</resources>
