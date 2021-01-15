@@ -34,12 +34,10 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     }
 
     private fun initViews() {
-        val imgBack = findViewById<ImageView>(R.id.imgBack)
         imgAnswer = findViewById(R.id.imgAnswer)
         imgEnd = findViewById(R.id.imgEnd)
         imgThumb = findViewById(R.id.imgThumb)
         tvUserName = findViewById(R.id.tvUserName)
-        imgBack.setOnClickListener(this)
         imgAnswer.setOnClickListener(this)
         imgEnd.setOnClickListener(this)
         updateConversationInformation()
@@ -57,9 +55,6 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
-                finishAndRemoveFromTask()
-            }
-            R.id.imgBack -> {
                 finishAndRemoveFromTask()
             }
             R.id.imgAnswer -> {

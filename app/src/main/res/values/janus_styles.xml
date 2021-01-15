@@ -4,8 +4,8 @@
         <item name="buttonSpeakerOn">@drawable/ic_string_ee_sound_on</item>
         <item name="buttonSpeakerOff">@drawable/ic_string_ee_sound_off</item>
         <item name="buttonSpeakerDescription">Speaker</item>
-        <item name="buttonMuteOn">@drawable/ic_string_ee_mute_on</item>
-        <item name="buttonMuteOff">@drawable/ic_string_ee_mute_off</item>
+        <item name="buttonMuteOn">@drawable/ic_string_ee_mute_off</item>
+        <item name="buttonMuteOff">@drawable/ic_string_ee_mute_on</item>
         <item name="buttonMuteVideoOn">@drawable/ic_video_mute_off</item>
         <item name="buttonMuteVideoOff">@drawable/ic_video_mute_on</item>
         <item name="buttonMuteDescription">Mute</item>

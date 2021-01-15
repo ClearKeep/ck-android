@@ -331,6 +331,8 @@ public class JanusServer implements Runnable, IJanusMessageObserver, IJanusSessi
             }
         } catch (JSONException ex) {
             gatewayObserver.onCallbackError(ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            gatewayObserver.onCallbackError(ex.getMessage());
         }
     }
 
