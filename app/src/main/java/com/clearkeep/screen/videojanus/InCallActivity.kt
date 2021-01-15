@@ -116,6 +116,7 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
 
         binding.glview.preserveEGLContextOnPause = true
         binding.glview.keepScreenOn = true
+        /*binding.glview.setWillNotDraw(false)*/
         VideoRendererGui.setView(binding.glview) {
             mIsSurfaceCreated = true
             startCall()
@@ -268,7 +269,7 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                 25,
                 25,
                 VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                true
+                false
         )
     }
 
@@ -293,21 +294,21 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         when (list.size) {
             1 -> {
                 VideoRendererGui.update(list[0], 0, 0, 100, 100,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
             }
             2 -> {
                 VideoRendererGui.update(list[0], 0, 0, 100, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
                 VideoRendererGui.update(list[1], 0, 50, 100, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
             }
             3 -> {
                 VideoRendererGui.update(list[0], 0, 0, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
                 VideoRendererGui.update(list[1], 0, 50, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
                 VideoRendererGui.update(list[2], 50, 50, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, true)
+                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
             }
         }
 
@@ -326,10 +327,12 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         }
 
         if (isMuteLocal) {
+            Log.i("Test", "updateLocalRender, removed local render")
             return
         }
 
         if (remoteRenders.isEmpty()) {
+            Log.i("Test", "updateLocalRender, create local as full")
             @Suppress("INACCESSIBLE_TYPE")
             localCallBackRender = VideoRendererGui.create(
                 0,
@@ -340,6 +343,7 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                 false
             )
         } else {
+            Log.i("Test", "updateLocalRender, create local as small")
             @Suppress("INACCESSIBLE_TYPE")
             localCallBackRender = VideoRendererGui.create(
                 0,
@@ -399,10 +403,6 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                 /*finishAndRemoveFromTask()*/
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        /*val metrics = windowManager.currentWindowMetrics
-                        val size = metrics.bounds
-                        val width: Int = size.width()
-                        val height: Int = size.height()*/
                         val aspectRatio = Rational(3, 4)
                         val params = PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
                         enterPictureInPictureMode(params)
@@ -427,6 +427,8 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
             R.id.imgVideoMute -> {
                 mIsMuteVideo = !mIsMuteVideo
                 enableMuteVideo(mIsMuteVideo)
+                /*updateLocalRender(mIsMuteVideo)
+                binding.glview.postInvalidate()*/
                 mService?.muteVideo(mIsMuteVideo)
             }
         }
@@ -441,34 +443,25 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         }
     }
 
-    private fun enableMute(isEnable: Boolean) {
+    private fun enableMute(isMuting: Boolean) {
         binding.imgMute.isClickable = true
-        if (isEnable) {
+        if (isMuting) {
             binding.imgMute.setImageResource(mResIdMuteOn)
         } else {
             binding.imgMute.setImageResource(mResIdMuteOff)
         }
     }
 
-    private fun enableMuteVideo(isEnable: Boolean) {
+    private fun enableMuteVideo(isMuteVideo: Boolean) {
         binding.imgVideoMute.isClickable = true
-        if (isEnable) {
-            binding.imgVideoMute.setImageResource(mResIdMuteVideoOn)
-        } else {
+        if (isMuteVideo) {
             binding.imgVideoMute.setImageResource(mResIdMuteVideoOff)
+        } else {
+            binding.imgVideoMute.setImageResource(mResIdMuteVideoOn)
         }
-        updateLocalRender(isEnable)
     }
 
     private fun finishAndRemoveFromTask() {
-        if (localCallBackRender != null) {
-            VideoRendererGui.remove(localCallBackRender)
-        }
-        val list: List<Callbacks> = ArrayList(remoteRenders.values)
-        for (render in list) {
-            VideoRendererGui.remove(render)
-        }
-        remoteRenders.clear()
         unBindCallService()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()

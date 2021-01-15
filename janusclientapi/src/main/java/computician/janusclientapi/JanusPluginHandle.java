@@ -156,7 +156,7 @@ public class JanusPluginHandle {
 
     }
 
-    private PeerConnectionFactory sessionFactory = null;
+    private PeerConnectionFactory sessionFactory;
     private final JanusServer server;
     public final JanusSupportedPluginPackages plugin;
     public final BigInteger id;
