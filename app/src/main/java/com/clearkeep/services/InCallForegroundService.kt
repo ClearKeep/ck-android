@@ -13,18 +13,18 @@ import android.opengl.EGLContext
 import android.os.*
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.clearkeep.R
+import com.clearkeep.screen.repo.VideoCallRepository
+import com.clearkeep.utilities.*
 import computician.janusclientapi.*
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection.IceServer
 import org.webrtc.VideoTrack
 import java.math.BigInteger
 import java.util.*
-import com.clearkeep.R
-import com.clearkeep.screen.repo.VideoCallRepository
-import com.clearkeep.utilities.*
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
 import javax.inject.Inject
 
 
@@ -645,8 +645,12 @@ class InCallForegroundService : Service() {
 
         override fun getIceServers(): List<IceServer> {
             val iceServers = ArrayList<IceServer>()
-            val server = IceServer("stun:stun.l.google.com:19302")
-            iceServers.add(server)
+            /*val server = IceServer("stun:stun.l.google.com:19302")*/
+            val iceServer1 = IceServer("turn:global.turn.twilio.com:3478",
+                    "9c57f5e5e278657931c2f8e1396d1ebf6109cda6a09748d2ae0f6ba2ad4c10b1", "HFqVPyZWSkjufm3moL6Wxi4+BTj1NoLQRn15R8CIHGg=")
+            val iceServer2 = IceServer("stun:global.stun.twilio.com:3478")
+            iceServers.add(iceServer1)
+            iceServers.add(iceServer2)
             return iceServers
         }
 

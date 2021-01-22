@@ -3,7 +3,7 @@ package com.clearkeep.utilities
 const val FIREBASE_TOKEN = "ck_firebase_token"
 
 // janus
-const val JANUS_URI = "ws://172.16.1.214:8188/janus"
+const val JANUS_URI = "ws://54.235.68.160:8188/janus"
 const val REQUEST = "request"
 const val MESSAGE = "message"
 const val PUBLISHERS = "publishers"

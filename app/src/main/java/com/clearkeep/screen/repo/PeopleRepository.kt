@@ -20,7 +20,12 @@ class PeopleRepository @Inject constructor(
         private val userStub: UserGrpc.UserBlockingStub
 ) {
     fun getFriends(clientId: String) = liveData {
-        val disposable = emitSource(
+        emitSource(
+                peopleDao.getFriends().map {
+                    Resource.success(it)
+                }
+        )
+        /*val disposable = emitSource(
                 peopleDao.getFriends().map {
                     Resource.loading(it)
                 }
@@ -46,13 +51,15 @@ class PeopleRepository @Inject constructor(
                         Resource.error(exception.toString(), it)
                     }
             )
-        }
+        }*/
     }
 
     suspend fun updatePeople() {
         try {
             val friends = getFriendsFromAPI()
-            insertFriends(friends)
+            if (friends.isNotEmpty()) {
+                insertFriends(friends)
+            }
         } catch(exception: IOException) {
         }
     }
