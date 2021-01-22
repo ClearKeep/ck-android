@@ -20,8 +20,8 @@ class PeopleViewModel @Inject constructor(
         emitSource(peopleRepository.getFriends(getClientId()))
     }
 
-    fun updatePeople() {
-        printlnCK("get people")
+    fun updateContactList() {
+        printlnCK("update contact list from remote API")
         viewModelScope.launch {
             peopleRepository.updatePeople()
         }
