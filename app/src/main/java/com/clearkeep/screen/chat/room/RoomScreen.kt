@@ -118,7 +118,7 @@ fun RoomScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             CircularProgressIndicator(color = Color.Blue)
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(text = "creating group...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
                         }
                     }
