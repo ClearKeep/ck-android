@@ -114,12 +114,12 @@ fun RoomScreen(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Row(
-                                verticalAlignment = Alignment.CenterVertically
+                        Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             CircularProgressIndicator(color = Color.Blue)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "requesting...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                            Text(text = "creating group...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
                         }
                     }
                 }

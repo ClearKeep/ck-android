@@ -1,34 +1,24 @@
 package com.clearkeep.screen.auth.login
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
+import auth.AuthOuterClass
 import com.clearkeep.screen.auth.AuthRepository
-import kotlinx.coroutines.launch
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import javax.inject.Inject
 
 class LoginViewModel @Inject constructor(
     private val loginRepository: AuthRepository
 ): ViewModel() {
-    private val _loginState = MutableLiveData<LoginViewState>()
+    private val _isLoading = MutableLiveData<Boolean>()
 
-    val loginState: LiveData<LoginViewState>
-        get() = _loginState
+    val isLoading: LiveData<Boolean>
+        get() = _isLoading
 
-    fun login(username: String, password: String) {
-        viewModelScope.launch {
-            _loginState.value = LoginProcessing
-            if (loginRepository.login(username, password)) {
-                _loginState.value = LoginSuccess
-            } else {
-                _loginState.value = LoginError
-            }
-        }
+    suspend fun login(username: String, password: String): Resource<AuthOuterClass.AuthRes> {
+        _isLoading.value = true
+        val res = loginRepository.login(username, password)
+        _isLoading.value = false
+        return res
     }
 }
-
-sealed class LoginViewState
-object LoginSuccess : LoginViewState()
-object LoginError : LoginViewState()
-object LoginProcessing : LoginViewState()

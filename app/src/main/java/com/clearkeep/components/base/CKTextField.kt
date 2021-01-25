@@ -7,13 +7,18 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun CKTextField(
         label: String,
         placeholder: String,
         textValue: MutableState<String>,
-        modifier: Modifier = Modifier.fillMaxWidth()
+        modifier: Modifier = Modifier.fillMaxWidth(),
+        keyboardType: KeyboardType = KeyboardType.Text,
+        passwordVisibility: Boolean = false
 ) {
     OutlinedTextField(
             modifier = modifier,
@@ -31,6 +36,8 @@ fun CKTextField(
             inactiveColor = Color.Blue,
             textStyle = MaterialTheme.typography.body2.copy(
                     color = Color.Blue
-            )
+            ),
+            keyboardType = keyboardType,
+            visualTransformation = if (!passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
     )
 }

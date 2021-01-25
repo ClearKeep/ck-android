@@ -1,6 +1,7 @@
 package com.clearkeep.screen.videojanus
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
@@ -25,6 +26,8 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_coming_call)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
         mGroupId = intent.getLongExtra(EXTRA_GROUP_ID, 0)

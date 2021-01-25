@@ -134,7 +134,7 @@ class InCallForegroundService : Service() {
             scope.launch {
                 makeCall(con)
 
-                delay(30 * 1000)
+                delay(CALL_WAIT_TIME_OUT)
                 if (remoteStreams.isEmpty()) {
                     updateCallingState(CallState.CALL_NOT_READY)
                 }
@@ -646,8 +646,7 @@ class InCallForegroundService : Service() {
         override fun getIceServers(): List<IceServer> {
             val iceServers = ArrayList<IceServer>()
             /*val server = IceServer("stun:stun.l.google.com:19302")*/
-            val iceServer1 = IceServer("turn:global.turn.twilio.com:3478",
-                    "9c57f5e5e278657931c2f8e1396d1ebf6109cda6a09748d2ae0f6ba2ad4c10b1", "HFqVPyZWSkjufm3moL6Wxi4+BTj1NoLQRn15R8CIHGg=")
+            val iceServer1 = IceServer(TURN_SERVER_URL, TURN_USER_NAME, TURN_PASSWORD)
             val iceServer2 = IceServer("stun:global.stun.twilio.com:3478")
             iceServers.add(iceServer1)
             iceServers.add(iceServer2)
@@ -672,6 +671,7 @@ class InCallForegroundService : Service() {
         private const val ACTION_END_CALL = "ck.action.end.call"
         private const val MIN_DURATION_UPDATE_BITRATE = 5 * 1000 // Second
         private const val MAX_BITRATE = 1024 * 1000
+        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
         private const val BITRATE_STEP = 128 * 1000
     }
 }

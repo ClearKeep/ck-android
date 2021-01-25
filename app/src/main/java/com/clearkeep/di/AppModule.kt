@@ -7,6 +7,8 @@ import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.utilities.BASE_URL
+import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.UserManager
 import dagger.Module
 import dagger.Provides
@@ -159,13 +161,6 @@ class AppModule {
             signalKeyDAO: SignalKeyDAO,
     ): InMemorySenderKeyStore {
         return InMemorySenderKeyStore(signalKeyDAO)
-    }
-
-    companion object {
-        //private const val BASE_URL = "172.16.0.216"
-        //private const val BASE_URL = "172.16.0.197"
-        private const val BASE_URL = "54.235.68.160"
-        private const val PORT = 5000
     }
 }
 

@@ -7,6 +7,7 @@ import android.app.PictureInPictureParams
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.TypedArray
@@ -83,6 +84,8 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         val a: TypedArray = theme.obtainStyledAttributes(
             intArrayOf(
@@ -369,9 +372,14 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
     }
 
     override fun onUserLeaveHint() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (hasSupportPIP()) {
             enterPictureInPictureMode()
         }
+    }
+
+    private fun hasSupportPIP(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean,
@@ -400,8 +408,7 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                 finishAndRemoveFromTask()
             }
             R.id.imgBack -> {
-                /*finishAndRemoveFromTask()*/
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (hasSupportPIP()) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val aspectRatio = Rational(3, 4)
                         val params = PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
@@ -409,6 +416,9 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                     } else {
                         enterPictureInPictureMode()
                     }
+                } else {
+                    mService?.hangup()
+                    finishAndRemoveFromTask()
                 }
             }
             R.id.imgSpeaker -> {
