@@ -119,7 +119,7 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
 
         binding.glview.preserveEGLContextOnPause = true
         binding.glview.keepScreenOn = true
-        /*binding.glview.setWillNotDraw(false)*/
+        binding.glview.setWillNotDraw(true)
         VideoRendererGui.setView(binding.glview) {
             mIsSurfaceCreated = true
             startCall()
