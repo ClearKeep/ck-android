@@ -4,20 +4,32 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.setContent
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.screen.chat.home.HomeActivity
+import androidx.lifecycle.lifecycleScope
+import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.lightThemeColors
-import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.screen.auth.register.RegisterActivity
+import com.clearkeep.screen.chat.home.HomeActivity
+import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
+import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -34,22 +46,12 @@ class LoginActivity : AppCompatActivity() {
         setContent {
             MyApp()
         }
-
-        subscribeUI()
-    }
-
-    private fun subscribeUI() {
-        loginViewModel.loginState.observe(this, Observer {
-            if (it == LoginSuccess) {
-                navigateToHomeActivity()
-            }
-        })
     }
 
     @Composable
     fun MyApp() {
         MaterialTheme(
-            colors = lightThemeColors
+                colors = lightThemeColors
         ) {
             AppContent()
         }
@@ -57,29 +59,74 @@ class LoginActivity : AppCompatActivity() {
 
     @Composable
     fun AppContent() {
+        val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
-        val onLoginPressed: (String, String) -> Unit = { userName, password -> loginViewModel.login(userName, password) }
-        Column {
-            Row(modifier = Modifier.weight(1.0f, true)) {
-                LoginScreen(
-                        onLoginPressed = onLoginPressed,
-                        onRegisterPress = {
-                            navigateToRegisterActivity()
-                        }
-                )
+        val onLoginPressed: (String, String) -> Unit = { userName, password ->
+            lifecycleScope.launch {
+                val res = loginViewModel.login(userName, password)
+                if (res.status == Status.SUCCESS) {
+                    navigateToHomeActivity()
+                } else if (res.status == Status.ERROR) {
+                    setShowDialog(res.message ?: "unknown")
+                    /*showLoginError(res.message ?: "unknown")*/
+                }
             }
-            /*inCallServiceLiveData.value?.let {
-                printlnCK("is call available: $it")
-                if (it) {
-                    CKButton(
-                            "Open Call available",
-                            onClick = {
-                                AppCall.openCallAvailable(this@LoginActivity)
+        }
+        Box() {
+            loginViewModel.isLoading.value.let {
+                printlnCK("Test, loading $it")
+                if (it != null && it) {
+                    Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CKCircularProgressIndicator(
+                                color = Color.Blue
+                        )
+                    }
+                }
+            }
+            Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+            ) {
+                Row(/*modifier = Modifier.weight(1.0f, true)*/) {
+                    LoginScreen(
+                            onLoginPressed = onLoginPressed,
+                            onRegisterPress = {
+                                navigateToRegisterActivity()
                             },
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
                     )
                 }
-            }*/
+            }
+            ErrorDialog(showDialog, setShowDialog)
+        }
+    }
+
+    @Composable
+    fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
+        if (showDialog.isNotEmpty()) {
+            CKAlertDialog(
+                    title = {
+                        Text("Error")
+                    },
+                    text = {
+                        Text(showDialog)
+                    },
+                    dismissButton = {
+                        Button(
+                                onClick = {
+                                    // Change the state to close the dialog
+                                    setShowDialog("")
+                                },
+                        ) {
+                            Text("OK")
+                        }
+                    },
+            )
         }
     }
 

@@ -15,9 +15,9 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.ui.tooling.preview.Preview
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextButton
@@ -26,7 +26,8 @@ import com.clearkeep.components.base.CKTextField
 @Composable
 fun LoginScreen(
     onLoginPressed: (userName: String, password: String) -> Unit,
-    onRegisterPress: () -> Unit
+    onRegisterPress: () -> Unit,
+    isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
     val userName = state { "" }
@@ -67,7 +68,9 @@ fun LoginScreen(
                 CKTextField(
                         "Password",
                         "",
-                        password
+                        password,
+                        keyboardType = KeyboardType.Password,
+                        passwordVisibility = true
                 )
                 Spacer(Modifier.preferredHeight(20.dp))
                 CKButton(
@@ -85,6 +88,7 @@ fun LoginScreen(
                     CKTextButton(
                             stringResource(R.string.btn_register),
                             onClick = onRegisterPress,
+                            enabled = !isLoading
                     )
                 }
             }
@@ -103,14 +107,4 @@ private fun validateInput(context: Context, username: String, password: String):
         Toast.makeText(context, error, Toast.LENGTH_LONG).show()
     }
     return error == null
-}
-
-@Preview
-@Composable
-fun LoginScreenPreview(
-) {
-    LoginScreen(
-        onRegisterPress = {},
-        onLoginPressed = { s: String, s1: String -> }
-    )
 }

@@ -12,9 +12,13 @@ fun CKTextButton(
         title: String = "",
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
+        enabled: Boolean = true,
 ) {
-    TextButton(onClick = onClick, modifier = modifier,
+    TextButton(
+            onClick = onClick,
+            modifier = modifier,
             colors = ButtonConstants.defaultTextButtonColors(contentColor = MaterialTheme.colors.surface),
+            enabled = enabled
     ) {
         Text(title)
     }

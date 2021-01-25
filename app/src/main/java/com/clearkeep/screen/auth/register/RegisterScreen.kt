@@ -15,6 +15,7 @@ import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
@@ -63,7 +64,8 @@ fun RegisterScreen(
             CKTextField(
                     "Password",
                     "",
-                    password
+                    password,
+                    keyboardType = KeyboardType.Password,
             )
             Spacer(Modifier.preferredHeight(20.dp))
             CKButton(
