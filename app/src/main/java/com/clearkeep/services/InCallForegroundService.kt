@@ -1,5 +1,6 @@
 package com.clearkeep.services
 
+/*
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -121,7 +122,9 @@ class InCallForegroundService : Service() {
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
         mGroupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
-        /*mGroupId = java.lang.Long.valueOf(1234)*/
+        */
+/*mGroupId = java.lang.Long.valueOf(1234)*//*
+
         mOurClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
         notifyStartForeground(getString(R.string.text_notification_calling), mCurrentCallStatus)
         return START_NOT_STICKY
@@ -315,8 +318,10 @@ class InCallForegroundService : Service() {
         val notificationIntent = Intent()
         notificationIntent.putExtra("is_from_notification", true)
         notificationIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        /*notificationIntent.putExtra(EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
-        notificationIntent.putExtra(EXTRA_USER_NAME, mUserNameInConversation)*/
+        */
+/*notificationIntent.putExtra(EXTRA_FROM_IN_COMING_CALL, mIsInComingCall)
+        notificationIntent.putExtra(EXTRA_USER_NAME, mUserNameInConversation)*//*
+
         notificationIntent.putExtra(
                 EXTRA_AVATAR_USER_IN_CONVERSATION,
                 mAvatarInConversation
@@ -510,7 +515,9 @@ class InCallForegroundService : Service() {
                     }
                 } else if (event == "slow_link" && msg.has("current-bitrate")) {
                     val currentBitrate: Int = Integer.parseInt(msg.getString("current-bitrate"))
-                    /*configBitrate(currentBitrate + BITRATE_STEP)*/
+                    */
+/*configBitrate(currentBitrate + BITRATE_STEP)*//*
+
                 }
                 if (jsep != null) {
                     handle?.handleRemoteJsep(PluginHandleWebRTCCallbacks(null, jsep, false))
@@ -640,12 +647,16 @@ class InCallForegroundService : Service() {
 
         override fun getToken(): String {
             return mGroupToken
-            /*return "a1b2c3d4"*/
+            */
+/*return "a1b2c3d4"*//*
+
         }
 
         override fun getIceServers(): List<IceServer> {
             val iceServers = ArrayList<IceServer>()
-            /*val server = IceServer("stun:stun.l.google.com:19302")*/
+            */
+/*val server = IceServer("stun:stun.l.google.com:19302")*//*
+
             val iceServer1 = IceServer(TURN_SERVER_URL, TURN_USER_NAME, TURN_PASSWORD)
             val iceServer2 = IceServer("stun:global.stun.twilio.com:3478")
             iceServers.add(iceServer1)
@@ -674,4 +685,4 @@ class InCallForegroundService : Service() {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
         private const val BITRATE_STEP = 128 * 1000
     }
-}
+}*/

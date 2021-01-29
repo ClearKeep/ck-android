@@ -9,6 +9,12 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 android {
     compileSdkVersion 30
 
@@ -44,6 +50,11 @@ android {
     buildFeatures {
         compose true
         viewBinding true
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
     }
 
     composeOptions {
@@ -162,6 +173,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // janus
-    implementation project(':janusclientapi')
+    implementation project(':januswrapper')
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation(name:'libwebrtc', ext:'aar')
     implementation 'de.hdodenhof:circleimageview:2.2.0'
 }
