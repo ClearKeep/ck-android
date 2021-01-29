@@ -23,6 +23,7 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.lightThemeColors
 import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.chat.home.HomeActivity
+import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
@@ -137,7 +138,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun navigateToRegisterActivity() {
         startActivity(Intent(this, RegisterActivity::class.java))
-        /*AppCall.call(this, 1223L, "android", "dai", "", false)*/
+        /*AppCall.call(this, "", 1234, "dai", "", "", false)*/
     }
 }
 

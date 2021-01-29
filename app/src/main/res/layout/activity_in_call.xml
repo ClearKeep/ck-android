@@ -7,10 +7,34 @@
     android:background="?attr/appCallBackgroundColor"
     tools:background="@color/appCallBackground">
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/glview"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:id="@+id/remoteRoot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:keepScreenOn="true"
+            tools:context="in.minewave.janusvideoroom.MainActivity">
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/localRoot"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:keepScreenOn="true"
+            tools:context="in.minewave.janusvideoroom.MainActivity">
+
+            <org.webrtc.SurfaceViewRenderer
+                android:id="@+id/localSurfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+
 
     <RelativeLayout
         android:id="@+id/rlToolbar"

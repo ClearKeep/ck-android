@@ -22,8 +22,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val fromClientId = remoteMessage.data["from_client_id"]
         val fromClientName = remoteMessage.data["from_client_name"]
         val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+        val turnUser = remoteMessage.data["group_turn_user"] ?: ""
+        val turnPass = remoteMessage.data["group_turn_pass"] ?: ""
         if (groupId != null && !rtcToken.isNullOrEmpty()) {
-            AppCall.inComingCall(this, rtcToken, groupId.toLong(), userManager.getClientId(), fromClientName, "")
+            AppCall.inComingCall(this, rtcToken, groupId.toLong(), userManager.getClientId(), fromClientName, "", turnUser, turnPass)
         }
     }
 

@@ -4,50 +4,71 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PictureInPictureParams
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.TypedArray
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
+import android.os.SystemClock
 import android.text.TextUtils
-import android.util.Log
 import android.util.Rational
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
-import com.clearkeep.services.CallState
-import com.clearkeep.services.InCallForegroundService
+import com.clearkeep.januswrapper.JanusConnection
+import com.clearkeep.januswrapper.JanusRTCInterface
+import com.clearkeep.januswrapper.PeerConnectionClient
+import com.clearkeep.januswrapper.WebSocketChannel
+import com.clearkeep.screen.repo.VideoCallRepository
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
+import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.utilities.*
-import org.webrtc.VideoRenderer
-import org.webrtc.VideoRenderer.*
-import org.webrtc.VideoRendererGui
-import org.webrtc.VideoTrack
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_in_call.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import org.webrtc.*
 import java.math.BigInteger
 import java.util.*
+import javax.inject.Inject
 
+enum class CallState {
+    CALLING,
+    RINGING,
+    ANSWERED,
+    BUSY,
+    ENDED,
+    CALL_NOT_READY
+}
 
-class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService.CallListener {
+@AndroidEntryPoint
+class InCallActivity : Activity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
     private var mIsMute = false
     private var mIsMuteVideo = false
     private var mIsSpeaker = false
-    private var mIsSurfaceCreated = false
-    private var mBound = false
-    private var mService: InCallForegroundService? = null
+
+    private var mCurrentCallState: CallState = CallState.CALLING
 
     private lateinit var binding: ActivityInCallBinding
 
+    @Inject
+    lateinit var videoCallRepository: VideoCallRepository
+
     // surface and render
-    private var localRender: VideoRenderer? = null
-    private var localCallBackRender: Callbacks? = null
-    private val remoteRenders: MutableMap<BigInteger, Callbacks> = HashMap()
+    private lateinit var rootEglBase: EglBase
+    private var peerConnectionClient: PeerConnectionClient? = null
+    private var mWebSocketChannel: WebSocketChannel? = null
+
+    private val remoteRenders: MutableMap<BigInteger, SurfaceViewRenderer> = HashMap()
 
     // resource id
     private var mResIdSpeakerOn = 0
@@ -57,26 +78,9 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
     private var mResIdMuteVideoOn = 0
     private var mResIdMuteVideoOff = 0
 
-    private val connection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(
-                className: ComponentName,
-                service: IBinder
-        ) {
-            val binder = service as InCallForegroundService.LocalBinder
-            mService = binder.service
-            mService!!.registerCallListener(this@InCallActivity)
-            mBound = true
+    // input
 
-            updateMediaUIWithService()
-            startCall()
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
-        }
-    }
-
-    @SuppressLint("ResourceType")
+    @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         System.setProperty("java.net.preferIPv6Addresses", "false")
         System.setProperty("java.net.preferIPv4Stack", "true")
@@ -105,8 +109,14 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
             a.recycle()
         }
 
+        rootEglBase = EglBase.create()
+        binding.localSurfaceView.init(rootEglBase.eglBaseContext, null)
+        binding.localSurfaceView.setEnableHardwareScaler(true)
+
         initViews()
+
         requestCallPermissions()
+        updateCallStatus(mCurrentCallState)
     }
 
     private fun initViews() {
@@ -116,14 +126,6 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         binding.imgEnd.setOnClickListener(this)
         binding.imgSwitchCamera.setOnClickListener(this)
         binding.imgVideoMute.setOnClickListener(this)
-
-        binding.glview.preserveEGLContextOnPause = true
-        binding.glview.keepScreenOn = true
-        binding.glview.setWillNotDraw(true)
-        VideoRendererGui.setView(binding.glview) {
-            mIsSurfaceCreated = true
-            startCall()
-        }
 
         val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         val avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
@@ -139,21 +141,21 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if ((ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                             != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.CAMERA
-                    )
+                    this,
+                    Manifest.permission.CAMERA
+                )
                             != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.MODIFY_AUDIO_SETTINGS
-                    )
+                    this,
+                    Manifest.permission.MODIFY_AUDIO_SETTINGS
+                )
                             != PackageManager.PERMISSION_GRANTED)) {
                 ActivityCompat.requestPermissions(
-                        this, arrayOf(
+                    this, arrayOf(
                         Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.CAMERA,
                         Manifest.permission.MODIFY_AUDIO_SETTINGS
-                ),
-                        REQUEST_PERMISSIONS
+                    ),
+                    REQUEST_PERMISSIONS
                 )
                 return
             }
@@ -162,9 +164,9 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<String>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
     ) {
         if (requestCode == REQUEST_PERMISSIONS &&
                 grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -176,189 +178,95 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
 
     override fun onDestroy() {
         super.onDestroy()
+        rootEglBase.release()
+        val localRender = binding.localSurfaceView
+        localRender.release()
+        val renderList = remoteRenders.values
+        if (renderList.isNotEmpty()) {
+            for (render in renderList) {
+                render.release()
+            }
+        }
         if (binding.chronometer.visibility == View.VISIBLE) {
             binding.chronometer.stop()
         }
-        unBindCallService()
     }
 
     private fun onCallPermissionsAvailable() {
-        if (!isServiceRunning(this, InCallForegroundService::class.java.name)) {
-            startServiceAsForeground()
-        }
-        bindCallService()
-    }
-
-    private fun startCall() {
-        if (mIsSurfaceCreated && mBound) {
-            /*val remoteStreams = mService!!.getRemoteStreams()
-            remoteStreams.forEach { (id, remoteTrack) ->
-                val remoteRender: Callbacks = createVideoRender()
-                remoteRenders[id] = remoteRender
-                remoteTrack.addRenderer(VideoRenderer(remoteRender))
-            }
-            updateRenderPosition(mService!!.getLocalTrack())*/
-
-            val currentState = mService!!.getCurrentState()
-            if (CallState.ANSWERED != currentState) {
-                val con = VideoRendererGui.getEGLContext()
-                mService?.startCall(con)
-            }
-        }
-    }
-
-    private fun updateMediaUIWithService() {
-        if (mService != null) {
-            mIsMute = mService!!.isMicMuting()
-            mIsMuteVideo = mService!!.isVideoMuting()
-            mIsSpeaker = mService!!.isSpeakerOn()
-            enableMute(mIsMute)
-            enableMuteVideo(mIsMuteVideo)
-            enableSpeaker(mIsSpeaker)
-        }
-    }
-
-    private fun displayCountUpClockOfConversation() {
-        binding.chronometer.visibility = View.VISIBLE
-        binding.tvCallState.visibility = View.GONE
-    }
-
-    override fun onCallStateChanged(status: String, state: CallState) {
-        if (CallState.CALLING == state || CallState.RINGING == state) {
-            runOnUiThread { binding.tvCallState.text = status }
-        } else if (CallState.BUSY == state || CallState.ENDED == state || CallState.CALL_NOT_READY == state) {
-            runOnUiThread { binding.tvCallState.text = status }
-            finishAndRemoveFromTask()
-        } else if (CallState.ANSWERED == state) {
-            if (mService != null) {
-                runOnUiThread {
-                    displayCountUpClockOfConversation()
-                    val lastTimeConnectedCall = mService!!.getLastTimeConnectedCall()
-                    if (lastTimeConnectedCall > 0) {
-                        binding.chronometer.base = lastTimeConnectedCall
-                        binding.chronometer.start()
-                    }
+        val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
+        val groupId = intent.getLongExtra(EXTRA_GROUP_ID, 0)
+        if (isFromComingCall) {
+            val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
+            val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
+            startVideo(groupId, TURN_SERVER_URL, turnUserName, turnPassword)
+        } else {
+            GlobalScope.launch {
+                val success = videoCallRepository.requestVideoCall(groupId)
+                if (success) {
+                    startVideo(groupId, TURN_SERVER_URL, "", "")
+                } else {
+                    updateCallStatus(CallState.CALL_NOT_READY)
+                }
+                delay(CALL_WAIT_TIME_OUT)
+                if (remoteRenders.isEmpty()) {
+                    updateCallStatus(CallState.CALL_NOT_READY)
                 }
             }
         }
     }
 
-    override fun onLocalStream() {
-        updateRenderPosition()
-    }
-
-    override fun onRemoteStreamAdd(
-            remoteTrack: VideoTrack,
-            remoteClientId: BigInteger
-    ) {
-        Log.i("Test", "onRemoteStreamAdd $remoteClientId")
-        val oldRemoteRender = remoteRenders[remoteClientId]
-        if (oldRemoteRender != null) {
-            VideoRendererGui.remove(oldRemoteRender)
-        }
-
-        @Suppress("INACCESSIBLE_TYPE")
-        val remoteRender: Callbacks = createVideoRender()
-        remoteRenders[remoteClientId] = remoteRender
-        remoteTrack.addRenderer(VideoRenderer(remoteRender))
-
-        updateRenderPosition()
-    }
-
-    private fun createVideoRender(): Callbacks {
-        return VideoRendererGui.create(
-                25,
-                25,
-                25,
-                25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                false
+    private fun startVideo(groupId: Long, turnUrl: String, turnUser: String, turnPass: String) {
+        val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
+        val token = intent.getStringExtra(EXTRA_GROUP_TOKEN)
+        mWebSocketChannel = WebSocketChannel(groupId.toInt(), ourClientId, token, JANUS_URI)
+        mWebSocketChannel!!.initConnection()
+        mWebSocketChannel!!.setDelegate(this)
+        val peerConnectionParameters = PeerConnectionClient.PeerConnectionParameters(
+            false, 360, 480, 20, "VP8",
+            true, 0, "opus", false,
+            false, false, false, false,
+            turnUrl, turnUser, turnPass
         )
+        peerConnectionClient = PeerConnectionClient()
+        peerConnectionClient!!.createPeerConnectionFactory(this, peerConnectionParameters, this)
+        peerConnectionClient!!.startVideoSource()
     }
 
-    override fun onStreamRemoved(remoteClientId: BigInteger) {
-        Log.i("Test", "onStreamRemoved $remoteClientId")
-        val render = remoteRenders.remove(remoteClientId)
-        if (render != null) {
-            VideoRendererGui.remove(render)
-        }
-
-        if (remoteRenders.isNotEmpty()) {
-            updateRenderPosition()
-        }
-    }
-
-    private fun updateRenderPosition() {
-        val list: List<Callbacks> = ArrayList(remoteRenders.values)
-        val isShowAvatar = list.isEmpty()
-        showOrHideAvatar(isShowAvatar)
-        Log.i("Test", "updateRenderPosition, list = ${list.size}")
-
-        when (list.size) {
-            1 -> {
-                VideoRendererGui.update(list[0], 0, 0, 100, 100,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-            }
-            2 -> {
-                VideoRendererGui.update(list[0], 0, 0, 100, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-                VideoRendererGui.update(list[1], 0, 50, 100, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-            }
-            3 -> {
-                VideoRendererGui.update(list[0], 0, 0, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-                VideoRendererGui.update(list[1], 0, 50, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-                VideoRendererGui.update(list[2], 50, 50, 50, 50,
-                        VideoRendererGui.ScalingType.SCALE_ASPECT_FILL, false)
-            }
-        }
-
-        updateLocalRender(mIsMuteVideo)
-    }
-
-    private fun updateLocalRender(isMuteLocal: Boolean) {
-        val localTrack: VideoTrack = mService?.getLocalTrack() ?: return
-
-        if (localCallBackRender != null) {
-            VideoRendererGui.remove(localCallBackRender)
-        }
-
-        if (localRender != null) {
-            localTrack.removeRenderer(localRender)
-        }
-
-        if (isMuteLocal) {
-            Log.i("Test", "updateLocalRender, removed local render")
+    private fun displayCountUpClockOfConversation() {
+        if (binding.chronometer.isVisible) {
             return
         }
+        binding.chronometer.visibility = View.VISIBLE
+        binding.tvCallState.visibility = View.GONE
 
-        if (remoteRenders.isEmpty()) {
-            Log.i("Test", "updateLocalRender, create local as full")
-            @Suppress("INACCESSIBLE_TYPE")
-            localCallBackRender = VideoRendererGui.create(
-                0,
-                0,
-                100,
-                100,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                false
-            )
-        } else {
-            Log.i("Test", "updateLocalRender, create local as small")
-            @Suppress("INACCESSIBLE_TYPE")
-            localCallBackRender = VideoRendererGui.create(
-                0,
-                0,
-                25,
-                25,
-                VideoRendererGui.ScalingType.SCALE_ASPECT_FILL,
-                false
-            )
+        binding.chronometer.base = SystemClock.elapsedRealtime()
+        binding.chronometer.start()
+    }
+
+    private fun updateCallStatus(newState: CallState) {
+        printlnCK("update call state: $newState")
+        mCurrentCallState = newState
+        when (mCurrentCallState) {
+            CallState.CALLING ->
+                binding.tvCallState.text = getString(R.string.text_calling)
+            CallState.RINGING ->
+                binding.tvCallState.text = getString(R.string.text_ringing)
+            CallState.BUSY, CallState.CALL_NOT_READY -> {
+                binding.tvCallState.text = getString(R.string.text_busy)
+                hangup()
+                finishAndRemoveFromTask()
+            }
+            CallState.ENDED -> {
+                binding.tvCallState.text = getString(R.string.text_end)
+                hangup()
+                finishAndRemoveFromTask()
+            }
+            CallState.ANSWERED -> {
+                binding.tvCallState.text = getString(R.string.text_started)
+                displayCountUpClockOfConversation()
+                showOrHideAvatar(false)
+            }
         }
-        localRender = VideoRenderer(localCallBackRender)
-        localTrack.addRenderer(localRender)
     }
 
     private fun showOrHideAvatar(isShowAvatar: Boolean) {
@@ -382,8 +290,10 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
                 && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
 
-    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean,
-                                               newConfig: Configuration) {
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
+    ) {
         if (isInPictureInPictureMode) {
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
             binding.imgBack.visibility = View.GONE
@@ -404,42 +314,41 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
-                mService?.hangup()
+                hangup()
                 finishAndRemoveFromTask()
             }
             R.id.imgBack -> {
                 if (hasSupportPIP()) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val aspectRatio = Rational(3, 4)
-                        val params = PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
+                        val params =
+                            PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
                         enterPictureInPictureMode(params)
                     } else {
                         enterPictureInPictureMode()
                     }
                 } else {
-                    mService?.hangup()
+                    hangup()
                     finishAndRemoveFromTask()
                 }
             }
             R.id.imgSpeaker -> {
                 mIsSpeaker = !mIsSpeaker
                 enableSpeaker(mIsSpeaker)
-                mService?.setSpeakerphoneOn(mIsSpeaker)
+                setSpeakerphoneOn(mIsSpeaker)
             }
             R.id.imgMute -> {
                 mIsMute = !mIsMute
                 enableMute(mIsMute)
-                mService?.muteMic(mIsMute)
+                peerConnectionClient?.setAudioEnabled(!mIsMute)
             }
             R.id.imgSwitchCamera -> {
-                mService?.switchCamera()
+                peerConnectionClient?.switchCamera()
             }
             R.id.imgVideoMute -> {
                 mIsMuteVideo = !mIsMuteVideo
                 enableMuteVideo(mIsMuteVideo)
-                /*updateLocalRender(mIsMuteVideo)
-                binding.glview.postInvalidate()*/
-                mService?.muteVideo(mIsMuteVideo)
+                peerConnectionClient?.setVideoEnabled(!mIsMuteVideo)
             }
         }
     }
@@ -471,8 +380,23 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         }
     }
 
+    private fun setSpeakerphoneOn(isOn: Boolean) {
+        printlnCK("setSpeakerphoneOn, isOn = $isOn")
+        try {
+            val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_IN_CALL
+            audioManager.isSpeakerphoneOn = isOn
+        } catch (e: Exception) {
+            printlnCK("setSpeakerphoneOn, $e")
+        }
+    }
+
+    private fun hangup() {
+        mWebSocketChannel?.close()
+        peerConnectionClient?.close()
+    }
+
     private fun finishAndRemoveFromTask() {
-        unBindCallService()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {
@@ -480,42 +404,137 @@ class InCallActivity : Activity(), View.OnClickListener, InCallForegroundService
         }
     }
 
-    private fun bindCallService() {
-        val intent = Intent(this, InCallForegroundService::class.java)
-        bindService(intent, connection, BIND_AUTO_CREATE)
-    }
-
-    private fun unBindCallService() {
-        if (mBound) {
-            mService!!.unregisterCallListener(this@InCallActivity)
-            unbindService(connection)
-            mBound = false
-        }
-    }
-
-    private fun startServiceAsForeground() {
-        val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
-        val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        val avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
-        val callId = intent.getLongExtra(EXTRA_GROUP_ID, 0)
-        val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
-        val token = intent.getStringExtra(EXTRA_GROUP_TOKEN)
-
-        val serviceIntent = Intent(applicationContext, InCallForegroundService::class.java)
-        serviceIntent.putExtra(EXTRA_FROM_IN_COMING_CALL, isFromComingCall)
-        serviceIntent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, avatarInConversation)
-        serviceIntent.putExtra(EXTRA_USER_NAME, userNameInConversation)
-        serviceIntent.putExtra(EXTRA_GROUP_ID, callId)
-        serviceIntent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
-        serviceIntent.putExtra(EXTRA_GROUP_TOKEN, token)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            applicationContext.startForegroundService(serviceIntent)
-        } else {
-            applicationContext.startService(serviceIntent)
-        }
-    }
-
     companion object {
         private const val REQUEST_PERMISSIONS = 1
+        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
+    }
+
+    private fun offerPeerConnection(handleId: BigInteger) {
+        peerConnectionClient?.createPeerConnection(
+            rootEglBase.eglBaseContext,
+            binding.localSurfaceView,
+            createVideoCapture(this),
+            handleId
+        )
+        peerConnectionClient?.createOffer(handleId)
+    }
+
+    // interface JanusRTCInterface
+    override fun onPublisherJoined(handleId: BigInteger) {
+        offerPeerConnection(handleId)
+    }
+
+    override fun onPublisherRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
+        val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
+        val sdp = jsep.optString("sdp")
+        val sessionDescription = SessionDescription(type, sdp)
+        peerConnectionClient?.setRemoteDescription(handleId, sessionDescription)
+    }
+
+    override fun subscriberHandleRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
+        val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
+        val sdp = jsep.optString("sdp")
+        val sessionDescription = SessionDescription(type, sdp)
+        peerConnectionClient?.subscriberHandleRemoteJsep(handleId, sessionDescription)
+    }
+
+    override fun onLeaving(handleId: BigInteger) {
+        printlnCK("onLeaving: $handleId")
+        removeRemoteRender(handleId)
+    }
+
+    // interface PeerConnectionClient.PeerConnectionEvents
+    override fun onLocalDescription(sdp: SessionDescription, handleId: BigInteger) {
+        printlnCK(sdp.type.toString())
+        mWebSocketChannel?.publisherCreateOffer(handleId, sdp)
+    }
+
+    override fun onRemoteDescription(sdp: SessionDescription, handleId: BigInteger) {
+        printlnCK(sdp.type.toString())
+        mWebSocketChannel?.subscriberCreateAnswer(handleId, sdp)
+    }
+
+    override fun onIceCandidate(candidate: IceCandidate?, handleId: BigInteger) {
+        printlnCK("=========onIceCandidate========")
+        if (candidate != null) {
+            mWebSocketChannel?.trickleCandidate(handleId, candidate)
+        } else {
+            mWebSocketChannel?.trickleCandidateComplete(handleId)
+        }
+    }
+
+    override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {}
+
+    override fun onIceConnected() {
+        printlnCK("onIceConnected")
+    }
+
+    override fun onIceDisconnected() {
+        printlnCK("onIceDisconnected")
+    }
+
+    override fun onPeerConnectionClosed() {
+        printlnCK("onPeerConnectionClosed")
+    }
+
+    override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {}
+
+    override fun onPeerConnectionError(description: String) {
+        printlnCK("onPeerConnectionError: $description")
+    }
+
+    override fun onRemoteRenderAdded(connection: JanusConnection) {
+        printlnCK("onRemoteRenderAdded: ${connection.handleId}")
+        runOnUiThread {
+            if (mCurrentCallState != CallState.ANSWERED) {
+                updateCallStatus(CallState.ANSWERED)
+            }
+
+            val remoteRender = SurfaceViewRenderer(this)
+            remoteRender.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
+            remoteRenders[connection.handleId] = remoteRender
+
+            updateRenders()
+        }
+    }
+
+    override fun onRemoteRenderRemoved(connection: JanusConnection) {
+        printlnCK("onRemoteRenderRemoved")
+        removeRemoteRender(connection.handleId)
+    }
+
+    private fun removeRemoteRender(handleId: BigInteger) {
+        runOnUiThread {
+            val render = remoteRenders.remove(handleId)
+            render?.release()
+
+            if (remoteRenders.isEmpty()) {
+                updateCallStatus(CallState.ENDED)
+                return@runOnUiThread
+            } else {
+                updateRenders()
+            }
+        }
+    }
+
+    private fun updateRenders() {
+        binding.remoteRoot.removeAllViews()
+        val renders = remoteRenders.values
+        printlnCK("render remote: length = ${renders.size}")
+        if (renders.isNotEmpty()) {
+            val params = RelativeLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
+            printlnCK("render remote")
+            binding.remoteRoot.addView(renders.first(), params)
+        }
+
+        val localRender = binding.localSurfaceView
+        binding.localRoot.removeAllViews()
+        val localParams = LinearLayout.LayoutParams(200, 300)
+        localParams.setMargins(20, 20, 0, 0)
+        binding.localRoot.addView(localRender, localParams)
     }
 }
