@@ -2,6 +2,7 @@ package com.clearkeep.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.clearkeep.screen.auth.forgot.ForgotViewModel
 import com.clearkeep.screen.chat.home.chat_history.ChatViewModel
 import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -33,6 +34,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(RegisterViewModel::class)
     abstract fun bindRegisterViewModel(registerViewModel: RegisterViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ForgotViewModel::class)
+    abstract fun bindForgotViewModel(forgotViewModel: ForgotViewModel): ViewModel
 
     @Binds
     @IntoMap

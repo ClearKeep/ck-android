@@ -6,7 +6,9 @@ import com.clearkeep.utilities.UserManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
+import org.json.JSONObject
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -17,15 +19,26 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         Log.w(TAG, "onMessageReceived" + remoteMessage.data.toString())
+        val notifyType = remoteMessage.data["notify_type"] ?: ""
         val groupId = remoteMessage.data["group_id"]
         val avatar = remoteMessage.data["from_client_avatar"] ?: ""
         val fromClientId = remoteMessage.data["from_client_id"]
         val fromClientName = remoteMessage.data["from_client_name"]
         val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
-        val turnUser = remoteMessage.data["group_turn_user"] ?: ""
-        val turnPass = remoteMessage.data["group_turn_pass"] ?: ""
-        if (groupId != null && !rtcToken.isNullOrEmpty()) {
-            AppCall.inComingCall(this, rtcToken, groupId.toLong(), userManager.getClientId(), fromClientName, "", turnUser, turnPass)
+
+        if (!notifyType.isNullOrBlank() && notifyType == "request_call") {
+            val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
+            val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
+
+            val turnConfigJsonObject = JSONObject(turnConfigJson)
+            val stunConfigJsonObject = JSONObject(stunConfigJson)
+            val turnUrl = "turn:${turnConfigJsonObject.getString("server")}:${turnConfigJsonObject.getString("port")}"
+            val stunUrl = "stun:${stunConfigJsonObject.getString("server")}:${stunConfigJsonObject.getString("port")}"
+            val turnUser = turnConfigJsonObject.getString("user")
+            val turnPass = turnConfigJsonObject.getString("pwd")
+
+            AppCall.inComingCall(this, rtcToken, groupId!!.toLong(), userManager.getClientId(), fromClientName, "",
+                    turnUrl, turnUser, turnPass, stunUrl)
         }
     }
 

@@ -217,7 +217,7 @@ class GroupRepository @Inject constructor(
                 clientList = response.lstClientList.map {
                     People(
                         id = it.id,
-                        userName = it.username
+                        userName = it.displayName
                     )
                 },
 

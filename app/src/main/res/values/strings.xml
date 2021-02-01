@@ -5,6 +5,8 @@
     <string name="profile">Profile</string>
     <string name="btn_login">Login</string>
     <string name="btn_register">Register</string>
+    <string name="btn_forgot_password">Forgot password</string>
+    <string name="btn_send">Send</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="invalid_username">Username cannot be blank</string>
     <string name="invalid_pw">Password cannot be blank</string>
