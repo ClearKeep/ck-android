@@ -107,13 +107,14 @@ public class PeerConnectionClient {
     public final String turnUrl;
     public final String turnUser;
     public final String turnPassword;
+    public final String stunUrl;
 
     public PeerConnectionParameters(boolean tracing, int videoWidth, int videoHeight, int videoFps, String videoCodec,
                                     boolean videoCodecHwAcceleration, int audioStartBitrate, String audioCodec,
                                     boolean noAudioProcessing, boolean useOpenSLES, boolean disableBuiltInAEC,
                                     boolean disableBuiltInAGC, boolean disableBuiltInNS,
-                                    String turnUrl, String turnUser, String turnPassword
-    ) {
+                                    String turnUrl, String turnUser, String turnPassword,
+                                    String stunUrl) {
       this.tracing = tracing;
       this.videoWidth = videoWidth;
       this.videoHeight = videoHeight;
@@ -130,6 +131,7 @@ public class PeerConnectionClient {
       this.turnUrl = turnUrl;
       this.turnUser = turnUser;
       this.turnPassword = turnPassword;
+      this.stunUrl = stunUrl;
     }
   }
 
@@ -376,11 +378,11 @@ public class PeerConnectionClient {
 
   private PeerConnection createPeerConnection(BigInteger handleId, boolean type) {
     Log.d(TAG, "Create peer connection.");
-    PeerConnection.IceServer iceServer = new PeerConnection.IceServer("turn:global.turn.twilio.com:3478",
-            "8f87a00be37f0bfe19c0168ed0614966d70f2f8513ad66bda31a4a0a55fa89bd",
-            "leZgnMWJMJ8QRFapC5liDHUrxJjalYqbhxPq+/V2zz8="
+    PeerConnection.IceServer iceServer = new PeerConnection.IceServer(peerConnectionParameters.turnUrl,
+        peerConnectionParameters.turnUser,
+        peerConnectionParameters.turnPassword
     );
-    PeerConnection.IceServer iceServer2 = new PeerConnection.IceServer("stun:global.stun.twilio.com:3478");
+    PeerConnection.IceServer iceServer2 = new PeerConnection.IceServer(peerConnectionParameters.stunUrl);
     List<PeerConnection.IceServer> iceServers = new ArrayList<>();
     iceServers.add(iceServer);
     iceServers.add(iceServer2);

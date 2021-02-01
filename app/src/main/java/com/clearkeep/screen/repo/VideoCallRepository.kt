@@ -13,17 +13,16 @@ class VideoCallRepository @Inject constructor(
         // network calls
         private val videoCallBlockingStub: VideoCallGrpc.VideoCallBlockingStub,
 ) {
-    suspend fun requestVideoCall(groupId: Long) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun requestVideoCall(groupId: Long) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
         printlnCK("requestVideoCall: groupId = $groupId")
         try {
             val request = VideoCallOuterClass.VideoCallRequest.newBuilder()
                     .setGroupId(groupId)
                     .build()
-            val response = videoCallBlockingStub.videoCall(request)
-            return@withContext response.success
+            return@withContext videoCallBlockingStub.videoCall(request)
         } catch (e: Exception) {
             printlnCK("requestVideoCall: $e")
-            return@withContext false
+            return@withContext null
         }
     }
 }

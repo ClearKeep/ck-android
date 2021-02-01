@@ -2,7 +2,6 @@ package com.clearkeep.screen.videojanus
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.PictureInPictureParams
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -17,6 +16,7 @@ import android.util.Rational
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -41,17 +41,17 @@ import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
 
-enum class CallState {
-    CALLING,
-    RINGING,
-    ANSWERED,
-    BUSY,
-    ENDED,
-    CALL_NOT_READY
-}
-
 @AndroidEntryPoint
-class InCallActivity : Activity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
+class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
+    enum class CallState {
+        CALLING,
+        RINGING,
+        ANSWERED,
+        BUSY,
+        ENDED,
+        CALL_NOT_READY
+    }
+
     private var mIsMute = false
     private var mIsMuteVideo = false
     private var mIsSpeaker = false
@@ -168,6 +168,7 @@ class InCallActivity : Activity(), View.OnClickListener, JanusRTCInterface, Peer
         permissions: Array<String>,
         grantResults: IntArray
     ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSIONS &&
                 grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             onCallPermissionsAvailable()
@@ -198,12 +199,19 @@ class InCallActivity : Activity(), View.OnClickListener, JanusRTCInterface, Peer
         if (isFromComingCall) {
             val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
             val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
-            startVideo(groupId, TURN_SERVER_URL, turnUserName, turnPassword)
+            val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
+            val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
+            startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword)
         } else {
             GlobalScope.launch {
-                val success = videoCallRepository.requestVideoCall(groupId)
-                if (success) {
-                    startVideo(groupId, TURN_SERVER_URL, "", "")
+                val result = videoCallRepository.requestVideoCall(groupId)
+                if (result != null) {
+                    val turnConfig = result.turnServer
+                    val stunConfig = result.stunServer
+                    val turnUrl = "turn:${turnConfig.server}:${turnConfig.port}"
+                    val stunUrl = "stun:${stunConfig.server}:${stunConfig.port}"
+                    printlnCK("request call: stun = $stunUrl, turn = $turnUrl, username = ${turnConfig.user}, pwd = ${turnConfig.pwd}")
+                    startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd)
                 } else {
                     updateCallStatus(CallState.CALL_NOT_READY)
                 }
@@ -215,17 +223,17 @@ class InCallActivity : Activity(), View.OnClickListener, JanusRTCInterface, Peer
         }
     }
 
-    private fun startVideo(groupId: Long, turnUrl: String, turnUser: String, turnPass: String) {
+    private fun startVideo(groupId: Long, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
         val token = intent.getStringExtra(EXTRA_GROUP_TOKEN)
         mWebSocketChannel = WebSocketChannel(groupId.toInt(), ourClientId, token, JANUS_URI)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
         val peerConnectionParameters = PeerConnectionClient.PeerConnectionParameters(
-            false, 360, 480, 20, "VP8",
-            true, 0, "opus", false,
-            false, false, false, false,
-            turnUrl, turnUser, turnPass
+                false, 360, 480, 20, "VP8",
+                true, 0, "opus", false,
+                false, false, false, false,
+                turnUrl, turnUser, turnPass, stunUrl
         )
         peerConnectionClient = PeerConnectionClient()
         peerConnectionClient!!.createPeerConnectionFactory(this, peerConnectionParameters, this)

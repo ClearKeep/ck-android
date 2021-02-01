@@ -35,15 +35,17 @@ class AuthRepository @Inject constructor(
         printlnCK("register: $userName")
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
-                    .setUsername(userName)
+                    .setDisplayName(userName)
                     .setPassword(password)
                     .setEmail(email)
                     .build()
             val response = authBlockingStub.register(request)
-            if (response.success) {
+            printlnCK("register failed: ${response.baseResponse.success}")
+            if (response.baseResponse.success) {
                 return@withContext Resource.success(response)
             } else {
-                return@withContext Resource.error("Error occurred", null)
+                printlnCK("register failed: ${response.baseResponse.errors.message}")
+                return@withContext Resource.error(response.baseResponse.errors.message, null)
             }
         } catch (e: Exception) {
             printlnCK("register error: $e")
@@ -74,7 +76,7 @@ class AuthRepository @Inject constructor(
         printlnCK("login: $userName")
         try {
             val request = AuthOuterClass.AuthReq.newBuilder()
-                    .setUsername(userName)
+                    .setEmail(userName)
                     .setPassword(password)
                     .build()
             val response = authBlockingStub.login(request)
@@ -88,6 +90,24 @@ class AuthRepository @Inject constructor(
             if (e.message?.contains("1001") == true) {
                 return@withContext Resource.error("Please check username and pass again", null)
             }
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun recoverPassword(email: String) : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
+        printlnCK("recoverPassword: $email")
+        try {
+            val request = AuthOuterClass.FogotPassWord.newBuilder()
+                    .setEmail(email)
+                    .build()
+            val response = authBlockingStub.fogotPassword(request)
+            if (response.success) {
+                return@withContext Resource.success(response)
+            } else {
+                return@withContext Resource.error(response.errors.message, null)
+            }
+        } catch (e: Exception) {
+            printlnCK("recoverPassword error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
     }

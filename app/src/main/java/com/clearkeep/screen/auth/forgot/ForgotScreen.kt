@@ -1,4 +1,4 @@
-package com.clearkeep.screen.auth.register
+package com.clearkeep.screen.auth.forgot
 
 import android.content.Context
 import android.text.TextUtils
@@ -9,13 +9,13 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
@@ -23,18 +23,16 @@ import com.clearkeep.components.base.CKTextField
 import com.clearkeep.components.base.CKTopAppBar
 
 @Composable
-fun RegisterScreen(
-    onRegisterPressed: (userName: String, password: String, email: String) -> Unit,
-    onBackPress: () -> Unit
+fun ForgotScreen(
+        onForgotPressed: (email: String) -> Unit,
+        onBackPress: () -> Unit
 ) {
     val context = ContextAmbient.current
     val email = state { "" }
-    val userName = state { "" }
-    val password = state { "" }
     Column(modifier = Modifier.fillMaxSize()) {
         CKTopAppBar(
                 title = {
-                    Text(text = "Register")
+                    Text(text = "Forgot password")
                 },
                 navigationIcon = {
                     IconButton(
@@ -46,33 +44,23 @@ fun RegisterScreen(
                     }
                 },
         )
-        Column (modifier = Modifier.padding(horizontal = 20.dp).fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
+        Column (modifier = Modifier.padding(horizontal = 30.dp).fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(Modifier.preferredHeight(80.dp))
             CKTextField(
                     "Email",
                     "",
                     email
             )
-            Spacer(Modifier.preferredHeight(10.dp))
-            CKTextField(
-                    "Display name",
-                    "",
-                    userName
-            )
-            Spacer(Modifier.preferredHeight(10.dp))
-            CKTextField(
-                    "Password",
-                    "",
-                    password,
-                    keyboardType = KeyboardType.Password,
-            )
-            Spacer(Modifier.preferredHeight(20.dp))
+            Spacer(Modifier.preferredHeight(15.dp))
+            Text(text = "Please enter email here. Then, click on active link to change your password",
+                    style = MaterialTheme.typography.caption)
+            Spacer(Modifier.preferredHeight(30.dp))
             CKButton(
-                    stringResource(R.string.btn_register),
+                    stringResource(R.string.btn_send),
                     onClick = {
-                        if (validateInput(context, email.value, userName.value, password.value))
-                            onRegisterPressed(userName.value, password.value, email.value)
+                        if (validateInput(context, email.value))
+                            onForgotPressed(email.value)
                     },
                     modifier = Modifier.fillMaxWidth()
             )
@@ -80,17 +68,11 @@ fun RegisterScreen(
     }
 }
 
-private fun validateInput(context: Context, email: String, username: String, password: String): Boolean {
+private fun validateInput(context: Context, email: String): Boolean {
     var error: String? = null
     when {
         TextUtils.isEmpty(email) -> {
             error = "Email cannot be blank"
-        }
-        TextUtils.isEmpty(username) -> {
-            error = "Display name cannot be blank"
-        }
-        TextUtils.isEmpty(password) -> {
-            error = "Password cannot be blank"
         }
     }
     if (error != null) {

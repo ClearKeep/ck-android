@@ -26,8 +26,8 @@
         android:hardwareAccelerated="true"
         tools:replace="android:allowBackup"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true"
@@ -52,11 +52,17 @@
         </activity>
         <activity
             android:name=".screen.auth.login.LoginActivity"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/btn_login"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.auth.register.RegisterActivity"
             android:label="@string/btn_register"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+        <activity
+            android:name=".screen.auth.forgot.ForgotActivity"
+            android:label="@string/btn_forgot_password"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.chat.home.HomeActivity"

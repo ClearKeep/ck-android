@@ -27,6 +27,7 @@ import com.clearkeep.components.base.CKTextField
 fun LoginScreen(
     onLoginPressed: (userName: String, password: String) -> Unit,
     onRegisterPress: () -> Unit,
+    onForgotPasswordPress: () -> Unit,
     isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
@@ -88,6 +89,16 @@ fun LoginScreen(
                     CKTextButton(
                             stringResource(R.string.btn_register),
                             onClick = onRegisterPress,
+                            enabled = !isLoading
+                    )
+                }
+                Spacer(Modifier.preferredHeight(15.dp))
+                Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                ) {
+                    CKTextButton(
+                            stringResource(R.string.btn_forgot_password),
+                            onClick = onForgotPasswordPress,
                             enabled = !isLoading
                     )
                 }

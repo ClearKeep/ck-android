@@ -85,7 +85,7 @@ class PeopleRepository @Inject constructor(
                     .map { userInfoResponseOrBuilder ->
                         People(
                             userInfoResponseOrBuilder.id,
-                            userInfoResponseOrBuilder.username
+                            userInfoResponseOrBuilder.displayName
                         )
                     }
         } catch (e: Exception) {
@@ -109,7 +109,7 @@ class PeopleRepository @Inject constructor(
                 .map { userInfoResponseOrBuilder ->
                     People(
                         userInfoResponseOrBuilder.id,
-                        userInfoResponseOrBuilder.username
+                        userInfoResponseOrBuilder.displayName
                     )
                 }
         } catch (e: Exception) {
@@ -125,7 +125,7 @@ class PeopleRepository @Inject constructor(
             val response = userStub.getUserInfo(request)
             return@withContext People(
                 response.id,
-                response.username
+                response.displayName
             )
         } catch (e: Exception) {
             printlnCK("getFriendFromAPI: $e")
