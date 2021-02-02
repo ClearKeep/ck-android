@@ -25,7 +25,8 @@ import com.clearkeep.components.base.CKTopAppBar
 @Composable
 fun ForgotScreen(
         onForgotPressed: (email: String) -> Unit,
-        onBackPress: () -> Unit
+        onBackPress: () -> Unit,
+        isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
     val email = state { "" }
@@ -62,7 +63,8 @@ fun ForgotScreen(
                         if (validateInput(context, email.value))
                             onForgotPressed(email.value)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
             )
         }
     }

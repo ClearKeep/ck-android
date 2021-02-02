@@ -12,6 +12,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -69,15 +70,17 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
         }
+        val isLoadingState = registerViewModel.isLoading.observeAsState()
         Stack() {
             RegisterScreen(
                     onRegisterPressed = onRegisterPressed,
                     onBackPress = {
                         finish()
-                    }
+                    },
+                    isLoading = isLoadingState.value ?: false
             )
             ErrorDialog(showDialog, setShowDialog)
-            registerViewModel.isLoading.value?.let {
+            isLoadingState.value?.let {
                 if (it) {
                     Column(
                             modifier = Modifier.fillMaxSize(),

@@ -75,10 +75,12 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
+
+        val isLoadingState = loginViewModel.isLoading.observeAsState()
         Box() {
-            loginViewModel.isLoading.value.let {
-                printlnCK("Test, loading $it")
-                if (it != null && it) {
+            isLoadingState.value?.let { isLoading ->
+                printlnCK("Test, loading $isLoading")
+                if (isLoading) {
                     Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
@@ -103,7 +105,8 @@ class LoginActivity : AppCompatActivity() {
                             },
                             onForgotPasswordPress = {
                                 navigateToForgotActivity()
-                            }
+                            },
+                            isLoading = isLoadingState.value ?: false
                     )
                 }
             }

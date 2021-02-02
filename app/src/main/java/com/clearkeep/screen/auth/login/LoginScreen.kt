@@ -22,6 +22,7 @@ import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextField
+import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun LoginScreen(
@@ -80,7 +81,8 @@ fun LoginScreen(
                             if (validateInput(context, userName.value, password.value))
                                 onLoginPressed(userName.value, password.value)
                         },
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                        enabled = !isLoading
                 )
                 Spacer(Modifier.preferredHeight(30.dp))
                 Row(modifier = Modifier.fillMaxWidth(),

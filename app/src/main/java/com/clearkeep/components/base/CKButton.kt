@@ -11,16 +11,18 @@ import androidx.compose.ui.unit.dp
 fun CKButton(
         label: String,
         onClick: () -> Unit,
-        modifier: Modifier = Modifier.padding(0.dp)
+        modifier: Modifier = Modifier.padding(0.dp),
+        enabled: Boolean = true,
 ) {
     OutlinedButton(
-        onClick = {
-            onClick()
-        },
-        modifier = modifier
+            onClick = {
+                onClick()
+            },
+            enabled = enabled,
+            modifier = modifier
     ) {
         Text(
-            text = label,
+                text = label,
         )
     }
 }
