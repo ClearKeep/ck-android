@@ -8,14 +8,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.lightThemeColors
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,11 +60,14 @@ class ForgotActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val res = forgotViewModel.recoverPassword(email)
                 if (res.status == Status.SUCCESS) {
+                    finish()
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
             }
         }
+        val isLoadingState = forgotViewModel.isLoading.observeAsState()
+
         Box() {
             Column(
                     modifier = Modifier.fillMaxSize(),
@@ -73,8 +79,22 @@ class ForgotActivity : AppCompatActivity() {
                             onForgotPressed = onForgotPressed,
                             onBackPress = {
                                 finish()
-                            }
+                            },
+                            isLoading = isLoadingState.value ?: false
                     )
+                }
+            }
+            isLoadingState.value?.let {
+                if (it) {
+                    Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CKCircularProgressIndicator(
+                                color = Color.Blue
+                        )
+                    }
                 }
             }
             ErrorDialog(showDialog, setShowDialog)

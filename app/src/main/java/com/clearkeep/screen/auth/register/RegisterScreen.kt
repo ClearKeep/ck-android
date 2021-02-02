@@ -25,7 +25,8 @@ import com.clearkeep.components.base.CKTopAppBar
 @Composable
 fun RegisterScreen(
     onRegisterPressed: (userName: String, password: String, email: String) -> Unit,
-    onBackPress: () -> Unit
+    onBackPress: () -> Unit,
+    isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
     val email = state { "" }
@@ -74,7 +75,8 @@ fun RegisterScreen(
                         if (validateInput(context, email.value, userName.value, password.value))
                             onRegisterPressed(userName.value, password.value, email.value)
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
             )
         }
     }

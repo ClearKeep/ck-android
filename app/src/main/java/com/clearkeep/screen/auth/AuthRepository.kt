@@ -80,11 +80,16 @@ class AuthRepository @Inject constructor(
                     .setPassword(password)
                     .build()
             val response = authBlockingStub.login(request)
-            userManager.saveAccessKey(response.accessToken)
-            userManager.saveHashKey(response.hashKey)
-            userManager.saveUserName(userName)
-
-            return@withContext Resource.success(response)
+            if (response.baseResponse.success) {
+                printlnCK("login successfully")
+                userManager.saveAccessKey(response.accessToken)
+                userManager.saveHashKey(response.hashKey)
+                userManager.saveUserName(userName)
+                return@withContext Resource.success(response)
+            } else {
+                printlnCK("login failed: ${response.baseResponse.errors.message}")
+                return@withContext Resource.error(response.baseResponse.errors.message, null)
+            }
         } catch (e: Exception) {
             printlnCK("login error: $e")
             if (e.message?.contains("1001") == true) {

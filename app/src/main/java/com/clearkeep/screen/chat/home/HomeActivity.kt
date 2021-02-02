@@ -179,7 +179,9 @@ class HomeActivity : AppCompatActivity() {
                         composable(Screen.Profile.route) {
                             ProfileScreen(
                                 profileViewModel,
-                                onLogout = {}
+                                onLogout = {
+                                    logout()
+                                }
                             )
                         }
                     }
@@ -188,6 +190,10 @@ class HomeActivity : AppCompatActivity() {
                 Spacer(modifier = Modifier.height(BottomNavigationHeight))
             }
         }
+    }
+
+    private fun logout() {
+        //
     }
 
     private fun navigateToRoomScreen(group: ChatGroup) {

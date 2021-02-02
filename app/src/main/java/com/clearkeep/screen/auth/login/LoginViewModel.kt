@@ -4,11 +4,10 @@ import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.screen.auth.AuthRepository
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
 import javax.inject.Inject
 
 class LoginViewModel @Inject constructor(
-    private val loginRepository: AuthRepository
+    private val authRepo: AuthRepository
 ): ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
@@ -17,7 +16,9 @@ class LoginViewModel @Inject constructor(
 
     suspend fun login(username: String, password: String): Resource<AuthOuterClass.AuthRes> {
         _isLoading.value = true
-        val res = loginRepository.login(username, password)
+        val res = authRepo.login(username, password)
+        /*delay(3000)
+        val res = Resource.error("error", null)*/
         _isLoading.value = false
         return res
     }
