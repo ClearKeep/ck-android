@@ -387,6 +387,17 @@ public class PeerConnectionClient {
     iceServers.add(iceServer);
     iceServers.add(iceServer2);
     PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
+
+    /*PeerConnection.IceServer iceServer = new PeerConnection.IceServer("turn:global.turn.twilio.com:3478",
+        "e4817d1baf300728f198f59b5ca5e6972b780735b1816367572419d032c09792",
+        "7pg8yvutvmHCHWo9DfVmlLlTxmwSn1wSS29+/2dHq0c="
+    );
+    PeerConnection.IceServer iceServer2 = new PeerConnection.IceServer("stun:global.stun.twilio.com:3478");
+    List<PeerConnection.IceServer> iceServers = new ArrayList<>();
+    iceServers.add(iceServer);
+    iceServers.add(iceServer2);
+    PeerConnection.RTCConfiguration rtcConfig = new PeerConnection.RTCConfiguration(iceServers);*/
+
     //rtcConfig.iceTransportsType = PeerConnection.IceTransportsType.RELAY;
     rtcConfig.iceTransportsType = PeerConnection.IceTransportsType.ALL;
 

@@ -14,9 +14,9 @@ class LoginViewModel @Inject constructor(
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    suspend fun login(username: String, password: String): Resource<AuthOuterClass.AuthRes> {
+    suspend fun login(email: String, password: String): Resource<AuthOuterClass.AuthRes> {
         _isLoading.value = true
-        val res = authRepo.login(username, password)
+        val res = authRepo.login(email, password)
         /*delay(3000)
         val res = Resource.error("error", null)*/
         _isLoading.value = false

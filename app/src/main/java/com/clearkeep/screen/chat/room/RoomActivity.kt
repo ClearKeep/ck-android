@@ -103,7 +103,7 @@ class RoomActivity : AppCompatActivity() {
                 client.id != roomViewModel.getClientId()
             }?.userName ?: ""
         }
-        AppCall.call(this, group.rtcToken, group.id, roomViewModel.getClientId(), roomName, "", false)
+        AppCall.call(this, group.rtcToken, group.id.toString(), roomViewModel.getClientId(), roomName, "", false)
     }
 
     companion object {

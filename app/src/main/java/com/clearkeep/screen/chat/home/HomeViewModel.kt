@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clearkeep.db.ClearKeepDatabase
+import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.screen.repo.ProfileRepository
 import com.clearkeep.screen.repo.ChatRepository
 import com.clearkeep.screen.repo.SignalKeyRepository
@@ -18,8 +20,15 @@ class HomeViewModel @Inject constructor(
         private val signalKeyRepository: SignalKeyRepository,
         private val profileRepository: ProfileRepository,
         private val chatRepository: ChatRepository,
-        private val storage: Storage
+        private val storage: Storage,
+        private val clearKeepDatabase: ClearKeepDatabase,
+        private val signalKeyDatabase: SignalKeyDatabase
 ): ViewModel() {
+    private val _isLogOutProcessing = MutableLiveData<Boolean>()
+
+    val isLogOutProcessing: LiveData<Boolean>
+        get() = _isLogOutProcessing
+
     private val _loginState = MutableLiveData<PrepareViewState>()
 
     val loginState: LiveData<PrepareViewState>
@@ -48,6 +57,18 @@ class HomeViewModel @Inject constructor(
             _loginState.value = PrepareSuccess
 
             pushFireBaseTokenToServer()
+        }
+    }
+
+    fun logOut() {
+        viewModelScope.launch {
+            _isLogOutProcessing.value = true
+
+            storage.clear()
+            clearKeepDatabase.clearAllTables()
+            signalKeyDatabase.clearAllTables()
+
+            _isLogOutProcessing.value = false
         }
     }
 

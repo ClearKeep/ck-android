@@ -32,12 +32,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             val turnConfigJsonObject = JSONObject(turnConfigJson)
             val stunConfigJsonObject = JSONObject(stunConfigJson)
-            val turnUrl = "turn:${turnConfigJsonObject.getString("server")}:${turnConfigJsonObject.getString("port")}"
-            val stunUrl = "stun:${stunConfigJsonObject.getString("server")}:${stunConfigJsonObject.getString("port")}"
+            /*val turnUrl = "turn:${turnConfigJsonObject.getString("server")}:${turnConfigJsonObject.getString("port")}"
+            val stunUrl = "stun:${stunConfigJsonObject.getString("server")}:${stunConfigJsonObject.getString("port")}"*/
+            val turnUrl = turnConfigJsonObject.getString("server")
+            val stunUrl = stunConfigJsonObject.getString("server")
             val turnUser = turnConfigJsonObject.getString("user")
             val turnPass = turnConfigJsonObject.getString("pwd")
 
-            AppCall.inComingCall(this, rtcToken, groupId!!.toLong(), userManager.getClientId(), fromClientName, "",
+            AppCall.inComingCall(this, rtcToken, groupId!!, userManager.getClientId(), fromClientName, "",
                     turnUrl, turnUser, turnPass, stunUrl)
         }
     }

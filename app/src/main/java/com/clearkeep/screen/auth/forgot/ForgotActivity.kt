@@ -55,12 +55,13 @@ class ForgotActivity : AppCompatActivity() {
     @Composable
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+        val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
         val onForgotPressed: (String) -> Unit = { email ->
             lifecycleScope.launch {
                 val res = forgotViewModel.recoverPassword(email)
                 if (res.status == Status.SUCCESS) {
-                    finish()
+                    setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
@@ -97,6 +98,7 @@ class ForgotActivity : AppCompatActivity() {
                     }
                 }
             }
+            ReminderDialog(showReminder)
             ErrorDialog(showDialog, setShowDialog)
         }
     }
@@ -116,6 +118,29 @@ class ForgotActivity : AppCompatActivity() {
                                 onClick = {
                                     // Change the state to close the dialog
                                     setShowDialog("")
+                                },
+                        ) {
+                            Text("OK")
+                        }
+                    },
+            )
+        }
+    }
+
+    @Composable
+    fun ReminderDialog(showReminder: Boolean) {
+        if (showReminder) {
+            CKAlertDialog(
+                    title = {
+                        Text("Success")
+                    },
+                    text = {
+                        Text("Please check email to change new password")
+                    },
+                    dismissButton = {
+                        Button(
+                                onClick = {
+                                    finish()
                                 },
                         ) {
                             Text("OK")

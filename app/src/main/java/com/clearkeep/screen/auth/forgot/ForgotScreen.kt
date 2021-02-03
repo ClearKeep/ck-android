@@ -58,7 +58,7 @@ fun ForgotScreen(
                     style = MaterialTheme.typography.caption)
             Spacer(Modifier.preferredHeight(30.dp))
             CKButton(
-                    stringResource(R.string.btn_send),
+                    stringResource(R.string.btn_reset_password),
                     onClick = {
                         if (validateInput(context, email.value))
                             onForgotPressed(email.value)

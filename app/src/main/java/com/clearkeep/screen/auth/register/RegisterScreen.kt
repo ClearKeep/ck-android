@@ -53,7 +53,8 @@ fun RegisterScreen(
             CKTextField(
                     "Email",
                     "",
-                    email
+                    email,
+                    keyboardType = KeyboardType.Email,
             )
             Spacer(Modifier.preferredHeight(10.dp))
             CKTextField(

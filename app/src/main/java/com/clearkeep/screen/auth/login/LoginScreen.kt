@@ -22,17 +22,16 @@ import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextField
-import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun LoginScreen(
-    onLoginPressed: (userName: String, password: String) -> Unit,
-    onRegisterPress: () -> Unit,
-    onForgotPasswordPress: () -> Unit,
-    isLoading: Boolean = false
+        onLoginPressed: (email: String, password: String) -> Unit,
+        onRegisterPress: () -> Unit,
+        onForgotPasswordPress: () -> Unit,
+        isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
-    val userName = state { "" }
+    val email = state { "" }
     val password = state { "" }
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize(),
@@ -62,9 +61,10 @@ fun LoginScreen(
 
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextField(
-                        "Username",
+                        "Email",
                         "",
-                        userName
+                        email,
+                        keyboardType = KeyboardType.Email,
                 )
                 Spacer(Modifier.preferredHeight(10.dp))
                 CKTextField(
@@ -78,8 +78,8 @@ fun LoginScreen(
                 CKButton(
                         stringResource(R.string.btn_login),
                         onClick = {
-                            if (validateInput(context, userName.value, password.value))
-                                onLoginPressed(userName.value, password.value)
+                            if (validateInput(context, email.value, password.value))
+                                onLoginPressed(email.value, password.value)
                         },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
                         enabled = !isLoading
@@ -112,9 +112,9 @@ fun LoginScreen(
 private fun validateInput(context: Context, username: String, password: String): Boolean {
     var error: String? = null
     if (TextUtils.isEmpty(username)) {
-        error = "Username cannot be blank"
+        error = "Email can not be blank"
     } else if (TextUtils.isEmpty(password)) {
-        error = "Password cannot be blank"
+        error = "Password can not be blank"
     }
     if (error != null) {
         Toast.makeText(context, error, Toast.LENGTH_LONG).show()
