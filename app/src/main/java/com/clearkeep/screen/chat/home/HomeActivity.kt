@@ -17,9 +17,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
@@ -42,6 +44,7 @@ import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
+import com.clearkeep.utilities.storage.Storage
 import javax.inject.Inject
 
 val items = listOf(
@@ -127,6 +130,7 @@ class HomeActivity : AppCompatActivity() {
     @Composable
     private fun MainComposable() {
         val navController = rememberNavController()
+        val isLogOutProcessingState = homeViewModel.isLogOutProcessing.observeAsState()
         Scaffold(
                 bottomBar = {
                     BottomNavigation {
@@ -150,50 +154,69 @@ class HomeActivity : AppCompatActivity() {
                     }
                 }
         ) {
-            Column {
-                Row(modifier = Modifier.weight(1.0f, true)) {
-                    NavHost(navController, startDestination = Screen.Chat.route) {
-                        composable(Screen.Chat.route) {
-                            ChatHistoryScreen(
-                                chatViewModel,
-                                onRoomSelected = { room ->
-                                    navigateToRoomScreen(room)
-                                },
-                                onCreateGroup = {
-                                    navigateToCreateGroupScreen()
-                                }
-                            )
+            Box {
+                Column {
+                    Row(modifier = Modifier.weight(1.0f, true)) {
+                        NavHost(navController, startDestination = Screen.Chat.route) {
+                            composable(Screen.Chat.route) {
+                                ChatHistoryScreen(
+                                        chatViewModel,
+                                        onRoomSelected = { room ->
+                                            navigateToRoomScreen(room)
+                                        },
+                                        onCreateGroup = {
+                                            navigateToCreateGroupScreen()
+                                        }
+                                )
+                            }
+                            composable(Screen.People.route) {
+                                peopleViewModel.updateContactList()
+                                PeopleScreen(
+                                        peopleViewModel,
+                                        onFriendSelected = { friend ->
+                                            navigateToRoomScreen(friend)
+                                        },
+                                        onNavigateToSearch = {
+                                            navigateToSearchScreen()
+                                        }
+                                )
+                            }
+                            composable(Screen.Profile.route) {
+                                ProfileScreen(
+                                        profileViewModel,
+                                        onLogout = {
+                                            logout()
+                                        }
+                                )
+                            }
                         }
-                        composable(Screen.People.route) {
-                            peopleViewModel.updateContactList()
-                            PeopleScreen(
-                                peopleViewModel,
-                                onFriendSelected = { friend ->
-                                    navigateToRoomScreen(friend)
-                                },
-                                onNavigateToSearch = {
-                                    navigateToSearchScreen()
-                                }
-                            )
-                        }
-                        composable(Screen.Profile.route) {
-                            ProfileScreen(
-                                profileViewModel,
-                                onLogout = {
-                                    logout()
-                                }
-                            )
+                    }
+                    // TODO: work around issue of scaffold
+                    Spacer(modifier = Modifier.height(BottomNavigationHeight))
+                }
+                isLogOutProcessingState.value?.let { isProcessing ->
+                    if (isProcessing) {
+                        Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                CircularProgressIndicator(color = Color.Blue)
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(text = "Log out...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                            }
                         }
                     }
                 }
-                // TODO: work around issue of scaffold
-                Spacer(modifier = Modifier.height(BottomNavigationHeight))
             }
         }
     }
 
     private fun logout() {
-        //
+        homeViewModel.logOut()
     }
 
     private fun navigateToRoomScreen(group: ChatGroup) {

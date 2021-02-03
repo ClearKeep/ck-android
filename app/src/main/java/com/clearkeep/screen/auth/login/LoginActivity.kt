@@ -64,9 +64,9 @@ class LoginActivity : AppCompatActivity() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
 
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
-        val onLoginPressed: (String, String) -> Unit = { userName, password ->
+        val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
-                val res = loginViewModel.login(userName, password)
+                val res = loginViewModel.login(email, password)
                 if (res.status == Status.SUCCESS) {
                     navigateToHomeActivity()
                 } else if (res.status == Status.ERROR) {

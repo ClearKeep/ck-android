@@ -58,12 +58,13 @@ class RegisterActivity : AppCompatActivity() {
     @Composable
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+        val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
         val onRegisterPressed: (String, String, String) -> Unit = { userName, password, email ->
             lifecycleScope.launch {
                 val res = registerViewModel.register(userName, password, email)
                 if (res.status == Status.SUCCESS) {
-                    finish()
+                    setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                     /*showLoginError(res.message ?: "unknown")*/
@@ -80,6 +81,7 @@ class RegisterActivity : AppCompatActivity() {
                     isLoading = isLoadingState.value ?: false
             )
             ErrorDialog(showDialog, setShowDialog)
+            ReminderDialog(showReminder)
             isLoadingState.value?.let {
                 if (it) {
                     Column(
@@ -111,6 +113,29 @@ class RegisterActivity : AppCompatActivity() {
                                 onClick = {
                                     // Change the state to close the dialog
                                     setShowDialog("")
+                                },
+                        ) {
+                            Text("OK")
+                        }
+                    },
+            )
+        }
+    }
+
+    @Composable
+    fun ReminderDialog(showReminder: Boolean) {
+        if (showReminder) {
+            CKAlertDialog(
+                    title = {
+                        Text("Success")
+                    },
+                    text = {
+                        Text("Please check email and active registered account")
+                    },
+                    dismissButton = {
+                        Button(
+                                onClick = {
+                                    finish()
                                 },
                         ) {
                             Text("OK")

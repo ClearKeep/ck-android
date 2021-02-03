@@ -7,4 +7,5 @@ interface Storage {
     fun getInt(key: String): Int
     fun setBoolean(key: String, value: Boolean)
     fun getBoolean(key: String): Boolean
+    fun clear()
 }

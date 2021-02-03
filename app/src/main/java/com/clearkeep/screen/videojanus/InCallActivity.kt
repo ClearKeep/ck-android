@@ -32,9 +32,7 @@ import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_in_call.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.*
 import java.math.BigInteger
@@ -51,6 +49,8 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         ENDED,
         CALL_NOT_READY
     }
+
+    val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var mIsMute = false
     private var mIsMuteVideo = false
@@ -195,7 +195,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
 
     private fun onCallPermissionsAvailable() {
         val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
-        val groupId = intent.getLongExtra(EXTRA_GROUP_ID, 0)
+        val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         if (isFromComingCall) {
             val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
             val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -203,30 +203,34 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
             val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
             startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword)
         } else {
-            GlobalScope.launch {
+            callScope.launch {
                 val result = videoCallRepository.requestVideoCall(groupId)
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
-                    val turnUrl = "turn:${turnConfig.server}:${turnConfig.port}"
-                    val stunUrl = "stun:${stunConfig.server}:${stunConfig.port}"
-                    printlnCK("request call: stun = $stunUrl, turn = $turnUrl, username = ${turnConfig.user}, pwd = ${turnConfig.pwd}")
+                    val turnUrl = turnConfig.server
+                    val stunUrl = stunConfig.server
                     startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd)
                 } else {
-                    updateCallStatus(CallState.CALL_NOT_READY)
+                    runOnUiThread {
+                        updateCallStatus(CallState.CALL_NOT_READY)
+                    }
                 }
                 delay(CALL_WAIT_TIME_OUT)
                 if (remoteRenders.isEmpty()) {
-                    updateCallStatus(CallState.CALL_NOT_READY)
+                    runOnUiThread {
+                        updateCallStatus(CallState.CALL_NOT_READY)
+                    }
                 }
             }
         }
     }
 
-    private fun startVideo(groupId: Long, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String) {
+    private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
         val token = intent.getStringExtra(EXTRA_GROUP_TOKEN)
-        mWebSocketChannel = WebSocketChannel(groupId.toInt(), ourClientId, token, JANUS_URI)
+        printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass, group = $groupId, token = $token")
+        mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
         val peerConnectionParameters = PeerConnectionClient.PeerConnectionParameters(
@@ -270,6 +274,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
                 finishAndRemoveFromTask()
             }
             CallState.ANSWERED -> {
+
                 binding.tvCallState.text = getString(R.string.text_started)
                 displayCountUpClockOfConversation()
                 showOrHideAvatar(false)
@@ -400,6 +405,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
     }
 
     private fun hangup() {
+        callScope.cancel()
         mWebSocketChannel?.close()
         peerConnectionClient?.close()
     }
@@ -529,13 +535,12 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
     private fun updateRenders() {
         binding.remoteRoot.removeAllViews()
         val renders = remoteRenders.values
-        printlnCK("render remote: length = ${renders.size}")
+        printlnCK("updateRenders: length = ${renders.size}")
         if (renders.isNotEmpty()) {
             val params = RelativeLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
             )
-            printlnCK("render remote")
             binding.remoteRoot.addView(renders.first(), params)
         }
 

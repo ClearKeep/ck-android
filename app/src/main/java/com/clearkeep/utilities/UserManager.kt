@@ -1,13 +1,21 @@
 package com.clearkeep.utilities
 
+import android.annotation.SuppressLint
+import android.app.backup.BackupManager
+import android.content.Context
+import android.content.SharedPreferences
+import android.provider.Settings
 import com.clearkeep.utilities.storage.Storage
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+
 
 private const val USER_NAME = "user_name"
 private const val ACCESS_TOKEN = "access_token"
 private const val HASH_KEY = "hash_key"
 private const val CLIENT_ID = "client_id"
+private const val DEVICE_ID = "device_id"
 
 @Singleton
 class UserManager @Inject constructor(
@@ -45,5 +53,14 @@ class UserManager @Inject constructor(
 
     fun getClientId() : String {
         return storage.getString(CLIENT_ID)
+    }
+
+    fun getUniqueDeviceID(): String {
+        var deviceId = storage.getString(DEVICE_ID)
+        if (deviceId.isNullOrEmpty()) {
+            deviceId = UUID.randomUUID().toString()
+            storage.setString(DEVICE_ID, deviceId)
+        }
+        return deviceId
     }
 }

@@ -42,10 +42,11 @@ class ProfileRepository @Inject constructor(
     }
 
     suspend fun registerToken(token: String) : Boolean  = withContext(Dispatchers.IO) {
-        printlnCK("registerToken: token = $token")
+        val deviceId = userManager.getUniqueDeviceID()
+        printlnCK("registerToken: token = $token, deviceId = $deviceId")
         try {
             val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
-                    .setDeviceId("111")
+                    .setDeviceId(deviceId)
                     .setDeviceType("android")
                     .setToken(token)
                     .build()
