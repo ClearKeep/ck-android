@@ -255,7 +255,7 @@ class GroupRepository @Inject constructor(
             }
         } catch (e: Exception) {
             printlnCK("convertMessageResponseFromGroup error : $e")
-            "error"
+            ""
         }
 
         val newMessage = Message(
