@@ -1,16 +1,21 @@
 package com.clearkeep.screen.chat.home.profile
 
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Login
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.clearkeep.R
-import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
@@ -19,7 +24,10 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     onLogout: () -> Unit,
 ) {
+    val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
+
     val profile = profileViewModel.profile.observeAsState()
+
     Column(modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -42,10 +50,53 @@ fun ProfileScreen(
             }
         }
         Spacer(Modifier.preferredHeight(40.dp))
-        CKButton(
-                stringResource(R.string.logout),
-                onClick = onLogout,
-                modifier = Modifier.fillMaxWidth(),
+        Row(
+                modifier = Modifier.padding(horizontal = 20.dp).clickable(onClick = {
+                    setShowReminderDialog(true)
+                }),
+                horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(Icons.Outlined.Login)
+            Spacer(modifier = Modifier.width(15.dp))
+            Text("Logout")
+        }
+        LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
+    }
+}
+
+@Composable
+fun LogoutConfirmDialog(
+        showReminder: Boolean,
+        setShowDialog: (Boolean) -> Unit,
+        onLogout: () -> Unit,
+) {
+    if (showReminder) {
+        CKAlertDialog(
+                title = {
+                    Text("Logout")
+                },
+                text = {
+                    Text("Do you want to log out?")
+                },
+                dismissButton = {
+                    Button(
+                            onClick = {
+                                setShowDialog(false)
+                            },
+                    ) {
+                        Text("Cancel")
+                    }
+                },
+                confirmButton = {
+                    Button(
+                            onClick = {
+                                setShowDialog(false)
+                                onLogout()
+                            },
+                    ) {
+                        Text("Ok")
+                    }
+                },
         )
     }
 }

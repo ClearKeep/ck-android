@@ -66,12 +66,11 @@ class LoginActivity : AppCompatActivity() {
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
-                val res = loginViewModel.login(email, password)
+                val res = loginViewModel.login(this@LoginActivity, email, password)
                 if (res.status == Status.SUCCESS) {
                     navigateToHomeActivity()
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
-                    /*showLoginError(res.message ?: "unknown")*/
                 }
             }
         }

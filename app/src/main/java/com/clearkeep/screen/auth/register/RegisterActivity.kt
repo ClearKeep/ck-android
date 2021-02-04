@@ -62,7 +62,7 @@ class RegisterActivity : AppCompatActivity() {
 
         val onRegisterPressed: (String, String, String) -> Unit = { userName, password, email ->
             lifecycleScope.launch {
-                val res = registerViewModel.register(userName, password, email)
+                val res = registerViewModel.register(this@RegisterActivity, userName, password, email)
                 if (res.status == Status.SUCCESS) {
                     setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {

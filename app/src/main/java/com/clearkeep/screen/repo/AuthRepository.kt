@@ -1,11 +1,16 @@
-package com.clearkeep.screen.auth
+package com.clearkeep.screen.repo
 
 import auth.AuthGrpc
 import auth.AuthOuterClass
+import com.clearkeep.di.CallCredentialsImpl
+import com.clearkeep.utilities.BASE_URL
+import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -84,6 +89,7 @@ class AuthRepository @Inject constructor(
                 printlnCK("login successfully")
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
+                userManager.saveRefreshToken(response.refreshToken)
                 userManager.saveUserName(userName)
                 return@withContext Resource.success(response)
             } else {
@@ -92,9 +98,6 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             printlnCK("login error: $e")
-            if (e.message?.contains("1001") == true) {
-                return@withContext Resource.error("Please check username and pass again", null)
-            }
             return@withContext Resource.error(e.toString(), null)
         }
     }
@@ -113,6 +116,35 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             printlnCK("recoverPassword error: $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun logoutFromAPI() : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
+        printlnCK("logoutFromAPI")
+        try {
+            val request = AuthOuterClass.LogoutReq.newBuilder()
+                    .setDeviceId(userManager.getUniqueDeviceID())
+                    .setRefreshToken(userManager.getRefreshToken())
+                    .build()
+            val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+                    .usePlaintext()
+                    .executor(Dispatchers.Default.asExecutor())
+                    .build()
+
+            val  authBlockingWithHeader = AuthGrpc.newBlockingStub(channel)
+                    .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
+            val response = authBlockingWithHeader
+                    .logout(request)
+            if (response.success) {
+                printlnCK("logoutFromAPI successed")
+                return@withContext Resource.success(response)
+            } else {
+                printlnCK("logoutFromAPI failed: ${response.errors.message}")
+                return@withContext Resource.error(response.errors.message, null)
+            }
+        } catch (e: Exception) {
+            printlnCK("logoutFromAPI error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
     }

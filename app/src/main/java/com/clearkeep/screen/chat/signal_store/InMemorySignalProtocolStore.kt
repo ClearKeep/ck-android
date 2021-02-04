@@ -22,7 +22,7 @@ import org.whispersystems.libsignal.state.SignedPreKeyRecord
 class InMemorySignalProtocolStore(
         preKeyDAO: SignalPreKeyDAO,
         signalIdentityKeyDAO: SignalIdentityKeyDAO,
-) : SignalProtocolStore {
+) : SignalProtocolStore, Closeable {
     private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO)
 
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
@@ -113,5 +113,12 @@ class InMemorySignalProtocolStore(
 
     override fun removeSignedPreKey(signedPreKeyId: Int) {
         signedPreKeyStore.removeSignedPreKey(signedPreKeyId)
+    }
+
+    override fun clear() {
+        preKeyStore.clear()
+        sessionStore.clear()
+        signedPreKeyStore.clear()
+        identityKeyStore.clear()
     }
 }

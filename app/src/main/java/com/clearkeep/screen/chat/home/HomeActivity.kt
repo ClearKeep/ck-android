@@ -1,10 +1,11 @@
 package com.clearkeep.screen.chat.home
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,27 +26,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.compose.KEY_ROUTE
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.clearkeep.R
-import dagger.hilt.android.AndroidEntryPoint
 import androidx.navigation.compose.*
+import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.screen.auth.login.LoginActivity
+import com.clearkeep.screen.chat.contact_search.SearchUserActivity
+import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.home.chat_history.ChatHistoryScreen
 import com.clearkeep.screen.chat.home.chat_history.ChatViewModel
 import com.clearkeep.screen.chat.home.contact_list.PeopleScreen
 import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
-import com.clearkeep.screen.chat.room.RoomActivity
-import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
-import com.clearkeep.screen.chat.contact_search.SearchUserActivity
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.screen.chat.room.RoomActivity
+import com.clearkeep.utilities.printlnCK
+import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.system.exitProcess
+
 
 val items = listOf(
         Screen.Chat,
@@ -97,13 +100,37 @@ class HomeActivity : AppCompatActivity() {
         }
 
         homeViewModel.prepareChat()
+        subscriberLogout()
+        updateFirebaseToken()
+    }
+
+    private fun updateFirebaseToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("Test", "Fetching FCM registration token failed", task.exception)
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            if (!token.isNullOrEmpty()) {
+                homeViewModel.updateTokenFirebase(token)
+            }
+        }
+    }
+
+    private fun subscriberLogout() {
+        homeViewModel.isLogOutCompleted.observe(this, { completed ->
+            if (completed) {
+                restartActivityToRoot()
+            }
+        })
     }
 
     @Composable
     private fun LoadingComposable() {
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
         ) {
             CKCircularProgressIndicator()
         }
@@ -112,17 +139,17 @@ class HomeActivity : AppCompatActivity() {
     @Composable
     private fun ErrorComposable() {
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
         ) {
             Text("Please try again")
             Spacer(Modifier.preferredHeight(20.dp))
             CKButton(
-                "Try again",
-                onClick = {
-                    homeViewModel.prepareChat()
-                },
-                modifier = Modifier.padding(vertical = 5.dp)
+                    "Try again",
+                    onClick = {
+                        homeViewModel.prepareChat()
+                    },
+                    modifier = Modifier.padding(vertical = 5.dp)
             )
         }
     }
@@ -130,7 +157,6 @@ class HomeActivity : AppCompatActivity() {
     @Composable
     private fun MainComposable() {
         val navController = rememberNavController()
-        val isLogOutProcessingState = homeViewModel.isLogOutProcessing.observeAsState()
         Scaffold(
                 bottomBar = {
                     BottomNavigation {
@@ -194,21 +220,26 @@ class HomeActivity : AppCompatActivity() {
                     // TODO: work around issue of scaffold
                     Spacer(modifier = Modifier.height(BottomNavigationHeight))
                 }
-                isLogOutProcessingState.value?.let { isProcessing ->
-                    if (isProcessing) {
-                        Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                CircularProgressIndicator(color = Color.Blue)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text(text = "Log out...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
-                            }
-                        }
+                LogoutProgress()
+            }
+        }
+    }
+
+    @Composable
+    private fun LogoutProgress() {
+        homeViewModel.isLogOutProcessing.observeAsState().value?.let { isProcessing ->
+            if (isProcessing) {
+                Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        CircularProgressIndicator(color = Color.Blue)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(text = "Log out...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
                     }
                 }
             }
@@ -239,6 +270,14 @@ class HomeActivity : AppCompatActivity() {
     private fun navigateToSearchScreen() {
         val intent = Intent(this, SearchUserActivity::class.java)
         startActivity(intent)
+    }
+
+    private fun restartActivityToRoot() {
+        printlnCK("restartActivityToRoot")
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        exitProcess(2)
     }
 }
 
