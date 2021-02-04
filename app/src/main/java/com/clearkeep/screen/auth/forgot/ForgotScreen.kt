@@ -74,7 +74,7 @@ private fun validateInput(context: Context, email: String): Boolean {
     var error: String? = null
     when {
         TextUtils.isEmpty(email) -> {
-            error = "Email cannot be blank"
+            error = "Email must not be blank "
         }
     }
     if (error != null) {
