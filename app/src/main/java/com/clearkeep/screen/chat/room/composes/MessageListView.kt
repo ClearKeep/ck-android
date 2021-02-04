@@ -38,7 +38,9 @@ fun MessageListView(
                     ),
                     horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start,
             ) {
-                if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
+                if (!item.message.isNullOrEmpty()) {
+                    if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
+                }
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
