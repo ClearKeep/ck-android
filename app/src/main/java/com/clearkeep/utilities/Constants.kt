@@ -3,8 +3,8 @@ package com.clearkeep.utilities
 const val FIREBASE_TOKEN = "ck_firebase_token"
 
 //const val BASE_URL = "172.16.6.34"
+//const val BASE_URL = "172.16.6.232"
 //const val BASE_URL = "10.0.255.71"
-//const val BASE_URL = "54.235.68.160"
 const val BASE_URL = "54.235.68.160"
 const val PORT = 5000
 

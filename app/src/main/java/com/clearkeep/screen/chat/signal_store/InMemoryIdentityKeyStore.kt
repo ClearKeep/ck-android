@@ -17,7 +17,7 @@ import java.util.HashMap
 
 class InMemoryIdentityKeyStore(
         private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-) : IdentityKeyStore {
+) : IdentityKeyStore, Closeable {
     private val trustedKeys: MutableMap<SignalProtocolAddress, IdentityKey> = HashMap()
 
     private var identityKey: SignalIdentityKey? = null
@@ -67,5 +67,9 @@ class InMemoryIdentityKeyStore(
             signalIdentityKeyDAO.insert(signalIdentityKey)
         }
         return signalIdentityKey
+    }
+
+    override fun clear() {
+        trustedKeys.clear()
     }
 }

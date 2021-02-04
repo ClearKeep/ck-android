@@ -2,6 +2,7 @@ package com.clearkeep.utilities
 
 import android.app.ActivityManager
 import android.content.Context
+import android.util.Patterns
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -18,6 +19,8 @@ fun getTimeAsString(timeMs: Long) : String {
 fun printlnCK(str: String) {
     println("CKLog_$str")
 }
+
+fun CharSequence?.isValidEmail() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
 fun isServiceRunning(context: Context, serviceName: String): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

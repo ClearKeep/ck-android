@@ -17,4 +17,7 @@
     <string name="bottom_nav_group">Contact</string>
     <string name="bottom_nav_profile">Profile</string>
 
+
+    // error
+    <string name="email_invalid">Email is invalid, please check again</string>
 </resources>

@@ -11,7 +11,7 @@ import org.whispersystems.libsignal.state.SessionStore
 import java.io.IOException
 import java.util.*
 
-class InMemorySessionStore : SessionStore {
+class InMemorySessionStore : SessionStore, Closeable {
     private val sessions: MutableMap<SignalProtocolAddress, ByteArray> = HashMap()
     @Synchronized
     override fun loadSession(remoteAddress: SignalProtocolAddress): SessionRecord {
@@ -60,5 +60,9 @@ class InMemorySessionStore : SessionStore {
                 sessions.remove(key)
             }
         }
+    }
+
+    override fun clear() {
+        sessions.clear()
     }
 }

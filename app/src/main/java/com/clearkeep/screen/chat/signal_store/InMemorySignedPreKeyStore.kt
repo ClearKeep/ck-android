@@ -15,7 +15,7 @@ import java.util.*
 
 class InMemorySignedPreKeyStore(
         private val preKeyDAO: SignalPreKeyDAO,
-) : SignedPreKeyStore {
+) : SignedPreKeyStore, Closeable {
     private var store: MutableMap<Int, ByteArray> = HashMap()
 
     @Throws(InvalidKeyIdException::class)
@@ -58,5 +58,9 @@ class InMemorySignedPreKeyStore(
 
     override fun removeSignedPreKey(signedPreKeyId: Int) {
         /*store.remove(signedPreKeyId);*/
+    }
+
+    override fun clear() {
+        store.clear()
     }
 }
