@@ -112,9 +112,9 @@ fun LoginScreen(
 private fun validateInput(context: Context, username: String, password: String): Boolean {
     var error: String? = null
     if (TextUtils.isEmpty(username)) {
-        error = "Email can not be blank"
+        error = "Email must not be blank"
     } else if (TextUtils.isEmpty(password)) {
-        error = "Password can not be blank"
+        error = "Password must not be blank"
     }
     if (error != null) {
         Toast.makeText(context, error, Toast.LENGTH_LONG).show()

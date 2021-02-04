@@ -87,13 +87,13 @@ private fun validateInput(context: Context, email: String, username: String, pas
     var error: String? = null
     when {
         TextUtils.isEmpty(email) -> {
-            error = "Email cannot be blank"
+            error = "Email must not be blank"
         }
         TextUtils.isEmpty(username) -> {
-            error = "Display name cannot be blank"
+            error = "Display name must not be blank"
         }
         TextUtils.isEmpty(password) -> {
-            error = "Password cannot be blank"
+            error = "Password must not be blank"
         }
     }
     if (error != null) {
