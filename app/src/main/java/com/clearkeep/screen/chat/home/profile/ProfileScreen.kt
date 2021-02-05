@@ -17,16 +17,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTopAppBar
+import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
+    homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
 ) {
     val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
     val profile = profileViewModel.profile.observeAsState()
+    val isLogoutProcessing = homeViewModel.isLogOutProcessing.observeAsState()
 
     Column(modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -50,15 +53,19 @@ fun ProfileScreen(
             }
         }
         Spacer(Modifier.preferredHeight(40.dp))
-        Row(
-                modifier = Modifier.padding(horizontal = 20.dp).clickable(onClick = {
-                    setShowReminderDialog(true)
-                }),
-                horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(Icons.Outlined.Login)
-            Spacer(modifier = Modifier.width(15.dp))
-            Text("Logout")
+        isLogoutProcessing.value.let {
+            if (it == null || it == false) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp).clickable(onClick = {
+                        setShowReminderDialog(true)
+                    }),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(Icons.Outlined.Login)
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Text("Logout")
+                }
+            }
         }
         LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
     }

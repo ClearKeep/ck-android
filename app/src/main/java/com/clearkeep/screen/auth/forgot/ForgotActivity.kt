@@ -132,10 +132,10 @@ class ForgotActivity : AppCompatActivity() {
         if (showReminder) {
             CKAlertDialog(
                     title = {
-                        Text("Success")
+                        Text("Email is sent successfully")
                     },
                     text = {
-                        Text("Please check email to change new password")
+                        Text("Please check your email to reset password")
                     },
                     dismissButton = {
                         Button(

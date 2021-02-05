@@ -1,13 +1,11 @@
 package com.clearkeep.screen.auth.login
 
-import android.content.Context
-import android.text.TextUtils
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ContextAmbient
@@ -25,14 +23,18 @@ import com.clearkeep.components.base.CKTextField
 
 @Composable
 fun LoginScreen(
-        onLoginPressed: (email: String, password: String) -> Unit,
-        onRegisterPress: () -> Unit,
-        onForgotPasswordPress: () -> Unit,
-        isLoading: Boolean = false
+    loginViewModel: LoginViewModel,
+    onLoginPressed: (email: String, password: String) -> Unit,
+    onRegisterPress: () -> Unit,
+    onForgotPasswordPress: () -> Unit,
+    isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
     val email = state { "" }
     val password = state { "" }
+    val emailError = loginViewModel.emailError.observeAsState()
+    val passError = loginViewModel.passError.observeAsState()
+
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -40,9 +42,9 @@ fun LoginScreen(
         ) {
             Spacer(Modifier.preferredHeight(24.dp))
 
-            val image = imageResource(R.drawable.phone)
+            val image = imageResource(R.drawable.ic_logo)
             val imageModifier = Modifier
-                .preferredSize(100.dp)
+                .preferredSize(80.dp)
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 alignment= Alignment.Center,
@@ -53,6 +55,8 @@ fun LoginScreen(
                     )
                 })
 
+            Spacer(Modifier.height(10.dp))
+
             Box(Modifier.fillMaxWidth(), alignment = Alignment.TopCenter) {
                 Image(image, imageModifier)
             }
@@ -61,10 +65,11 @@ fun LoginScreen(
 
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextField(
-                        "Email",
-                        "",
-                        email,
-                        keyboardType = KeyboardType.Email,
+                    "Email",
+                    "",
+                    email,
+                    keyboardType = KeyboardType.Email,
+                    error = emailError.value
                 )
                 Spacer(Modifier.preferredHeight(10.dp))
                 CKTextField(
@@ -72,14 +77,14 @@ fun LoginScreen(
                         "",
                         password,
                         keyboardType = KeyboardType.Password,
-                        passwordVisibility = true
+                        passwordVisibility = true,
+                    error = passError.value
                 )
                 Spacer(Modifier.preferredHeight(20.dp))
                 CKButton(
                         stringResource(R.string.btn_login),
                         onClick = {
-                            if (validateInput(context, email.value, password.value))
-                                onLoginPressed(email.value, password.value)
+                            onLoginPressed(email.value, password.value)
                         },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
                         enabled = !isLoading
@@ -94,7 +99,7 @@ fun LoginScreen(
                             enabled = !isLoading
                     )
                 }
-                Spacer(Modifier.preferredHeight(15.dp))
+                /*Spacer(Modifier.preferredHeight(15.dp))
                 Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                 ) {
@@ -103,21 +108,8 @@ fun LoginScreen(
                             onClick = onForgotPasswordPress,
                             enabled = !isLoading
                     )
-                }
+                }*/
             }
         }
     }
-}
-
-private fun validateInput(context: Context, username: String, password: String): Boolean {
-    var error: String? = null
-    if (TextUtils.isEmpty(username)) {
-        error = "Email must not be blank"
-    } else if (TextUtils.isEmpty(password)) {
-        error = "Password must not be blank"
-    }
-    if (error != null) {
-        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-    }
-    return error == null
 }

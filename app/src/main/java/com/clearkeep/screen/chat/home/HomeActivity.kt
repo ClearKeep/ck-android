@@ -209,10 +209,11 @@ class HomeActivity : AppCompatActivity() {
                             }
                             composable(Screen.Profile.route) {
                                 ProfileScreen(
-                                        profileViewModel,
-                                        onLogout = {
-                                            logout()
-                                        }
+                                    profileViewModel,
+                                    homeViewModel,
+                                    onLogout = {
+                                        logout()
+                                    }
                                 )
                             }
                         }

@@ -19,5 +19,8 @@
 
 
     // error
+    <string name="email_empty">Email must not be blank</string>
+    <string name="password_empty">Password must not be blank</string>
+    <string name="display_empty">Display name must not be blank</string>
     <string name="email_invalid">Email is invalid</string>
 </resources>
