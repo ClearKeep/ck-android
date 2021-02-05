@@ -67,6 +67,7 @@ class LoginActivity : AppCompatActivity() {
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
+                    ?: return@launch
                 if (res.status == Status.SUCCESS) {
                     navigateToHomeActivity()
                 } else if (res.status == Status.ERROR) {
@@ -98,14 +99,15 @@ class LoginActivity : AppCompatActivity() {
             ) {
                 Row(/*modifier = Modifier.weight(1.0f, true)*/) {
                     LoginScreen(
-                            onLoginPressed = onLoginPressed,
-                            onRegisterPress = {
-                                navigateToRegisterActivity()
-                            },
-                            onForgotPasswordPress = {
-                                navigateToForgotActivity()
-                            },
-                            isLoading = isLoadingState.value ?: false
+                        loginViewModel,
+                        onLoginPressed = onLoginPressed,
+                        onRegisterPress = {
+                            navigateToRegisterActivity()
+                        },
+                        onForgotPasswordPress = {
+                            navigateToForgotActivity()
+                        },
+                        isLoading = isLoadingState.value ?: false
                     )
                 }
             }

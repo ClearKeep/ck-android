@@ -63,6 +63,7 @@ class RegisterActivity : AppCompatActivity() {
         val onRegisterPressed: (String, String, String) -> Unit = { userName, password, email ->
             lifecycleScope.launch {
                 val res = registerViewModel.register(this@RegisterActivity, userName, password, email)
+                    ?: return@launch
                 if (res.status == Status.SUCCESS) {
                     setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {
@@ -74,11 +75,12 @@ class RegisterActivity : AppCompatActivity() {
         val isLoadingState = registerViewModel.isLoading.observeAsState()
         Stack() {
             RegisterScreen(
-                    onRegisterPressed = onRegisterPressed,
-                    onBackPress = {
-                        finish()
-                    },
-                    isLoading = isLoadingState.value ?: false
+                registerViewModel,
+                onRegisterPressed = onRegisterPressed,
+                onBackPress = {
+                    finish()
+                },
+                isLoading = isLoadingState.value ?: false
             )
             ErrorDialog(showDialog, setShowDialog)
             ReminderDialog(showReminder)
@@ -127,10 +129,10 @@ class RegisterActivity : AppCompatActivity() {
         if (showReminder) {
             CKAlertDialog(
                     title = {
-                        Text("Success")
+                        Text("Register successfully")
                     },
                     text = {
-                        Text("Please check email and active registered account")
+                        Text("Please check your email to activate account")
                     },
                     dismissButton = {
                         Button(

@@ -1,8 +1,5 @@
 package com.clearkeep.screen.auth.register
 
-import android.content.Context
-import android.text.TextUtils
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Text
@@ -11,6 +8,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.state
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.ContextAmbient
@@ -24,14 +22,20 @@ import com.clearkeep.components.base.CKTopAppBar
 
 @Composable
 fun RegisterScreen(
+    registerViewModel: RegisterViewModel,
     onRegisterPressed: (userName: String, password: String, email: String) -> Unit,
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
     val context = ContextAmbient.current
     val email = state { "" }
-    val userName = state { "" }
+    val displayName = state { "" }
     val password = state { "" }
+
+    val emailError = registerViewModel.emailError.observeAsState()
+    val passError = registerViewModel.passError.observeAsState()
+    val displayNameError = registerViewModel.displayNameError.observeAsState()
+
     Column(modifier = Modifier.fillMaxSize()) {
         CKTopAppBar(
                 title = {
@@ -55,12 +59,14 @@ fun RegisterScreen(
                     "",
                     email,
                     keyboardType = KeyboardType.Email,
+                error = emailError.value
             )
             Spacer(Modifier.preferredHeight(10.dp))
             CKTextField(
                     "Display name",
                     "",
-                    userName
+                    displayName,
+                error = displayNameError.value
             )
             Spacer(Modifier.preferredHeight(10.dp))
             CKTextField(
@@ -68,36 +74,17 @@ fun RegisterScreen(
                     "",
                     password,
                     keyboardType = KeyboardType.Password,
+                error = passError.value
             )
             Spacer(Modifier.preferredHeight(20.dp))
             CKButton(
                     stringResource(R.string.btn_register),
                     onClick = {
-                        if (validateInput(context, email.value, userName.value, password.value))
-                            onRegisterPressed(userName.value, password.value, email.value)
+                        onRegisterPressed(displayName.value, password.value, email.value)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
             )
         }
     }
-}
-
-private fun validateInput(context: Context, email: String, username: String, password: String): Boolean {
-    var error: String? = null
-    when {
-        TextUtils.isEmpty(email) -> {
-            error = "Email must not be blank"
-        }
-        TextUtils.isEmpty(username) -> {
-            error = "Display name must not be blank"
-        }
-        TextUtils.isEmpty(password) -> {
-            error = "Password must not be blank"
-        }
-    }
-    if (error != null) {
-        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-    }
-    return error == null
 }

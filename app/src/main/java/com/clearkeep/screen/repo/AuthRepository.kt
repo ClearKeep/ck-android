@@ -36,11 +36,11 @@ class AuthRepository @Inject constructor(
         }
     }*/
 
-    suspend fun register(userName: String, password: String, email: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
-        printlnCK("register: $userName")
+    suspend fun register(displayName: String, password: String, email: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
+        printlnCK("register: $displayName")
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
-                    .setDisplayName(userName)
+                    .setDisplayName(displayName)
                     .setPassword(password)
                     .setEmail(email)
                     .build()

@@ -19,14 +19,43 @@ class RegisterViewModel @Inject constructor(
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    suspend fun register(context: Context, username: String, password: String, email: String): Resource<AuthOuterClass.RegisterRes> {
+    private val _emailError = MutableLiveData<String>()
+
+    val emailError: LiveData<String>
+        get() = _emailError
+
+    private val _passError = MutableLiveData<String>()
+
+    val passError: LiveData<String>
+        get() = _passError
+
+    private val _displayNameError = MutableLiveData<String>()
+
+    val displayNameError: LiveData<String>
+        get() = _displayNameError
+
+    suspend fun register(context: Context, displayName: String, password: String, email: String): Resource<AuthOuterClass.RegisterRes>? {
+        _emailError.value = ""
+        _passError.value = ""
+        _displayNameError.value = ""
         _isLoading.value = true
 
-        val result = if (!email.trim().isValidEmail()) {
-            Resource.error(context.getString(R.string.email_invalid), null)
+        val result = if (email.isNullOrEmpty()) {
+            _emailError.value = context.getString(R.string.email_empty)
+            null
+        } else if (!email.trim().isValidEmail()) {
+            _emailError.value = context.getString(R.string.email_invalid)
+            null
+        } else if (displayName.isNullOrEmpty()) {
+            _displayNameError.value = context.getString(R.string.display_empty)
+            null
+        } else if (password.isNullOrEmpty()) {
+            _passError.value = context.getString(R.string.password_empty)
+            null
         } else {
-            authRepository.register(username.trim(), password.trim(), email.trim())
+            authRepository.register(displayName.trim(), password.trim(), email.trim())
         }
+
         _isLoading.value = false
         return result
     }
