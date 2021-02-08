@@ -29,7 +29,7 @@ interface GroupDAO {
     suspend fun getRooms(): List<ChatGroup>
 
     // tracking
-    @Query("SELECT * FROM chatgroup")
+    @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
     fun getRoomsAsState(): LiveData<List<ChatGroup>>
 
 /*    @Query("SELECT chatgroup.*, message.* FROM chatgroup LEFT JOIN message ON chatgroup.last_message_id = message.id")
