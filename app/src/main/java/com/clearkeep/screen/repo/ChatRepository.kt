@@ -7,6 +7,7 @@ import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
@@ -263,8 +264,8 @@ class ChatRepository @Inject constructor(
                 groupType = room.groupType,
                 createBy = room.createBy,
                 createdAt = room.createdAt,
-                updateBy = room.updateBy,
-                updateAt = room.updateAt,
+                updateBy = value.fromClientId,
+                updateAt = getCurrentDateTime().time,
                 rtcToken = room.rtcToken,
                 clientList = room.clientList,
 
