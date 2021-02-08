@@ -20,20 +20,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.w(TAG, "onMessageReceived" + remoteMessage.data.toString())
         val notifyType = remoteMessage.data["notify_type"] ?: ""
-        val groupId = remoteMessage.data["group_id"]
-        val avatar = remoteMessage.data["from_client_avatar"] ?: ""
-        val fromClientId = remoteMessage.data["from_client_id"]
-        val fromClientName = remoteMessage.data["from_client_name"]
-        val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
 
         if (!notifyType.isNullOrBlank() && notifyType == "request_call") {
+            val groupId = remoteMessage.data["group_id"]
+            val avatar = remoteMessage.data["from_client_avatar"] ?: ""
+            val fromClientId = remoteMessage.data["from_client_id"]
+            val fromClientName = remoteMessage.data["from_client_name"]
+            val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+
             val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
             val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
 
             val turnConfigJsonObject = JSONObject(turnConfigJson)
             val stunConfigJsonObject = JSONObject(stunConfigJson)
-            /*val turnUrl = "turn:${turnConfigJsonObject.getString("server")}:${turnConfigJsonObject.getString("port")}"
-            val stunUrl = "stun:${stunConfigJsonObject.getString("server")}:${stunConfigJsonObject.getString("port")}"*/
             val turnUrl = turnConfigJsonObject.getString("server")
             val stunUrl = stunConfigJsonObject.getString("server")
             val turnUser = turnConfigJsonObject.getString("user")

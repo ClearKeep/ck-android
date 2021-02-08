@@ -18,6 +18,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.clearkeep.R
@@ -90,6 +91,8 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         setContentView(view)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
 
         val a: TypedArray = theme.obtainStyledAttributes(
             intArrayOf(
