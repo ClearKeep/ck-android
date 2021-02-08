@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.R
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
@@ -27,6 +28,8 @@ class InComingCallActivity : Activity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_coming_call)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
 
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
