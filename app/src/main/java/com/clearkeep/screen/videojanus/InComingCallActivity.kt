@@ -8,6 +8,7 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.text.TextUtils
 import android.view.View
 import android.view.WindowManager
@@ -33,6 +34,8 @@ class InComingCallActivity : Activity(), View.OnClickListener {
 
     private var ringtone: Ringtone? = null
 
+    private lateinit var mHandler : Handler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_coming_call)
@@ -52,6 +55,11 @@ class InComingCallActivity : Activity(), View.OnClickListener {
         mReceiverId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
         mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
         initViews()
+
+        mHandler = Handler(mainLooper)
+        mHandler.postDelayed({
+            finishAndRemoveFromTask()
+        }, 40 * 1000)
     }
 
     private fun playRingTone() {
@@ -113,6 +121,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
 
     private fun finishAndRemoveFromTask() {
         ringtone?.stop()
+        mHandler.removeCallbacksAndMessages(null)
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {
