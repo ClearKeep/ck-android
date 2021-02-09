@@ -93,6 +93,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
+        setSpeakerphoneOn(false)
 
         val a: TypedArray = theme.obtainStyledAttributes(
             intArrayOf(
