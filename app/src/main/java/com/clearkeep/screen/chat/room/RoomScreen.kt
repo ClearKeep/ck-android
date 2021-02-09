@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
+import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
@@ -30,6 +31,9 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     group?.value?.let { group ->
+        if (group.id != GROUP_ID_TEMPO) {
+            roomViewModel.setJoiningRoomId(group.id)
+        }
         val messageList = roomViewModel.getMessages(group.id).observeAsState()
         val groupName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
