@@ -199,14 +199,14 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
     private fun onCallPermissionsAvailable() {
         val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-        if (isFromComingCall) {
-            val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
-            val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
-            val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
-            val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
-            startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword)
-        } else {
-            callScope.launch {
+        callScope.launch {
+            if (isFromComingCall) {
+                val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
+                val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
+                val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
+                val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
+                startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword)
+            } else {
                 val result = videoCallRepository.requestVideoCall(groupId)
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -218,12 +218,13 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
                     }
+                    return@launch
                 }
-                delay(CALL_WAIT_TIME_OUT)
-                if (remoteRenders.isEmpty()) {
-                    runOnUiThread {
-                        updateCallStatus(CallState.CALL_NOT_READY)
-                    }
+            }
+            delay(CALL_WAIT_TIME_OUT)
+            if (remoteRenders.isEmpty()) {
+                runOnUiThread {
+                    updateCallStatus(CallState.CALL_NOT_READY)
                 }
             }
         }
