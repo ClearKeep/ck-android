@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
@@ -22,7 +23,32 @@ fun MessageListView(
     myClientId: String,
     isGroup: Boolean
 ) {
-    LazyColumnFor(
+    ScrollableColumn(
+        modifier = Modifier.fillMaxSize(),
+        reverseScrollDirection = true,
+    ) {
+        messageList.forEach { item ->
+            val isMyMessage = myClientId == item.senderId
+            val userName = clients.firstOrNull {
+                it.id == item.senderId
+            }?.userName ?: item.senderId
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(
+                        start = if (isMyMessage) 60.dp else 0.dp,
+                        end = if (isMyMessage) 0.dp else 60.dp,
+                    ),
+                    horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start,
+                ) {
+                    if (!item.message.isNullOrEmpty()) {
+                        if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
+    }
+    /*LazyColumnFor(
         items = messageList,
         contentPadding = PaddingValues(top = 30.dp, bottom = 30.dp),
     ) { item ->
@@ -44,7 +70,7 @@ fun MessageListView(
             }
             Spacer(modifier = Modifier.height(10.dp))
         }
-    }
+    }*/
 }
 
 @Composable
