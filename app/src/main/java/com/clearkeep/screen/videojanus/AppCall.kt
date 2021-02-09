@@ -107,6 +107,7 @@ object AppCall {
         intent.putExtra(EXTRA_GROUP_TOKEN, token)
         intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
+        intent.putExtra(EXTRA_FROM_IN_COMING_CALL, true)
         intent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, avatar)
         intent.putExtra(EXTRA_TURN_URL, turnUrl)
         intent.putExtra(EXTRA_TURN_USER_NAME, turnUser)

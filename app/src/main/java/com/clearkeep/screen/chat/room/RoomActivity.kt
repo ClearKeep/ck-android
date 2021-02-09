@@ -42,7 +42,7 @@ class RoomActivity : AppCompatActivity() {
         val roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
-        roomViewModel.initRoom(roomId, friendId)
+        roomViewModel.joinRoom(roomId, friendId)
 
         setContent {
             CKTheme {
@@ -87,6 +87,11 @@ class RoomActivity : AppCompatActivity() {
         }
 
         subscriber()
+    }
+
+    override fun onDestroy() {
+        roomViewModel.leaveRoom()
+        super.onDestroy()
     }
 
     private fun subscriber() {

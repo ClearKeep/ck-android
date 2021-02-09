@@ -47,7 +47,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun initRoom(roomId: Long?, friendId: String?) {
+    fun joinRoom(roomId: Long?, friendId: String?) {
         if (roomId == null && TextUtils.isEmpty(friendId)) {
             throw IllegalArgumentException("Can not load room with both groupId and friendId is empty")
         }
@@ -58,6 +58,14 @@ class RoomViewModel @Inject constructor(
         } else if (!friendId.isNullOrEmpty()) {
             updateGroupWithFriendId(friendId)
         }
+    }
+
+    fun leaveRoom() {
+        setJoiningRoomId(-1)
+    }
+
+    fun setJoiningRoomId(roomId: Long) {
+        chatRepository.setJoiningRoomId(roomId)
     }
 
     fun getMessages(groupId: Long): LiveData<List<Message>> {

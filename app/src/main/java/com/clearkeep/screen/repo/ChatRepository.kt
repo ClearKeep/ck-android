@@ -48,6 +48,12 @@ class ChatRepository @Inject constructor(
 
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
+    private var roomId: Long? = null
+
+    fun setJoiningRoomId(roomId: Long?) {
+        this.roomId = roomId
+    }
+
     fun getClientId() = userManager.getClientId()
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
@@ -221,7 +227,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromPeer: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, "unable to read this message")
+            saveNewMessage(value, "unable to decrypt this message")
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
@@ -233,7 +239,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, "unable to read this message")
+            saveNewMessage(value, "unable to decrypt this message")
             printlnCK("decryptMessageFromGroup error : $e")
         }
     }
