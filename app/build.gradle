@@ -129,7 +129,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
     implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
     implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.ui:ui-tooling:$jetpack_compose_version"
+    implementation("androidx.ui:ui-tooling:$jetpack_compose_version")
     // gRPC
     implementation 'com.squareup.okhttp:okhttp:2.7.5'
     implementation "io.grpc:grpc-stub:$grpcVersion"
