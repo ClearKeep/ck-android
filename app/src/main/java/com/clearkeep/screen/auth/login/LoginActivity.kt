@@ -79,7 +79,6 @@ class LoginActivity : AppCompatActivity() {
         val isLoadingState = loginViewModel.isLoading.observeAsState()
         Box() {
             isLoadingState.value?.let { isLoading ->
-                printlnCK("Test, loading $isLoading")
                 if (isLoading) {
                     Column(
                             modifier = Modifier.fillMaxSize(),

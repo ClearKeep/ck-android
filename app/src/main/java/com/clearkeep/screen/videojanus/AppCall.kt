@@ -15,7 +15,7 @@ import com.clearkeep.utilities.*
 
 
 object AppCall {
-    fun call(context: Context, token: String, groupId: String?, ourClientId: String?, userName: String?, avatar: String?, isIncomingCall: Boolean,
+    fun call(context: Context, token: String?, groupId: String?, ourClientId: String?, userName: String?, avatar: String?, isIncomingCall: Boolean,
              turnUrl: String = "", turnUser: String = "", turnPass: String = "",
              stunUrl: String = ""
     ) {
