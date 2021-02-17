@@ -206,7 +206,8 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
-                startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword)
+                val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
+                startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword, token)
             } else {
                 val result = videoCallRepository.requestVideoCall(groupId)
                 if (result != null) {
@@ -214,7 +215,8 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
                     val stunConfig = result.stunServer
                     val turnUrl = turnConfig.server
                     val stunUrl = stunConfig.server
-                    startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd)
+                    val token = result.groupRtcToken
+                    startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
                 } else {
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
@@ -231,10 +233,10 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         }
     }
 
-    private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String) {
+    private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
-        val token = intent.getStringExtra(EXTRA_GROUP_TOKEN)
-        printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass, group = $groupId, token = $token")
+        printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
+                ", group = $groupId, token = $token")
         mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
