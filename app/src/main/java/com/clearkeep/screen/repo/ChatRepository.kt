@@ -50,11 +50,27 @@ class ChatRepository @Inject constructor(
 
     private var roomId: Long? = null
 
+    private var isNeedSubscribeMessageAgain = false
+
+    private var isNeedSubscribeNotificationAgain = false
+
+
     fun setJoiningRoomId(roomId: Long?) {
         this.roomId = roomId
     }
 
     fun getClientId() = userManager.getClientId()
+
+    fun reInitSubscriber() {
+        printlnCK("reInitSubscriber, isNeedSubscribeMessageAgain = $isNeedSubscribeMessageAgain" +
+                ", isNeedSubscribeNotificationAgain = $isNeedSubscribeNotificationAgain")
+        if (isNeedSubscribeMessageAgain) {
+            subscribeMessageChannel()
+        }
+        if (isNeedSubscribeNotificationAgain) {
+            subscribeNotificationChannel()
+        }
+    }
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
@@ -164,9 +180,11 @@ class ChatRepository @Inject constructor(
 
             override fun onError(t: Throwable?) {
                 printlnCK("Listen message error: ${t.toString()}")
+                isNeedSubscribeMessageAgain = true
             }
 
             override fun onCompleted() {
+                isNeedSubscribeMessageAgain = false
             }
         })
     }
@@ -213,9 +231,11 @@ class ChatRepository @Inject constructor(
 
             override fun onError(t: Throwable?) {
                 printlnCK("Listen notification error: ${t.toString()}")
+                isNeedSubscribeNotificationAgain = true
             }
 
             override fun onCompleted() {
+                isNeedSubscribeNotificationAgain = false
             }
         })
     }
