@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,7 +14,9 @@ import com.clearkeep.screen.repo.ChatRepository
 import com.clearkeep.screen.repo.SignalKeyRepository
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.Storage
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
@@ -39,17 +42,17 @@ class HomeViewModel @Inject constructor(
     val isLogOutCompleted: LiveData<Boolean>
         get() = _isLogOutCompleted
 
-    private val _loginState = MutableLiveData<PrepareViewState>()
+    private val _prepareState = MutableLiveData<PrepareViewState>()
 
     val loginState: LiveData<PrepareViewState>
-        get() = _loginState
+        get() = _prepareState
 
     fun prepareChat() {
         viewModelScope.launch {
-            _loginState.value = PrepareProcessing
+            _prepareState.value = PrepareProcessing
             val profile = profileRepository.getProfile()
             if (profile == null) {
-                _loginState.value = PrepareError
+                _prepareState.value = PrepareError
                 return@launch
             }
 
@@ -59,19 +62,35 @@ class HomeViewModel @Inject constructor(
                 signalKeyRepository.peerRegisterClientKey(profile.id)
             }
             if (!isRegisterKeySuccess) {
-                _loginState.value = PrepareError
+                _prepareState.value = PrepareError
                 return@launch
             }
 
+            _prepareState.value = PrepareSuccess
+
             chatRepository.initSubscriber()
-            _loginState.value = PrepareSuccess
+            updateFirebaseToken()
         }
     }
 
-    fun updateTokenFirebase(token: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            storage.setString(FIREBASE_TOKEN, token)
-            pushFireBaseTokenToServer()
+    fun reInitAfterNetworkAvailable() {
+        chatRepository.reInitSubscriber()
+    }
+
+    private fun updateFirebaseToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                printlnCK("Fetching FCM registration token failed, ${task.exception}")
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            if (!token.isNullOrEmpty()) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    storage.setString(FIREBASE_TOKEN, token)
+                    pushFireBaseTokenToServer()
+                }
+            }
         }
     }
 
@@ -79,14 +98,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _isLogOutProcessing.value = true
 
-            //delay(3000)
-            val res = authRepository.logoutFromAPI()
-            if (res.status == Status.SUCCESS) {
+            authRepository.logoutFromAPI()
+            clearDatabase()
+            _isLogOutCompleted.value = true
+
+            /*if (res.status == Status.SUCCESS) {
                 clearDatabase()
                 _isLogOutCompleted.value = true
             }
 
-            _isLogOutProcessing.value = false
+            _isLogOutProcessing.value = false*/
         }
     }
 
