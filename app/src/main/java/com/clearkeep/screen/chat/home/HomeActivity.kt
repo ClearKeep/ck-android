@@ -2,13 +2,10 @@ package com.clearkeep.screen.chat.home
 
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
+import android.net.*
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -50,7 +47,6 @@ import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.utilities.printlnCK
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -108,6 +104,14 @@ class HomeActivity : AppCompatActivity() {
         homeViewModel.prepareChat()
         subscriberLogout()
         registerNetworkChange()
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!Settings.canDrawOverlays(this)) {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName"))
+                startActivityForResult(intent, 0)
+            }
+        }*/
     }
 
     private fun registerNetworkChange() {
@@ -225,11 +229,11 @@ class HomeActivity : AppCompatActivity() {
                             }
                             composable(Screen.Profile.route) {
                                 ProfileScreen(
-                                    profileViewModel,
-                                    homeViewModel,
-                                    onLogout = {
-                                        logout()
-                                    }
+                                        profileViewModel,
+                                        homeViewModel,
+                                        onLogout = {
+                                            logout()
+                                        }
                                 )
                             }
                         }
