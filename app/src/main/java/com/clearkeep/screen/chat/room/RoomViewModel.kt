@@ -36,8 +36,6 @@ class RoomViewModel @Inject constructor(
     val requestCallState: LiveData<Resource<ChatGroup>>
         get() = _requestCallState
 
-    private var isGroupRegistered: Boolean? = null
-
     val group: LiveData<ChatGroup>
         get() = _group
 
@@ -79,7 +77,7 @@ class RoomViewModel @Inject constructor(
     private fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
         viewModelScope.launch {
-            val ret = roomRepository.getGroupByID(groupId)
+            val ret = roomRepository.getGroupByID(groupId)!!
             _group.value = ret
             updateMessagesFromRemote(groupId, ret.lastMessageAt)
         }
@@ -136,15 +134,13 @@ class RoomViewModel @Inject constructor(
     fun sendMessageToGroup(groupId: Long, message: String, isRegisteredGroup: Boolean) {
         viewModelScope.launch {
             try {
-                if (isGroupRegistered == null) {
-                    isGroupRegistered = signalKeyRepository.isRegisteredGroupKey(groupId, getClientId())
-                }
-                if (!isGroupRegistered!!) {
-                    isGroupRegistered = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
-                    roomRepository.remarkJoinInRoom(groupId)
-                }
-
-                if (isGroupRegistered!!) {
+                if (!isRegisteredGroup) {
+                    val result = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
+                    if (result) {
+                        roomRepository.remarkGroupKeyRegistered(groupId)
+                        chatRepository.sendMessageToGroup(groupId, message)
+                    }
+                } else {
                     chatRepository.sendMessageToGroup(groupId, message)
                 }
             } catch (e : Exception) {}

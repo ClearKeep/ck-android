@@ -300,7 +300,7 @@ class ChatRepository @Inject constructor(
                 clientList = room.clientList,
 
                 // update
-                isJoined = true,
+                isJoined = room.isJoined,
 
                 lastMessage = messageRecord,
                 lastMessageAt = messageRecord.createdTime

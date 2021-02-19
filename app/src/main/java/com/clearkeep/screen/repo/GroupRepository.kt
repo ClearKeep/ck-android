@@ -177,8 +177,9 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun remarkJoinInRoom(groupId: Long) : Boolean {
-        val group = groupDAO.getGroupById(groupId)
+    suspend fun remarkGroupKeyRegistered(groupId: Long) : Boolean {
+        printlnCK("remarkGroupKeyRegistered, groupId = $groupId")
+        val group = groupDAO.getGroupById(groupId)!!
         val updateGroup = ChatGroup(
                 id = group.id,
                 groupName = group.groupName,
@@ -204,6 +205,7 @@ class GroupRepository @Inject constructor(
     suspend fun updateRoom(room: ChatGroup) = groupDAO.update(room)
 
     private suspend fun convertGroupFromResponse(response: GroupOuterClass.GroupObjectResponse): ChatGroup {
+        val isRegisteredKey = groupDAO.getGroupById(response.groupId)?.isJoined ?: false
         return ChatGroup(
                 id = response.groupId,
                 groupName = response.groupName,
@@ -220,9 +222,7 @@ class GroupRepository @Inject constructor(
                         userName = it.displayName
                     )
                 },
-
-                // TODO
-                isJoined = true,
+                isJoined = isRegisteredKey,
                 lastMessage = convertMessageResponseFromGroup(
                         response.lastMessage, clientBlocking,
                         senderKeyStore, signalProtocolStore
@@ -254,7 +254,6 @@ class GroupRepository @Inject constructor(
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId, messageResponse.message, senderKeyStore, clientBlocking)
             }
         } catch (e: Exception) {
-            printlnCK("convertMessageResponseFromGroup error : $e")
             ""
         }
 
