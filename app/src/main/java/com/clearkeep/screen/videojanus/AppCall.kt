@@ -79,7 +79,7 @@ object AppCall {
                     .setContentText("$userName calling")
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
-                    .setContentIntent(pendingIntent)
+                    /*.setContentIntent(pendingIntent)*/
                     .setFullScreenIntent(pendingIntent, true)
                     .setAutoCancel(true)
                     .setTimeoutAfter(20 * 1000)
