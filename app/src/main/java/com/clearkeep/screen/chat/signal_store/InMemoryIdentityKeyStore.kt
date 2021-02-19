@@ -49,8 +49,9 @@ class InMemoryIdentityKeyStore(
     }
 
     override fun isTrustedIdentity(address: SignalProtocolAddress, identityKey: IdentityKey, direction: IdentityKeyStore.Direction): Boolean {
-        val trusted = trustedKeys[address]
-        return trusted == null || trusted == identityKey
+        /*val trusted = trustedKeys[address]
+        return trusted == null || trusted == identityKey*/
+        return true
     }
 
     override fun getIdentity(address: SignalProtocolAddress): IdentityKey? {

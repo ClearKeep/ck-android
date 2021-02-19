@@ -78,11 +78,15 @@ class ChatRepository @Inject constructor(
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
-            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
+            /*if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
                 val initSuccess = initSessionUserPeer(receiverId, signalProtocolAddress, clientBlocking, signalProtocolStore)
                 if (!initSuccess) {
                     return@withContext false
                 }
+            }*/
+            val initSuccess = initSessionUserPeer(receiverId, signalProtocolAddress, clientBlocking, signalProtocolStore)
+            if (!initSuccess) {
+                return@withContext false
             }
 
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
