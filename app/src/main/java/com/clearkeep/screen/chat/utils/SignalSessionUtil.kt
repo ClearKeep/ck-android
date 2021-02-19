@@ -58,12 +58,22 @@ suspend fun decryptGroupMessage(
 
     val initSession = initSessionUserInGroup(
             groupId, fromClientId, groupSender,
-            clientBlocking, senderKeyStore)
+            clientBlocking, senderKeyStore, false)
     if (!initSession) {
         throw Exception("can not init session in group $groupId")
     }
+    var plaintextFromAlice = try {
+        bobGroupCipher.decrypt(message.toByteArray())
+    } catch (ex: Exception) {
+        val initSessionAgain = initSessionUserInGroup(
+                groupId, fromClientId, groupSender,
+                clientBlocking, senderKeyStore, true)
+        if (!initSessionAgain) {
+            throw Exception("can not init session in group $groupId")
+        }
+        bobGroupCipher.decrypt(message.toByteArray())
+    }
 
-    val plaintextFromAlice = bobGroupCipher.decrypt(message.toByteArray())
     return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
 }
 
@@ -114,11 +124,11 @@ suspend fun initSessionUserPeer(
 fun initSessionUserInGroup(
         groupId: Long, fromClientId: String, groupSender: SenderKeyName,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
-        senderKeyStore: InMemorySenderKeyStore,
+        senderKeyStore: InMemorySenderKeyStore, isForceProcess: Boolean,
 ): Boolean {
-    printlnCK("initSessionUserInGroup")
+    printlnCK("initSessionUserInGroup, isForceProcess = $isForceProcess")
     val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
-    if (senderKeyRecord.isEmpty) {
+    if (senderKeyRecord.isEmpty || isForceProcess) {
         try {
             val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)
@@ -129,7 +139,7 @@ fun initSessionUserInGroup(
             val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
             bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
         } catch (e: Exception) {
-            printlnCK("initSession: $e")
+            printlnCK("initSessionUserInGroup: $e")
         }
     }
     return true

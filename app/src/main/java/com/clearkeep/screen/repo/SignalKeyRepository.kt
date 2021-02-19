@@ -70,7 +70,7 @@ class SignalKeyRepository @Inject constructor(
     }
 
     suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("joinInGroup: $groupID")
+        printlnCK("registerSenderKeyToGroup: $groupID")
         val senderAddress = SignalProtocolAddress(clientId, 111)
         val groupSender  =  SenderKeyName(groupID.toString(), senderAddress)
         val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
@@ -88,11 +88,11 @@ class SignalKeyRepository @Inject constructor(
                 client.groupRegisterClientKey(request)
             }
             if (response?.success != false) {
-                printlnCK("joinInGroup: $groupID: success")
+                printlnCK("registerSenderKeyToGroup: $groupID: success")
                 return@withContext true
             }
         } catch (e: Exception) {
-            printlnCK("joinInGroup: $e")
+            printlnCK("registerSenderKeyToGroup: $e")
         }
 
         return@withContext false
