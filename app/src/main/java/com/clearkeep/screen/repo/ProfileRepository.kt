@@ -21,7 +21,7 @@ class ProfileRepository @Inject constructor(
         private val userManager: UserManager
 ) {
     suspend fun getProfile() : User?  = withContext(Dispatchers.IO) {
-        val existingUser = userDao.getUserByName(userManager.getUserName())
+        val existingUser = userDao.getUser()
         if (existingUser != null) {
             return@withContext existingUser
         }
