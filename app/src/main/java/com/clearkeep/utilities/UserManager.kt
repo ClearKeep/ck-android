@@ -1,10 +1,7 @@
 package com.clearkeep.utilities
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.SharedPreferences
-import android.provider.Settings
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.utilities.storage.PersistPreferencesStorage
+import com.clearkeep.utilities.storage.UserPreferencesStorage
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,59 +16,57 @@ private const val DEVICE_ID = "device_id"
 
 @Singleton
 class UserManager @Inject constructor(
-        private val storage: Storage,
+        private val userStorage: UserPreferencesStorage,
+        private val persistStorage: PersistPreferencesStorage,
 ) {
-    fun isUserRegistered() = !storage.getString(USER_NAME).isNullOrEmpty()
+    fun isUserRegistered() = !userStorage.getString(USER_NAME).isNullOrEmpty()
 
     fun saveAccessKey(accessKey: String) {
-        storage.setString(ACCESS_TOKEN, accessKey)
+        userStorage.setString(ACCESS_TOKEN, accessKey)
     }
 
     fun getAccessKey() : String {
-        return storage.getString(ACCESS_TOKEN)
+        return userStorage.getString(ACCESS_TOKEN)
     }
 
     fun saveHashKey(hashKey: String) {
-        storage.setString(HASH_KEY, hashKey)
+        userStorage.setString(HASH_KEY, hashKey)
     }
 
     fun getHashKey() : String {
-        return storage.getString(HASH_KEY)
+        return userStorage.getString(HASH_KEY)
     }
 
     fun saveUserName(userName: String) {
-        storage.setString(USER_NAME, userName)
+        userStorage.setString(USER_NAME, userName)
     }
 
     fun getUserName() : String {
-        return storage.getString(USER_NAME)
+        return userStorage.getString(USER_NAME)
     }
 
     fun saveClientId(clientId: String) {
-        storage.setString(CLIENT_ID, clientId)
+        userStorage.setString(CLIENT_ID, clientId)
     }
 
     fun getClientId() : String {
-        return storage.getString(CLIENT_ID)
+        return userStorage.getString(CLIENT_ID)
     }
 
     fun saveRefreshToken(refreshToken: String) {
-        storage.setString(REFRESH_TOKEN, refreshToken)
+        userStorage.setString(REFRESH_TOKEN, refreshToken)
     }
 
     fun getRefreshToken() : String {
-        return storage.getString(REFRESH_TOKEN)
+        return userStorage.getString(REFRESH_TOKEN)
     }
 
-    @SuppressLint("HardwareIds")
     fun getUniqueDeviceID(): String {
-        var deviceId = storage.getString(DEVICE_ID)
+        var deviceId = persistStorage.getString(DEVICE_ID)
         if (deviceId.isNullOrEmpty()) {
-            /*deviceId = UUID.randomUUID().toString()*/
-            /*deviceId = Settings.Secure.getString(context.contentResolver,
-                    Settings.Secure.ANDROID_ID)*/
-            deviceId = "12345"
-            storage.setString(DEVICE_ID, deviceId)
+            deviceId = UUID.randomUUID().toString()
+            printlnCK("generate new device id: $deviceId")
+            persistStorage.setString(DEVICE_ID, deviceId)
         }
         return deviceId
     }

@@ -13,7 +13,6 @@ import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
-import com.setel.di.ViewModelKey
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module

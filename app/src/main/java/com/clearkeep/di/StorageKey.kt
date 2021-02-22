@@ -1,6 +1,6 @@
 package com.clearkeep.di
 
-import androidx.lifecycle.ViewModel
+import com.clearkeep.utilities.storage.Storage
 import dagger.MapKey
 import kotlin.reflect.KClass
 
@@ -12,4 +12,4 @@ import kotlin.reflect.KClass
 )
 @Retention(AnnotationRetention.RUNTIME)
 @MapKey
-annotation class ViewModelKey(val value: KClass<out ViewModel>)
+annotation class StorageKey(val value: KClass<out Storage>)
