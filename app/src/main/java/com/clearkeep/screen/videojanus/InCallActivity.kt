@@ -1,25 +1,24 @@
 package com.clearkeep.screen.videojanus
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.PictureInPictureParams
+import android.app.AlertDialog
+import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.TypedArray
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.provider.Settings
 import android.text.TextUtils
-import android.util.Rational
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
@@ -40,8 +39,9 @@ import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
 
+
 @AndroidEntryPoint
-class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
+class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
     enum class CallState {
         CALLING,
         RINGING,
@@ -79,7 +79,13 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
     private var mResIdMuteVideoOn = 0
     private var mResIdMuteVideoOff = 0
 
-    // input
+    private var isOpenSettingScreen = false
+
+    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _: ActivityResult ->
+        printlnCK("onActivityResult, open setting")
+        isOpenSettingScreen = false
+        requestCallPermissions()
+    }
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,11 +102,11 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         setSpeakerphoneOn(false)
 
         val a: TypedArray = theme.obtainStyledAttributes(
-            intArrayOf(
-                R.attr.buttonSpeakerOn, R.attr.buttonSpeakerOff,
-                R.attr.buttonMuteOn, R.attr.buttonMuteOff,
-                R.attr.buttonMuteVideoOn, R.attr.buttonMuteVideoOff
-            )
+                intArrayOf(
+                        R.attr.buttonSpeakerOn, R.attr.buttonSpeakerOff,
+                        R.attr.buttonMuteOn, R.attr.buttonMuteOff,
+                        R.attr.buttonMuteVideoOn, R.attr.buttonMuteVideoOff
+                )
         )
         try {
             mResIdSpeakerOn = a.getResourceId(0, R.drawable.ic_string_ee_sound_on)
@@ -141,63 +147,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         }
     }
 
-    fun requestCallPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if ((ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
-                )
-                            != PackageManager.PERMISSION_GRANTED) || (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.MODIFY_AUDIO_SETTINGS
-                )
-                            != PackageManager.PERMISSION_GRANTED)) {
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(
-                        Manifest.permission.RECORD_AUDIO,
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.MODIFY_AUDIO_SETTINGS
-                    ),
-                    REQUEST_PERMISSIONS
-                )
-                return
-            }
-        }
-        onCallPermissionsAvailable()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_PERMISSIONS &&
-                grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            onCallPermissionsAvailable()
-        } else {
-            finishAndRemoveFromTask()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        rootEglBase.release()
-        val localRender = binding.localSurfaceView
-        localRender.release()
-        val renderList = remoteRenders.values
-        if (renderList.isNotEmpty()) {
-            for (render in renderList) {
-                render.release()
-            }
-        }
-        if (binding.chronometer.visibility == View.VISIBLE) {
-            binding.chronometer.stop()
-        }
-    }
-
-    private fun onCallPermissionsAvailable() {
+    override fun onPermissionsAvailable() {
         val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
@@ -230,6 +180,53 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
                     updateCallStatus(CallState.CALL_NOT_READY)
                 }
             }
+        }
+    }
+
+    override fun onPermissionsDenied() {
+        finishAndRemoveFromTask()
+    }
+
+    override fun onPermissionsForeverDenied() {
+        showAskPermissionDialog()
+    }
+
+    private fun showAskPermissionDialog() {
+        val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Permissions Required")
+                .setMessage("You have forcefully denied some of the required permissions " +
+                        "for this action. Please open settings, go to permissions and allow them.")
+                .setPositiveButton("Settings") { _, _ ->
+                    openSettingScreen()
+                }
+                .setNegativeButton("Cancel") { _, _ ->
+                    finishAndRemoveFromTask()
+                }
+                .setCancelable(false)
+                .create()
+                .show()
+    }
+
+    private fun openSettingScreen() {
+        isOpenSettingScreen = true
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", packageName, null))
+        startForResult.launch(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        rootEglBase.release()
+        val localRender = binding.localSurfaceView
+        localRender.release()
+        val renderList = remoteRenders.values
+        if (renderList.isNotEmpty()) {
+            for (render in renderList) {
+                render.release()
+            }
+        }
+        if (binding.chronometer.visibility == View.VISIBLE) {
+            binding.chronometer.stop()
         }
     }
 
@@ -300,19 +297,15 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
     }
 
     override fun onUserLeaveHint() {
-        if (hasSupportPIP()) {
-            enterPictureInPictureMode()
+        printlnCK("onUserLeaveHint: $isOpenSettingScreen")
+        if (hasSupportPIP() && !isOpenSettingScreen) {
+            enterPIPMode()
         }
     }
 
-    private fun hasSupportPIP(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                && packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-    }
-
     override fun onPictureInPictureModeChanged(
-        isInPictureInPictureMode: Boolean,
-        newConfig: Configuration
+            isInPictureInPictureMode: Boolean,
+            newConfig: Configuration
     ) {
         if (isInPictureInPictureMode) {
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
@@ -339,14 +332,7 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
             }
             R.id.imgBack -> {
                 if (hasSupportPIP()) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        val aspectRatio = Rational(3, 4)
-                        val params =
-                            PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
-                        enterPictureInPictureMode(params)
-                    } else {
-                        enterPictureInPictureMode()
-                    }
+                    enterPIPMode()
                 } else {
                     hangup()
                     finishAndRemoveFromTask()
@@ -425,17 +411,12 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         }
     }
 
-    companion object {
-        private const val REQUEST_PERMISSIONS = 1
-        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
-    }
-
     private fun offerPeerConnection(handleId: BigInteger) {
         peerConnectionClient?.createPeerConnection(
-            rootEglBase.eglBaseContext,
-            binding.localSurfaceView,
-            createVideoCapture(this),
-            handleId
+                rootEglBase.eglBaseContext,
+                binding.localSurfaceView,
+                createVideoCapture(this),
+                handleId
         )
         peerConnectionClient?.createOffer(handleId)
     }
@@ -545,8 +526,8 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         printlnCK("updateRenders: length = ${renders.size}")
         if (renders.isNotEmpty()) {
             val params = RelativeLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
             )
             binding.remoteRoot.addView(renders.first(), params)
         }
@@ -556,5 +537,9 @@ class InCallActivity : AppCompatActivity(), View.OnClickListener, JanusRTCInterf
         val localParams = LinearLayout.LayoutParams(200, 300)
         localParams.setMargins(20, 20, 0, 0)
         binding.localRoot.addView(localRender, localParams)
+    }
+
+    companion object {
+        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
     }
 }
