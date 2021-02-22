@@ -9,7 +9,7 @@ import androidx.compose.ui.platform.setContent
 import com.clearkeep.screen.chat.home.HomeActivity
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.components.CKTheme
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.utilities.storage.UserPreferencesStorage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -20,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
     private val splashViewModel: SplashViewModel by viewModels()
 
     @Inject
-    lateinit var storage: Storage
+    lateinit var storage: UserPreferencesStorage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.home
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,9 +12,8 @@ import com.clearkeep.screen.repo.ProfileRepository
 import com.clearkeep.screen.repo.ChatRepository
 import com.clearkeep.screen.repo.SignalKeyRepository
 import com.clearkeep.utilities.FIREBASE_TOKEN
-import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -28,7 +26,7 @@ class HomeViewModel @Inject constructor(
 
         private val signalProtocolStore: InMemorySignalProtocolStore,
 
-        private val storage: Storage,
+        private val storage: UserPreferencesStorage,
         private val clearKeepDatabase: ClearKeepDatabase,
         private val signalKeyDatabase: SignalKeyDatabase,
 ): ViewModel() {

@@ -3,7 +3,7 @@ package com.clearkeep.screen.repo
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.printlnCK
-import com.clearkeep.utilities.storage.Storage
+import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -22,7 +22,7 @@ private const val IS_PEER_SIGNAL_KEY_REGISTERED = "is_peer_signal_key_registered
 
 @Singleton
 class SignalKeyRepository @Inject constructor(
-        private val storage: Storage,
+        private val storage: UserPreferencesStorage,
         private val client: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         private val myStore: InMemorySignalProtocolStore,
         private val senderKeyStore: InMemorySenderKeyStore,
