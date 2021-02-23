@@ -104,12 +104,15 @@ class RoomViewModel @Inject constructor(
         val messages = messageRepository.getMessages(groupId)
 
         if (messages.size < 2) {
-            printlnCK("load all message")
+            printlnCK("load all message with size < 2")
             messageRepository.fetchMessageFromAPI(groupId, 0, 0)
         } else {
-            val preLastMessage = messages.takeLast(2).firstOrNull()
+            val preLastMessage = messages.dropLast(1).findLast { it.senderId != getClientId() }
             printlnCK("updateMessagesFromRemote: $preLastMessage, last at = $lastMessageAt")
-            if (preLastMessage != null && preLastMessage.createdTime in 1 until lastMessageAt) {
+            if (preLastMessage == null) {
+                printlnCK("load all message because not find last message")
+                messageRepository.fetchMessageFromAPI(groupId, 0, 0)
+            } else if (preLastMessage.createdTime in 1 until lastMessageAt) {
                 printlnCK("load message: from time $preLastMessage to $lastMessageAt")
                 messageRepository.fetchMessageFromAPI(groupId, preLastMessage.createdTime, 0)
             }
