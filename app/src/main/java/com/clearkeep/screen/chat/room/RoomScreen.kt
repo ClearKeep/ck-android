@@ -93,16 +93,20 @@ fun RoomScreen(
                 }
                 SendBottomCompose(
                         onSendMessage = { message ->
+                            var validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                            if (validMessage.isNullOrEmpty()) {
+                                return@SendBottomCompose
+                            }
                             val groupResult = group
                             val isGroup = groupResult.isGroup()
                             if (isGroup) {
-                                roomViewModel.sendMessageToGroup(groupResult.id, message, groupResult.isJoined)
+                                roomViewModel.sendMessageToGroup(groupResult.id, validMessage, groupResult.isJoined)
                             } else {
                                 val friend = groupResult.clientList.firstOrNull { client ->
                                     client.id != roomViewModel.getClientId()
                                 }
                                 if (friend != null) {
-                                    roomViewModel.sendMessageToUser(friend, groupResult.id, message)
+                                    roomViewModel.sendMessageToUser(friend, groupResult.id, validMessage)
                                 } else {
                                     printlnCK("can not found friend")
                                 }
