@@ -102,10 +102,17 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val messages = messageRepository.getMessages(groupId)
-        val preLastMessage = messages.takeLast(2).firstOrNull()
-        if (preLastMessage != null && preLastMessage.createdTime > 0 && preLastMessage.createdTime < lastMessageAt) {
-            printlnCK("load message: from time $preLastMessage to $lastMessageAt")
-            messageRepository.fetchMessageFromAPI(groupId, preLastMessage.createdTime, 0)
+
+        if (messages.size < 2) {
+            printlnCK("load all message")
+            messageRepository.fetchMessageFromAPI(groupId, 0, 0)
+        } else {
+            val preLastMessage = messages.takeLast(2).firstOrNull()
+            printlnCK("updateMessagesFromRemote: $preLastMessage, last at = $lastMessageAt")
+            if (preLastMessage != null && preLastMessage.createdTime in 1 until lastMessageAt) {
+                printlnCK("load message: from time $preLastMessage to $lastMessageAt")
+                messageRepository.fetchMessageFromAPI(groupId, preLastMessage.createdTime, 0)
+            }
         }
     }
 

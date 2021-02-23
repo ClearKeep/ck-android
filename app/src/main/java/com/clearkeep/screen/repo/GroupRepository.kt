@@ -223,7 +223,7 @@ class GroupRepository @Inject constructor(
                     )
                 },
                 isJoined = isRegisteredKey,
-                lastMessage = convertMessageResponseFromGroup(
+                lastMessage = convertAndInsertLastMessageResponseFromGroup(
                         response.lastMessage, clientBlocking,
                         senderKeyStore, signalProtocolStore
                 ),
@@ -231,7 +231,7 @@ class GroupRepository @Inject constructor(
         )
     }
 
-    private suspend fun convertMessageResponseFromGroup(
+    private suspend fun convertAndInsertLastMessageResponseFromGroup(
             messageResponse: GroupOuterClass.MessageObjectResponse,
 
             clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
@@ -254,7 +254,7 @@ class GroupRepository @Inject constructor(
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId, messageResponse.message, senderKeyStore, clientBlocking)
             }
         } catch (e: Exception) {
-            ""
+            null
         }
 
         val newMessage = Message(
@@ -263,11 +263,13 @@ class GroupRepository @Inject constructor(
                 messageResponse.groupType,
                 messageResponse.fromClientId,
                 messageResponse.clientId,
-                decryptedMessage,
+                decryptedMessage?: "",
                 messageResponse.createdAt,
                 messageResponse.updatedAt,
         )
-        messageDAO.insert(newMessage)
+        if (!decryptedMessage.isNullOrEmpty()) {
+            messageDAO.insert(newMessage)
+        }
         return newMessage
     }
 }
