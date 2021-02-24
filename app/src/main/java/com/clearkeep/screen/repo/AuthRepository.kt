@@ -12,6 +12,7 @@ import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -133,6 +134,7 @@ class AuthRepository @Inject constructor(
                     .build()
 
             val  authBlockingWithHeader = AuthGrpc.newBlockingStub(channel)
+                    .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
                     .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
             val response = authBlockingWithHeader
                     .logout(request)
