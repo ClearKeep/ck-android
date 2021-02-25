@@ -33,6 +33,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1092685949059:android:5adfd9c86038144527d3b6",
+        "android_client_info": {
+          "package_name": "com.clearkeep.ck.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb9Ef0REPsMcKJH5sBaiVfcVi78YsbMIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

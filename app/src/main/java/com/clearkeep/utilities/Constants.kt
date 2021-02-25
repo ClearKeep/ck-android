@@ -1,22 +1,17 @@
 package com.clearkeep.utilities
 
+import com.clearkeep.BuildConfig
+
 const val FIREBASE_TOKEN = "ck_firebase_token"
 
 //const val BASE_URL = "172.16.6.34"
 //const val BASE_URL = "172.16.6.232"
 //const val BASE_URL = "10.0.255.71"
-const val BASE_URL = "54.235.68.160"
-const val PORT = 5000
-
-const val TURN_SERVER_URL = "turn:global.turn.twilio.com:3478"
+const val BASE_URL = BuildConfig.BASE_URL
+const val PORT = BuildConfig.PORT
 
 // janus
-//const val JANUS_URI = "ws://54.235.68.160:8188/janus"
-const val JANUS_URI = "ws://54.235.68.160:8188/janus"
-//const val JANUS_URI = "ws://10.0.255.82:8188/janus"
-const val REQUEST = "request"
-const val MESSAGE = "message"
-const val PUBLISHERS = "publishers"
+const val JANUS_URI = "ws://${BuildConfig.BASE_JANUS_URL}:${BuildConfig.JANUS_PORT}/janus"
 const val EXTRA_OUR_CLIENT_ID = "to"
 const val EXTRA_GROUP_ID = "call_id"
 const val EXTRA_USER_NAME = "user_name"

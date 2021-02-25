@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">ClearKeep</string>
     <string name="title_app">ClearKeep</string>
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
