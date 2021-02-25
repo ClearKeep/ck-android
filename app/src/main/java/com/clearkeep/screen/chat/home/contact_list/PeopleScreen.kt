@@ -1,9 +1,9 @@
 package com.clearkeep.screen.chat.home.contact_list
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -35,18 +35,22 @@ fun PeopleScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSearch) {
-                        Icon(Icons.Filled.Search)
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = ""
+                        )
                     }
                 }
         )
-        friends?.let {
-            LazyColumnFor(
+        friends.value?.data?.let { people ->
+            LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    items = it?.value?.data ?: emptyList(),
                     contentPadding = PaddingValues(top = 30.dp, end = 20.dp, start = 20.dp, bottom = 30.dp),
-            ) { friend ->
-                Surface(color = Color.White) {
-                    FriendItem(friend, onFriendSelected)
+            ) {
+                itemsIndexed(people) { _, friend ->
+                    Surface(color = Color.White) {
+                        FriendItem(friend, onFriendSelected)
+                    }
                 }
             }
         }

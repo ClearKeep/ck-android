@@ -1,8 +1,8 @@
 package com.clearkeep.screen.chat.group_invite
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -44,7 +44,10 @@ fun InviteGroupScreen(
                 IconButton(
                     onClick = onBackPressed
                 ) {
-                    Icon(asset = Icons.Filled.ArrowBack)
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = ""
+                    )
                 }
             },
             actions = {
@@ -73,18 +76,19 @@ fun InviteGroupScreen(
                 )
             }
         )
-        friends?.let {
-            LazyColumnFor(
-                    items = it?.value?.data ?: emptyList(),
+        friends?.value?.data?.let { values ->
+            LazyColumn(
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
-            ) { friend ->
-                Surface(color = Color.White) {
-                    FriendItem(friend,
+            ) {
+                itemsIndexed(values) { _, friend ->
+                    Surface(color = Color.White) {
+                        FriendItem(friend,
                             selectedItem.contains(friend),
                             onFriendSelected = { people, isAdd ->
                                 if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
                             }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -112,12 +116,10 @@ fun FriendItem(
                 )
             }
             RadioButton(
-                    colors = RadioButtonConstants.defaultColors(
+                    colors = RadioButtonDefaults.colors(
                             selectedColor = Color.Blue,
                             unselectedColor = colorTest,
-                            disabledColor = AmbientEmphasisLevels.current.disabled.applyEmphasis(
-                                colorTest
-                            )
+                            disabledColor = colorTest.copy(alpha = ContentAlpha.disabled)
                     ),
                     selected = isSelected,
                     onClick = { onFriendSelected(friend, !isSelected) }

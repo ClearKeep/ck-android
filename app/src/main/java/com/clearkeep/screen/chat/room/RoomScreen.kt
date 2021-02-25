@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.room
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -41,7 +40,7 @@ fun RoomScreen(
             }?.userName ?: ""
         }
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
-        Stack(
+        Box(
                 modifier = Modifier.fillMaxSize(),
         ) {
             Column(
@@ -65,7 +64,10 @@ fun RoomScreen(
                                         onFinishActivity()
                                     }
                             ) {
-                                Icon(asset = Icons.Filled.ArrowBack)
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowBack,
+                                    contentDescription = ""
+                                )
                             }
                         },
                         actions = {
@@ -75,11 +77,14 @@ fun RoomScreen(
                                         roomViewModel.requestCall(group.id)
                                     }
                             ) {
-                                Icon(asset = Icons.Filled.VideoCall)
+                                Icon(
+                                    imageVector = Icons.Filled.VideoCall,
+                                    contentDescription = ""
+                                )
                             }
                         }
                 )
-                Column(modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 8.dp) + Modifier.weight(
+                Column(modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 8.dp).weight(
                         0.66f
                 )) {
                     messageList?.value?.let { messages ->

@@ -2,9 +2,9 @@ package com.clearkeep.screen.chat.contact_search
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.People

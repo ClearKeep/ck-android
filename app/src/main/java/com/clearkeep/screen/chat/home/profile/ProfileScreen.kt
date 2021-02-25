@@ -1,11 +1,11 @@
 package com.clearkeep.screen.chat.home.profile
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Login
 import androidx.compose.runtime.Composable
@@ -39,9 +39,9 @@ fun ProfileScreen(
                     Text(text = "Profile")
                 },
         )
-        Spacer(Modifier.preferredHeight(60.dp))
+        Spacer(Modifier.height(60.dp))
         CircleAvatar("", size = 72.dp)
-        Spacer(Modifier.preferredHeight(20.dp))
+        Spacer(Modifier.height(20.dp))
         profile?.value?.let { user ->
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -52,7 +52,7 @@ fun ProfileScreen(
                 Text(text = user.email ?: "", style = MaterialTheme.typography.body2)
             }
         }
-        Spacer(Modifier.preferredHeight(40.dp))
+        Spacer(Modifier.height(40.dp))
         isLogoutProcessing.value.let {
             if (it == null || it == false) {
                 Row(
@@ -61,7 +61,10 @@ fun ProfileScreen(
                     }),
                     horizontalArrangement = Arrangement.Start
                 ) {
-                    Icon(Icons.Outlined.Login)
+                    Icon(
+                        imageVector = Icons.Outlined.Login,
+                        contentDescription = ""
+                    )
                     Spacer(modifier = Modifier.width(15.dp))
                     Text("Logout")
                 }

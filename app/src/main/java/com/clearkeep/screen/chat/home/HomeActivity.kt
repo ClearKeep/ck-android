@@ -5,11 +5,10 @@ import android.content.Intent
 import android.net.*
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -22,8 +21,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.VectorAsset
-import androidx.compose.ui.platform.setContent
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -148,7 +146,9 @@ class HomeActivity : AppCompatActivity() {
 
     @Composable
     private fun LoadingComposable() {
-        Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
         ) {
@@ -158,12 +158,14 @@ class HomeActivity : AppCompatActivity() {
 
     @Composable
     private fun ErrorComposable() {
-        Column(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
         ) {
             Text("Please try again")
-            Spacer(Modifier.preferredHeight(20.dp))
+            Spacer(Modifier.height(20.dp))
             CKButton(
                     "Try again",
                     onClick = {
@@ -178,27 +180,40 @@ class HomeActivity : AppCompatActivity() {
     private fun MainComposable() {
         val navController = rememberNavController()
         Scaffold(
-                bottomBar = {
-                    BottomNavigation {
-                        val navBackStackEntry by navController.currentBackStackEntryAsState()
-                        val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
-                        items.forEach { screen ->
-                            BottomNavigationItem(
-                                    selectedContentColor = MaterialTheme.colors.surface,
-                                    unselectedContentColor = MaterialTheme.colors.onBackground,
-                                    icon = { Icon(screen.iconId) },
-                                    label = { Text(stringResource(screen.resourceId), style = MaterialTheme.typography.body2.copy(fontSize = 10.sp)) },
-                                    selected = currentRoute == screen.route,
-                                    onClick = {
-                                        if (currentRoute != screen.route) {
-                                            navController.popBackStack(navController.graph.startDestination, false)
-                                            navController.navigate(screen.route)
-                                        }
-                                    }
-                            )
-                        }
+            bottomBar = {
+                BottomNavigation {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
+                    items.forEach { screen ->
+                        BottomNavigationItem(
+                            selectedContentColor = MaterialTheme.colors.surface,
+                            unselectedContentColor = MaterialTheme.colors.onBackground,
+                            icon = {
+                                Icon(
+                                    imageVector = screen.iconId,
+                                    contentDescription = ""
+                                )
+                            },
+                            label = {
+                                Text(
+                                    stringResource(screen.resourceId),
+                                    style = MaterialTheme.typography.body2.copy(fontSize = 10.sp)
+                                )
+                            },
+                            selected = currentRoute == screen.route,
+                            onClick = {
+                                if (currentRoute != screen.route) {
+                                    navController.popBackStack(
+                                        navController.graph.startDestination,
+                                        false
+                                    )
+                                    navController.navigate(screen.route)
+                                }
+                            }
+                        )
                     }
                 }
+            }
         ) {
             Box {
                 Column {
@@ -302,7 +317,7 @@ class HomeActivity : AppCompatActivity() {
     }
 }
 
-sealed class Screen(val route: String, @StringRes val resourceId: Int, val iconId: VectorAsset) {
+sealed class Screen(val route: String, @StringRes val resourceId: Int, val iconId: ImageVector) {
     object Chat : Screen("chat_screen", R.string.bottom_nav_single, Icons.Filled.Message)
     object People : Screen("contact_screen", R.string.bottom_nav_group, Icons.Filled.Contacts)
     object Profile : Screen("profile_screen", R.string.bottom_nav_profile, Icons.Filled.Person)

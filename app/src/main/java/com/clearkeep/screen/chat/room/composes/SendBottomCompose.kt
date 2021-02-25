@@ -1,33 +1,29 @@
 package com.clearkeep.screen.chat.room.composes
 
 import android.text.TextUtils
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.state
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
 import com.clearkeep.components.base.CKTextField
 
 @Composable
 fun SendBottomCompose(
     onSendMessage: (String) -> Unit
 ) {
-    val msgState = state { "" }
+    val msgState = mutableStateOf("")
 
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -56,7 +52,12 @@ fun SendBottomCompose(
             },
             modifier = Modifier.padding(8.dp),
         ) {
-            Icon(Icons.Filled.Send.copy(defaultHeight = 36.dp, defaultWidth = 36.dp), tint = Color.Blue)
+            Icon(
+                imageVector = Icons.Filled.Send,
+                contentDescription = "",
+                tint = Color.Blue,
+                modifier = Modifier.size(36.dp)
+            )
         }
     }
 }

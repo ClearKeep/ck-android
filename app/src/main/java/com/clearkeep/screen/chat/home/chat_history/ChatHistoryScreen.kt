@@ -1,9 +1,9 @@
 package com.clearkeep.screen.chat.home.chat_history
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,21 +35,30 @@ fun ChatHistoryScreen(
                 },
                 actions = {
                     IconButton(onClick = onCreateGroup) {
-                        Icon(Icons.Filled.Add)
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = ""
+                        )
                     }
                 }
         )
-        rooms?.let {
-            LazyColumnFor(
-                    items = it?.value?.data ?: emptyList(),
-                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
-            ) { room ->
-                Surface(color = Color.White) {
-                    RoomItem(
+        rooms?.value?.data?.let { values ->
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    top = 20.dp,
+                    end = 20.dp,
+                    start = 20.dp,
+                    bottom = 20.dp
+                ),
+            ) {
+                itemsIndexed(values) { _, room ->
+                    Surface(color = Color.White) {
+                        RoomItem(
                             room,
                             chatViewModel.getClientId(),
                             onRoomSelected
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -74,7 +83,9 @@ fun RoomItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar("", isGroup = room.isGroup())
-            Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
+            Column(modifier = Modifier
+                .padding(start = 20.dp)
+                .fillMaxWidth()) {
                 Row {
                     Text(text = roomName,
                         maxLines = 1,
