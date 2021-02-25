@@ -16,6 +16,7 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.NotificationManagerCompat
@@ -81,7 +82,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private var isOpenSettingScreen = false
 
-    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _: ActivityResult ->
+    private val startForResult = (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _: ActivityResult ->
         printlnCK("onActivityResult, open setting")
         isOpenSettingScreen = false
         requestCallPermissions()
