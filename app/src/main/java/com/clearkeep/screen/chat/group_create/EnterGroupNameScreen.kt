@@ -1,10 +1,10 @@
 package com.clearkeep.screen.chat.group_create
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.state
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -16,7 +16,7 @@ fun EnterGroupNameScreen(
         navController: NavHostController,
         createGroupViewModel: CreateGroupViewModel,
 ) {
-    val groupName = state { "" }
+    val groupName = mutableStateOf("")
 
     Column {
         TopAppBar(
@@ -29,7 +29,7 @@ fun EnterGroupNameScreen(
                     )
                 }
         )
-        Spacer(Modifier.preferredHeight(30.dp))
+        Spacer(Modifier.height(30.dp))
 
         Column (modifier = Modifier.padding(horizontal = 20.dp)) {
             CKTextField(
@@ -37,7 +37,7 @@ fun EnterGroupNameScreen(
                 "",
                 groupName
             )
-            Spacer(Modifier.preferredHeight(20.dp))
+            Spacer(Modifier.height(20.dp))
         }
     }
 }

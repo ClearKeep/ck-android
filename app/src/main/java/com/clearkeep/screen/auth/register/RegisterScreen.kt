@@ -2,16 +2,16 @@ package com.clearkeep.screen.auth.register
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.state
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -27,10 +27,9 @@ fun RegisterScreen(
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
-    val context = ContextAmbient.current
-    val email = state { "" }
-    val displayName = state { "" }
-    val password = state { "" }
+    val email = remember {mutableStateOf("")}
+    val displayName = remember {mutableStateOf("")}
+    val password = remember {mutableStateOf("")}
 
     val emailError = registerViewModel.emailError.observeAsState()
     val passError = registerViewModel.passError.observeAsState()
@@ -47,7 +46,10 @@ fun RegisterScreen(
                                 onBackPress()
                             }
                     ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = ""
+                        )
                     }
                 },
         )
@@ -61,14 +63,14 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Email,
                 error = emailError.value
             )
-            Spacer(Modifier.preferredHeight(10.dp))
+            Spacer(Modifier.height(10.dp))
             CKTextField(
                     "Display name",
                     "",
                     displayName,
                 error = displayNameError.value
             )
-            Spacer(Modifier.preferredHeight(10.dp))
+            Spacer(Modifier.height(10.dp))
             CKTextField(
                     "Password",
                     "",
@@ -76,7 +78,7 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Password,
                 error = passError.value
             )
-            Spacer(Modifier.preferredHeight(20.dp))
+            Spacer(Modifier.height(20.dp))
             CKButton(
                     stringResource(R.string.btn_register),
                     onClick = {

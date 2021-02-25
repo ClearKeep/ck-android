@@ -5,16 +5,17 @@ import android.text.TextUtils
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.state
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.ContextAmbient
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
@@ -28,8 +29,8 @@ fun ForgotScreen(
         onBackPress: () -> Unit,
         isLoading: Boolean = false
 ) {
-    val context = ContextAmbient.current
-    val email = state { "" }
+    val context = LocalContext.current
+    val email = remember {mutableStateOf("")}
     Column(modifier = Modifier.fillMaxSize()) {
         CKTopAppBar(
                 title = {
@@ -41,22 +42,25 @@ fun ForgotScreen(
                                 onBackPress()
                             }
                     ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = ""
+                        )
                     }
                 },
         )
         Column (modifier = Modifier.padding(horizontal = 30.dp).fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally) {
-            Spacer(Modifier.preferredHeight(80.dp))
+            Spacer(Modifier.height(80.dp))
             CKTextField(
                     "Email",
                     "",
                     email
             )
-            Spacer(Modifier.preferredHeight(15.dp))
+            Spacer(Modifier.height(15.dp))
             Text(text = "Please enter email here. Then, click on active link to change your password",
                     style = MaterialTheme.typography.caption)
-            Spacer(Modifier.preferredHeight(30.dp))
+            Spacer(Modifier.height(30.dp))
             CKButton(
                     stringResource(R.string.btn_reset_password),
                     onClick = {

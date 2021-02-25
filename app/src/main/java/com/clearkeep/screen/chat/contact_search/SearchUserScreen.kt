@@ -1,9 +1,9 @@
 package com.clearkeep.screen.chat.contact_search
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -40,18 +40,22 @@ fun SearchUserScreen(
                                 onFinish(null)
                             }
                     ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = ""
+                        )
                     }
                 },
         )
         friends?.value?.let {
-            LazyColumnFor(
+            LazyColumn(
                     modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                    items = it,
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
-            ) { friend ->
-                Surface(color = Color.White) {
-                    FriendItem(friend, onFinish)
+            ) {
+                itemsIndexed(it) { _, friend ->
+                    Surface(color = Color.White) {
+                        FriendItem(friend, onFinish)
+                    }
                 }
             }
         }

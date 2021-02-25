@@ -1,6 +1,6 @@
 package com.clearkeep.screen.chat.home.composes
 
-import androidx.compose.foundation.layout.preferredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.ui.tooling.preview.Preview
 import com.clearkeep.components.colorTest
 
 @Composable
@@ -23,22 +22,24 @@ fun CircleAvatar(
         elevation: Dp = 0.dp,
 ) {
     Card(modifier = Modifier
-        .preferredSize(size),
+        .size(size),
         shape = CircleShape,
         backgroundColor = colorTest,
         contentColor = Color.White,
         elevation = elevation,
     ){
         if (isGroup) {
-            Icon(Icons.Filled.Groups.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
+            Icon(
+                imageVector = Icons.Filled.Groups,
+                contentDescription = "",
+                modifier = Modifier.size(36.dp)
+            )
         } else {
-            Icon(Icons.Filled.Person.copy(defaultHeight = 36.dp, defaultWidth = 36.dp))
+            Icon(
+                imageVector = Icons.Filled.Person,
+                contentDescription = "",
+                modifier = Modifier.size(36.dp)
+            )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewCircleAvatar() {
-    CircleAvatar("")
 }

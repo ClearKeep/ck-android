@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.room.room_detail
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -40,7 +39,10 @@ fun RoomInfoScreen(
                             navHostController.popBackStack(navHostController.graph.startDestination, false)
                         }
                     ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = ""
+                        )
                     }
                 },
             )
@@ -66,11 +68,14 @@ fun RoomInfoScreen(
                             Surface(
                                     color = Color.Gray.copy(alpha = 0.8f),
                                     shape = CircleShape,
-                                    modifier = Modifier.preferredSize(30.dp, 30.dp).clickable(onClick = {
+                                    modifier = Modifier.size(30.dp, 30.dp).clickable(onClick = {
                                         navHostController.navigate("invite_group_screen")
                                     })
                             ) {
-                                Icon(asset = Icons.Filled.Add)
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = ""
+                                )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(text = "Invite Friend", style = MaterialTheme.typography.body2)
@@ -87,9 +92,12 @@ fun RoomInfoScreen(
                             Surface(
                                     color = Color.Gray.copy(alpha = 0.8f),
                                     shape = CircleShape,
-                                    modifier = Modifier.preferredSize(30.dp, 30.dp)
+                                    modifier = Modifier.size(30.dp, 30.dp)
                             ) {
-                                Icon(asset = Icons.Filled.Person)
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = ""
+                                )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(text = "Show members", style = MaterialTheme.typography.body2)

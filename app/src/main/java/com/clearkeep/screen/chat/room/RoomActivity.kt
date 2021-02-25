@@ -3,8 +3,8 @@ package com.clearkeep.screen.chat.room
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.ui.platform.setContent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost

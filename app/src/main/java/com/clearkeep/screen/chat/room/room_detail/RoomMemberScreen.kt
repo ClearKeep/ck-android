@@ -1,8 +1,8 @@
 package com.clearkeep.screen.chat.room.room_detail
 
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -37,20 +37,24 @@ fun GroupMemberScreen(
                                 navHostController.popBackStack()
                             }
                     ) {
-                        Icon(asset = Icons.Filled.ArrowBack)
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = ""
+                        )
                     }
                 },
         )
         Spacer(modifier = Modifier.height(30.dp))
         friends?.value?.let {
             FriendItem(friend = People("", "You"))
-            LazyColumnFor(
-                    modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                    items = it,
-                    contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp),
-            ) { friend ->
-                Surface(color = Color.White) {
-                    FriendItem(friend)
+            LazyColumn(
+                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp),
+            ) {
+                itemsIndexed(it) { _, friend ->
+                    Surface(color = Color.White) {
+                        FriendItem(friend)
+                    }
                 }
             }
         }
