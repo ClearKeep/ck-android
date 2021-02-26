@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +31,7 @@ fun RoomScreen(
         onFinishActivity: () -> Unit,
 ) {
     val group = roomViewModel.group.observeAsState()
+    /*val isOnBottomMessage = remember { mutableStateOf(true) }*/
     group?.value?.let { group ->
         if (group.id != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.id)
@@ -92,7 +95,11 @@ fun RoomScreen(
                                 messageList = messages,
                                 clients = group.clientList,
                                 myClientId = roomViewModel.getClientId(),
-                                group.isGroup()
+                                group.isGroup(),
+                            /*isOnBottom = isOnBottomMessage.value,
+                            onBottomButtonClick = {
+                                isOnBottomMessage.value = true
+                            }*/
                         )
                     }
                 }

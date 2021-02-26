@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
@@ -12,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
@@ -47,6 +50,7 @@ class RoomActivity : AppCompatActivity() {
         setContent {
             CKTheme {
                 val navController = rememberNavController()
+                val selectedItem = remember { mutableStateListOf<People>() }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         RoomScreen(
@@ -73,7 +77,8 @@ class RoomActivity : AppCompatActivity() {
                                 },
                                 onBackPressed = {
                                     navController.popBackStack()
-                                }
+                                },
+                            selectedItem = selectedItem
                         )
                     }
                     composable("member_group_screen") {

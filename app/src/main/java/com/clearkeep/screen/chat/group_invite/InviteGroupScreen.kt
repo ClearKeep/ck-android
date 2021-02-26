@@ -8,9 +8,11 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,10 +32,9 @@ fun InviteGroupScreen(
         onFriendSelected: (List<People>) -> Unit,
         onBackPressed: () -> Unit,
         isSelectionOnly: Boolean = false,
+        selectedItem: SnapshotStateList<People>
 ) {
     val friends = inviteGroupViewModel.friends.observeAsState()
-
-    val selectedItem = remember { mutableStateListOf<People>() }
 
     Column {
         CKTopAppBar(
@@ -51,20 +52,6 @@ fun InviteGroupScreen(
                 }
             },
             actions = {
-                /*Box(modifier = Modifier.clickable(onClick = {
-                    if (isSelectionOnly) {
-                        onFriendSelected(selectedItem)
-                    } else {
-                        inviteGroupViewModel.inviteFriends(selectedItem)
-                    }
-                })) {
-                    Text(modifier = Modifier.padding(horizontal = 8.dp),
-                        text = if (isSelectionOnly) "Next" else "Invite",
-                        style = MaterialTheme.typography.body2.copy(
-                            color = Color.Blue
-                        )
-                    )
-                }*/
                 CKTextButton(title = if (isSelectionOnly) "Next" else "Invite",
                     onClick = {
                         if (isSelectionOnly) {
@@ -72,7 +59,8 @@ fun InviteGroupScreen(
                         } else {
                             inviteGroupViewModel.inviteFriends(selectedItem)
                         }
-                    }
+                    },
+                    enabled = !selectedItem.isEmpty()
                 )
             }
         )
