@@ -5,15 +5,14 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowCircleDown
+import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +25,8 @@ import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 
+var mIsNewMessage = true
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
@@ -33,14 +34,35 @@ fun MessageListView(
     clients: List<People>,
     myClientId: String,
     isGroup: Boolean,
-    /*isOnBottom: Boolean,
-    onBottomButtonClick: () -> Unit*/
+    isNewMessage: Boolean = true
 ) {
+    printlnCK("isNewMessage = $isNewMessage")
+    mIsNewMessage = isNewMessage
+    MessageListView(
+        messageList = messageList,
+        clients = clients,
+        myClientId = myClientId,
+        isGroup = isGroup,
+    )
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun MessageListView(
+    messageList: List<Message>,
+    clients: List<People>,
+    myClientId: String,
+    isGroup: Boolean,
+) {
+    printlnCK("MessageListView internal")
     val reversedMessage = messageList.reversed()
     Box() {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
-        var isNewMessage = remember {listState.firstVisibleItemIndex != 0}
+        if (listState.firstVisibleItemIndex == 0) {
+            mIsNewMessage = false
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             reverseLayout = true,
@@ -62,9 +84,6 @@ fun MessageListView(
                             ),
                         horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start,
                     ) {
-                        /*if (!item.message.isNullOrEmpty()) {
-                            if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
-                        }*/
                         if (isMyMessage) OurMessage(item) else FriendMessage(item, userName, isGroup)
                     }
                     Spacer(modifier = Modifier.height(10.dp))
@@ -73,18 +92,24 @@ fun MessageListView(
         }
         val showButton = remember {
             derivedStateOf {
-                listState.firstVisibleItemIndex > 0
+                val isBottom = listState.firstVisibleItemIndex == 0
+                if (isBottom) {
+                    mIsNewMessage = false
+                }
+                !isBottom
             }
         }
-        Row(modifier = Modifier.fillMaxSize().padding(bottom = 20.dp),
+        Row(modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 20.dp),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Center,
         ) {
-            AnimatedVisibility(visible = showButton.value) {
+            if (showButton.value) {
                 ScrollToButtonButton(
-                    isNewMessage = isNewMessage,
+                    isNewMessage = mIsNewMessage,
                     onClick = {
-                        isNewMessage = false
+                        mIsNewMessage = false
                         coroutineScope.launch {
                             listState.scrollToItem(0)
                         }
@@ -97,9 +122,11 @@ fun MessageListView(
 
 @Composable
 fun ScrollToButtonButton(isNewMessage: Boolean, onClick: () -> Unit) {
-    Column(modifier = Modifier.clickable(onClick = onClick)) {
-        if (isNewMessage) Text(text = "new message")
-        Icon(imageVector = Icons.Filled.ArrowCircleDown, contentDescription = "")
+    Column(modifier = Modifier.clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isNewMessage) Text(text = "new message", style = MaterialTheme.typography.caption.copy(color = Color.Blue))
+        Icon(imageVector = Icons.Rounded.ArrowDownward, contentDescription = "", tint = Color.Blue)
     }
 }
 
