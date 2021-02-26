@@ -29,6 +29,7 @@ import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
+import java.util.concurrent.TimeUnit
 
 @InstallIn(ApplicationComponent::class)
 @Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])
@@ -42,6 +43,7 @@ class AppModule {
             .build()
 
         return SignalKeyDistributionGrpc.newStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -53,6 +55,7 @@ class AppModule {
             .build()
 
         return SignalKeyDistributionGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -64,6 +67,7 @@ class AppModule {
                 .build()
 
         return NotifyGrpc.newStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -75,6 +79,7 @@ class AppModule {
                 .build()
 
         return AuthGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -87,6 +92,7 @@ class AppModule {
 
         return UserGrpc.newBlockingStub(channel)
             .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -98,6 +104,7 @@ class AppModule {
                 .build()
 
         return GroupGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -109,6 +116,7 @@ class AppModule {
                 .build()
 
         return MessageGrpc.newBlockingStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -120,6 +128,7 @@ class AppModule {
             .build()
 
         return MessageGrpc.newStub(channel)
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -132,6 +141,7 @@ class AppModule {
 
         return NotifyPushGrpc.newBlockingStub(channel)
                 .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
     }
 
     @Singleton
@@ -143,7 +153,13 @@ class AppModule {
                 .build()
 
         return VideoCallGrpc.newBlockingStub(channel)
-                .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
+            .withDeadlineAfter(REQUEST_TIME_OUT, TimeUnit.MILLISECONDS)
+            .withCallCredentials(
+                CallCredentialsImpl(
+                    userManager.getAccessKey(),
+                    userManager.getHashKey()
+                )
+            )
     }
 
     @Singleton
@@ -161,6 +177,10 @@ class AppModule {
             signalKeyDAO: SignalKeyDAO,
     ): InMemorySenderKeyStore {
         return InMemorySenderKeyStore(signalKeyDAO)
+    }
+
+    companion object {
+        private const val REQUEST_TIME_OUT = 30 * 1000L
     }
 }
 
