@@ -52,13 +52,11 @@ fun ChatHistoryScreen(
                 ),
             ) {
                 itemsIndexed(values) { _, room ->
-                    Surface(color = Color.White) {
-                        RoomItem(
-                            room,
-                            chatViewModel.getClientId(),
-                            onRoomSelected
-                        )
-                    }
+                    RoomItem(
+                        room,
+                        chatViewModel.getClientId(),
+                        onRoomSelected
+                    )
                 }
             }
         }
