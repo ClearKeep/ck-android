@@ -99,7 +99,9 @@ fun RoomItem(
                 }
                 room.lastMessage?.let { lastMessage ->
                     Text(text = lastMessage.message,
-                        style = MaterialTheme.typography.caption
+                        style = MaterialTheme.typography.caption,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

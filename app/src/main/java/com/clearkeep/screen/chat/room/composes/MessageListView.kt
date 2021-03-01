@@ -54,7 +54,6 @@ private fun MessageListView(
     myClientId: String,
     isGroup: Boolean,
 ) {
-    printlnCK("MessageListView internal")
     val reversedMessage = messageList.reversed()
     Box() {
         val listState = rememberLazyListState()
