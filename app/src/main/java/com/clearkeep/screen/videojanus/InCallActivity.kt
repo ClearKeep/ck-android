@@ -233,6 +233,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
+        printlnCK("Janus URL: $JANUS_URI")
         printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
                 ", group = $groupId, token = $token")
         mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
