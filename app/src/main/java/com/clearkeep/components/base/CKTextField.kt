@@ -25,7 +25,6 @@ fun CKTextField(
         passwordVisibility: Boolean = false,
         error: String? = null
 ) {
-        printlnCK("text = ${textValue.value}")
     Column {
             OutlinedTextField(
                     value = textValue.value,
