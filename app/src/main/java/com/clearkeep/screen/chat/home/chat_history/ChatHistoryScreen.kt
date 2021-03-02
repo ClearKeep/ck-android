@@ -12,10 +12,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.R
+import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
@@ -34,12 +37,10 @@ fun ChatHistoryScreen(
                     Text(text = "Chat")
                 },
                 actions = {
-                    IconButton(onClick = onCreateGroup) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = ""
-                        )
-                    }
+                    CKTextButton(
+                        title = stringResource(R.string.btn_create_group),
+                        onClick = onCreateGroup,
+                    )
                 }
         )
         rooms?.value?.data?.let { values ->
