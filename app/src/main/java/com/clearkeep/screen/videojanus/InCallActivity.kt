@@ -52,7 +52,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         CALL_NOT_READY
     }
 
-    val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+    private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var mIsMute = false
     private var mIsMuteVideo = false
@@ -280,7 +280,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 finishAndRemoveFromTask()
             }
             CallState.ANSWERED -> {
-
                 binding.tvCallState.text = getString(R.string.text_started)
                 displayCountUpClockOfConversation()
                 showOrHideAvatar(false)
@@ -406,11 +405,19 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun finishAndRemoveFromTask() {
+        cancelCallAPI()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {
             finish()
         }
+    }
+
+    private fun cancelCallAPI() {
+        val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
+        /*GlobalScope.launch {
+            videoCallRepository.cancelCall(groupId)
+        }*/
     }
 
     private fun offerPeerConnection(handleId: BigInteger) {

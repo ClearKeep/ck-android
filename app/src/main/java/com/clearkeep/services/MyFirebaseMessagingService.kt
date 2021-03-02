@@ -21,7 +21,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.w(TAG, "onMessageReceived" + remoteMessage.data.toString())
         val notifyType = remoteMessage.data["notify_type"] ?: ""
 
-        if (!notifyType.isNullOrBlank() && notifyType == "request_call") {
+        if (notifyType.isNullOrBlank()) {
+            return
+        } else if (notifyType == "request_call") {
             val groupId = remoteMessage.data["group_id"]
             val avatar = remoteMessage.data["from_client_avatar"] ?: ""
             val fromClientId = remoteMessage.data["from_client_id"]
@@ -40,6 +42,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             AppCall.inComingCall(this, rtcToken, groupId!!, userManager.getClientId(), fromClientName, "",
                     turnUrl, turnUser, turnPass, stunUrl)
+        } else if (notifyType == "cancel_request_call") {
+            val groupId = remoteMessage.data["group_id"]
+            val fromClientId = remoteMessage.data["from_client_id"]
         }
     }
 
