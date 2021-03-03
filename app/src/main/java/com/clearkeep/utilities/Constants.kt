@@ -26,6 +26,9 @@ const val EXTRA_STUN_URL = "stun_url"
 const val ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED = "ck.action.end.service.call"
 const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
 
+const val ACTION_CALL_CANCEL = "ck.action.end.call"
+const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
+
 const val INCOMING_NOTIFICATION_ID = 123456
 const val INCOMING_CHANNEL_ID = "incoming_channel_id"
 const val INCOMING_CHANNEL_NAME = "incoming_channel_name"
