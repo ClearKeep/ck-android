@@ -27,18 +27,18 @@ class LoginViewModel @Inject constructor(
     val passError: LiveData<String>
         get() = _passError
 
-    suspend fun login(context: Context, email: String?, password: String?): Resource<AuthOuterClass.AuthRes>? {
+    suspend fun login(context: Context, email: String, password: String): Resource<AuthOuterClass.AuthRes>? {
         _emailError.value = ""
         _passError.value = ""
         _isLoading.value = true
 
-        val result = if (email.isNullOrEmpty()) {
+        val result = if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
             null
         } else if (!email.trim().isValidEmail()) {
             _emailError.value = context.getString(R.string.email_invalid)
             null
-        } else if (password.isNullOrEmpty()) {
+        } else if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             null
         } else {

@@ -40,16 +40,16 @@ class RegisterViewModel @Inject constructor(
         _displayNameError.value = ""
         _isLoading.value = true
 
-        val result = if (email.isNullOrEmpty()) {
+        val result = if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
             null
         } else if (!email.trim().isValidEmail()) {
             _emailError.value = context.getString(R.string.email_invalid)
             null
-        } else if (displayName.isNullOrEmpty()) {
+        } else if (displayName.isBlank()) {
             _displayNameError.value = context.getString(R.string.display_empty)
             null
-        } else if (password.isNullOrEmpty()) {
+        } else if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             null
         } else {
