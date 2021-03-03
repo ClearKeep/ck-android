@@ -2,7 +2,10 @@ package com.clearkeep.screen.videojanus
 
 import android.app.Activity
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -14,18 +17,24 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.R
+import com.clearkeep.screen.repo.VideoCallRepository
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
+import dagger.hilt.android.AndroidEntryPoint
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-
-class InComingCallActivity : Activity(), View.OnClickListener {
+@AndroidEntryPoint
+class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private var mUserNameInConversation: String? = null
     private var mAvatarInConversation: String? = null
-    private var mGroupId: String? = null
     private var mReceiverId: String? = null
+    private lateinit var mGroupId: String
     private lateinit var mToken: String
     private lateinit var imgAnswer: ImageView
     private lateinit var imgEnd: ImageView
@@ -35,6 +44,19 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     private var ringtone: Ringtone? = null
 
     private lateinit var mHandler : Handler
+
+    @Inject
+    lateinit var videoCallRepository: VideoCallRepository
+
+    private val endCallReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
+            printlnCK("receive a end call event with group id = $groupId")
+            if (mGroupId == groupId) {
+                finishAndRemoveFromTask()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,15 +73,27 @@ class InComingCallActivity : Activity(), View.OnClickListener {
 
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
-        mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)
+        mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mReceiverId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
         mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
         initViews()
 
+        registerEndCallReceiver()
         mHandler = Handler(mainLooper)
         mHandler.postDelayed({
             finishAndRemoveFromTask()
         }, 40 * 1000)
+    }
+
+    private fun registerEndCallReceiver() {
+        registerReceiver(
+            endCallReceiver,
+            IntentFilter(ACTION_CALL_CANCEL)
+        )
+    }
+
+    private fun unRegisterEndCallReceiver() {
+        unregisterReceiver(endCallReceiver)
     }
 
     private fun playRingTone() {
@@ -103,6 +137,7 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
+                cancelCallAPI(mGroupId.toInt())
                 finishAndRemoveFromTask()
             }
             R.id.imgAnswer -> {
@@ -120,12 +155,19 @@ class InComingCallActivity : Activity(), View.OnClickListener {
     }
 
     private fun finishAndRemoveFromTask() {
+        unRegisterEndCallReceiver()
         ringtone?.stop()
         mHandler.removeCallbacksAndMessages(null)
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {
             finish()
+        }
+    }
+
+    private fun cancelCallAPI(groupId: Int) {
+        GlobalScope.launch {
+            videoCallRepository.cancelCall(groupId)
         }
     }
 }

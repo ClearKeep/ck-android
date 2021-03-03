@@ -39,7 +39,7 @@ object AppCall {
         context.startActivity(intent)
     }
 
-    fun inComingCall(context: Context, token: String, groupId: String?, ourClientId: String?,
+    fun inComingCall(context: Context, token: String, groupId: String, ourClientId: String?,
                      userName: String?, avatar: String?,
                      turnUrl: String, turnUser: String, turnPass: String,
                      stunUrl: String) {
@@ -48,15 +48,15 @@ object AppCall {
                 userName, avatar, turnUrl, turnUser, turnPass, stunUrl, true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val attributes = AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .build()
             val channelId = INCOMING_CHANNEL_ID
             val channelName = INCOMING_CHANNEL_NAME
             val notificationId = INCOMING_NOTIFICATION_ID
             var mChannel = notificationManager.getNotificationChannel(channelId)
             if (mChannel == null) {
+                val attributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build()
                 val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
                 mChannel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
                 mChannel.setSound(notification, attributes)
@@ -72,14 +72,14 @@ object AppCall {
                     PendingIntent.FLAG_UPDATE_CURRENT)
 
             val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
-            val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, 0)
+            dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
+            val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             builder.setSmallIcon(R.drawable.ic_logo)
                     .setContentTitle(context.getString(R.string.app_name))
                     .setContentText("$userName calling")
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
-                    /*.setContentIntent(pendingIntent)*/
                     .setFullScreenIntent(pendingIntent, true)
                     .setAutoCancel(true)
                     .setTimeoutAfter(20 * 1000)

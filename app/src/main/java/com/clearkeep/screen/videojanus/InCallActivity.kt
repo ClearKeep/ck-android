@@ -2,7 +2,10 @@ package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
@@ -60,6 +63,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private var mCurrentCallState: CallState = CallState.CALLING
 
+    private lateinit var mGroupId: String
     private lateinit var binding: ActivityInCallBinding
 
     @Inject
@@ -87,6 +91,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         isOpenSettingScreen = false
         requestCallPermissions()
     }
+
+    private var endCallReceiver: BroadcastReceiver? = null
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,11 +126,15 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             a.recycle()
         }
 
+        mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
+
         rootEglBase = EglBase.create()
         binding.localSurfaceView.init(rootEglBase.eglBaseContext, null)
         binding.localSurfaceView.setEnableHardwareScaler(true)
 
         initViews()
+
+        registerEndCallReceiver()
 
         requestCallPermissions()
         updateCallStatus(mCurrentCallState)
@@ -185,7 +195,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     override fun onPermissionsDenied() {
-        finishAndRemoveFromTask()
+        finishAndReleaseResource()
     }
 
     override fun onPermissionsForeverDenied() {
@@ -201,7 +211,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                     openSettingScreen()
                 }
                 .setNegativeButton("Cancel") { _, _ ->
-                    finishAndRemoveFromTask()
+                    finishAndReleaseResource()
                 }
                 .setCancelable(false)
                 .create()
@@ -215,9 +225,33 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         startForResult.launch(intent)
     }
 
+    private fun registerEndCallReceiver() {
+        endCallReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
+                printlnCK("receive a end call event with group id = $groupId")
+                if (mGroupId == groupId) {
+                    hangup()
+                    finishAndReleaseResource()
+                }
+            }
+        }
+        registerReceiver(
+            endCallReceiver,
+            IntentFilter(ACTION_CALL_CANCEL)
+        )
+    }
+
+    private fun unRegisterEndCallReceiver() {
+        if (endCallReceiver != null) {
+            unregisterReceiver(endCallReceiver)
+            endCallReceiver = null
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        rootEglBase.release()
+        /*rootEglBase.release()
         val localRender = binding.localSurfaceView
         localRender.release()
         val renderList = remoteRenders.values
@@ -225,7 +259,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             for (render in renderList) {
                 render.release()
             }
-        }
+        }*/
         if (binding.chronometer.visibility == View.VISIBLE) {
             binding.chronometer.stop()
         }
@@ -272,12 +306,12 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             CallState.BUSY, CallState.CALL_NOT_READY -> {
                 binding.tvCallState.text = getString(R.string.text_busy)
                 hangup()
-                finishAndRemoveFromTask()
+                finishAndReleaseResource()
             }
             CallState.ENDED -> {
                 binding.tvCallState.text = getString(R.string.text_end)
                 hangup()
-                finishAndRemoveFromTask()
+                finishAndReleaseResource()
             }
             CallState.ANSWERED -> {
                 binding.tvCallState.text = getString(R.string.text_started)
@@ -329,14 +363,14 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         when (view.id) {
             R.id.imgEnd -> {
                 hangup()
-                finishAndRemoveFromTask()
+                finishAndReleaseResource()
             }
             R.id.imgBack -> {
                 if (hasSupportPIP()) {
                     enterPIPMode()
                 } else {
                     hangup()
-                    finishAndRemoveFromTask()
+                    finishAndReleaseResource()
                 }
             }
             R.id.imgSpeaker -> {
@@ -404,8 +438,11 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         peerConnectionClient?.close()
     }
 
-    private fun finishAndRemoveFromTask() {
-        cancelCallAPI()
+    private fun finishAndReleaseResource() {
+        unRegisterEndCallReceiver()
+        if (mCurrentCallState == CallState.CALLING) {
+            cancelCallAPI()
+        }
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {
@@ -414,10 +451,9 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun cancelCallAPI() {
-        val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-        /*GlobalScope.launch {
-            videoCallRepository.cancelCall(groupId)
-        }*/
+        GlobalScope.launch {
+            videoCallRepository.cancelCall(mGroupId.toInt())
+        }
     }
 
     private fun offerPeerConnection(handleId: BigInteger) {
@@ -454,7 +490,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         removeRemoteRender(handleId)
     }
 
-    // interface PeerConnectionClient.PeerConnectionEvents
     override fun onLocalDescription(sdp: SessionDescription, handleId: BigInteger) {
         printlnCK(sdp.type.toString())
         mWebSocketChannel?.publisherCreateOffer(handleId, sdp)
@@ -549,6 +584,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     companion object {
-        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
+        private const val CALL_WAIT_TIME_OUT: Long = 20 * 1000
     }
 }

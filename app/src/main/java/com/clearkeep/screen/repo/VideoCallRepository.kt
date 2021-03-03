@@ -29,13 +29,15 @@ class VideoCallRepository @Inject constructor(
     }
 
     suspend fun cancelCall(groupId: Int) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("requestVideoCall: groupId = $groupId")
+        printlnCK("cancelCall: groupId = $groupId")
         try {
             val request = VideoCallOuterClass.VideoCallRequest.newBuilder()
                 .setGroupId(groupId.toLong())
                 .setClientId(userManager.getClientId())
                 .build()
-            return@withContext videoCallBlockingStub.cancelRequestCall(request).success
+            val success = videoCallBlockingStub.cancelRequestCall(request).success
+            printlnCK("cancelCall, success = $success")
+            return@withContext success
         } catch (e: Exception) {
             printlnCK("cancelCall: $e")
             return@withContext false
