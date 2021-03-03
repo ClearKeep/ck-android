@@ -42,8 +42,8 @@ fun EnterGroupNameScreen(
             actions = {
                 CKTextButton(
                     title = "Create",
-                    onClick = { createGroupViewModel.createGroup(groupName.value) },
-                    enabled = groupName.value.isNotEmpty()
+                    onClick = { createGroupViewModel.createGroup(groupName.value.trim()) },
+                    enabled = groupName.value.isNotBlank()
                 )
             }
         )
