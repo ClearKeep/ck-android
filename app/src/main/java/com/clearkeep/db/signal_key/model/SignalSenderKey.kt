@@ -1,19 +1,19 @@
 package com.clearkeep.db.signal_key.model
 
+import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
 data class SignalSenderKey(
+    @NonNull
+    @PrimaryKey val id: String,
         @ColumnInfo(name = "group_id") val groupId: String,
         @ColumnInfo(name = "sender_name") val senderName: String,
         @ColumnInfo(name = "device_id") val deviceId: Int,
         @ColumnInfo(name = "sender_key") val senderKey: ByteArray,
 ) {
-    @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

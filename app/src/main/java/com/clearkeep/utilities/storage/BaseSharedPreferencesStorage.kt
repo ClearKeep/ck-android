@@ -28,6 +28,17 @@ open class BaseSharedPreferencesStorage constructor(context: Context, name: Stri
         return sharedPreferences.getInt(key, -1)
     }
 
+    override fun setLong(key: String, value: Long) {
+        with(sharedPreferences.edit()) {
+            putLong(key, value)
+            apply()
+        }
+    }
+
+    override fun getLong(key: String): Long {
+        return sharedPreferences.getLong(key, -1)
+    }
+
     override fun setBoolean(key: String, value: Boolean) {
         with(sharedPreferences.edit()) {
             putBoolean(key, value)

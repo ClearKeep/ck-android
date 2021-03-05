@@ -3,11 +3,8 @@ package com.clearkeep.screen.repo
 import auth.AuthGrpc
 import auth.AuthOuterClass
 import com.clearkeep.di.CallCredentialsImpl
-import com.clearkeep.utilities.BASE_URL
-import com.clearkeep.utilities.PORT
-import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
@@ -88,6 +85,7 @@ class AuthRepository @Inject constructor(
             val response = authBlockingStub.login(request)
             if (response.baseResponse.success) {
                 printlnCK("login successfully")
+                userManager.saveLoginTime(getCurrentDateTime().time)
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)

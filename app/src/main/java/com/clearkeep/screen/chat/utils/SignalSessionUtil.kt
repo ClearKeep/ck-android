@@ -56,15 +56,13 @@ suspend fun decryptGroupMessage(
     val groupSender = SenderKeyName(groupId.toString(), senderAddress)
     val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
 
-    val initSession = initSessionUserInGroup(
+    initSessionUserInGroup(
             groupId, fromClientId, groupSender,
             clientBlocking, senderKeyStore, false)
-    if (!initSession) {
-        throw Exception("can not init session in group $groupId")
-    }
     var plaintextFromAlice = try {
         bobGroupCipher.decrypt(message.toByteArray())
     } catch (ex: Exception) {
+        printlnCK("decryptGroupMessage, $ex")
         val initSessionAgain = initSessionUserInGroup(
                 groupId, fromClientId, groupSender,
                 clientBlocking, senderKeyStore, true)

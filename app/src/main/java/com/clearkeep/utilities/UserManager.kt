@@ -13,6 +13,7 @@ private const val REFRESH_TOKEN = "refresh_token"
 private const val HASH_KEY = "hash_key"
 private const val CLIENT_ID = "client_id"
 private const val DEVICE_ID = "device_id"
+private const val TIME_USER_LOGIN = "time_user_login"
 
 @Singleton
 class UserManager @Inject constructor(
@@ -59,6 +60,14 @@ class UserManager @Inject constructor(
 
     fun getRefreshToken() : String {
         return userStorage.getString(REFRESH_TOKEN)
+    }
+
+    fun saveLoginTime(time: Long) {
+        userStorage.setLong(TIME_USER_LOGIN, time)
+    }
+
+    fun getLoginTime() : Long {
+        return userStorage.getLong(TIME_USER_LOGIN)
     }
 
     fun getUniqueDeviceID(): String {
