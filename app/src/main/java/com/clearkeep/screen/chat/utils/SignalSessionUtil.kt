@@ -56,6 +56,7 @@ suspend fun decryptGroupMessage(
     val groupSender = SenderKeyName(groupId.toString(), senderAddress)
     val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
 
+    printlnCK("decryptGroupMessage: groupId=$groupId, fromClientId=$fromClientId")
     initSessionUserInGroup(
             groupId, fromClientId, groupSender,
             clientBlocking, senderKeyStore, false)
@@ -124,9 +125,9 @@ fun initSessionUserInGroup(
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         senderKeyStore: InMemorySenderKeyStore, isForceProcess: Boolean,
 ): Boolean {
-    printlnCK("initSessionUserInGroup, isForceProcess = $isForceProcess")
     val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
     if (senderKeyRecord.isEmpty || isForceProcess) {
+        printlnCK("initSessionUserInGroup, process new session")
         try {
             val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)
