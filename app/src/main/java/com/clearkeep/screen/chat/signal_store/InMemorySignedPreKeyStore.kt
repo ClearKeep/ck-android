@@ -30,7 +30,7 @@ class InMemorySignedPreKeyStore(
             }
 
             if (record == null) {
-                throw InvalidKeyIdException("No such prekeyrecord!")
+                throw InvalidKeyIdException("InMemorySignedPreKeyStore, No such prekeyrecord!")
             }
             SignedPreKeyRecord(record)
         } catch (e: IOException) {
