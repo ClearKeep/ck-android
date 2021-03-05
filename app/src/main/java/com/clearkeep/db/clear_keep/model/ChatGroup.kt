@@ -32,6 +32,8 @@ data class ChatGroup(
         @ColumnInfo(name = "last_message") val lastMessage: Message?,
 
         @ColumnInfo(name = "last_message_at") val lastMessageAt: Long,
+
+        @ColumnInfo(name = "last_message_sync_stamp") val lastMessageSyncTimestamp: Long,
 ) {
         fun isGroup() = isGroup(groupType)
 

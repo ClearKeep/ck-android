@@ -159,7 +159,8 @@ class GroupRepository @Inject constructor(
                 // TODO
                 isJoined = false,
                 lastMessage = null,
-                lastMessageAt = 0
+                lastMessageAt = 0,
+            lastMessageSyncTimestamp = 0
         )
     }
 
@@ -196,7 +197,8 @@ class GroupRepository @Inject constructor(
                 isJoined = true,
 
                 lastMessage = group.lastMessage,
-                lastMessageAt = group.lastMessageAt
+                lastMessageAt = group.lastMessageAt,
+            lastMessageSyncTimestamp = group.lastMessageSyncTimestamp
         )
         groupDAO.update(updateGroup)
         return true
@@ -205,7 +207,9 @@ class GroupRepository @Inject constructor(
     suspend fun updateRoom(room: ChatGroup) = groupDAO.update(room)
 
     private suspend fun convertGroupFromResponse(response: GroupOuterClass.GroupObjectResponse): ChatGroup {
-        val isRegisteredKey = groupDAO.getGroupById(response.groupId)?.isJoined ?: false
+        val oldGroup = groupDAO.getGroupById(response.groupId)
+        val isRegisteredKey = oldGroup?.isJoined ?: false
+        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: userManager.getLoginTime()
         return ChatGroup(
                 id = response.groupId,
                 groupName = response.groupName,
@@ -227,7 +231,8 @@ class GroupRepository @Inject constructor(
                         response.lastMessage, clientBlocking,
                         senderKeyStore, signalProtocolStore
                 ),
-                lastMessageAt = response.lastMessageAt
+                lastMessageAt = response.lastMessageAt,
+            lastMessageSyncTimestamp = lastMessageSyncTime
         )
     }
 

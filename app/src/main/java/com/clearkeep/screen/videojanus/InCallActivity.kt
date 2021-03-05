@@ -501,7 +501,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     override fun onIceCandidate(candidate: IceCandidate?, handleId: BigInteger) {
-        printlnCK("=========onIceCandidate========")
         if (candidate != null) {
             mWebSocketChannel?.trickleCandidate(handleId, candidate)
         } else {
@@ -512,15 +511,12 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {}
 
     override fun onIceConnected() {
-        printlnCK("onIceConnected")
     }
 
     override fun onIceDisconnected() {
-        printlnCK("onIceDisconnected")
     }
 
     override fun onPeerConnectionClosed() {
-        printlnCK("onPeerConnectionClosed")
     }
 
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {}
@@ -567,7 +563,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private fun updateRenders() {
         binding.remoteRoot.removeAllViews()
         val renders = remoteRenders.values
-        printlnCK("updateRenders: length = ${renders.size}")
         if (renders.isNotEmpty()) {
             val params = RelativeLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -584,6 +579,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     companion object {
-        private const val CALL_WAIT_TIME_OUT: Long = 20 * 1000
+        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
     }
 }

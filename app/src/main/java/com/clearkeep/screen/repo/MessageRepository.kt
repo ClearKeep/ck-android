@@ -1,6 +1,8 @@
 package com.clearkeep.screen.repo
 
+import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -18,13 +20,15 @@ import javax.inject.Singleton
 
 @Singleton
 class MessageRepository @Inject constructor(
-        private val messageDAO: MessageDAO,
-        private val messageGrpc: MessageGrpc.MessageBlockingStub,
+    // dao
+    private val groupDAO: GroupDAO,
+    private val messageDAO: MessageDAO,
 
-        private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+    private val messageGrpc: MessageGrpc.MessageBlockingStub,
+    private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
 
-        private val senderKeyStore: InMemorySenderKeyStore,
-        private val signalProtocolStore: InMemorySignalProtocolStore,
+    private val senderKeyStore: InMemorySenderKeyStore,
+    private val signalProtocolStore: InMemorySignalProtocolStore,
 ) {
     fun getMessagesAsState(groupId: Long) = messageDAO.getMessagesAsState(groupId)
 
@@ -34,7 +38,7 @@ class MessageRepository @Inject constructor(
 
     suspend fun insert(message: Message) = messageDAO.insert(message)
 
-    suspend fun fetchMessageFromAPI(groupId: Long, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
+    suspend fun updateMessageFromAPI(groupId: Long, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
         try {
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
@@ -42,33 +46,67 @@ class MessageRepository @Inject constructor(
                     .setLastMessageAt(lastMessageAt)
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
-            messageDAO.insertMessages(responses.lstMessageList.mapNotNull { convertMessageResponse(it) })
+            val messages = responses.lstMessageList.map { parseMessageResponse(it) }
+            if (messages.isNotEmpty()) {
+                messageDAO.insertMessages(messages)
+                val lastMessage = messages.maxByOrNull { it.createdTime }
+                if (lastMessage != null) {
+                    updateLastSyncMessageTime(groupId, lastMessage.createdTime)
+                }
+            }
         } catch (exception: Exception) {
             printlnCK("fetchMessageFromAPI: $exception")
         }
     }
 
-    private suspend fun convertMessageResponse(messageResponse: MessageOuterClass.MessageObjectResponse): Message? {
-        return try {
-            val decryptedMessage = if (!isGroup(messageResponse.groupType)) {
+    private suspend fun updateLastSyncMessageTime(groupId: Long, lastSyncTime: Long) {
+        printlnCK("updateLastSyncMessageTime, groupId = $groupId")
+        val group = groupDAO.getGroupById(groupId)!!
+        val updateGroup = ChatGroup(
+            id = group.id,
+            groupName = group.groupName,
+            groupAvatar = group.groupAvatar,
+            groupType = group.groupType,
+            createBy = group.createBy,
+            createdAt = group.createdAt,
+            updateBy = group.updateBy,
+            updateAt = group.updateAt,
+            rtcToken = group.rtcToken,
+            clientList = group.clientList,
+            isJoined = group.isJoined,
+            lastMessage = group.lastMessage,
+            lastMessageAt = group.lastMessageAt,
+            // update
+            lastMessageSyncTimestamp = lastSyncTime
+        )
+        groupDAO.update(updateGroup)
+    }
+
+    private suspend fun parseMessageResponse(messageResponse: MessageOuterClass.MessageObjectResponse): Message {
+        val oldMessage = messageDAO.getMessage(messageResponse.id)
+        if (oldMessage != null) {
+            return oldMessage
+        }
+        val decryptedMessage = try {
+            if (!isGroup(messageResponse.groupType)) {
                 decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
             } else {
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId,
                         messageResponse.message, senderKeyStore, clientBlocking)
             }
-            return Message(
-                    messageResponse.id,
-                    messageResponse.groupId,
-                    messageResponse.groupType,
-                    messageResponse.fromClientId,
-                    messageResponse.clientId,
-                    decryptedMessage,
-                    messageResponse.createdAt,
-                    messageResponse.updatedAt,
-            )
         } catch (e: Exception) {
-            printlnCK("MessageRepository: convertMessageResponse error : $e")
-            return null
+            printlnCK("load message with id= ${messageResponse.id}, group id = ${messageResponse.groupId} type= ${messageResponse.groupType}, error : $e")
+            "unable to decrypt this message"
         }
+        return Message(
+            messageResponse.id,
+            messageResponse.groupId,
+            messageResponse.groupType,
+            messageResponse.fromClientId,
+            messageResponse.clientId,
+            decryptedMessage,
+            messageResponse.createdAt,
+            messageResponse.updatedAt,
+        )
     }
 }

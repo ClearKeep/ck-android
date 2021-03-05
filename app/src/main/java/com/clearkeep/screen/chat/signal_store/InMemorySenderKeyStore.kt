@@ -17,6 +17,7 @@ class InMemorySenderKeyStore(
     override fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) {
         store[senderKeyName] = record
         signalKeyDAO.insert(SignalSenderKey(
+            senderKeyName.groupId + senderKeyName.sender.name,
                 senderKeyName.groupId,
                 senderKeyName.sender.name,
                 senderKeyName.sender.deviceId,

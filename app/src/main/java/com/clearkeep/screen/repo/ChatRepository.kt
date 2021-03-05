@@ -40,6 +40,7 @@ class ChatRepository @Inject constructor(
         private val messageDAO: MessageDAO,
 
         private val groupRepository: GroupRepository,
+        private val messageRepository: MessageRepository,
 ) {
     fun initSubscriber() {
         subscribeMessageChannel()
@@ -48,14 +49,14 @@ class ChatRepository @Inject constructor(
 
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
-    private var roomId: Long? = null
+    private var roomId: Long = -1
 
     private var isNeedSubscribeMessageAgain = false
 
     private var isNeedSubscribeNotificationAgain = false
 
 
-    fun setJoiningRoomId(roomId: Long?) {
+    fun setJoiningRoomId(roomId: Long) {
         this.roomId = roomId
     }
 
@@ -69,6 +70,15 @@ class ChatRepository @Inject constructor(
         }
         if (isNeedSubscribeNotificationAgain) {
             subscribeNotificationChannel()
+        }
+        if (isNeedSubscribeMessageAgain || isNeedSubscribeNotificationAgain) {
+            scope.launch {
+                groupRepository.fetchRoomsFromAPI()
+                if (roomId > 0) {
+                    val group = groupRepository.getGroupByID(roomId)!!
+                    messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+                }
+            }
         }
     }
 
@@ -303,7 +313,8 @@ class ChatRepository @Inject constructor(
                 isJoined = room.isJoined,
 
                 lastMessage = messageRecord,
-                lastMessageAt = messageRecord.createdTime
+                lastMessageAt = messageRecord.createdTime,
+            lastMessageSyncTimestamp = room.lastMessageSyncTimestamp
         )
         groupRepository.updateRoom(updateRoom)
     }

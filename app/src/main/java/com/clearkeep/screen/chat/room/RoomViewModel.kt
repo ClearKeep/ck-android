@@ -79,7 +79,7 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             val ret = roomRepository.getGroupByID(groupId)!!
             _group.value = ret
-            updateMessagesFromRemote(groupId, ret.lastMessageAt)
+            updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
         }
     }
 
@@ -94,29 +94,14 @@ class RoomViewModel @Inject constructor(
                     People(friendId, friend.userName)
                 )
             } else {
-                updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageAt)
+                updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageSyncTimestamp)
             }
             _group.value = existingGroup
         }
     }
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
-        val messages = messageRepository.getMessages(groupId)
-
-        if (messages.size < 2) {
-            printlnCK("load all message with size < 2")
-            messageRepository.fetchMessageFromAPI(groupId, 0, 0)
-        } else {
-            val preLastMessage = messages.dropLast(1).findLast { it.senderId != getClientId() }
-            printlnCK("updateMessagesFromRemote: $preLastMessage, last at = $lastMessageAt")
-            if (preLastMessage == null) {
-                printlnCK("load all message because not find pre last message")
-                messageRepository.fetchMessageFromAPI(groupId, 0, 0)
-            } else {
-                printlnCK("load message: from time $preLastMessage to $lastMessageAt")
-                messageRepository.fetchMessageFromAPI(groupId, preLastMessage.createdTime, 0)
-            }
-        }
+        messageRepository.updateMessageFromAPI(groupId, lastMessageAt, 0)
     }
 
     fun sendMessageToUser(receiverPeople: People, groupId: Long, message: String) {
