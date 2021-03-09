@@ -261,7 +261,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromPeer: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, "unable to decrypt this message")
+            saveNewMessage(value, e.message ?: "unable to decrypt this message")
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
@@ -273,7 +273,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, "unable to decrypt this message")
+            saveNewMessage(value, e.message ?: "unable to decrypt this message")
             printlnCK("decryptMessageFromGroup error : $e")
         }
     }

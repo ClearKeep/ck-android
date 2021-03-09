@@ -178,7 +178,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun remarkGroupKeyRegistered(groupId: Long) : Boolean {
+    suspend fun remarkGroupKeyRegistered(groupId: Long) : ChatGroup {
         printlnCK("remarkGroupKeyRegistered, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId)!!
         val updateGroup = ChatGroup(
@@ -201,7 +201,7 @@ class GroupRepository @Inject constructor(
             lastMessageSyncTimestamp = group.lastMessageSyncTimestamp
         )
         groupDAO.update(updateGroup)
-        return true
+        return updateGroup
     }
 
     suspend fun updateRoom(room: ChatGroup) = groupDAO.update(room)
