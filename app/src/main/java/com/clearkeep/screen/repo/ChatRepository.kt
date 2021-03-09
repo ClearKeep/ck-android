@@ -8,6 +8,7 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.getCurrentDateTime
+import com.clearkeep.utilities.getUnableErrorMessage
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.stub.StreamObserver
@@ -261,7 +262,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromPeer: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, e.message ?: "unable to decrypt this message")
+            saveNewMessage(value, getUnableErrorMessage(e.message))
             printlnCK("decryptMessageFromPeer error : $e")
         }
     }
@@ -273,7 +274,7 @@ class ChatRepository @Inject constructor(
 
             printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
-            saveNewMessage(value, e.message ?: "unable to decrypt this message")
+            saveNewMessage(value, getUnableErrorMessage(e.message))
             printlnCK("decryptMessageFromGroup error : $e")
         }
     }

@@ -1,5 +1,6 @@
 package com.clearkeep.screen.repo
 
+import com.clearkeep.BuildConfig
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.ChatGroup
@@ -9,6 +10,7 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.decryptGroupMessage
 import com.clearkeep.screen.chat.utils.decryptPeerMessage
 import com.clearkeep.screen.chat.utils.isGroup
+import com.clearkeep.utilities.getUnableErrorMessage
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -96,7 +98,7 @@ class MessageRepository @Inject constructor(
             }
         } catch (e: Exception) {
             printlnCK("load message with id= ${messageResponse.id}, group id = ${messageResponse.groupId} type= ${messageResponse.groupType}, error : $e")
-            "unable to decrypt this message"
+            getUnableErrorMessage(e.message)
         }
         return Message(
             messageResponse.id,
