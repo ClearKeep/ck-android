@@ -7,10 +7,7 @@ import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.SessionBuilder
-import org.whispersystems.libsignal.SessionCipher
-import org.whispersystems.libsignal.SignalProtocolAddress
+import org.whispersystems.libsignal.*
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
@@ -62,7 +59,7 @@ suspend fun decryptGroupMessage(
             clientBlocking, senderKeyStore, false)
     var plaintextFromAlice = try {
         bobGroupCipher.decrypt(message.toByteArray())
-    } catch (ex: Exception) {
+    } catch (ex: InvalidKeyIdException) {
         printlnCK("decryptGroupMessage, $ex")
         val initSessionAgain = initSessionUserInGroup(
                 groupId, fromClientId, groupSender,
@@ -127,7 +124,7 @@ fun initSessionUserInGroup(
 ): Boolean {
     val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
     if (senderKeyRecord.isEmpty || isForceProcess) {
-        printlnCK("initSessionUserInGroup, process new session")
+        printlnCK("initSessionUserInGroup, process new session: group id = $groupId")
         try {
             val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)

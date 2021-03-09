@@ -132,7 +132,7 @@ class RoomViewModel @Inject constructor(
                 if (!isRegisteredGroup) {
                     val result = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId())
                     if (result) {
-                        roomRepository.remarkGroupKeyRegistered(groupId)
+                        _group.value = roomRepository.remarkGroupKeyRegistered(groupId)
                         chatRepository.sendMessageToGroup(groupId, message)
                     }
                 } else {
