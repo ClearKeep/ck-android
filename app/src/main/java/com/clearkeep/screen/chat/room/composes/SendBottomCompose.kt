@@ -45,7 +45,8 @@ fun SendBottomCompose(
         IconButton(
             onClick = {
                 if (!TextUtils.isEmpty(msgState.value)) {
-                    onSendMessage(msgState.value)
+                    val message = msgState.value
+                    onSendMessage(message)
                     // clear text
                     msgState.value = ""
                 }
