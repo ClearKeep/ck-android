@@ -26,12 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.navigation.compose.*
 import com.clearkeep.R
 import com.clearkeep.components.CKTheme
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.auth.login.LoginActivity
@@ -59,7 +57,7 @@ val items = listOf(
 private val BottomNavigationHeight = 56.dp
 
 @AndroidEntryPoint
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
@@ -81,35 +79,28 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         setContent {
             CKTheme {
-                homeViewModel.loginState.observeAsState().value.let { prepareState ->
-                    when (prepareState) {
-                        PrepareSuccess -> {
-                            MainComposable()
-                        }
-                        PrepareProcessing -> {
-                            LoadingComposable()
-                        }
-                        PrepareError -> {
-                            ErrorComposable()
-                        }
-                    }
-                }
+                MainComposable()
             }
         }
 
-        homeViewModel.prepareChat()
         subscriberLogout()
         registerNetworkChange()
+        homeViewModel.updateFirebaseToken()
+    }
 
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!Settings.canDrawOverlays(this)) {
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:$packageName"))
-                startActivityForResult(intent, 0)
-            }
-        }*/
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onAppBackgrounded() {
+        printlnCK("CK app go into background")
+        homeViewModel.appOnBackground()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        printlnCK("CK app go into foregrounded")
+        homeViewModel.appOnForeground()
     }
 
     private fun registerNetworkChange() {
@@ -118,11 +109,10 @@ class HomeActivity : AppCompatActivity() {
             val networkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     printlnCK("network available again")
-                    homeViewModel.reInitAfterNetworkAvailable()
+                    homeViewModel.networkAvailable()
                 }
                 override fun onLost(network: Network) {
                     printlnCK("network lost")
-                    //take action when network connection is lost
                 }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -142,38 +132,6 @@ class HomeActivity : AppCompatActivity() {
                 restartActivityToRoot()
             }
         })
-    }
-
-    @Composable
-    private fun LoadingComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-        ) {
-            CKCircularProgressIndicator()
-        }
-    }
-
-    @Composable
-    private fun ErrorComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-        ) {
-            Text("Please try again")
-            Spacer(Modifier.height(20.dp))
-            CKButton(
-                    "Try again",
-                    onClick = {
-                        homeViewModel.prepareChat()
-                    },
-                    modifier = Modifier.padding(vertical = 5.dp)
-            )
-        }
     }
 
     @Composable

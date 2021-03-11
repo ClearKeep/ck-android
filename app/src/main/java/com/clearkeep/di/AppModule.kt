@@ -69,6 +69,17 @@ class AppModule {
 
     @Singleton
     @Provides
+    fun provideNotifyBlockingStub(): NotifyGrpc.NotifyBlockingStub {
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        return NotifyGrpc.newBlockingStub(channel)
+    }
+
+    @Singleton
+    @Provides
     fun provideAuthBlockingStub(): AuthGrpc.AuthBlockingStub {
         val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
                 .usePlaintext()
