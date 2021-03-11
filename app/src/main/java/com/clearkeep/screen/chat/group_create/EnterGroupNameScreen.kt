@@ -8,6 +8,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,7 +22,7 @@ fun EnterGroupNameScreen(
     createGroupViewModel: CreateGroupViewModel,
 ) {
     val groupName = mutableStateOf("")
-
+    val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     Column {
         TopAppBar(
             title = {
@@ -43,7 +44,7 @@ fun EnterGroupNameScreen(
                 CKTextButton(
                     title = "Create",
                     onClick = { createGroupViewModel.createGroup(groupName.value.trim()) },
-                    enabled = groupName.value.isNotBlank()
+                    enabled = groupName.value.isNotBlank() && createGroupState.value != CreateGroupProcessing
                 )
             }
         )
