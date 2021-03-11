@@ -70,6 +70,9 @@
         <activity
             android:name=".screen.chat.home.HomeActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+        <activity
+            android:name=".screen.chat.home.HomePreparingActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
             android:name=".services.MyFirebaseMessagingService"

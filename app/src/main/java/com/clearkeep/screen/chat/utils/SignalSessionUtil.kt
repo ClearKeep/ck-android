@@ -59,7 +59,7 @@ suspend fun decryptGroupMessage(
             clientBlocking, senderKeyStore, false)
     var plaintextFromAlice = try {
         bobGroupCipher.decrypt(message.toByteArray())
-    } catch (ex: InvalidKeyIdException) {
+    } catch (ex: Exception) {
         printlnCK("decryptGroupMessage, $ex")
         val initSessionAgain = initSessionUserInGroup(
                 groupId, fromClientId, groupSender,

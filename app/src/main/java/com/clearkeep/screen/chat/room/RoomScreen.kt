@@ -50,7 +50,7 @@ fun RoomScreen(
                 TopAppBar(
                         title = {
                             Box(modifier = Modifier.clickable(onClick = {
-                                navHostController.navigate("room_info_screen")
+                                /*navHostController.navigate("room_info_screen")*/
                             })) {
                                 Text(text = groupName,
                                         maxLines = 1,

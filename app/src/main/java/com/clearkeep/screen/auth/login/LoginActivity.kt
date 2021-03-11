@@ -23,11 +23,9 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.lightThemeColors
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.home.HomeActivity
-import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.screen.chat.home.HomePreparingActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -139,7 +137,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, HomeActivity::class.java))
+        startActivity(Intent(this, HomePreparingActivity::class.java))
         finish()
     }
 

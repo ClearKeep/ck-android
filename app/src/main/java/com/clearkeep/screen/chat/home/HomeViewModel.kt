@@ -7,10 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.screen.repo.AuthRepository
-import com.clearkeep.screen.repo.ProfileRepository
-import com.clearkeep.screen.repo.ChatRepository
-import com.clearkeep.screen.repo.SignalKeyRepository
+import com.clearkeep.screen.repo.*
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
@@ -19,17 +16,20 @@ import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
-        private val signalKeyRepository: SignalKeyRepository,
-        private val profileRepository: ProfileRepository,
-        private val chatRepository: ChatRepository,
-        private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository,
+    private val chatRepository: ChatRepository,
+    private val authRepository: AuthRepository,
+    private val groupRepository: GroupRepository,
+    private val messageRepository: MessageRepository,
 
-        private val signalProtocolStore: InMemorySignalProtocolStore,
+    private val signalProtocolStore: InMemorySignalProtocolStore,
 
-        private val storage: UserPreferencesStorage,
-        private val clearKeepDatabase: ClearKeepDatabase,
-        private val signalKeyDatabase: SignalKeyDatabase,
+    private val storage: UserPreferencesStorage,
+    private val clearKeepDatabase: ClearKeepDatabase,
+    private val signalKeyDatabase: SignalKeyDatabase,
 ): ViewModel() {
+    private var isSubscribed = false
+
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
 
     val isLogOutProcessing: LiveData<Boolean>
@@ -40,42 +40,42 @@ class HomeViewModel @Inject constructor(
     val isLogOutCompleted: LiveData<Boolean>
         get() = _isLogOutCompleted
 
-    private val _prepareState = MutableLiveData<PrepareViewState>()
-
-    val loginState: LiveData<PrepareViewState>
-        get() = _prepareState
-
-    fun prepareChat() {
-        viewModelScope.launch {
-            _prepareState.value = PrepareProcessing
-            val profile = profileRepository.getProfile()
-            if (profile == null) {
-                _prepareState.value = PrepareError
-                return@launch
+    fun networkAvailable() {
+        if (chatRepository.isNeedSubscribeAgain()) {
+            viewModelScope.launch {
+                chatRepository.reInitSubscribe()
+                updateNewMessages()
             }
-
-            val isRegisterKeySuccess = if (signalKeyRepository.isPeerKeyRegistered()) {
-                true
-            } else {
-                signalKeyRepository.peerRegisterClientKey(profile.id)
-            }
-            if (!isRegisterKeySuccess) {
-                _prepareState.value = PrepareError
-                return@launch
-            }
-
-            _prepareState.value = PrepareSuccess
-
-            chatRepository.initSubscriber()
-            updateFirebaseToken()
         }
     }
 
-    fun reInitAfterNetworkAvailable() {
-        chatRepository.reInitSubscriber()
+    fun appOnForeground() {
+        viewModelScope.launch {
+            if (!isSubscribed) {
+                isSubscribed = true
+                chatRepository.subscribe()
+                return@launch
+            }
+
+            if (chatRepository.isNeedSubscribeAgain()) {
+                chatRepository.reInitSubscribe()
+                updateNewMessages()
+            }
+        }
     }
 
-    private fun updateFirebaseToken() {
+    fun appOnBackground() {
+    }
+
+    private suspend fun updateNewMessages() {
+        groupRepository.fetchRoomsFromAPI()
+        val roomId = chatRepository.getJoiningRoomId()
+        if (roomId > 0) {
+            val group = groupRepository.getGroupByID(roomId)!!
+            messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+        }
+    }
+    fun updateFirebaseToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 printlnCK("Fetching FCM registration token failed, ${task.exception}")
@@ -99,13 +99,6 @@ class HomeViewModel @Inject constructor(
             authRepository.logoutFromAPI()
             clearDatabase()
             _isLogOutCompleted.value = true
-
-            /*if (res.status == Status.SUCCESS) {
-                clearDatabase()
-                _isLogOutCompleted.value = true
-            }
-
-            _isLogOutProcessing.value = false*/
         }
     }
 
@@ -119,12 +112,8 @@ class HomeViewModel @Inject constructor(
     private suspend fun pushFireBaseTokenToServer() = withContext(Dispatchers.IO) {
         val token = storage.getString(FIREBASE_TOKEN)
         if (!token.isNullOrEmpty()) {
+            printlnCK("push token  = $token ")
             profileRepository.registerToken(token)
         }
     }
 }
-
-sealed class PrepareViewState
-object PrepareSuccess : PrepareViewState()
-object PrepareError : PrepareViewState()
-object PrepareProcessing : PrepareViewState()
