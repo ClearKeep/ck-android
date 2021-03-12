@@ -5,7 +5,9 @@ import android.content.Intent
 import android.net.*
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -75,6 +77,15 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
     private val homeViewModel: HomeViewModel by viewModels {
         viewModelFactory
+    }
+
+    private val startCreateGroupForResult = (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val groupId = result.data?.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1) ?: -1
+            if (groupId > 0) {
+                navigateToRoomScreen(groupId)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -181,7 +192,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
                                 ChatHistoryScreen(
                                         chatViewModel,
                                         onRoomSelected = { room ->
-                                            navigateToRoomScreen(room)
+                                            navigateToRoomScreen(room.id)
                                         },
                                         onCreateGroup = {
                                             navigateToCreateGroupScreen()
@@ -244,9 +255,9 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
         homeViewModel.logOut()
     }
 
-    private fun navigateToRoomScreen(group: ChatGroup) {
+    private fun navigateToRoomScreen(groupId: Long) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.GROUP_ID, group.id)
+        intent.putExtra(RoomActivity.GROUP_ID, groupId)
         startActivity(intent)
     }
 
@@ -258,7 +269,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun navigateToCreateGroupScreen() {
         val intent = Intent(this, CreateGroupActivity::class.java)
-        startActivity(intent)
+        startCreateGroupForResult.launch(intent)
     }
 
     private fun navigateToSearchScreen() {
