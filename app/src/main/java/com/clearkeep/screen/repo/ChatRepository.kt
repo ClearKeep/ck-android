@@ -6,11 +6,10 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.utils.*
-import com.clearkeep.utilities.UserManager
-import com.clearkeep.utilities.getCurrentDateTime
-import com.clearkeep.utilities.getUnableErrorMessage
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
+import io.grpc.ManagedChannelBuilder
+import io.grpc.stub.ClientCallStreamObserver
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import message.MessageGrpc
@@ -23,6 +22,7 @@ import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import signal.SignalKeyDistributionGrpc
+import java.lang.Runnable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,9 +30,7 @@ import javax.inject.Singleton
 class ChatRepository @Inject constructor(
         // network calls
         private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
-        private val notifyStub: NotifyGrpc.NotifyStub,
         private val notifyStubBlocking: NotifyGrpc.NotifyBlockingStub,
-        private val messageGrpc: MessageGrpc.MessageStub,
         private val messageBlockingGrpc: MessageGrpc.MessageBlockingStub,
 
         // data
@@ -51,6 +49,9 @@ class ChatRepository @Inject constructor(
 
     private var isNeedSubscribeNotificationAgain = false
 
+    private var messageHandler: MessageHandler? = null
+    private var notificationHandler: NotificationHandler? = null
+
     fun setJoiningRoomId(roomId: Long) {
         this.roomId = roomId
     }
@@ -66,9 +67,13 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun reInitSubscribe() {
-        //unsubscribe()
         isNeedSubscribeMessageAgain = false
         isNeedSubscribeNotificationAgain = false
+
+        unsubscribe()
+        notificationHandler?.cancel("subscribe again", null)
+        messageHandler?.cancel("subscribe again", null)
+        delay(2 * 1000)
         subscribe()
     }
 
@@ -163,30 +168,15 @@ class ChatRepository @Inject constructor(
         val request = MessageOuterClass.ListenRequest.newBuilder()
             .setClientId(ourClientId)
             .build()
-        messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
-            override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
-                printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
-                        ", groupId = ${value.groupId} groupType = ${value.groupType}")
-                scope.launch {
-                    // TODO
-                    if (!isGroup(value.groupType)) {
-                        decryptMessageFromPeer(value)
-                    } else {
-                        decryptMessageFromGroup(value)
-                    }
-                }
-            }
 
-            override fun onError(t: Throwable?) {
-                isNeedSubscribeMessageAgain = true
-                printlnCK("Listen message error: ${t.toString()}")
-            }
+        messageHandler = MessageHandler()
 
-            override fun onCompleted() {
-                printlnCK("listenMessageChannel, listen success")
-                isNeedSubscribeMessageAgain = false
-            }
-        })
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        MessageGrpc.newStub(channel).listen(request, messageHandler)
     }
 
     private fun listenNotificationChannel() {
@@ -195,27 +185,15 @@ class ChatRepository @Inject constructor(
         val request = NotifyOuterClass.ListenRequest.newBuilder()
             .setClientId(ourClientId)
             .build()
-        notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
-            override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
-                printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
-                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
-                scope.launch {
-                    if(value.notifyType == "new-group") {
-                        groupRepository.fetchRoomsFromAPI()
-                    }
-                }
-            }
 
-            override fun onError(t: Throwable?) {
-                isNeedSubscribeNotificationAgain = true
-                printlnCK("Listen notification error: ${t.toString()}")
-            }
+        notificationHandler = NotificationHandler()
 
-            override fun onCompleted() {
-                printlnCK("listenNotificationChannel, listen success")
-                isNeedSubscribeNotificationAgain = false
-            }
-        })
+        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+            .usePlaintext()
+            .executor(Dispatchers.Default.asExecutor())
+            .build()
+
+        NotifyGrpc.newStub(channel).listen(request, notificationHandler)
     }
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
@@ -362,5 +340,102 @@ class ChatRepository @Inject constructor(
             value.createdAt,
             value.updatedAt,
         )
+    }
+
+    inner class MessageHandler : ClientCallStreamObserver<MessageOuterClass.MessageObjectResponse>() {
+
+        override fun isReady(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun setOnReadyHandler(onReadyHandler: Runnable?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun disableAutoInboundFlowControl() {
+            TODO("Not yet implemented")
+        }
+
+        override fun request(count: Int) {
+            TODO("Not yet implemented")
+        }
+
+        override fun setMessageCompression(enable: Boolean) {
+            TODO("Not yet implemented")
+        }
+
+        override fun cancel(message: String?, cause: Throwable?) {
+            printlnCK("MessageHandler, canceled: $message")
+        }
+
+        override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
+            printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
+                    ", groupId = ${value.groupId} groupType = ${value.groupType}")
+            scope.launch {
+                // TODO
+                if (!isGroup(value.groupType)) {
+                    decryptMessageFromPeer(value)
+                } else {
+                    decryptMessageFromGroup(value)
+                }
+            }
+        }
+
+        override fun onError(t: Throwable) {
+            isNeedSubscribeMessageAgain = true
+            printlnCK("Listen message error: ${t.toString()}")
+        }
+
+        override fun onCompleted() {
+            printlnCK("listenMessageChannel, listen success")
+            isNeedSubscribeMessageAgain = false
+        }
+    }
+
+    inner class NotificationHandler : ClientCallStreamObserver<NotifyOuterClass.NotifyObjectResponse>() {
+
+        override fun isReady(): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun setOnReadyHandler(onReadyHandler: Runnable?) {
+            TODO("Not yet implemented")
+        }
+
+        override fun disableAutoInboundFlowControl() {
+            TODO("Not yet implemented")
+        }
+
+        override fun request(count: Int) {
+            TODO("Not yet implemented")
+        }
+
+        override fun setMessageCompression(enable: Boolean) {
+            TODO("Not yet implemented")
+        }
+
+        override fun cancel(message: String?, cause: Throwable?) {
+            printlnCK("NotificationHandler, canceled: $message")
+        }
+
+        override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
+            printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
+                    ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
+            scope.launch {
+                if(value.notifyType == "new-group") {
+                    groupRepository.fetchRoomsFromAPI()
+                }
+            }
+        }
+
+        override fun onError(t: Throwable) {
+            isNeedSubscribeNotificationAgain = true
+            printlnCK("Listen notification error: $t")
+        }
+
+        override fun onCompleted() {
+            printlnCK("listenNotificationChannel, listen success")
+            isNeedSubscribeNotificationAgain = false
+        }
     }
 }

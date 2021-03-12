@@ -94,6 +94,7 @@ public class WebSocketChannel {
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 Log.e(TAG, "onFailure" + t.toString());
+                // TODO: crash if server reset janus during calling
             }
         });
     }

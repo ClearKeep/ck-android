@@ -53,7 +53,7 @@ class MessageRepository @Inject constructor(
                 messageDAO.insertMessages(messages)
                 val lastMessage = messages.maxByOrNull { it.createdTime }
                 if (lastMessage != null) {
-                    updateLastSyncMessageTime(groupId, lastMessage.createdTime)
+                    updateLastSyncMessageTime(groupId, lastMessage)
                 }
             }
         } catch (exception: Exception) {
@@ -61,7 +61,7 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    private suspend fun updateLastSyncMessageTime(groupId: Long, lastSyncTime: Long) {
+    private suspend fun updateLastSyncMessageTime(groupId: Long, lastMessage: Message) {
         printlnCK("updateLastSyncMessageTime, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId)!!
         val updateGroup = ChatGroup(
@@ -76,10 +76,10 @@ class MessageRepository @Inject constructor(
             rtcToken = group.rtcToken,
             clientList = group.clientList,
             isJoined = group.isJoined,
-            lastMessage = group.lastMessage,
-            lastMessageAt = group.lastMessageAt,
+            lastMessage = lastMessage,
+            lastMessageAt = lastMessage.createdTime,
             // update
-            lastMessageSyncTimestamp = lastSyncTime
+            lastMessageSyncTimestamp = lastMessage.createdTime
         )
         groupDAO.update(updateGroup)
     }
