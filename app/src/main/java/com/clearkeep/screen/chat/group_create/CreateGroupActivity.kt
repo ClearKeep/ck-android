@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.group_create
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -70,8 +71,15 @@ class CreateGroupActivity : AppCompatActivity() {
     private fun subscribe() {
         createGroupViewModel.createGroupState.observe(this, {
             if (it == CreateGroupSuccess) {
+                val intent = Intent()
+                intent.putExtra(EXTRA_GROUP_ID, createGroupViewModel.groupId)
+                setResult(RESULT_OK, intent)
                 finish()
             }
         })
+    }
+
+    companion object {
+        const val EXTRA_GROUP_ID = "extra_group_id"
     }
 }
