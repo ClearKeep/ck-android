@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -21,7 +22,7 @@ fun EnterGroupNameScreen(
     navController: NavHostController,
     createGroupViewModel: CreateGroupViewModel,
 ) {
-    val groupName = mutableStateOf("")
+    val groupName = remember {mutableStateOf("")}
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     Column {
         TopAppBar(

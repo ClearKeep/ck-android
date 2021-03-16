@@ -8,4 +8,8 @@ data class People(
     @NonNull
     @PrimaryKey val id: String,
     @ColumnInfo(name = "user_name") val userName: String,
-)
+) {
+    override fun toString(): String {
+        return "userName = $userName"
+    }
+}

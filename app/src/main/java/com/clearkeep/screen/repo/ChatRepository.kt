@@ -198,7 +198,7 @@ class ChatRepository @Inject constructor(
 
     suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
-        printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId, groupId= $groupId")
+        printlnCK("sendMessageInPeer: plainMessage = $plainMessage, groupId= $groupId")
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
@@ -228,7 +228,7 @@ class ChatRepository @Inject constructor(
             saveNewMessage(response, plainMessage)
 
             printlnCK("send message success: $plainMessage")
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
             printlnCK("sendMessage: $e")
             return@withContext false
         }
