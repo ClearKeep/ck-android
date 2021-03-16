@@ -30,7 +30,7 @@ import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.januswrapper.JanusRTCInterface
 import com.clearkeep.januswrapper.PeerConnectionClient
 import com.clearkeep.januswrapper.WebSocketChannel
-import com.clearkeep.screen.repo.VideoCallRepository
+import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.utilities.*

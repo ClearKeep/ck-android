@@ -44,6 +44,7 @@ import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
+import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -98,42 +99,31 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         subscriberLogout()
-        registerNetworkChange()
         homeViewModel.updateFirebaseToken()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
         printlnCK("CK app go into background")
-        homeViewModel.appOnBackground()
+        stopChatService()
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun onAppForegrounded() {
         printlnCK("CK app go into foregrounded")
-        homeViewModel.appOnForeground()
+        startChatService()
     }
 
-    private fun registerNetworkChange() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (connectivityManager != null) {
-            val networkCallback = object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) {
-                    printlnCK("network available again")
-                    homeViewModel.networkAvailable()
-                }
-                override fun onLost(network: Network) {
-                    printlnCK("network lost")
-                }
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                connectivityManager.registerDefaultNetworkCallback(networkCallback)
-            } else {
-                val request = NetworkRequest.Builder()
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                        .build()
-                connectivityManager.registerNetworkCallback(request, networkCallback);
-            }
+    private fun startChatService() {
+        Intent(this, ChatService::class.java).also { intent ->
+            startService(intent)
+        }
+    }
+
+    private fun stopChatService() {
+        Intent(this, ChatService::class.java).also { intent ->
+            stopService(intent)
         }
     }
 

@@ -3,8 +3,8 @@ package com.clearkeep.screen.chat.group_create
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.screen.repo.PeopleRepository
-import com.clearkeep.screen.repo.GroupRepository
+import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.GroupRepository
 import com.clearkeep.utilities.UserManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

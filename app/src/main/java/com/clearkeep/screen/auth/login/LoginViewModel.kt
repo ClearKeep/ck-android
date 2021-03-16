@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.screen.repo.AuthRepository
+import com.clearkeep.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject

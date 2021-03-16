@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.screen.repo.ProfileRepository
+import com.clearkeep.repo.ProfileRepository
 import kotlinx.coroutines.Dispatchers.IO
 import javax.inject.Inject
 

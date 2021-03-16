@@ -2,7 +2,7 @@ package com.clearkeep.screen.chat.contact_search
 
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.repo.PeopleRepository
+import com.clearkeep.repo.PeopleRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
