@@ -15,146 +15,96 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import group.GroupGrpc
-import io.grpc.CallCredentials
-import io.grpc.ManagedChannelBuilder
+import io.grpc.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 import signal.SignalKeyDistributionGrpc
 import java.util.concurrent.Executor
 import javax.inject.Singleton
-import io.grpc.Metadata
-import io.grpc.Status
 import message.MessageGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
-import java.util.concurrent.TimeUnit
 
 @InstallIn(ApplicationComponent::class)
 @Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])
 class AppModule {
     @Singleton
     @Provides
-    fun provideSignalKeyDistributionGrpc(): SignalKeyDistributionGrpc.SignalKeyDistributionStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
+    fun provideManagedChannel(): ManagedChannel {
+        return ManagedChannelBuilder.forAddress(BASE_URL, PORT)
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
             .build()
-
-        return SignalKeyDistributionGrpc.newStub(channel)
     }
 
     @Singleton
     @Provides
-    fun provideSignalKeyDistributionBlockingStub(): SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-            .usePlaintext()
-            .executor(Dispatchers.Default.asExecutor())
-            .build()
-
-        return SignalKeyDistributionGrpc.newBlockingStub(channel)
+    fun provideSignalKeyDistributionGrpc(managedChannel: ManagedChannel): SignalKeyDistributionGrpc.SignalKeyDistributionStub {
+        return SignalKeyDistributionGrpc.newStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideNotifyStub(): NotifyGrpc.NotifyStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return NotifyGrpc.newStub(channel)
+    fun provideSignalKeyDistributionBlockingStub(managedChannel: ManagedChannel): SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub {
+        return SignalKeyDistributionGrpc.newBlockingStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideNotifyBlockingStub(): NotifyGrpc.NotifyBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-            .usePlaintext()
-            .executor(Dispatchers.Default.asExecutor())
-            .build()
-
-        return NotifyGrpc.newBlockingStub(channel)
+    fun provideNotifyStub(managedChannel: ManagedChannel): NotifyGrpc.NotifyStub {
+        return NotifyGrpc.newStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideAuthBlockingStub(): AuthGrpc.AuthBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return AuthGrpc.newBlockingStub(channel)
+    fun provideNotifyBlockingStub(managedChannel: ManagedChannel): NotifyGrpc.NotifyBlockingStub {
+        return NotifyGrpc.newBlockingStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideUserBlockingStub(userManager: UserManager): UserGrpc.UserBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-            .usePlaintext()
-            .executor(Dispatchers.Default.asExecutor())
-            .build()
+    fun provideAuthBlockingStub(managedChannel: ManagedChannel): AuthGrpc.AuthBlockingStub {
+        return AuthGrpc.newBlockingStub(managedChannel)
+    }
 
-        return UserGrpc.newBlockingStub(channel)
+    @Singleton
+    @Provides
+    fun provideUserBlockingStub(userManager: UserManager, managedChannel: ManagedChannel): UserGrpc.UserBlockingStub {
+        return UserGrpc.newBlockingStub(managedChannel)
             .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
     }
 
     @Singleton
     @Provides
-    fun provideGroupBlockingStub(): GroupGrpc.GroupBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return GroupGrpc.newBlockingStub(channel)
+    fun provideGroupBlockingStub(managedChannel: ManagedChannel): GroupGrpc.GroupBlockingStub {
+        return GroupGrpc.newBlockingStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return MessageGrpc.newBlockingStub(channel)
+    fun provideMessageBlockingStub(managedChannel: ManagedChannel): MessageGrpc.MessageBlockingStub {
+        return MessageGrpc.newBlockingStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideMessageStub(): MessageGrpc.MessageStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-            .usePlaintext()
-            .executor(Dispatchers.Default.asExecutor())
-            .build()
-
-        return MessageGrpc.newStub(channel)
+    fun provideMessageStub(managedChannel: ManagedChannel): MessageGrpc.MessageStub {
+        return MessageGrpc.newStub(managedChannel)
     }
 
     @Singleton
     @Provides
-    fun provideNotifyPushBlockingStub(userManager: UserManager): NotifyPushGrpc.NotifyPushBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return NotifyPushGrpc.newBlockingStub(channel)
+    fun provideNotifyPushBlockingStub(userManager: UserManager, managedChannel: ManagedChannel): NotifyPushGrpc.NotifyPushBlockingStub {
+        return NotifyPushGrpc.newBlockingStub(managedChannel)
                 .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
     }
 
     @Singleton
     @Provides
-    fun provideVideoCallBlockingStub(userManager: UserManager): VideoCallGrpc.VideoCallBlockingStub {
-        val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                .usePlaintext()
-                .executor(Dispatchers.Default.asExecutor())
-                .build()
-
-        return VideoCallGrpc.newBlockingStub(channel)
+    fun provideVideoCallBlockingStub(userManager: UserManager, managedChannel: ManagedChannel): VideoCallGrpc.VideoCallBlockingStub {
+        return VideoCallGrpc.newBlockingStub(managedChannel)
             .withCallCredentials(
                 CallCredentialsImpl(
                     userManager.getAccessKey(),

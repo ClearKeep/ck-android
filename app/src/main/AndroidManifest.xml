@@ -6,14 +6,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Subscriptions -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
@@ -27,14 +24,19 @@
         android:name=".MyApplication"
         android:allowBackup="false"
         android:hardwareAccelerated="true"
-        tools:replace="android:allowBackup"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DemoJetpackCompose"
         android:usesCleartextTraffic="true"
-        android:networkSecurityConfig="@xml/network_security_config">
+        tools:replace="android:allowBackup">
+        <service
+            android:name=".services.ChatService"
+            android:enabled="true"
+            android:exported="false"></service>
+
         <activity
             android:name=".screen.chat.contact_search.SearchUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
@@ -56,8 +58,8 @@
         <activity
             android:name=".screen.auth.login.LoginActivity"
             android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/btn_login"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.auth.register.RegisterActivity"
@@ -81,39 +83,42 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <!--<service
+        <!--
+<service
             android:name=".services.InCallForegroundService"
-            android:foregroundServiceType="camera|microphone" />-->
-
+            android:foregroundServiceType="camera|microphone" />
+        -->
         <activity
             android:name=".screen.videojanus.InCallActivity"
-            android:supportsPictureInPicture="true"
-            android:configChanges=
-                "screenSize|smallestScreenSize|screenLayout|orientation"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
+            android:supportsPictureInPicture="true"
             android:theme="@style/Theme.FastGo.Call" />
-
         <activity
             android:name=".screen.videojanus.InComingCallActivity"
             android:screenOrientation="portrait"
             android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
-        <receiver android:name=".screen.videojanus.DismissNotificationReceiver"/>
-
-        <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-     See README(https://goo.gl/l4GJaQ) for more. -->
+        <receiver android:name=".screen.videojanus.DismissNotificationReceiver" />
+        <!--
+ Set custom default icon. This is used when no icon is set for incoming notification messages.
+     See README(https://goo.gl/l4GJaQ) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_launcher_foreground" />
-        <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
-             notification message. See README(https://goo.gl/6BKBk7) for more. -->
+        <!--
+ Set color used with incoming notification messages. This is used when no color is set for the incoming
+             notification message. See README(https://goo.gl/6BKBk7) for more.
+        -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@android:color/holo_blue_dark" />
 
-        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
     </application>
 
 </manifest>
