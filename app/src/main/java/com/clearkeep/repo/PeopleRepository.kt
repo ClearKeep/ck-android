@@ -1,4 +1,4 @@
-package com.clearkeep.screen.repo
+package com.clearkeep.repo
 
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map

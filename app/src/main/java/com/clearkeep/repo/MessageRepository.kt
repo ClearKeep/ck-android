@@ -1,6 +1,5 @@
-package com.clearkeep.screen.repo
+package com.clearkeep.repo
 
-import com.clearkeep.BuildConfig
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.ChatGroup

@@ -1,4 +1,4 @@
-package com.clearkeep.screen.repo
+package com.clearkeep.repo
 
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore

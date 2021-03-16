@@ -1,4 +1,4 @@
-package com.clearkeep.screen.repo
+package com.clearkeep.repo
 
 import com.clearkeep.db.clear_keep.dao.UserDao
 import com.clearkeep.db.clear_keep.model.User

@@ -1,4 +1,4 @@
-package com.clearkeep.screen.repo
+package com.clearkeep.repo
 
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
