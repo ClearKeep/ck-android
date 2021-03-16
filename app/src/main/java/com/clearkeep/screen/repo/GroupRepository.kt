@@ -53,6 +53,7 @@ class GroupRepository @Inject constructor(
                         Resource.success(it)
                     }
             )
+            printlnCK("getAllRooms, $groups")
         } catch(exception: Exception) {
             printlnCK("getAllRooms: $exception")
             emitSource(
@@ -103,7 +104,7 @@ class GroupRepository @Inject constructor(
 
             // save to database
             insertGroup(group)
-            printlnCK("createGroup success")
+            printlnCK("createGroup success, $group")
             return@withContext group
         } catch (e: Exception) {
             printlnCK("createGroup error: $e")

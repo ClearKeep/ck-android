@@ -38,4 +38,8 @@ data class ChatGroup(
         fun isGroup() = isGroup(groupType)
 
         fun isGroupTempo() = GROUP_ID_TEMPO != id
+
+        override fun toString(): String {
+                return "groupName = $groupName, groupType = $groupType, isJoined = $isJoined, clientList = $clientList"
+        }
 }
