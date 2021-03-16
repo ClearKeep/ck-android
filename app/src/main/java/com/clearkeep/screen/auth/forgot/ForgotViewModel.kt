@@ -2,7 +2,7 @@ package com.clearkeep.screen.auth.forgot
 
 import androidx.lifecycle.*
 import auth.AuthOuterClass
-import com.clearkeep.screen.repo.AuthRepository
+import com.clearkeep.repo.AuthRepository
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
 

@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.screen.repo.AuthRepository
+import com.clearkeep.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject

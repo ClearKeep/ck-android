@@ -1,6 +1,5 @@
 package com.clearkeep.screen.videojanus
 
-import android.app.Activity
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -20,7 +19,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.R
-import com.clearkeep.screen.repo.VideoCallRepository
+import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
