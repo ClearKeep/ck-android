@@ -74,11 +74,11 @@ suspend fun decryptGroupMessage(
 }
 
 suspend fun initSessionUserPeer(
-        receiver: String,
         signalProtocolAddress: SignalProtocolAddress,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         signalProtocolStore: InMemorySignalProtocolStore,
 ) : Boolean = withContext(Dispatchers.IO) {
+    val receiver = signalProtocolAddress.name
     printlnCK("initSessionUserPeer with $receiver")
     if (TextUtils.isEmpty(receiver)) {
         return@withContext false

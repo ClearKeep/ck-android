@@ -7,27 +7,33 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.*
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.screen.chat.utils.initSessionUserPeer
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
+import org.whispersystems.libsignal.SignalProtocolAddress
+import signal.SignalKeyDistributionGrpc
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 class RoomViewModel @Inject constructor(
-        private val chatRepository: ChatRepository,
-        private val roomRepository: GroupRepository,
-        private val groupRepository: GroupRepository,
-        private val signalKeyRepository: SignalKeyRepository,
+    private val chatRepository: ChatRepository,
+    private val roomRepository: GroupRepository,
+    private val groupRepository: GroupRepository,
+    private val signalKeyRepository: SignalKeyRepository,
 
-        private val userManager: UserManager,
+    private val userManager: UserManager,
 
-        private val peopleRepository: PeopleRepository,
-        private val messageRepository: MessageRepository
+    private val peopleRepository: PeopleRepository,
+    private val messageRepository: MessageRepository,
 ): ViewModel() {
     private var roomId: Long? = null
 
     private var friendId: String? = null
+
+    private var isLatestPeerSignalKeyProcessed = false
 
     private val _group = MutableLiveData<ChatGroup>()
 
@@ -121,7 +127,13 @@ class RoomViewModel @Inject constructor(
             }
 
             if (lastGroupId != GROUP_ID_TEMPO) {
-                chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message)
+                if (!isLatestPeerSignalKeyProcessed) {
+                    // work around: always load user signal key for first open room
+                    val success = chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message, isForceProcessKey = true)
+                    isLatestPeerSignalKeyProcessed = success
+                } else {
+                    chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message)
+                }
             }
         }
     }

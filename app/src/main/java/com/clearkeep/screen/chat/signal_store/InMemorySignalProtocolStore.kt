@@ -13,7 +13,6 @@ import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.state.IdentityKeyStore
-import kotlin.Throws
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SessionRecord

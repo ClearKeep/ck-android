@@ -9,6 +9,7 @@ import android.os.IBinder
 import com.clearkeep.repo.ChatRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.MessageRepository
+import com.clearkeep.screen.chat.utils.initSessionUserPeer
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,6 +21,7 @@ import message.MessageGrpc
 import message.MessageOuterClass
 import notification.NotifyGrpc
 import notification.NotifyOuterClass
+import org.whispersystems.libsignal.SignalProtocolAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -50,8 +52,7 @@ class ChatService : Service() {
             if (isShouldRecreateChannel) {
                 isShouldRecreateChannel = false
                 networkChannel = createNetworkChannel()
-                subscribe()
-                updateNewMessages()
+                subscribeAndUpdateMessageData()
             }
         }
 
@@ -69,14 +70,21 @@ class ChatService : Service() {
         networkChannel = createNetworkChannel()
 
         if (isOnline(applicationContext)) {
-            subscribe()
-            updateNewMessages()
+            subscribeAndUpdateMessageData()
         } else {
             isShouldRecreateChannel = true
         }
 
 
         registerNetworkChange()
+    }
+
+    private fun subscribeAndUpdateMessageData() {
+        scope.launch {
+            subscribe()
+            updateMessageHistory()
+            updateDataInJoiningRoom()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -127,16 +135,9 @@ class ChatService : Service() {
         }
     }
 
-    private fun subscribe() {
-        scope.launch {
-            subscribeNotificationChannel()
-            subscribeMessageChannel()
-        }
-    }
-
-    private suspend fun unsubscribe() {
-        unsubscribeMessageChannel()
-        unsubscribeNotificationChannel()
+    private suspend fun subscribe() {
+        subscribeNotificationChannel()
+        subscribeMessageChannel()
     }
 
     private suspend fun subscribeMessageChannel() : Boolean = withContext(Dispatchers.IO) {
@@ -159,21 +160,6 @@ class ChatService : Service() {
         }
     }
 
-    private suspend fun unsubscribeMessageChannel() : Boolean = withContext(Dispatchers.IO) {
-        try {
-            val request = MessageOuterClass.UnSubscribeRequest.newBuilder()
-                .setClientId(userManager.getClientId())
-                .build()
-
-            val res = MessageGrpc.newBlockingStub(networkChannel).unSubscribe(request)
-            printlnCK("unsubscribeMessageChannel, ${res.success}")
-            return@withContext res.success
-        } catch (e: Exception) {
-            printlnCK("unsubscribeMessageChannel, $e")
-            return@withContext false
-        }
-    }
-
     private suspend fun subscribeNotificationChannel() : Boolean = withContext(Dispatchers.IO) {
         val request = NotifyOuterClass.SubscribeRequest.newBuilder()
             .setClientId(userManager.getClientId())
@@ -189,21 +175,6 @@ class ChatService : Service() {
             return@withContext res.success
         } catch (e: Exception) {
             printlnCK("subscribeNotificationChannel, $e")
-            return@withContext false
-        }
-    }
-
-    private suspend fun unsubscribeNotificationChannel() : Boolean = withContext(Dispatchers.IO) {
-        try {
-            val request = NotifyOuterClass.UnSubscribeRequest.newBuilder()
-                .setClientId(userManager.getClientId())
-                .build()
-
-            val res = NotifyGrpc.newBlockingStub(networkChannel).unSubscribe(request)
-            printlnCK("unsubscribeNotificationChannel, ${res.success}")
-            return@withContext res.success
-        } catch (e: Exception) {
-            printlnCK("unsubscribeNotificationChannel, $e")
             return@withContext false
         }
     }
@@ -263,13 +234,23 @@ class ChatService : Service() {
         })
     }
 
-    private fun updateNewMessages() {
-        scope.launch {
-            groupRepository.fetchRoomsFromAPI()
-            val roomId = chatRepository.getJoiningRoomId()
-            if (roomId > 0) {
-                val group = groupRepository.getGroupByID(roomId)!!
-                messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+    private suspend fun updateMessageHistory() {
+        groupRepository.fetchRoomsFromAPI()
+    }
+
+    private suspend fun updateDataInJoiningRoom() {
+        val roomId = chatRepository.getJoiningRoomId()
+        if (roomId > 0) {
+            val group = groupRepository.getGroupByID(roomId)!!
+            messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+
+            if (!group.isGroup()) {
+                val receiver = group.clientList.firstOrNull { client ->
+                    client.id != userManager.getClientId()
+                }
+                if (receiver != null) {
+                    chatRepository.processPeerKey(receiver.id)
+                }
             }
         }
     }
