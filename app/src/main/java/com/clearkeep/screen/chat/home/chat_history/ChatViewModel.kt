@@ -17,7 +17,5 @@ class ChatViewModel @Inject constructor(
 ): ViewModel() {
     fun getClientId() = userManager.getClientId()
 
-    val groups: LiveData<Resource<List<ChatGroup>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-        emitSource( roomRepository.getAllRooms())
-    }
+    val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 }

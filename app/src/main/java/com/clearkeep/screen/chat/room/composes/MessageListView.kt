@@ -36,7 +36,6 @@ fun MessageListView(
     isGroup: Boolean,
     isNewMessage: Boolean = true
 ) {
-    printlnCK("isNewMessage = $isNewMessage")
     mIsNewMessage = isNewMessage
     MessageListView(
         messageList = messageList,

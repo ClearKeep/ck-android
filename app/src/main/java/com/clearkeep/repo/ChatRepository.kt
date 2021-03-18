@@ -48,20 +48,22 @@ class ChatRepository @Inject constructor(
 
     fun getClientId() = userManager.getClientId()
 
-    suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
         printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId, groupId= $groupId")
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
-            /*if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val initSuccess = initSessionUserPeer(receiverId, signalProtocolAddress, clientBlocking, signalProtocolStore)
-                if (!initSuccess) {
+            /*if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
+                val processSuccess = processPeerKey(receiverId)
+                if (!processSuccess) {
+                    printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                     return@withContext false
                 }
             }*/
-            val initSuccess = initSessionUserPeer(receiverId, signalProtocolAddress, clientBlocking, signalProtocolStore)
-            if (!initSuccess) {
+            val processSuccess = processPeerKey(receiverId)
+            if (!processSuccess) {
+                printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                 return@withContext false
             }
 
@@ -86,6 +88,11 @@ class ChatRepository @Inject constructor(
         }
 
         return@withContext true
+    }
+
+    suspend fun processPeerKey(receiverId: String): Boolean {
+        val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
+        return initSessionUserPeer(signalProtocolAddress, clientBlocking, signalProtocolStore)
     }
 
     suspend fun sendMessageToGroup(groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {

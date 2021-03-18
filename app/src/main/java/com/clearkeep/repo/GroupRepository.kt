@@ -38,31 +38,7 @@ class GroupRepository @Inject constructor(
         private val senderKeyStore: InMemorySenderKeyStore,
         private val signalProtocolStore: InMemorySignalProtocolStore,
 ) {
-    fun getAllRooms() = liveData {
-        val disposable = emitSource(
-                groupDAO.getRoomsAsState().map {
-                    Resource.loading(it)
-                }
-        )
-        try {
-            val groups = getRoomsFromAPI()
-            disposable.dispose()
-            groupDAO.insertGroupList(groups)
-            emitSource(
-                    groupDAO.getRoomsAsState().map {
-                        Resource.success(it)
-                    }
-            )
-            printlnCK("getAllRooms, $groups")
-        } catch(exception: Exception) {
-            printlnCK("getAllRooms: $exception")
-            emitSource(
-                    groupDAO.getRoomsAsState().map {
-                        Resource.error(exception.toString(), it)
-                    }
-            )
-        }
-    }
+    fun getAllRooms() = groupDAO.getRoomsAsState()
 
     suspend fun fetchRoomsFromAPI() = withContext(Dispatchers.IO) {
         printlnCK("fetchRoomsFromAPI")
