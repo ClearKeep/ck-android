@@ -64,9 +64,9 @@ fun CKTextField(
             trailingIcon = {
                 if (isPasswordType) {
                     Icon(
-                        imageVector = if (passwordVisibility.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        imageVector = if (!passwordVisibility.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                         contentDescription = "",
-                        tint = if (passwordVisibility.value) Color.Blue else Color.Gray,
+                        tint = Color.Gray,
                         modifier = Modifier.clickable(
                             onClick = { passwordVisibility.value = !passwordVisibility.value }
                         )

@@ -34,8 +34,6 @@ fun LoginScreen(
     val emailError = loginViewModel.emailError.observeAsState()
     val passError = loginViewModel.passError.observeAsState()
 
-    var passwordVisibility = remember { mutableStateOf(false) }
-
     val image = painterResource(R.drawable.ic_logo)
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize(),
@@ -64,20 +62,20 @@ fun LoginScreen(
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextField(
                     "Email",
-                    "",
+                    "Email",
                     email,
                     keyboardType = KeyboardType.Email,
                     error = emailError.value
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(20.dp))
                 CKTextField(
                     "Password",
-                    "",
+                    "Password",
                     password,
                     keyboardType = KeyboardType.Password,
                     error = passError.value
                 )
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(40.dp))
                 CKButton(
                         stringResource(R.string.btn_login),
                         onClick = {
