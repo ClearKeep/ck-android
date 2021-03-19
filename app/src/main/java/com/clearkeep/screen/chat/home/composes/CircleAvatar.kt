@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.home.composes
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
@@ -28,18 +30,18 @@ fun CircleAvatar(
         contentColor = Color.White,
         elevation = elevation,
     ){
-        if (isGroup) {
-            Icon(
-                imageVector = Icons.Filled.Groups,
-                contentDescription = "",
-                modifier = Modifier.size(36.dp)
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Filled.Person,
-                contentDescription = "",
-                modifier = Modifier.size(36.dp)
-            )
+        Box(modifier = Modifier.padding(12.dp)) {
+            if (isGroup) {
+                Icon(
+                    imageVector = Icons.Filled.Groups,
+                    contentDescription = "",
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Person,
+                    contentDescription = "",
+                )
+            }
         }
     }
 }
