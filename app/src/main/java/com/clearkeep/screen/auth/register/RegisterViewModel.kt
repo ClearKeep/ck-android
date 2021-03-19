@@ -29,31 +29,52 @@ class RegisterViewModel @Inject constructor(
     val passError: LiveData<String>
         get() = _passError
 
+    private val _confirmPassError = MutableLiveData<String>()
+
+    val confirmPassError: LiveData<String>
+        get() = _confirmPassError
+
     private val _displayNameError = MutableLiveData<String>()
 
     val displayNameError: LiveData<String>
         get() = _displayNameError
 
-    suspend fun register(context: Context, displayName: String, password: String, email: String): Resource<AuthOuterClass.RegisterRes>? {
-        _emailError.value = ""
-        _passError.value = ""
-        _displayNameError.value = ""
+    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String ): Resource<AuthOuterClass.RegisterRes>? {
         _isLoading.value = true
 
-        val result = if (email.isBlank()) {
+        _emailError.value = ""
+        _passError.value = ""
+        _confirmPassError.value = ""
+        _displayNameError.value = ""
+
+        var isValid = true
+        if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
-            null
+            isValid = false
         } else if (!email.trim().isValidEmail()) {
             _emailError.value = context.getString(R.string.email_invalid)
-            null
-        } else if (displayName.isBlank()) {
+            isValid = false
+        }
+        if (displayName.isBlank()) {
             _displayNameError.value = context.getString(R.string.display_empty)
-            null
-        } else if (password.isBlank()) {
+            isValid = false
+        }
+        if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
-            null
-        } else {
+            isValid = false
+        }
+        if (confirmPassword.isBlank()) {
+            _confirmPassError.value = context.getString(R.string.confirm_password_empty)
+            isValid = false
+        } else if (confirmPassword != password) {
+            _confirmPassError.value = context.getString(R.string.confirm_password_is_not_match)
+            isValid = false
+        }
+
+        val result = if (isValid) {
             authRepository.register(displayName.trim(), password.trim(), email.trim())
+        } else {
+            null
         }
 
         _isLoading.value = false

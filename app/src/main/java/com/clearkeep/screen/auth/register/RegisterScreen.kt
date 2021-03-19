@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.register
 
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -23,17 +25,21 @@ import com.clearkeep.components.base.CKTopAppBar
 @Composable
 fun RegisterScreen(
     registerViewModel: RegisterViewModel,
-    onRegisterPressed: (userName: String, password: String, email: String) -> Unit,
+    onRegisterPressed: (email: String, userName: String, password: String, confirmPassword: String) -> Unit,
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
     val email = remember {mutableStateOf("")}
     val displayName = remember {mutableStateOf("")}
     val password = remember {mutableStateOf("")}
+    val confirmPassword = remember {mutableStateOf("")}
 
     val emailError = registerViewModel.emailError.observeAsState()
     val passError = registerViewModel.passError.observeAsState()
+    val confirmPassError = registerViewModel.confirmPassError.observeAsState()
     val displayNameError = registerViewModel.displayNameError.observeAsState()
+
+    val image = painterResource(R.drawable.ic_logo)
 
     Column(modifier = Modifier.fillMaxSize()) {
         CKTopAppBar(
@@ -56,6 +62,12 @@ fun RegisterScreen(
         Column (modifier = Modifier.padding(horizontal = 20.dp).fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                Image(image, contentDescription = "", modifier = Modifier.size(80.dp))
+            }
+
+            Spacer(Modifier.height(30.dp))
+
             CKTextField(
                     "Email",
                     "",
@@ -78,11 +90,19 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Password,
                 error = passError.value
             )
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(10.dp))
+            CKTextField(
+                "Confirm password",
+                "",
+                confirmPassword,
+                keyboardType = KeyboardType.Password,
+                error = confirmPassError.value
+            )
+            Spacer(Modifier.height(40.dp))
             CKButton(
                     stringResource(R.string.btn_register),
                     onClick = {
-                        onRegisterPressed(displayName.value, password.value, email.value)
+                        onRegisterPressed(email.value, displayName.value, password.value, confirmPassword.value)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
