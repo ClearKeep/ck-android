@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
+import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
@@ -47,7 +48,7 @@ fun RoomScreen(
             Column(
                     modifier = Modifier.fillMaxSize()
             ) {
-                TopAppBar(
+                CKTopAppBar(
                         title = {
                             Box(modifier = Modifier.clickable(onClick = {
                                 /*navHostController.navigate("room_info_screen")*/
