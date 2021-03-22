@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,23 +42,41 @@ fun ChatHistoryScreen(
                 }
         )
         rooms?.value?.let { values ->
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    top = 20.dp,
-                    end = 20.dp,
-                    start = 20.dp,
-                    bottom = 20.dp
-                ),
-            ) {
-                itemsIndexed(values) { _, room ->
-                    RoomItem(
-                        room,
-                        chatViewModel.getClientId(),
-                        onRoomSelected
-                    )
+            if (values.isEmpty()) {
+                EmptySuggestion()
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        top = 20.dp,
+                        end = 20.dp,
+                        start = 20.dp,
+                        bottom = 20.dp
+                    ),
+                ) {
+                    itemsIndexed(values) { _, room ->
+                        RoomItem(
+                            room,
+                            chatViewModel.getClientId(),
+                            onRoomSelected
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EmptySuggestion() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(50.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(stringResource(R.string.empty_conversation_history),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.body1
+        )
     }
 }
 
