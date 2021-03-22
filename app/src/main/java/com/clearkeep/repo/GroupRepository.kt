@@ -44,14 +44,17 @@ class GroupRepository @Inject constructor(
         printlnCK("fetchRoomsFromAPI")
         try {
             val groups = getRoomsFromAPI()
-            groupDAO.insertGroupList(groups)
+            for (group in groups) {
+                val decryptedGroup = convertGroupFromResponse(group)
+                groupDAO.insert(decryptedGroup)
+            }
         } catch(exception: Exception) {
             printlnCK("fetchRoomsFromAPI: $exception")
         }
     }
 
     @Throws(Exception::class)
-    private suspend fun getRoomsFromAPI() : List<ChatGroup>  = withContext(Dispatchers.IO) {
+    private suspend fun getRoomsFromAPI() : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
         printlnCK("getRoomsFromAPI")
         val clientId = userManager.getClientId()
         val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
@@ -60,9 +63,6 @@ class GroupRepository @Inject constructor(
         val response = groupGrpc.getJoinedGroups(request)
         printlnCK("getRoomsFromAPI, ${response.lstGroupList}")
         return@withContext response.lstGroupList
-                .map { group ->
-                    convertGroupFromResponse(group)
-                }
     }
 
     suspend fun createGroupFromAPI(createClientId: String, groupName: String, participants: List<String>, isGroup: Boolean): ChatGroup? = withContext(Dispatchers.IO) {
