@@ -79,3 +79,5 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 
+**/android/key.properties
+
