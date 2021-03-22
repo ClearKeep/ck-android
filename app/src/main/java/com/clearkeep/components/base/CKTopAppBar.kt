@@ -1,6 +1,7 @@
 package com.clearkeep.components.base
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ fun CKTopAppBar(
         title = title,
         modifier = modifier,
         navigationIcon = navigationIcon,
-        actions = actions
+        actions = actions,
+        backgroundColor = MaterialTheme.colors.primary
     )
 }

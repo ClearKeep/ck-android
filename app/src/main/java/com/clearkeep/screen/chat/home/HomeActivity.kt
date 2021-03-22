@@ -140,7 +140,9 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
         val navController = rememberNavController()
         Scaffold(
             bottomBar = {
-                BottomNavigation {
+                BottomNavigation(
+                    backgroundColor = MaterialTheme.colors.primary,
+                ){
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
                     items.forEach { screen ->
