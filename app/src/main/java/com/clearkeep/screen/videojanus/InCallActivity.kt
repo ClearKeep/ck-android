@@ -129,8 +129,10 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
 
         rootEglBase = EglBase.create()
-        binding.localSurfaceView.init(rootEglBase.eglBaseContext, null)
-        binding.localSurfaceView.setEnableHardwareScaler(true)
+        binding.localSurfaceView.apply {
+            init(rootEglBase.eglBaseContext, null)
+            setEnableHardwareScaler(true)
+        }
 
         initViews()
 
@@ -389,7 +391,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             R.id.imgVideoMute -> {
                 mIsMuteVideo = !mIsMuteVideo
                 enableMuteVideo(mIsMuteVideo)
-                peerConnectionClient?.setVideoEnabled(!mIsMuteVideo)
+                peerConnectionClient?.setLocalVideoEnable(!mIsMuteVideo)
             }
         }
     }
