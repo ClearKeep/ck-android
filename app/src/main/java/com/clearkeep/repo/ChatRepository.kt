@@ -54,17 +54,12 @@ class ChatRepository @Inject constructor(
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
-            /*if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
+            if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
                 val processSuccess = processPeerKey(receiverId)
                 if (!processSuccess) {
                     printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                     return@withContext false
                 }
-            }*/
-            val processSuccess = processPeerKey(receiverId)
-            if (!processSuccess) {
-                printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
-                return@withContext false
             }
 
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)

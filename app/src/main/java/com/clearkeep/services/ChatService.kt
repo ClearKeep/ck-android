@@ -220,6 +220,8 @@ class ChatService : Service() {
                 scope.launch {
                     if(value.notifyType == "new-group") {
                         groupRepository.fetchRoomsFromAPI()
+                    } else if(value.notifyType == "peer-update-key") {
+                        chatRepository.processPeerKey(value.refClientId)
                     }
                 }
             }
