@@ -229,29 +229,33 @@ class GroupRepository @Inject constructor(
             return oldMessage
         }
 
-        val decryptedMessage = try {
-            if (!isGroup(messageResponse.groupType)) {
+        if (messageResponse.createdAt < userManager.getLoginTime()) {
+            return null
+        }
+
+        try {
+            val decryptedMessage = if (!isGroup(messageResponse.groupType)) {
                 decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
             } else {
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId, messageResponse.message, senderKeyStore, clientBlocking)
             }
-        } catch (e: Exception) {
-            null
-        }
 
-        val newMessage = Message(
+            val newMessage = Message(
                 messageResponse.id,
                 messageResponse.groupId,
                 messageResponse.groupType,
                 messageResponse.fromClientId,
                 messageResponse.clientId,
-                decryptedMessage?: "",
+                decryptedMessage,
                 messageResponse.createdAt,
                 messageResponse.updatedAt,
-        )
-        if (!decryptedMessage.isNullOrEmpty()) {
-            messageDAO.insert(newMessage)
+            )
+            if (!decryptedMessage.isNullOrEmpty()) {
+                messageDAO.insert(newMessage)
+            }
+            return newMessage
+        } catch (e: Exception) {
+            return null
         }
-        return newMessage
     }
 }
