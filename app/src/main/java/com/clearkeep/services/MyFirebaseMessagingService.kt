@@ -4,10 +4,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.utilities.ACTION_CALL_CANCEL
-import com.clearkeep.utilities.EXTRA_CALL_CANCEL_GROUP_ID
-import com.clearkeep.utilities.INCOMING_NOTIFICATION_ID
-import com.clearkeep.utilities.UserManager
+import com.clearkeep.utilities.*
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +40,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val stunUrl = stunConfigJsonObject.getString("server")
                 val turnUser = turnConfigJsonObject.getString("user")
                 val turnPass = turnConfigJsonObject.getString("pwd")
-                val isAudioMode = groupCallType == "audio"
+                val isAudioMode = groupCallType == CALL_TYPE_AUDIO
 
                 AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, userManager.getClientId(), fromClientName, avatar,
                     turnUrl, turnUser, turnPass, stunUrl)

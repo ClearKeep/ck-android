@@ -30,9 +30,12 @@ const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
 const val ACTION_CALL_CANCEL = "ck.action.end.call"
 const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
 
-const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.video"
-const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_video"
+const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
+const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
 
 const val INCOMING_NOTIFICATION_ID = 123456
 const val INCOMING_CHANNEL_ID = "incoming_channel_id"
 const val INCOMING_CHANNEL_NAME = "incoming_channel_name"
+
+const val CALL_TYPE_AUDIO = "audio"
+const val CALL_TYPE_VIDEO = "video"
