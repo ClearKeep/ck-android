@@ -1,20 +1,21 @@
 package com.clearkeep.screen.chat.contact_search
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.clearkeep.components.colorTest
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun InputSearchBox(
-    onValueChange: (text: String) -> Unit
+    onValueChange: (text: String) -> Unit,
+    onClearClick: (() -> Unit)
 ) {
     val userName = remember {mutableStateOf("")}
     TextField(
@@ -30,6 +31,20 @@ fun InputSearchBox(
             focusedBorderColor = Color.Blue,
             unfocusedBorderColor = Color.Gray,
         ),
-        textStyle = MaterialTheme.typography.body2.copy(color = Color.Black)
+        textStyle = MaterialTheme.typography.body2.copy(color = Color.Black),
+        trailingIcon = {
+            if (userName.value.length>1){
+                Icon(Icons.Filled.Close, contentDescription = ""
+                    ,tint = colorResource(id = R.color.material_grey_900),
+                    modifier = Modifier.clickable {
+                        onClearClick.invoke()
+                        userName.value = ""
+                    })
+            }else{
+                Icon(Icons.Filled.Close, contentDescription = ""
+                    ,tint = colorResource(id = R.color.foreground_material_dark))
+            }
+
+        }
     )
 }
