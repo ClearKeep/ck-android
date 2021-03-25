@@ -45,12 +45,6 @@ class RoomViewModel @Inject constructor(
     val group: LiveData<ChatGroup>
         get() = _group
 
-    val members: LiveData<List<People>> = _group.switchMap { group ->
-        liveData(context = viewModelScope.coroutineContext) {
-            emit(peopleRepository.getFriends(group.clientList.map { it.id }))
-        }
-    }
-
     fun joinRoom(roomId: Long?, friendId: String?) {
         if (roomId == null && TextUtils.isEmpty(friendId)) {
             throw IllegalArgumentException("Can not load room with both groupId and friendId is empty")

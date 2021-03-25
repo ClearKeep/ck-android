@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.runtime.Composable
@@ -32,7 +31,6 @@ fun RoomScreen(
         onFinishActivity: () -> Unit,
 ) {
     val group = roomViewModel.group.observeAsState()
-    /*val isOnBottomMessage = remember { mutableStateOf(true) }*/
     group?.value?.let { group ->
         if (group.id != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.id)
@@ -53,7 +51,9 @@ fun RoomScreen(
                 CKTopAppBar(
                         title = {
                             Box(modifier = Modifier.clickable(onClick = {
-                                /*navHostController.navigate("room_info_screen")*/
+                                if (group.isGroup()) {
+                                    navHostController.navigate("room_info_screen")
+                                }
                             })) {
                                 Text(text = groupName,
                                         maxLines = 1,
@@ -108,10 +108,6 @@ fun RoomScreen(
                                 clients = group.clientList,
                                 myClientId = roomViewModel.getClientId(),
                                 group.isGroup(),
-                            /*isOnBottom = isOnBottomMessage.value,
-                            onBottomButtonClick = {
-                                isOnBottomMessage.value = true
-                            }*/
                         )
                     }
                 }

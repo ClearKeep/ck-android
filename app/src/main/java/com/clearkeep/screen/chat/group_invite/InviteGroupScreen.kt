@@ -23,6 +23,41 @@ import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
 @Composable
+fun InviteGroupScreenComingSoon(
+    inviteGroupViewModel: InviteGroupViewModel,
+
+    onFriendSelected: (List<People>) -> Unit,
+    onBackPressed: () -> Unit,
+    isSelectionOnly: Boolean = false,
+    selectedItem: SnapshotStateList<People>
+) {
+    Column {
+        CKTopAppBar(
+            title = {
+                Text(text = "Add members")
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = onBackPressed
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = ""
+                    )
+                }
+            },
+        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Coming soon", style = MaterialTheme.typography.body1)
+        }
+    }
+}
+
+@Composable
 fun InviteGroupScreen(
         inviteGroupViewModel: InviteGroupViewModel,
 
@@ -86,16 +121,19 @@ fun FriendItem(
         isSelected: Boolean,
         onFriendSelected: (people: People, isAdd: Boolean) -> Unit,
 ) {
-    Column(modifier = Modifier.selectable(
+    Column(modifier = Modifier
+        .selectable(
             selected = isSelected,
             onClick = { onFriendSelected(friend, !isSelected) })
-            .padding(horizontal = 20.dp)
+        .padding(horizontal = 20.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar("")
-            Column(modifier = Modifier.padding(start = 20.dp).weight(1.0f, true)) {
+            Column(modifier = Modifier
+                .padding(start = 20.dp)
+                .weight(1.0f, true)) {
                 Text(text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
                 )

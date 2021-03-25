@@ -31,7 +31,7 @@ fun RoomInfoScreen(
         ) {
             TopAppBar(
                 title = {
-                    Text(text = group.groupName)
+                    Text(text = "${group.groupName} details")
                 },
                 navigationIcon = {
                     IconButton(
@@ -78,7 +78,7 @@ fun RoomInfoScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Invite Friend", style = MaterialTheme.typography.body2)
+                            Text(text = "Add members", style = MaterialTheme.typography.body2)
                         }
                     }
                 }
