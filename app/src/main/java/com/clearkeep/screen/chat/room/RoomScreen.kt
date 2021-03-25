@@ -75,27 +75,29 @@ fun RoomScreen(
                             }
                         },
                         actions = {
-                            IconButton(
-                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
-                                onClick = {
-                                    roomViewModel.requestCall(group.id, true)
+                            if (!group.isGroup()) {
+                                IconButton(
+                                    /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
+                                    onClick = {
+                                        roomViewModel.requestCall(group.id, true)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Call,
+                                        contentDescription = ""
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Call,
-                                    contentDescription = ""
-                                )
-                            }
-                            IconButton(
+                                IconButton(
                                     /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
                                     onClick = {
                                         roomViewModel.requestCall(group.id, false)
                                     }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.VideoCall,
-                                    contentDescription = ""
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.VideoCall,
+                                        contentDescription = ""
+                                    )
+                                }
                             }
                         }
                 )
