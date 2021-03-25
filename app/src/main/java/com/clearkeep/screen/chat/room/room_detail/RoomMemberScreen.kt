@@ -21,21 +21,21 @@ import com.clearkeep.screen.chat.room.RoomViewModel
 
 @Composable
 fun GroupMemberScreen(
-        roomViewModel: RoomViewModel,
-        navHostController: NavHostController,
+    roomViewModel: RoomViewModel,
+    navHostController: NavHostController,
 ) {
-    val friends = roomViewModel.members.observeAsState()
-
-    Column {
-        CKTopAppBar(
+    val groupState = roomViewModel.group.observeAsState()
+    groupState?.value?.let { group ->
+        Column {
+            CKTopAppBar(
                 title = {
-                    Text(text = "Group Members")
+                    Text(text = "Group members")
                 },
                 navigationIcon = {
                     IconButton(
-                            onClick = {
-                                navHostController.popBackStack()
-                            }
+                        onClick = {
+                            navHostController.popBackStack()
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -43,15 +43,13 @@ fun GroupMemberScreen(
                         )
                     }
                 },
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-        friends?.value?.let {
-            FriendItem(friend = People("", "You"))
+            )
+            Spacer(modifier = Modifier.height(30.dp))
             LazyColumn(
                 modifier = Modifier.fillMaxHeight().fillMaxWidth(),
                 contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp),
             ) {
-                itemsIndexed(it) { _, friend ->
+                itemsIndexed(group.clientList) { _, friend ->
                     Surface(color = Color.White) {
                         FriendItem(friend)
                     }
