@@ -37,9 +37,9 @@ class RoomViewModel @Inject constructor(
 
     private val _group = MutableLiveData<ChatGroup>()
 
-    private val _requestCallState = MutableLiveData<Resource<ChatGroup>>()
+    private val _requestCallState = MutableLiveData<Resource<RequestInfo>>()
 
-    val requestCallState: LiveData<Resource<ChatGroup>>
+    val requestCallState: LiveData<Resource<RequestInfo>>
         get() = _requestCallState
 
     val group: LiveData<ChatGroup>
@@ -160,7 +160,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun requestCall(groupId: Long) {
+    fun requestCall(groupId: Long, isAudioMode: Boolean) {
         viewModelScope.launch {
             _requestCallState.value = Resource.loading(null)
 
@@ -179,10 +179,13 @@ class RoomViewModel @Inject constructor(
             }
 
             if (lastGroupId != GROUP_ID_TEMPO) {
-                _requestCallState.value = Resource.success(_group.value)
+                _requestCallState.value = Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
             } else {
-                _requestCallState.value = Resource.error("error", _group.value)
+                _requestCallState.value = Resource.error("error",
+                    _group.value?.let { RequestInfo(it, isAudioMode) })
             }
         }
     }
 }
+
+class RequestInfo(val chatGroup: ChatGroup, val isAudioMode: Boolean)

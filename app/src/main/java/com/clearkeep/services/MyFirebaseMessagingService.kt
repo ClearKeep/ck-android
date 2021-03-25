@@ -28,6 +28,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         when (remoteMessage.data["notify_type"]) {
             "request_call" -> {
                 val groupId = remoteMessage.data["group_id"]
+                val groupCallType = remoteMessage.data["call_type"]
                 val avatar = remoteMessage.data["from_client_avatar"] ?: ""
                 //val fromClientId = remoteMessage.data["from_client_id"]
                 val fromClientName = remoteMessage.data["from_client_name"]
@@ -42,8 +43,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 val stunUrl = stunConfigJsonObject.getString("server")
                 val turnUser = turnConfigJsonObject.getString("user")
                 val turnPass = turnConfigJsonObject.getString("pwd")
+                val isAudioMode = groupCallType == "audio"
 
-                AppCall.inComingCall(this, rtcToken, groupId!!, userManager.getClientId(), fromClientName, avatar,
+                AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, userManager.getClientId(), fromClientName, avatar,
                     turnUrl, turnUser, turnPass, stunUrl)
             }
             "cancel_request_call" -> {

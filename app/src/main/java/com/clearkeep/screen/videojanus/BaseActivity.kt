@@ -2,14 +2,30 @@ package com.clearkeep.screen.videojanus
 
 import android.Manifest
 import android.app.PictureInPictureParams
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Rational
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.clearkeep.utilities.printlnCK
 
 abstract class BaseActivity : AppCompatActivity() {
+    private var isOpenSettingScreen = false
+
+    private val startForResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) { _: ActivityResult ->
+        printlnCK("onActivityResult, open setting")
+        isOpenSettingScreen = false
+        requestCallPermissions()
+    }
+
     fun requestCallPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if ((ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
@@ -28,6 +44,21 @@ abstract class BaseActivity : AppCompatActivity() {
             }
         }
         onPermissionsAvailable()
+    }
+
+    fun openSettingScreen() {
+        isOpenSettingScreen = true
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", packageName, null))
+        startForResult.launch(intent)
+    }
+
+    override fun onUserLeaveHint() {
+        printlnCK("onUserLeaveHint: $isOpenSettingScreen")
+        if (hasSupportPIP() && !isOpenSettingScreen) {
+            enterPIPMode()
+        }
     }
 
     override fun onRequestPermissionsResult(

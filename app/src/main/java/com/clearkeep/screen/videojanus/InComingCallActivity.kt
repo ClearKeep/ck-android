@@ -35,6 +35,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private var mReceiverId: String? = null
     private lateinit var mGroupId: String
     private lateinit var mToken: String
+    private var mIsAudioMode: Boolean = false
     private lateinit var imgAnswer: ImageView
     private lateinit var imgEnd: ImageView
     private lateinit var imgThumb: CircleImageView
@@ -75,6 +76,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mReceiverId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
         mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
+        mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         initViews()
 
         registerEndCallReceiver()
@@ -145,7 +147,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
                 finishAndRemoveFromTask()
-                AppCall.call(this, mToken, mGroupId, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
+                AppCall.call(this, mIsAudioMode, mToken, mGroupId, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
                         turnUrl = turnUrl, turnUser = turnUserName, turnPass = turnPassword,
                         stunUrl = stunUrl
                 )

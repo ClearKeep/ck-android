@@ -17,6 +17,11 @@
             android:orientation="vertical"
             android:keepScreenOn="true"
             tools:context="in.minewave.janusvideoroom.MainActivity">
+
+            <org.webrtc.SurfaceViewRenderer
+                android:id="@+id/localSurfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -27,14 +32,16 @@
             android:keepScreenOn="true"
             tools:context="in.minewave.janusvideoroom.MainActivity">
 
-            <org.webrtc.SurfaceViewRenderer
-                android:id="@+id/localSurfaceView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
         </RelativeLayout>
     </RelativeLayout>
 
-
+    <RelativeLayout
+        android:id="@+id/containerAudioCover"
+        android:background="@android:color/background_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/rlToolbar"
@@ -68,7 +75,19 @@
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="20dp"
-            android:src="@android:drawable/ic_menu_rotate" />
+            tools:visibility="gone"
+            android:visibility="gone"
+            android:src="@drawable/baseline_cameraswitch_white_24" />
+
+        <ImageView
+            android:id="@+id/imgSwitchAudioToVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_videocam_white_24" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -127,7 +146,8 @@
         android:id="@+id/chronometer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/rlToolbar"
+        android:layout_below="@id/containerUserInfo"
+        android:layout_margin="8dp"
         android:textColor="?attr/appCallTextColor"
         tools:textColor="@android:color/white"
         android:visibility="gone"
@@ -151,6 +171,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
             android:src="?attr/buttonMuteVideoOff"
+            android:visibility="gone"
+            tools:visibility="visible"
             tools:src="@drawable/ic_video_mute_on" />
 
         <ImageView
@@ -159,6 +181,8 @@
             android:layout_height="wrap_content"
             android:src="?attr/buttonSpeakerOff"
             android:layout_marginEnd="30dp"
+            android:visibility="gone"
+            tools:visibility="visible"
             tools:src="@drawable/ic_string_ee_sound_off" />
         <ImageView
             android:id="@+id/imgMute"
@@ -166,6 +190,8 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
             android:src="?attr/buttonMuteOff"
+            android:visibility="gone"
+            tools:visibility="visible"
             tools:src="@drawable/ic_string_ee_mute_off" />
         <ImageView
             android:id="@+id/imgEnd"

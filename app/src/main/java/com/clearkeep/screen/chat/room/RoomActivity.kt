@@ -102,18 +102,18 @@ class RoomActivity : AppCompatActivity() {
     private fun subscriber() {
         roomViewModel.requestCallState.observe(this, Observer {
             if (it.status == Status.SUCCESS) {
-                it.data?.let { it1 -> navigateToInComingCallActivity(it1) }
+                it.data?.let { requestInfo -> navigateToInComingCallActivity(requestInfo.chatGroup, requestInfo.isAudioMode) }
             }
         })
     }
 
-    private fun navigateToInComingCallActivity(group: ChatGroup) {
+    private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
         val roomName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
                 client.id != roomViewModel.getClientId()
             }?.userName ?: ""
         }
-        AppCall.call(this, null, group.id.toString(), roomViewModel.getClientId(), roomName, "", false)
+        AppCall.call(this, isAudioMode, null, group.id.toString(), roomViewModel.getClientId(), roomName, "", false)
     }
 
     companion object {
