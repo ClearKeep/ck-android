@@ -39,14 +39,14 @@ fun ProfileScreen(
                     Text(text = "Profile")
                 },
         )
-        Spacer(Modifier.height(60.dp))
-        CircleAvatar("", size = 72.dp)
-        Spacer(Modifier.height(20.dp))
         profile?.value?.let { user ->
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(Modifier.height(60.dp))
+                CircleAvatar(emptyList(), user.userName ?: "", size = 72.dp)
+                Spacer(Modifier.height(20.dp))
                 Text(text = user.userName ?: "", style = MaterialTheme.typography.h5)
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = user.email ?: "", style = MaterialTheme.typography.body2)
