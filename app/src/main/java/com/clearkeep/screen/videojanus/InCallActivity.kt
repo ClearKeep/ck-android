@@ -336,7 +336,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         configMedia(isSpeaker = true, isMuteVideo = false)
         updateUIByStateAndMode()
         callScope.launch {
-            videoCallRepository.switchAudioToCall(mGroupId.toInt())
+            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt())
         }
     }
 

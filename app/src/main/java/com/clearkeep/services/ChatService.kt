@@ -223,7 +223,7 @@ class ChatService : Service() {
                         "peer-update-key" -> {
                             chatRepository.processPeerKey(value.refClientId)
                         }
-                        "audio_to_video" -> {
+                        CALL_TYPE_VIDEO -> {
                             val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
                             switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
                             sendBroadcast(switchIntent)
