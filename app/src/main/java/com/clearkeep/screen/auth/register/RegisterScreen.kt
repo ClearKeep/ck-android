@@ -59,7 +59,9 @@ fun RegisterScreen(
                     }
                 },
         )
-        Column (modifier = Modifier.padding(horizontal = 20.dp).fillMaxSize(),
+        Column (modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
@@ -69,26 +71,29 @@ fun RegisterScreen(
             Spacer(Modifier.height(30.dp))
 
             CKTextField(
-                    "Email",
-                    "",
-                    email,
-                    keyboardType = KeyboardType.Email,
-                error = emailError.value
+                "Email",
+                "",
+                email,
+                keyboardType = KeyboardType.Email,
+                error = emailError.value,
+                singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
             CKTextField(
-                    "Display name",
-                    "",
-                    displayName,
-                error = displayNameError.value
+                "Display name",
+                "",
+                displayName,
+                error = displayNameError.value,
+                singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
             CKTextField(
-                    "Password",
-                    "",
-                    password,
-                    keyboardType = KeyboardType.Password,
-                error = passError.value
+                "Password",
+                "",
+                password,
+                keyboardType = KeyboardType.Password,
+                error = passError.value,
+                singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
             CKTextField(
@@ -96,7 +101,8 @@ fun RegisterScreen(
                 "",
                 confirmPassword,
                 keyboardType = KeyboardType.Password,
-                error = confirmPassError.value
+                error = confirmPassError.value,
+                singleLine = true,
             )
             Spacer(Modifier.height(40.dp))
             CKButton(

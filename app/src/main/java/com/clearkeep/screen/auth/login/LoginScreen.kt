@@ -62,18 +62,20 @@ fun LoginScreen(
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextField(
                     "Email",
-                    "Email",
+                    "",
                     email,
                     keyboardType = KeyboardType.Email,
-                    error = emailError.value
+                    error = emailError.value,
+                    singleLine = true,
                 )
                 Spacer(Modifier.height(20.dp))
                 CKTextField(
                     "Password",
-                    "Password",
+                    "",
                     password,
                     keyboardType = KeyboardType.Password,
-                    error = passError.value
+                    error = passError.value,
+                    singleLine = true,
                 )
                 Spacer(Modifier.height(40.dp))
                 CKButton(

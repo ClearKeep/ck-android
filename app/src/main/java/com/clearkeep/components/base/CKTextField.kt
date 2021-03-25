@@ -3,6 +3,7 @@ package com.clearkeep.components.base
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -22,8 +25,12 @@ fun CKTextField(
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
-    error: String? = null
+    error: String? = null,
+    singleLine: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+    imeAction: ImeAction = ImeAction.Done
 ) {
+    val focusManager = LocalFocusManager.current
     val isPasswordType = keyboardType == KeyboardType.Password
     var passwordVisibility = remember { mutableStateOf(false) }
     Column {
@@ -52,9 +59,6 @@ fun CKTextField(
             textStyle = MaterialTheme.typography.body2.copy(
                 color = Color.Blue
             ),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType
-            ),
             visualTransformation = if (isPasswordType) {
                 if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
             } else {
@@ -73,6 +77,10 @@ fun CKTextField(
                     )
                 }
             },
+            singleLine = singleLine,
+            maxLines = maxLines,
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
         )
         if (!error.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(5.dp))
