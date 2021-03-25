@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -74,9 +76,20 @@ fun RoomScreen(
                         },
                         actions = {
                             IconButton(
+                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
+                                onClick = {
+                                    roomViewModel.requestCall(group.id, true)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Call,
+                                    contentDescription = ""
+                                )
+                            }
+                            IconButton(
                                     /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
                                     onClick = {
-                                        roomViewModel.requestCall(group.id)
+                                        roomViewModel.requestCall(group.id, false)
                                     }
                             ) {
                                 Icon(

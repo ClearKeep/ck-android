@@ -9,7 +9,6 @@ import android.os.IBinder
 import com.clearkeep.repo.ChatRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.MessageRepository
-import com.clearkeep.screen.chat.utils.initSessionUserPeer
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +20,6 @@ import message.MessageGrpc
 import message.MessageOuterClass
 import notification.NotifyGrpc
 import notification.NotifyOuterClass
-import org.whispersystems.libsignal.SignalProtocolAddress
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -218,10 +216,18 @@ class ChatService : Service() {
                 printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
                         ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
                 scope.launch {
-                    if(value.notifyType == "new-group") {
-                        groupRepository.fetchRoomsFromAPI()
-                    } else if(value.notifyType == "peer-update-key") {
-                        chatRepository.processPeerKey(value.refClientId)
+                    when (value.notifyType) {
+                        "new-group" -> {
+                            groupRepository.fetchRoomsFromAPI()
+                        }
+                        "peer-update-key" -> {
+                            chatRepository.processPeerKey(value.refClientId)
+                        }
+                        "audio_to_video" -> {
+                            val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
+                            switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
+                            sendBroadcast(switchIntent)
+                        }
                     }
                 }
             }

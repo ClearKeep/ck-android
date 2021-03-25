@@ -15,12 +15,13 @@ class VideoCallRepository @Inject constructor(
     private val videoCallBlockingStub: VideoCallGrpc.VideoCallBlockingStub,
     private val userManager: UserManager,
 ) {
-    suspend fun requestVideoCall(groupId: Int) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
+    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
         printlnCK("requestVideoCall: groupId = $groupId")
         try {
             val request = VideoCallOuterClass.VideoCallRequest.newBuilder()
-                    .setGroupId(groupId.toLong())
-                    .build()
+                .setGroupId(groupId.toLong())
+                .setCallType(if (isAudioMode) "audio" else "video")
+                .build()
             return@withContext videoCallBlockingStub.videoCall(request)
         } catch (e: Exception) {
             printlnCK("requestVideoCall: $e")
@@ -40,6 +41,22 @@ class VideoCallRepository @Inject constructor(
             return@withContext success
         } catch (e: Exception) {
             printlnCK("cancelCall: $e")
+            return@withContext false
+        }
+    }
+
+    suspend fun switchAudioToCall(groupId: Int) : Boolean = withContext(Dispatchers.IO) {
+        printlnCK("switchAudioToCall: groupId = $groupId")
+        try {
+            val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
+                .setGroupId(groupId.toLong())
+                .setUpdateType("audio_to_video")
+                .build()
+            val success = videoCallBlockingStub.updateCall(request).success
+            printlnCK("switchAudioToCall, success = $success")
+            return@withContext success
+        } catch (e: Exception) {
+            printlnCK("switchAudioToCall: $e")
             return@withContext false
         }
     }

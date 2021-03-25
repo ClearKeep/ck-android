@@ -15,14 +15,15 @@ import com.clearkeep.utilities.*
 
 
 object AppCall {
-    fun call(context: Context, token: String?, groupId: String?, ourClientId: String?, userName: String?, avatar: String?, isIncomingCall: Boolean,
+    fun call(context: Context, isAudioMode: Boolean, token: String?, groupId: String?,
+             ourClientId: String?, userName: String?, avatar: String?, isIncomingCall: Boolean,
              turnUrl: String = "", turnUser: String = "", turnPass: String = "",
              stunUrl: String = ""
     ) {
-        printlnCK("token = $token, groupID = $groupId")
         val intent = Intent(context, InCallActivity::class.java)
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_TOKEN, token)
+        intent.putExtra(EXTRA_IS_AUDIO_MODE, isAudioMode)
         intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
         intent.putExtra(EXTRA_FROM_IN_COMING_CALL, isIncomingCall)
@@ -39,12 +40,12 @@ object AppCall {
         context.startActivity(intent)
     }
 
-    fun inComingCall(context: Context, token: String, groupId: String, ourClientId: String?,
+    fun inComingCall(context: Context, isAudioMode: Boolean, token: String, groupId: String, ourClientId: String?,
                      userName: String?, avatar: String?,
                      turnUrl: String, turnUser: String, turnPass: String,
                      stunUrl: String) {
         printlnCK("token = $token, groupID = $groupId, turnURL= $turnUrl, turnUser=$turnUser, turnPass= $turnPass, stunUrl = $stunUrl")
-        val intent = createIncomingCallIntent(context, token, groupId, ourClientId,
+        val intent = createIncomingCallIntent(context, isAudioMode, token, groupId, ourClientId,
                 userName, avatar, turnUrl, turnUser, turnPass, stunUrl, true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -66,7 +67,7 @@ object AppCall {
             val pendingIntent = PendingIntent.getActivity(context, 0, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT)
 
-            val intentToInCall = createIncomingCallIntent(context, token, groupId, ourClientId,
+            val intentToInCall = createIncomingCallIntent(context, isAudioMode, token, groupId, ourClientId,
                     userName, avatar, turnUrl, turnUser, turnPass, stunUrl, false)
             val pendingIntentToInCall = PendingIntent.getActivity(context, 0, intentToInCall,
                     PendingIntent.FLAG_UPDATE_CURRENT)
@@ -94,7 +95,7 @@ object AppCall {
         }
     }
 
-    private fun createIncomingCallIntent(context: Context, token: String, groupId: String?, ourClientId: String?,
+    private fun createIncomingCallIntent(context: Context, isAudioMode: Boolean, token: String, groupId: String?, ourClientId: String?,
                                          userName: String?, avatar: String?,
                                          turnUrl: String, turnUser: String, turnPass: String,
                                          stunUrl: String, isWaitingScreen: Boolean): Intent {
@@ -105,6 +106,7 @@ object AppCall {
         }
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_TOKEN, token)
+        intent.putExtra(EXTRA_IS_AUDIO_MODE, isAudioMode)
         intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
         intent.putExtra(EXTRA_FROM_IN_COMING_CALL, true)
