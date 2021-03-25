@@ -97,7 +97,7 @@ fun RoomItem(
         Row(modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleAvatar("", isGroup = room.isGroup())
+            CircleAvatar(emptyList(), roomName)
             Column(modifier = Modifier
                 .padding(start = 20.dp)
                 .fillMaxWidth()) {

@@ -1,15 +1,11 @@
 package com.clearkeep.screen.chat.home.composes
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
-import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -18,30 +14,31 @@ import com.clearkeep.components.colorTest
 
 @Composable
 fun CircleAvatar(
-        url: String,
-        isGroup: Boolean = false,
+        url: List<String>,
+        name: String = "",
         size: Dp = 48.dp,
         elevation: Dp = 0.dp,
 ) {
-    Card(modifier = Modifier
-        .size(size),
+    if (!url.isNullOrEmpty()) {
+        //
+    }
+
+
+    val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
+    Card(
         shape = CircleShape,
         backgroundColor = colorTest,
         contentColor = Color.White,
         elevation = elevation,
+        modifier = Modifier
+            .size(size)
     ){
-        Box(modifier = Modifier.padding(12.dp)) {
-            if (isGroup) {
-                Icon(
-                    imageVector = Icons.Filled.Groups,
-                    contentDescription = "",
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "",
-                )
-            }
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(displayName.capitalize())
         }
     }
 }
