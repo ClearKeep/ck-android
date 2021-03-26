@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun InputSearchBox(
@@ -25,7 +26,7 @@ fun InputSearchBox(
             userName.value = it
             onValueChange(it)
         },
-        placeholder = { Text("search...") },
+        placeholder = { Text(text = "search...", style = TextStyle(color = Color(0xFF8D8C8C))) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
             cursorColor = Color.Blue,
             focusedBorderColor = Color.Blue,
