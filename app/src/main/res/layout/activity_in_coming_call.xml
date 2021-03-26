@@ -15,13 +15,14 @@
         android:background="@android:color/transparent"
         android:orientation="horizontal">
         <TextView
+            android:id="@+id/txtAudioMode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:textSize="18sp"
             android:textColor="@android:color/black"
             tools:textColor="@android:color/black"
-            android:text="@string/title_call_screen" />
+            tools:text="@string/title_call_screen" />
     </RelativeLayout>
 
     <TextView
@@ -45,11 +46,12 @@
         android:gravity="center_horizontal">
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgThumb"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/ic_thumb_test"
-            app:civ_border_color="@android:color/transparent"
-            app:civ_border_width="0.5dp"/>
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/baseline_person_black_36"
+            app:civ_border_color="@android:color/darker_gray"
+            app:civ_border_width="12dp"
+            app:civ_circle_background_color="@android:color/darker_gray"/>
     </LinearLayout>
 
     <LinearLayout

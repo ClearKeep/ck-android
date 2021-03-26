@@ -104,11 +104,12 @@
             android:gravity="center_horizontal">
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgThumb"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_baseline_account_circle_24"
-                app:civ_border_color="@android:color/transparent"
-                app:civ_border_width="0.5dp"/>
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/baseline_person_black_36"
+                app:civ_border_color="@android:color/darker_gray"
+                app:civ_border_width="12dp"
+                app:civ_circle_background_color="@android:color/darker_gray"/>
         </LinearLayout>
 
         <TextView
