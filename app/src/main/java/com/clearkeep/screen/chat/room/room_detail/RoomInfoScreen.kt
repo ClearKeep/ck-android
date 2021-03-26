@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.RoomViewModel
 
@@ -29,7 +30,7 @@ fun RoomInfoScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            TopAppBar(
+            CKTopAppBar(
                 title = {
                     Text(text = "${group.groupName} details")
                 },
@@ -52,7 +53,7 @@ fun RoomInfoScreen(
             ) {
                 CircleAvatar(emptyList(), group.groupName, size = 72.dp)
                 Spacer(modifier = Modifier.height(15.dp))
-                Text(text = group.groupName, style = MaterialTheme.typography.h5)
+                Text(text = group.groupName, style = MaterialTheme.typography.h5.copy(color = MaterialTheme.colors.onPrimary))
             }
             Spacer(modifier = Modifier.height(30.dp))
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -78,7 +79,7 @@ fun RoomInfoScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Add members", style = MaterialTheme.typography.body2)
+                            Text(text = "Add members", style = MaterialTheme.typography.body2.copy(color = MaterialTheme.colors.onPrimary))
                         }
                     }
                 }
@@ -100,7 +101,7 @@ fun RoomInfoScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Show members", style = MaterialTheme.typography.body2)
+                            Text(text = "Show members", style = MaterialTheme.typography.body2.copy(color = MaterialTheme.colors.onPrimary))
                         }
                     }
                 }

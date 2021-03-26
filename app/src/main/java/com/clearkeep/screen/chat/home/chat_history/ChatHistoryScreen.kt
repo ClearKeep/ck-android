@@ -110,13 +110,17 @@ fun RoomItem(
                     )
                     room.lastMessage?.let { lastMessage ->
                         Text(text = getTimeAsString(lastMessage.createdTime),
-                            style = MaterialTheme.typography.caption.copy(fontSize = 8.sp)
+                            style = MaterialTheme.typography.caption.copy(fontSize = 8.sp,
+                                color = MaterialTheme.colors.onPrimary
+                            )
                         )
                     }
                 }
                 room.lastMessage?.let { lastMessage ->
                     Text(text = lastMessage.message,
-                        style = MaterialTheme.typography.caption,
+                        style = MaterialTheme.typography.caption.copy(
+                            color = MaterialTheme.colors.onPrimary
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

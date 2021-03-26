@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -24,6 +25,7 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
+@ExperimentalComposeUiApi
 @Composable
 fun RoomScreen(
         roomViewModel: RoomViewModel,
