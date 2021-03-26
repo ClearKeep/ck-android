@@ -51,7 +51,7 @@ fun RoomInfoScreen(
             Column(modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CircleAvatar(emptyList(), group.groupName, size = 72.dp)
+                CircleAvatar(emptyList(), group.groupName, size = 72.dp, isGroup = group.isGroup())
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(text = group.groupName, style = MaterialTheme.typography.h5.copy(color = MaterialTheme.colors.onPrimary))
             }

@@ -55,7 +55,7 @@ fun EnterGroupNameScreen(
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             CKTextField(
                 "Group name",
-                "",
+                "Group name",
                 groupName
             )
             Spacer(Modifier.height(20.dp))

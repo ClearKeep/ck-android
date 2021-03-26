@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.clearkeep.components.CKTheme
@@ -73,19 +72,6 @@ class LoginActivity : AppCompatActivity() {
 
         val isLoadingState = loginViewModel.isLoading.observeAsState()
         Box() {
-            isLoadingState.value?.let { isLoading ->
-                if (isLoading) {
-                    Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CKCircularProgressIndicator(
-                                color = Color.Blue
-                        )
-                    }
-                }
-            }
             Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,6 +89,17 @@ class LoginActivity : AppCompatActivity() {
                         },
                         isLoading = isLoadingState.value ?: false
                     )
+                }
+            }
+            isLoadingState.value?.let { isLoading ->
+                if (isLoading) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CKCircularProgressIndicator()
+                    }
                 }
             }
             ErrorDialog(showDialog, setShowDialog)
