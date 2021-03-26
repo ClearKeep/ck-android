@@ -26,37 +26,48 @@ fun SearchUserScreen(
 ) {
     val friends = searchViewModel.friends.observeAsState()
     Column(
-            modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         CKTopAppBar(
-                title = {
-                    InputSearchBox(onValueChange = { text ->
-                        searchViewModel.search(text)
-                    })
-                },
-                navigationIcon = {
-                    IconButton(
-                            onClick = {
-                                onFinish(null)
-                            }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = ""
-                        )
+            title = {
+                InputSearchBox(onValueChange = { text ->
+                    searchViewModel.search(text)
+                },{
+                    searchViewModel.search("")
+                })
+            },
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                        onFinish(null)
                     }
-                },
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = ""
+                    )
+                }
+            },
         )
         friends?.value?.let {
-            LazyColumn(
+            if (it.isNotEmpty()) {
+                LazyColumn(
                     modifier = Modifier.fillMaxHeight().fillMaxWidth(),
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
-            ) {
-                itemsIndexed(it) { _, friend ->
-                    Surface(color = Color.White) {
-                        FriendItem(friend, onFinish)
+                ) {
+                    itemsIndexed(it) { _, friend ->
+                        Surface(color = Color.White) {
+                            FriendItem(friend, onFinish)
+                        }
                     }
                 }
+            } else {
+                Text(text = "No Data",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .padding(all = 32.dp)
+                )
             }
         }
     }

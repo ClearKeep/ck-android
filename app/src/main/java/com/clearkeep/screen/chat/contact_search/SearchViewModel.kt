@@ -16,14 +16,27 @@ class SearchViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     private val _friends: MutableLiveData<List<People>> = MutableLiveData()
+    val isShowLoading:MutableLiveData<Boolean> = MutableLiveData()
 
     val friends: LiveData<List<People>> get() = _friends
 
+
+    init {
+        search("")
+    }
+
     fun search(text: String) {
+        isShowLoading.postValue(true)
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(debouncePeriod)
             _friends.value = peopleRepository.searchUser(text)
+            isShowLoading.postValue(false)
         }
     }
+}
+
+enum class StatusRequest(){
+    REQUESTING,
+    DONE
 }
