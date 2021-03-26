@@ -66,6 +66,7 @@
             android:textSize="18sp"
             android:textColor="?attr/appCallTextColor"
             tools:textColor="@android:color/white"
+            android:visibility="gone"
             android:text="@string/title_call_screen" />
 
         <ImageView
@@ -105,7 +106,7 @@
                 android:id="@+id/imgThumb"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/ic_thumb_test"
+                android:src="@drawable/ic_baseline_account_circle_24"
                 app:civ_border_color="@android:color/transparent"
                 app:civ_border_width="0.5dp"/>
         </LinearLayout>
