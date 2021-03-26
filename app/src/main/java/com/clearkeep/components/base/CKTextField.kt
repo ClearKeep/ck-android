@@ -37,7 +37,7 @@ fun CKTextField(
         TextField(
             value = textValue.value,
             onValueChange = { textValue.value = it },
-            label = {
+            /*label = {
                 if (label.isNotBlank()) {
                     Text(
                         label, style = MaterialTheme.typography.body2.copy(
@@ -45,7 +45,7 @@ fun CKTextField(
                         )
                     )
                 }
-            },
+            },*/
             placeholder = {
                 if (placeholder.isNotBlank()) {
                     Text(

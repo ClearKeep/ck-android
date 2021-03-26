@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.clearkeep.components.CKTheme
@@ -86,9 +85,7 @@ class RegisterActivity : AppCompatActivity() {
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        CKCircularProgressIndicator(
-                                color = Color.Blue
-                        )
+                        CKCircularProgressIndicator()
                     }
                 }
             }

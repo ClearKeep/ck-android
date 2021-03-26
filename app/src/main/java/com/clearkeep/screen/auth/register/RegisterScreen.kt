@@ -72,7 +72,7 @@ fun RegisterScreen(
 
             CKTextField(
                 "Email",
-                "",
+                "Email",
                 email,
                 keyboardType = KeyboardType.Email,
                 error = emailError.value,
@@ -81,7 +81,7 @@ fun RegisterScreen(
             Spacer(Modifier.height(10.dp))
             CKTextField(
                 "Display name",
-                "",
+                "Display name",
                 displayName,
                 error = displayNameError.value,
                 singleLine = true,
@@ -89,7 +89,7 @@ fun RegisterScreen(
             Spacer(Modifier.height(10.dp))
             CKTextField(
                 "Password",
-                "",
+                "Password",
                 password,
                 keyboardType = KeyboardType.Password,
                 error = passError.value,
@@ -98,7 +98,7 @@ fun RegisterScreen(
             Spacer(Modifier.height(10.dp))
             CKTextField(
                 "Confirm password",
-                "",
+                "Confirm password",
                 confirmPassword,
                 keyboardType = KeyboardType.Password,
                 error = confirmPassError.value,

@@ -12,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -66,7 +65,7 @@ fun LoginScreen(
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextField(
                     "Email",
-                    "",
+                    "Email",
                     email,
                     keyboardType = KeyboardType.Email,
                     error = emailError.value,
@@ -75,7 +74,7 @@ fun LoginScreen(
                 Spacer(Modifier.height(20.dp))
                 CKTextField(
                     "Password",
-                    "",
+                    "Password",
                     password,
                     keyboardType = KeyboardType.Password,
                     error = passError.value,

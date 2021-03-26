@@ -33,7 +33,7 @@ fun SendBottomCompose(
         Column(modifier = Modifier.weight(0.66f).padding(start = 8.dp, top = 4.dp, bottom = 4.dp)) {
             CKTextField(
                 "Enter message...",
-                "",
+                "Enter message...",
                 msgState,
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.None

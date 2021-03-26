@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKDivider
@@ -56,9 +55,7 @@ fun SearchUserScreen(
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
                 ) {
                     itemsIndexed(it) { _, friend ->
-                        Surface(color = Color.White) {
-                            FriendItem(friend, onFinish)
-                        }
+                        FriendItem(friend, onFinish)
                     }
                 }
             } else {
@@ -87,7 +84,10 @@ fun FriendItem(
             CircleAvatar(emptyList(), friend.userName)
             Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
                 Text(text = friend.userName,
-                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.body2.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.onPrimary
+                    ),
                 )
             }
         }
