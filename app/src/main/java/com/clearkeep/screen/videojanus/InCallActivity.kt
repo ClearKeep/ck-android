@@ -112,6 +112,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         rootEglBase = EglBase.create()
         binding.localSurfaceView.apply {
             init(rootEglBase.eglBaseContext, null)
+            setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
         }
 
