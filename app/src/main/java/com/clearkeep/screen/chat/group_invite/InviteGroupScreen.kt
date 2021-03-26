@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.components.ckDividerColor
 import com.clearkeep.components.colorTest
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
@@ -52,7 +52,7 @@ fun InviteGroupScreenComingSoon(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Coming soon", style = MaterialTheme.typography.body1)
+            Text(text = "Coming soon", style = MaterialTheme.typography.body1.copy(color = MaterialTheme.colors.onPrimary))
         }
     }
 }
@@ -101,14 +101,12 @@ fun InviteGroupScreen(
                     contentPadding = PaddingValues(top = 20.dp, end = 20.dp),
             ) {
                 itemsIndexed(values) { _, friend ->
-                    Surface(color = Color.White) {
-                        FriendItem(friend,
-                            selectedItem.contains(friend),
-                            onFriendSelected = { people, isAdd ->
-                                if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
-                            }
-                        )
-                    }
+                    FriendItem(friend,
+                        selectedItem.contains(friend),
+                        onFriendSelected = { people, isAdd ->
+                            if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
+                        }
+                    )
                 }
             }
         }
@@ -135,7 +133,10 @@ fun FriendItem(
                 .padding(start = 20.dp)
                 .weight(1.0f, true)) {
                 Text(text = friend.userName,
-                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.body2.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.onPrimary
+                    ),
                 )
             }
             RadioButton(
@@ -149,7 +150,7 @@ fun FriendItem(
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = ckDividerColor, thickness = 0.3.dp, modifier = Modifier.padding(start = 68.dp))
+        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
         Spacer(modifier = Modifier.height(10.dp))
     }
 }

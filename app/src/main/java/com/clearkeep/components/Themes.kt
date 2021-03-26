@@ -2,21 +2,19 @@ package com.clearkeep.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-
-val ckDividerColor = Color.LightGray
 
 val lightThemeColors = lightColors(
     primary = Color.White,
     primaryVariant = Color.Black,
     onPrimary = Color.Black,
 
-    secondary = Color.Green,
-    onSecondary = Color.Black,
+    secondary = Color.LightGray,
+    secondaryVariant = Color.Black,
+    onSecondary = Color.LightGray,
 
     background = Color.White,
     onBackground = Color.Black,
@@ -33,17 +31,18 @@ val lightThemeColors = lightColors(
  * using dark colors.
  */
 val darkThemeColors = darkColors(
-    primary = Color.White,
-    primaryVariant = Color.Black,
-    onPrimary = Color.Black,
+    primary = Color.Black,
+    primaryVariant = Color.Blue,
+    onPrimary = Color.White,
 
-    secondary = Color.Green,
-    onSecondary = Color.Black,
+    secondary = Color.DarkGray,
+    secondaryVariant = Color.White,
+    onSecondary = Color.DarkGray,
 
-    background = Color.White,
-    onBackground = Color.Black,
+    background = Color.Black,
+    onBackground = Color.DarkGray,
 
-    surface = Color.Blue,
+    surface = Color.White,
     onSurface = Color.White,
 
     error = Color(0xFFD00036),
@@ -61,10 +60,6 @@ fun CKTheme(
         typography = ckTypography
     ) {
         // TODO: update dark mode and remove surface color when have design
-        Surface(
-            color = Color.White
-        ) {
-            children()
-        }
+        children()
     }
 }

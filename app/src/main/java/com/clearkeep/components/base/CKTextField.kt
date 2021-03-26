@@ -34,30 +34,37 @@ fun CKTextField(
     val isPasswordType = keyboardType == KeyboardType.Password
     var passwordVisibility = remember { mutableStateOf(false) }
     Column {
-        OutlinedTextField(
+        TextField(
             value = textValue.value,
             onValueChange = { textValue.value = it },
             label = {
-                Text(
-                    label, style = MaterialTheme.typography.body2.copy(
-                        color = Color.Gray
+                if (label.isNotBlank()) {
+                    Text(
+                        label, style = MaterialTheme.typography.body2.copy(
+                            color = MaterialTheme.colors.secondaryVariant
+                        )
                     )
-                )
+                }
             },
             placeholder = {
-                Text(
-                    placeholder, style = MaterialTheme.typography.body2.copy(
-                        color = Color.Gray
+                if (placeholder.isNotBlank()) {
+                    Text(
+                        placeholder, style = MaterialTheme.typography.body2.copy(
+                            color = MaterialTheme.colors.secondaryVariant
+                        )
                     )
-                )
+                }
             },
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                cursorColor = Color.Red,
-                focusedBorderColor = Color.Red,
-                unfocusedBorderColor = Color.Blue,
+                textColor = MaterialTheme.colors.secondaryVariant,
+                cursorColor = MaterialTheme.colors.secondaryVariant,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                backgroundColor = MaterialTheme.colors.secondary
             ),
+            shape = MaterialTheme.shapes.medium,
             textStyle = MaterialTheme.typography.body2.copy(
-                color = Color.Blue
+                color = MaterialTheme.colors.secondaryVariant
             ),
             visualTransformation = if (isPasswordType) {
                 if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
