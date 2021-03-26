@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.components.ckDividerColor
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
@@ -92,7 +92,7 @@ fun FriendItem(
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = ckDividerColor, thickness = 0.3.dp, modifier = Modifier.padding(start = 68.dp))
+        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
         Spacer(modifier = Modifier.height(10.dp))
     }
 }

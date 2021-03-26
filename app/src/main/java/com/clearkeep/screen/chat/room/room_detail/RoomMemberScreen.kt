@@ -10,11 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.components.ckDividerColor
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -50,9 +49,7 @@ fun GroupMemberScreen(
                 contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp),
             ) {
                 itemsIndexed(group.clientList) { _, friend ->
-                    Surface(color = Color.White) {
-                        FriendItem(friend)
-                    }
+                    FriendItem(friend)
                 }
             }
         }
@@ -75,7 +72,7 @@ fun FriendItem(
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = ckDividerColor, thickness = 0.3.dp, modifier = Modifier.padding(start = 68.dp))
+        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
         Spacer(modifier = Modifier.height(10.dp))
     }
 }

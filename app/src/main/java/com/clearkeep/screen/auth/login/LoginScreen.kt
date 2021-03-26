@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,10 @@ fun LoginScreen(
                 contentAlignment= Alignment.Center,) {
                 Text(
                     text = stringResource(R.string.title_app),
-                    style = TextStyle(fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.body2.copy(
+                        fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.onPrimary
+                    )
                 )
             }
 
