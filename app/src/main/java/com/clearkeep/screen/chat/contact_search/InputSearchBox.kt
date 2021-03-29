@@ -26,17 +26,25 @@ fun InputSearchBox(
             userName.value = it
             onValueChange(it.trim())
         },
-        placeholder = { Text(text = "search...", style = TextStyle(color = Color(0xFF8D8C8C))) },
+        placeholder = {
+            Text(
+                "search...", style = MaterialTheme.typography.body2.copy(
+                    color = Color(0xFF8D8C8C)
+                )
+            )
+            },
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            cursorColor = Color.Blue,
-            focusedBorderColor = Color.Blue,
-            unfocusedBorderColor = Color.Gray,
+            cursorColor = MaterialTheme.colors.surface,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
         ),
-        textStyle = MaterialTheme.typography.body2.copy(color = Color.Black),
+        textStyle = MaterialTheme.typography.body2.copy(
+            color = MaterialTheme.colors.surface
+        ),
         trailingIcon = {
             if (userName.value.length>1){
                 Icon(Icons.Filled.Close, contentDescription = ""
-                    ,tint = colorResource(id = R.color.material_grey_900),
+                    ,tint = MaterialTheme.colors.onPrimary,
                     modifier = Modifier.clickable {
                         onClearClick.invoke()
                         userName.value = ""

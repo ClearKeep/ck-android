@@ -11,14 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
+import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.components.ckDividerColor
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
 @Composable
@@ -48,9 +47,7 @@ fun PeopleScreen(
                     contentPadding = PaddingValues(top = 30.dp, end = 20.dp, start = 20.dp, bottom = 30.dp),
             ) {
                 itemsIndexed(people) { _, friend ->
-                    Surface(color = Color.White) {
-                        FriendItem(friend, onFriendSelected)
-                    }
+                    FriendItem(friend, onFriendSelected)
                 }
             }
         }
@@ -76,7 +73,7 @@ fun FriendItem(
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Divider(color = ckDividerColor, thickness = 0.3.dp, modifier = Modifier.padding(start = 68.dp))
+        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
         Spacer(modifier = Modifier.height(10.dp))
     }
 }

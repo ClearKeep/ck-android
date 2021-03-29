@@ -123,6 +123,9 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         tvUserName = findViewById(R.id.tvUserName)
         imgAnswer.setOnClickListener(this)
         imgEnd.setOnClickListener(this)
+
+        val txtAudioMode :TextView = findViewById(R.id.txtAudioMode)
+        txtAudioMode.text = if (mIsAudioMode) "audio call" else "video call"
         updateConversationInformation()
     }
 
