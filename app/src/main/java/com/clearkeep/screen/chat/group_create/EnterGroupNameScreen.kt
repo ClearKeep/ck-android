@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextField
+import com.clearkeep.components.base.CKTopAppBar
 
 @Composable
 fun EnterGroupNameScreen(
@@ -25,7 +26,7 @@ fun EnterGroupNameScreen(
     val groupName = remember {mutableStateOf("")}
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     Column {
-        TopAppBar(
+        CKTopAppBar(
             title = {
                 Text(text = "Create group")
             },
@@ -54,7 +55,7 @@ fun EnterGroupNameScreen(
         Column(modifier = Modifier.padding(horizontal = 20.dp)) {
             CKTextField(
                 "Group name",
-                "",
+                "Group name",
                 groupName
             )
             Spacer(Modifier.height(20.dp))

@@ -78,7 +78,7 @@ object AppCall {
 
             builder.setSmallIcon(R.drawable.ic_logo)
                     .setContentTitle(context.getString(R.string.app_name))
-                    .setContentText("$userName calling")
+                    .setContentText("$userName calling ${if(isAudioMode) "audio" else "video"}")
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
                     .setFullScreenIntent(pendingIntent, true)
