@@ -24,7 +24,7 @@ fun InputSearchBox(
         value = userName.value,
         onValueChange = {
             userName.value = it
-            onValueChange(it)
+            onValueChange(it.trim())
         },
         placeholder = { Text(text = "search...", style = TextStyle(color = Color(0xFF8D8C8C))) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
