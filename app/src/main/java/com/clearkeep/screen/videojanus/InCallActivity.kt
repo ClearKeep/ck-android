@@ -271,10 +271,12 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             R.id.imgSpeaker -> {
                 mIsSpeaker = !mIsSpeaker
                 enableSpeaker(mIsSpeaker)
+                runDelayToHideBottomButton()
             }
             R.id.imgMute -> {
                 mIsMute = !mIsMute
                 enableMute(mIsMute)
+                runDelayToHideBottomButton()
             }
             R.id.imgSwitchCamera -> {
                 peerConnectionClient?.switchCamera()
@@ -285,6 +287,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             R.id.imgVideoMute -> {
                 mIsMuteVideo = !mIsMuteVideo
                 enableMuteVideo(mIsMuteVideo)
+                runDelayToHideBottomButton()
             }
             R.id.surfaceRootContainer -> {
                 if (bottomButtonContainer.visibility == View.VISIBLE) {
@@ -393,12 +396,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             }
             binding.imgSwitchCamera.visibility = View.GONE
             binding.containerAudioCover.visibility = View.VISIBLE
-
-            // display bottom button in audio mode
-            if (mCurrentCallState == CallState.ANSWERED) {
-                binding.imgSpeaker.visibility = View.VISIBLE
-                binding.imgMute.visibility = View.VISIBLE
-            }
         }
     }
 
@@ -550,21 +547,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             remoteRender.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
             remoteRenders[connection.handleId] = remoteRender
-/*
-            val remoteRender1 = SurfaceViewRenderer(this)
-            remoteRender1.init(rootEglBase.eglBaseContext, null)
-            connection.videoTrack.addRenderer(VideoRenderer(remoteRender1))
-            remoteRenders[100.toBigInteger()] = remoteRender1
-
-            val remoteRender2 = SurfaceViewRenderer(this)
-            remoteRender2.init(rootEglBase.eglBaseContext, null)
-            connection.videoTrack.addRenderer(VideoRenderer(remoteRender2))
-            remoteRenders[101.toBigInteger()] = remoteRender2
-
-            val remoteRender3 = SurfaceViewRenderer(this)
-            remoteRender3.init(rootEglBase.eglBaseContext, null)
-            connection.videoTrack.addRenderer(VideoRenderer(remoteRender3))
-            remoteRenders[102.toBigInteger()] = remoteRender3*/
 
             updateRenders()
         }
@@ -659,7 +641,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         switchVideoReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getLongExtra(EXTRA_CALL_SWITCH_VIDEO, 0).toString()
-                if (mGroupId == groupId) {
+                if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
                     mIsAudioMode = false
                     configMedia(isSpeaker = true, isMuteVideo = false)

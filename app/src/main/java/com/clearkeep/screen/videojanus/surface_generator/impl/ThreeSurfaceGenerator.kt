@@ -8,8 +8,8 @@ class ThreeSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
     override fun getLocalSurface(): SurfacePosition {
         return SurfacePosition(
             200, 300,
-            20,
-            20
+            30,
+            100
         )
     }
 
