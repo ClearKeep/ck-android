@@ -1,24 +1,23 @@
 package com.clearkeep.screen.chat.home
 
-import android.content.Context
 import android.content.Intent
-import android.net.*
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,13 +25,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.*
 import androidx.navigation.compose.*
 import com.clearkeep.R
 import com.clearkeep.components.CKTheme
-import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
@@ -44,6 +44,8 @@ import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
+import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
@@ -138,7 +140,29 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
     @Composable
     private fun MainComposable() {
         val navController = rememberNavController()
+        val remember = InCallActivity.listenerCallingState.observeAsState()
         Scaffold(
+            topBar = {
+                remember.value?.let {
+                    if (it.isCalling)
+                        CkTopCalling(title = {
+                            Box{
+                                Text(
+                                    text = it.nameInComeCall ?: "",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                            }
+                        },
+                            navigationIcon = {
+                                Icon(imageVector = Icons.Filled.Call, contentDescription = "")
+                            },
+                            modifier = Modifier.clickable {
+                                AppCall.openCallAvailable(this)
+                            })
+                }
+            },
+
             bottomBar = {
                 BottomNavigation(
                     backgroundColor = MaterialTheme.colors.primary,
