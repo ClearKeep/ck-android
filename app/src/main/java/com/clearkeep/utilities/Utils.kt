@@ -10,6 +10,10 @@ import android.net.NetworkCapabilities
 
 import android.net.ConnectivityManager
 import android.os.Build
+import android.util.DisplayMetrics
+
+
+
 
 
 fun getCurrentDateTime(): Date {
@@ -76,4 +80,12 @@ fun isOnline(context: Context): Boolean {
             }
     }
     return false
+}
+
+fun convertDpToPixel(dp: Float, context: Context): Float {
+    return dp * (context.resources.displayMetrics.density)
+}
+
+fun convertPixelsToDp(px: Float, context: Context): Float {
+    return px / (context.resources.displayMetrics.density)
 }
