@@ -8,31 +8,13 @@
     tools:background="@color/appCallBackground">
 
     <RelativeLayout
+        android:id="@+id/surfaceRootContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <RelativeLayout
-            android:id="@+id/remoteRoot"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:keepScreenOn="true"
-            tools:context="in.minewave.janusvideoroom.MainActivity">
-
-            <org.webrtc.SurfaceViewRenderer
-                android:id="@+id/localSurfaceView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/localRoot"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:keepScreenOn="true"
-            tools:context="in.minewave.janusvideoroom.MainActivity">
-
-        </RelativeLayout>
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:keepScreenOn="true"
+        tools:context="in.minewave.janusvideoroom.MainActivity">
     </RelativeLayout>
 
     <RelativeLayout
@@ -50,14 +32,17 @@
         tools:layout_height="50dp"
         android:background="@android:color/transparent"
         android:orientation="horizontal">
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgBack"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginEnd="30dp"
             android:layout_centerVertical="true"
-            android:paddingStart="14dp"
-            android:paddingEnd="30dp"
-            android:src="@drawable/ic_string_ee_back"/>
+            android:src="@drawable/baseline_close_fullscreen_white_24"
+            app:civ_border_color="@color/color_button_background"
+            app:civ_border_width="12dp"
+            app:civ_circle_background_color="@color/color_button_background"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -69,26 +54,32 @@
             android:visibility="gone"
             android:text="@string/title_call_screen" />
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgSwitchCamera"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="20dp"
             tools:visibility="gone"
             android:visibility="gone"
-            android:src="@drawable/baseline_cameraswitch_white_24" />
+            android:src="@drawable/baseline_cameraswitch_white_24"
+            app:civ_border_color="@color/color_button_background"
+            app:civ_border_width="12dp"
+            app:civ_circle_background_color="@color/color_button_background"/>
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgSwitchAudioToVideo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="20dp"
             android:visibility="gone"
-            android:src="@drawable/baseline_videocam_white_24" />
+            android:src="@drawable/baseline_videocam_white_24"
+            app:civ_border_color="@color/color_button_background"
+            app:civ_border_width="12dp"
+            app:civ_circle_background_color="@color/color_button_background"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -160,10 +151,9 @@
         android:id="@+id/bottomButtonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/black"
-        android:layout_marginTop="10dp"
+        android:background="@drawable/bottom_call_button_background"
         android:paddingBottom="20dp"
-        android:paddingTop="10dp"
+        android:paddingTop="20dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true">
@@ -183,8 +173,6 @@
             android:layout_height="wrap_content"
             android:src="?attr/buttonSpeakerOff"
             android:layout_marginEnd="30dp"
-            android:visibility="gone"
-            tools:visibility="visible"
             tools:src="@drawable/ic_string_ee_sound_off" />
         <ImageView
             android:id="@+id/imgMute"
@@ -192,8 +180,6 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="30dp"
             android:src="?attr/buttonMuteOff"
-            android:visibility="gone"
-            tools:visibility="visible"
             tools:src="@drawable/ic_string_ee_mute_off" />
         <ImageView
             android:id="@+id/imgEnd"
