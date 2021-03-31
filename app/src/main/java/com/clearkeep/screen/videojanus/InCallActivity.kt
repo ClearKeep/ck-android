@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.*
 import android.text.TextUtils
 import android.view.View
@@ -77,6 +78,10 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
+    // sound
+    private var ringBackPlayer: MediaPlayer? = null
+    private var busySignalPlayer: MediaPlayer? = null
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -335,14 +340,21 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         printlnCK("update call state: $newState")
         mCurrentCallState = newState
         when (mCurrentCallState) {
-            CallState.CALLING ->
+            CallState.CALLING -> {
                 binding.tvCallState.text = getString(R.string.text_calling)
+                playRingBackTone()
+            }
             CallState.RINGING ->
                 binding.tvCallState.text = getString(R.string.text_ringing)
             CallState.BUSY, CallState.CALL_NOT_READY -> {
                 binding.tvCallState.text = getString(R.string.text_busy)
-                hangup()
-                finishAndReleaseResource()
+                stopRingBackTone()
+                playBusySignalSound()
+                GlobalScope.launch {
+                    delay(3 * 1000)
+                    hangup()
+                    finishAndReleaseResource()
+                }
             }
             CallState.ENDED -> {
                 binding.tvCallState.text = getString(R.string.text_end)
@@ -351,6 +363,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             }
             CallState.ANSWERED -> {
                 binding.tvCallState.text = getString(R.string.text_started)
+                stopRingBackTone()
                 displayCountUpClockOfConversation()
                 updateUIByStateAndMode()
             }
@@ -451,6 +464,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
+        stopRingBackTone()
+        stopBusySignalSound()
         if (!mIsGroupCall) {
             cancelCallAPI()
         }
@@ -660,6 +675,29 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             unregisterReceiver(switchVideoReceiver)
             switchVideoReceiver = null
         }
+    }
+
+    private fun playRingBackTone() {
+        ringBackPlayer = MediaPlayer.create(this, R.raw.sound_ringback_tone)
+        ringBackPlayer?.isLooping = true
+        ringBackPlayer?.start()
+    }
+
+    private fun stopRingBackTone() {
+        ringBackPlayer?.stop()
+        ringBackPlayer?.release()
+        ringBackPlayer = null
+    }
+
+    private fun playBusySignalSound() {
+        busySignalPlayer = MediaPlayer.create(this, R.raw.sound_busy_signal)
+        busySignalPlayer?.start()
+    }
+
+    private fun stopBusySignalSound() {
+        busySignalPlayer?.stop()
+        busySignalPlayer?.release()
+        busySignalPlayer = null
     }
 
     enum class CallState {
