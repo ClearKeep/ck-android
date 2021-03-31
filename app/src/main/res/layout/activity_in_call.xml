@@ -29,7 +29,7 @@
         android:id="@+id/rlToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        tools:layout_height="50dp"
+        tools:layout_height="60dp"
         android:background="@android:color/transparent"
         android:orientation="horizontal">
         <de.hdodenhof.circleimageview.CircleImageView
@@ -151,9 +151,10 @@
         android:id="@+id/bottomButtonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
         android:background="@drawable/bottom_call_button_background"
         android:paddingBottom="20dp"
-        android:paddingTop="20dp"
+        android:paddingTop="30dp"
         android:gravity="center"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true">

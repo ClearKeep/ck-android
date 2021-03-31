@@ -67,7 +67,9 @@ fun FriendItem(
             CircleAvatar(emptyList(), friend.userName)
             Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
                 Text(text = friend.userName,
-                        style = MaterialTheme.typography.h6
+                        style = MaterialTheme.typography.h6.copy(
+                            color = MaterialTheme.colors.onPrimary
+                        )
                 )
             }
         }
