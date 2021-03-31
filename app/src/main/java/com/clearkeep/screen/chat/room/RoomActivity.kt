@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,6 +23,7 @@ import com.clearkeep.screen.chat.group_invite.InviteGroupScreenComingSoon
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
+import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -61,6 +63,9 @@ class RoomActivity : AppCompatActivity() {
                             navController,
                             onFinishActivity = {
                                 finish()
+                            },
+                            onCallingClick = {
+                                AppCall.openCallAvailable(this@RoomActivity)
                             }
                         )
                     }

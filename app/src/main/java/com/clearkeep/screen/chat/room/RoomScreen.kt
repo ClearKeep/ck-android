@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room
 
+import androidx.compose.compiler.plugins.kotlin.ComposeFqNames.remember
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -21,7 +22,10 @@ import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
 import com.clearkeep.components.base.CKTopAppBar
+import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
+import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
@@ -31,6 +35,7 @@ fun RoomScreen(
         roomViewModel: RoomViewModel,
         navHostController: NavHostController,
         onFinishActivity: () -> Unit,
+        onCallingClick: (() -> Unit)? = null
 ) {
     val group = roomViewModel.group.observeAsState()
     group?.value?.let { group ->
@@ -50,6 +55,29 @@ fun RoomScreen(
             Column(
                     modifier = Modifier.fillMaxSize()
             ) {
+                val remember = InCallActivity.listenerCallingState.observeAsState()
+                remember.value?.let {
+                    if (it.isCalling)
+                        CkTopCalling(title = {
+                            Box{
+                                Text(
+                                    text = it.nameInComeCall ?: "",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
+                                )
+                            }
+                        },
+                            navigationIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Call,
+                                    contentDescription = ""
+                                )
+                            },
+                        modifier = Modifier.clickable {
+                            onCallingClick?.invoke()
+                        })
+                }
                 CKTopAppBar(
                         title = {
                             Box(modifier = Modifier.clickable(onClick = {
@@ -101,9 +129,11 @@ fun RoomScreen(
                             }
                         }
                 )
-                Column(modifier = Modifier.padding(16.dp, 8.dp, 16.dp, 8.dp).weight(
+                Column(modifier = Modifier
+                    .padding(16.dp, 8.dp, 16.dp, 8.dp)
+                    .weight(
                         0.66f
-                )) {
+                    )) {
                     messageList?.value?.let { messages ->
                         MessageListView(
                                 messageList = messages,
@@ -154,6 +184,8 @@ fun RoomScreen(
                     }
                 }
             }
+
+
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -16,7 +17,9 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.LinearLayout
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.januswrapper.JanusConnection
@@ -30,6 +33,7 @@ import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -91,7 +95,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -163,6 +166,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
         updateUIByStateAndMode()
 
+        val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
+        listenerCallingState.postValue(CallingStateData(true,userNameInConversation))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         val avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
         if (!TextUtils.isEmpty(groupName)) {
@@ -232,6 +237,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     override fun onDestroy() {
+        listenerCallingState.postValue(CallingStateData(false))
         super.onDestroy()
         if (binding.chronometer.visibility == View.VISIBLE) {
             binding.chronometer.stop()
@@ -711,5 +717,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
+        var listenerCallingState = MutableLiveData<CallingStateData>()
     }
 }
