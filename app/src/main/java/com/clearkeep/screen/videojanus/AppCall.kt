@@ -143,3 +143,4 @@ object AppCall {
         context.startActivity(intent)
     }
 }
+data class CallingStateData(val isCalling: Boolean, val nameInComeCall: String? = "")
