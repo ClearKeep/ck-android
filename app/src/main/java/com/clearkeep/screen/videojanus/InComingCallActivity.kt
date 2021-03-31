@@ -10,7 +10,6 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.text.TextUtils
 import android.view.View
 import android.view.WindowManager
@@ -20,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.R
 import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +34,9 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private var mAvatarInConversation: String? = null
     private var mReceiverId: String? = null
     private lateinit var mGroupId: String
+    private lateinit var mGroupType: String
+    private var mIsGroupCall: Boolean = false
+    private lateinit var mGroupName: String
     private lateinit var mToken: String
     private var mIsAudioMode: Boolean = false
     private lateinit var imgAnswer: ImageView
@@ -42,8 +45,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var tvUserName: TextView
 
     private var ringtone: Ringtone? = null
-
-    private lateinit var mHandler : Handler
 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
@@ -74,16 +75,15 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
+        mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
+        mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
+        mIsGroupCall = isGroup(mGroupType)
         mReceiverId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
         mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         initViews()
 
         registerEndCallReceiver()
-        mHandler = Handler(mainLooper)
-        mHandler.postDelayed({
-            finishAndRemoveFromTask()
-        }, 40 * 1000)
     }
 
     private fun registerEndCallReceiver() {
@@ -130,8 +130,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun updateConversationInformation() {
-        if (!TextUtils.isEmpty(mUserNameInConversation)) {
-            tvUserName.text = mUserNameInConversation
+        if (!TextUtils.isEmpty(mGroupName)) {
+            tvUserName.text = mGroupName
         }
         if (!TextUtils.isEmpty(mAvatarInConversation)) {
             AvatarImageTask(imgThumb).execute(mAvatarInConversation)
@@ -141,7 +141,9 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
-                cancelCallAPI(mGroupId.toInt())
+                if (!mIsGroupCall) {
+                    cancelCallAPI(mGroupId.toInt())
+                }
                 finishAndRemoveFromTask()
             }
             R.id.imgAnswer -> {
@@ -150,7 +152,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
                 finishAndRemoveFromTask()
-                AppCall.call(this, mIsAudioMode, mToken, mGroupId, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
+                AppCall.call(this, mIsAudioMode, mToken, mGroupId, mGroupType, mGroupName, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
                         turnUrl = turnUrl, turnUser = turnUserName, turnPass = turnPassword,
                         stunUrl = stunUrl
                 )
@@ -161,7 +163,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private fun finishAndRemoveFromTask() {
         unRegisterEndCallReceiver()
         ringtone?.stop()
-        mHandler.removeCallbacksAndMessages(null)
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
         } else {

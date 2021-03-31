@@ -77,29 +77,27 @@ fun RoomScreen(
                             }
                         },
                         actions = {
-                            if (!group.isGroup()) {
-                                IconButton(
-                                    /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
-                                    onClick = {
-                                        roomViewModel.requestCall(group.id, true)
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Call,
-                                        contentDescription = ""
-                                    )
+                            IconButton(
+                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
+                                onClick = {
+                                    roomViewModel.requestCall(group.id, true)
                                 }
-                                IconButton(
-                                    /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
-                                    onClick = {
-                                        roomViewModel.requestCall(group.id, false)
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.VideoCall,
-                                        contentDescription = ""
-                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Call,
+                                    contentDescription = ""
+                                )
+                            }
+                            IconButton(
+                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
+                                onClick = {
+                                    roomViewModel.requestCall(group.id, false)
                                 }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.VideoCall,
+                                    contentDescription = ""
+                                )
                             }
                         }
                 )

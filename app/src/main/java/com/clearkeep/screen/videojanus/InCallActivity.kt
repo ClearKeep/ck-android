@@ -10,13 +10,10 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
 import android.media.AudioManager
-import android.os.Build
-import android.os.Bundle
-import android.os.SystemClock
+import android.os.*
 import android.text.TextUtils
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isVisible
 import com.clearkeep.R
@@ -26,8 +23,10 @@ import com.clearkeep.januswrapper.JanusRTCInterface
 import com.clearkeep.januswrapper.PeerConnectionClient
 import com.clearkeep.januswrapper.WebSocketChannel
 import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.screen.videojanus.common.createVideoCapture
+import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_in_call.*
@@ -38,10 +37,10 @@ import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+    private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
 
     private var mIsMute = false
     private var mIsMuteVideo = false
@@ -51,6 +50,9 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private var mIsAudioMode: Boolean = false
     private lateinit var mGroupId: String
+    private lateinit var mGroupType: String
+    private lateinit var mGroupName: String
+    private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
 
     @Inject
@@ -60,6 +62,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private lateinit var rootEglBase: EglBase
     private var peerConnectionClient: PeerConnectionClient? = null
     private var mWebSocketChannel: WebSocketChannel? = null
+    private lateinit var mLocalSurfaceRenderer: SurfaceViewRenderer
 
     private val remoteRenders: MutableMap<BigInteger, SurfaceViewRenderer> = HashMap()
 
@@ -107,10 +110,15 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         }
 
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
+        mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
+        mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
+        mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
 
         rootEglBase = EglBase.create()
-        binding.localSurfaceView.apply {
+
+        mLocalSurfaceRenderer = SurfaceViewRenderer(this)
+        mLocalSurfaceRenderer.apply {
             init(rootEglBase.eglBaseContext, null)
             setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
@@ -146,17 +154,30 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         binding.imgVideoMute.setOnClickListener(this)
         binding.imgSwitchCamera.setOnClickListener(this)
         binding.imgSwitchAudioToVideo.setOnClickListener(this)
+        binding.surfaceRootContainer.setOnClickListener(this)
 
         updateUIByStateAndMode()
 
-        val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
+        val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         val avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
-        if (!TextUtils.isEmpty(userNameInConversation)) {
-            binding.tvUserName.text = userNameInConversation
+        if (!TextUtils.isEmpty(groupName)) {
+            binding.tvUserName.text = groupName
         }
         if (!TextUtils.isEmpty(avatarInConversation)) {
             AvatarImageTask(binding.imgThumb).execute(avatarInConversation)
         }
+
+        runDelayToHideBottomButton()
+
+        // update to add first local stream
+        updateRenders()
+    }
+
+    private fun runDelayToHideBottomButton() {
+        hideBottomButtonHandler.removeCallbacksAndMessages(null)
+        hideBottomButtonHandler.postDelayed(Runnable {
+            binding.bottomButtonContainer.visibility = View.GONE
+        }, 5 * 1000)
     }
 
     override fun onPermissionsAvailable() {
@@ -186,10 +207,12 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                     return@launch
                 }
             }
-            delay(CALL_WAIT_TIME_OUT)
-            if (remoteRenders.isEmpty()) {
-                runOnUiThread {
-                    updateCallStatus(CallState.CALL_NOT_READY)
+            if (!mIsGroupCall) {
+                delay(CALL_WAIT_TIME_OUT)
+                if (remoteRenders.isEmpty()) {
+                    runOnUiThread {
+                        updateCallStatus(CallState.CALL_NOT_READY)
+                    }
                 }
             }
         }
@@ -263,6 +286,14 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 mIsMuteVideo = !mIsMuteVideo
                 enableMuteVideo(mIsMuteVideo)
             }
+            R.id.surfaceRootContainer -> {
+                if (bottomButtonContainer.visibility == View.VISIBLE) {
+                    binding.bottomButtonContainer.visibility = View.GONE
+                } else {
+                    binding.bottomButtonContainer.visibility = View.VISIBLE
+                    runDelayToHideBottomButton()
+                }
+            }
         }
     }
 
@@ -283,6 +314,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         peerConnectionClient = PeerConnectionClient()
         peerConnectionClient!!.createPeerConnectionFactory(this, peerConnectionParameters, this)
         peerConnectionClient!!.startVideoSource()
+        enableMuteVideo(mIsMuteVideo)
     }
 
     private fun displayCountUpClockOfConversation() {
@@ -348,10 +380,11 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             binding.containerAudioCover.visibility = View.GONE
 
             // display bottom button in video mode
+            binding.imgVideoMute.visibility = View.VISIBLE
+            binding.imgSpeaker.visibility = View.VISIBLE
+            binding.imgMute.visibility = View.VISIBLE
+
             if (mCurrentCallState == CallState.ANSWERED) {
-                binding.imgVideoMute.visibility = View.VISIBLE
-                binding.imgSpeaker.visibility = View.VISIBLE
-                binding.imgMute.visibility = View.VISIBLE
                 showOrHideAvatar(false)
             }
         } else {
@@ -418,9 +451,10 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun finishAndReleaseResource() {
+        hideBottomButtonHandler.removeCallbacksAndMessages(null)
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
-        if (mCurrentCallState == CallState.CALLING) {
+        if (!mIsGroupCall) {
             cancelCallAPI()
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -438,10 +472,10 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private fun offerPeerConnection(handleId: BigInteger) {
         peerConnectionClient?.createPeerConnection(
-                rootEglBase.eglBaseContext,
-                binding.localSurfaceView,
-                createVideoCapture(this),
-                handleId
+            rootEglBase.eglBaseContext,
+            mLocalSurfaceRenderer,
+            createVideoCapture(this),
+            handleId
         )
         peerConnectionClient?.createOffer(handleId)
     }
@@ -516,6 +550,21 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             remoteRender.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
             remoteRenders[connection.handleId] = remoteRender
+/*
+            val remoteRender1 = SurfaceViewRenderer(this)
+            remoteRender1.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender1))
+            remoteRenders[100.toBigInteger()] = remoteRender1
+
+            val remoteRender2 = SurfaceViewRenderer(this)
+            remoteRender2.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender2))
+            remoteRenders[101.toBigInteger()] = remoteRender2
+
+            val remoteRender3 = SurfaceViewRenderer(this)
+            remoteRender3.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender3))
+            remoteRenders[102.toBigInteger()] = remoteRender3*/
 
             updateRenders()
         }
@@ -531,7 +580,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             val render = remoteRenders.remove(handleId)
             render?.release()
 
-            if (remoteRenders.isEmpty()) {
+            if (remoteRenders.isEmpty() && !isGroup(mGroupType)) {
                 updateCallStatus(CallState.ENDED)
                 return@runOnUiThread
             } else {
@@ -541,21 +590,28 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun updateRenders() {
-        binding.remoteRoot.removeAllViews()
-        val renders = remoteRenders.values
-        if (renders.isNotEmpty()) {
-            val params = RelativeLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
-            )
-            binding.remoteRoot.addView(renders.first(), params)
-        }
+        binding.surfaceRootContainer.removeAllViews()
 
-        val localRender = binding.localSurfaceView
-        binding.localRoot.removeAllViews()
-        val localParams = LinearLayout.LayoutParams(200, 300)
-        localParams.setMargins(20, 20, 0, 0)
-        binding.localRoot.addView(localRender, localParams)
+        val renders = remoteRenders.values
+
+        val surfaceGenerator = SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
+        // add local stream
+        val localSurfacePosition = surfaceGenerator.getLocalSurface()
+        val localParams = LinearLayout.LayoutParams(localSurfacePosition.width, localSurfacePosition.height).apply {
+            leftMargin = localSurfacePosition.marginStart
+            topMargin = localSurfacePosition.marginTop
+        }
+        binding.surfaceRootContainer.addView(mLocalSurfaceRenderer, localParams)
+
+        // add remote streams
+        val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
+        remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
+            val params = LinearLayout.LayoutParams(remoteSurfacePosition.width, remoteSurfacePosition.height).apply {
+                leftMargin = remoteSurfacePosition.marginStart
+                topMargin = remoteSurfacePosition.marginTop
+            }
+            binding.surfaceRootContainer.addView(renders.elementAt(index), params)
+        }
     }
 
     private fun showAskPermissionDialog() {

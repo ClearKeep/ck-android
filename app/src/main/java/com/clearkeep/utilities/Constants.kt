@@ -14,6 +14,8 @@ const val PORT = BuildConfig.PORT
 const val JANUS_URI = "ws://${BuildConfig.BASE_JANUS_URL}:${BuildConfig.JANUS_PORT}/janus"
 const val EXTRA_OUR_CLIENT_ID = "to"
 const val EXTRA_GROUP_ID = "call_id"
+const val EXTRA_GROUP_NAME = "group_name"
+const val EXTRA_GROUP_TYPE = "group_type"
 const val EXTRA_IS_AUDIO_MODE = "is_audio_mode"
 const val EXTRA_USER_NAME = "user_name"
 const val EXTRA_FROM_IN_COMING_CALL = "is_coming_call"
@@ -29,6 +31,7 @@ const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
 
 const val ACTION_CALL_CANCEL = "ck.action.end.call"
 const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
+const val EXTRA_CALL_CANCEL_GROUP_TYPE = "call_cancel_group_type"
 
 const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
 const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
