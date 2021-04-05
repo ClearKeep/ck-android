@@ -119,7 +119,6 @@ fun LoginScreen(
                 )
 
                 Spacer(Modifier.height(30.dp))
-
                 Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                 ) {

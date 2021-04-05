@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "1092685949059-5ddifknq8hge5j8l20ek6ijma8b3u0ps.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck",
+            "certificate_hash": "7c13adeb46d26f9a9ae7cca8183d8ce8789e7326"
+          }
+        },
+        {
+          "client_id": "1092685949059-9tlv1o3dm6io8v1gd2ji3erfbj7jpol6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck",
+            "certificate_hash": "77eed1aaaebbb6ab43821fe15d17690e24149991"
+          }
+        },
+        {
           "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -50,41 +66,21 @@
       },
       "oauth_client": [
         {
-          "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
+          "client_id": "1092685949059-5fls5tud4eq9p61bci0os8s9dpij1ulq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck.dev",
+            "certificate_hash": "77eed1aaaebbb6ab43821fe15d17690e24149991"
+          }
+        },
         {
-          "current_key": "AIzaSyDb9Ef0REPsMcKJH5sBaiVfcVi78YsbMIM"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "1092685949059-gfkapttahq1tuagf85lk3osr3d5i0bsg.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.telred.clearkeep3.ios.dev"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1092685949059:android:375570a90072070727d3b6",
-        "android_client_info": {
-          "package_name": "com.clearkeep.ck.staging"
-        }
-      },
-      "oauth_client": [
+          "client_id": "1092685949059-kl32hd79e5mbqbj4jls3kbee6j91b8gh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck.dev",
+            "certificate_hash": "7c13adeb46d26f9a9ae7cca8183d8ce8789e7326"
+          }
+        },
         {
           "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
           "client_type": 3
