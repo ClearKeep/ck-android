@@ -80,4 +80,7 @@ lint/tmp/
 # lint/reports/
 
 **/android/key.properties
+.DS_Store
+key.properties
+keystore/
 
