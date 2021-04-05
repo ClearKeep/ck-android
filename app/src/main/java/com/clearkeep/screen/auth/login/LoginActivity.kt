@@ -188,6 +188,58 @@ class LoginActivity : AppCompatActivity() {
                 })
     }
 
+    private fun signInGoogle() {
+        loginViewModel.googleSignInClient = GoogleSignIn.getClient(this, loginViewModel.googleSignIn)
+        val signInIntent: Intent = loginViewModel.googleSignInClient.signInIntent
+        startForResultSignInGoogle.launch(signInIntent)
+    }
+    private val startForResultSignInGoogle =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data);
+            handleSignInResult(task)
+        }
+
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+        try {
+            val account = completedTask.getResult(ApiException::class.java)
+            lifecycleScope.launch{
+                account?.serverAuthCode
+                val res= account?.idToken?.let {
+                    loginViewModel.loginByGoogle(it,account?.account?.name)
+                }
+                when (res?.status) {
+                    Status.SUCCESS -> {
+                        navigateToHomeActivity()
+                    }
+                    Status.ERROR -> {
+
+                    }
+                    else -> {
+
+                    }
+                }
+            }
+        } catch (e: ApiException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun signInMicrosoft() {
+        Log.e("antx", "signInMicrosoft: ${loginViewModel.firebaseAuth}")
+        loginViewModel.firebaseAuth
+            .startActivityForSignInWithProvider(this, loginViewModel.provider.build())
+            .addOnSuccessListener {
+                Log.e("antx", "signInMicrosoft")
+            }
+            .addOnFailureListener(
+                OnFailureListener {
+                    Log.e(
+                        "antx",
+                        "signInMicrosoft:addOnFailureListener message:  $it \n message: ${it.message}"
+                    )
+                })
+    }
+
     @Composable
     fun MyApp() {
         CKTheme {
@@ -198,10 +250,7 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
-        loginViewModel.initGoogleSingIn(this)
-        showErrorDiaLog = {
-            setShowDialog(it)
-        }
+
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
@@ -212,13 +261,6 @@ class LoginActivity : AppCompatActivity() {
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
-            }
-        }
-
-        fun signInGoogle() {
-            lifecycleScope.launch {
-                val signInIntent: Intent = loginViewModel.googleSignInClient.signInIntent
-                startForResultSignInGoogle.launch(signInIntent)
             }
         }
 
@@ -269,22 +311,22 @@ class LoginActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                title = {
-                    Text("Error")
-                },
-                text = {
-                    Text(showDialog)
-                },
-                dismissButton = {
-                    Button(
-                        onClick = {
-                            // Change the state to close the dialog
-                            setShowDialog("")
-                        },
-                    ) {
-                        Text("OK")
-                    }
-                },
+                    title = {
+                        Text("Error")
+                    },
+                    text = {
+                        Text(showDialog)
+                    },
+                    dismissButton = {
+                        Button(
+                                onClick = {
+                                    // Change the state to close the dialog
+                                    setShowDialog("")
+                                },
+                        ) {
+                            Text("OK")
+                        }
+                    },
             )
         }
     }
