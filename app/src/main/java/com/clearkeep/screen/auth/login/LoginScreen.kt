@@ -104,7 +104,8 @@ fun LoginScreen(
                         .padding(vertical = 5.dp),
                     enabled = !isLoading
                 )
-                /*Spacer(Modifier.height(16.dp))
+/*
+                Spacer(Modifier.height(16.dp))
                 CKButton(
                     stringResource(R.string.btn_login_microsoft),
                     onClick = {
@@ -115,8 +116,9 @@ fun LoginScreen(
                         .padding(vertical = 5.dp),
                     enabled = !isLoading
                 )
+*/
 
-                Spacer(Modifier.height(30.dp))*/
+                Spacer(Modifier.height(30.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
