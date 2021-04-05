@@ -1,5 +1,6 @@
 package com.clearkeep.repo
 
+import android.util.Log
 import auth.AuthGrpc
 import auth.AuthOuterClass
 import com.clearkeep.di.CallCredentialsImpl
@@ -99,6 +100,33 @@ class AuthRepository @Inject constructor(
             printlnCK("login error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
+    }
+    suspend fun loginByGoogle(token:String, userName: String? = ""):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+        try {
+            val request=AuthOuterClass
+                .GoogleLoginReq
+                .newBuilder()
+                .setIdToken(token)
+                .build()
+            val response=authBlockingStub.loginGoogle(request)
+
+            if (response.baseResponse.success) {
+                printlnCK("login by google successfully")
+                userManager.saveLoginTime(getCurrentDateTime().time)
+                userManager.saveAccessKey(response.accessToken)
+                userManager.saveHashKey(response.hashKey)
+                userManager.saveRefreshToken(response.refreshToken)
+                if (userName != null) {
+                    userManager.saveUserName(userName)
+                }
+                return@withContext Resource.success(response)
+            }
+            return@withContext Resource.success(response)
+        } catch (e: Exception) {
+            printlnCK("login by google error: $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+
     }
 
     suspend fun recoverPassword(email: String) : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
