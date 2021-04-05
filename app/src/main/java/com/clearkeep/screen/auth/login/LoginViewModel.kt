@@ -11,7 +11,6 @@ import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
 
 import android.util.Log
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.OAuthProvider
@@ -23,8 +22,6 @@ class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository
 ): ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
-
-    lateinit var googleSignIn: GoogleSignInOptions
     lateinit var googleSignInClient: GoogleSignInClient
 
 
@@ -41,6 +38,14 @@ class LoginViewModel @Inject constructor(
     val passError: LiveData<String>
         get() = _passError
 
+    val googleSignIn: GoogleSignInOptions =
+        GoogleSignInOptions
+            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com")
+            .requestProfile()
+            .requestEmail()
+            .build()
+
     var provider = OAuthProvider.newBuilder("microsoft.com").apply {
         addCustomParameter("prompt", "consent");
         val scopes = arrayListOf("profile","openid")
@@ -48,16 +53,6 @@ class LoginViewModel @Inject constructor(
 
     }
     var firebaseAuth = Firebase.auth
-
-    fun initGoogleSingIn(context: Context){
-        googleSignIn= GoogleSignInOptions
-            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestProfile()
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(context, googleSignIn)
-    }
 
     fun loginByMicrosoft(){
         val pendingResultTask = firebaseAuth.pendingAuthResult

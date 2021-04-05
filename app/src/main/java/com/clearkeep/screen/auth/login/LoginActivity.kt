@@ -1,8 +1,8 @@
-
 package com.clearkeep.screen.auth.login
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -47,8 +47,6 @@ class LoginActivity : AppCompatActivity() {
         viewModelFactory
     }
 
-    var showErrorDiaLog: ((String) -> Unit)? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -56,13 +54,18 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun signInGoogle() {
+        loginViewModel.googleSignInClient = GoogleSignIn.getClient(this, loginViewModel.googleSignIn)
+        val signInIntent: Intent = loginViewModel.googleSignInClient.signInIntent
+        startForResultSignInGoogle.launch(signInIntent)
+    }
     private val startForResultSignInGoogle =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data);
-            onlSignInGoogleResult(task)
+            handleSignInResult(task)
         }
 
-    private fun onlSignInGoogleResult(completedTask: Task<GoogleSignInAccount>) {
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
             lifecycleScope.launch{
@@ -75,25 +78,31 @@ class LoginActivity : AppCompatActivity() {
                         navigateToHomeActivity()
                     }
                     Status.ERROR -> {
-                        showErrorDiaLog?.invoke(res.message ?: "unknown")
+
                     }
                     else -> {
-                        showErrorDiaLog?.invoke("unknown")
+
                     }
-            }}
+                }
+            }
         } catch (e: ApiException) {
             e.printStackTrace()
         }
     }
 
     private fun signInMicrosoft() {
+        Log.e("antx", "signInMicrosoft: ${loginViewModel.firebaseAuth}")
         loginViewModel.firebaseAuth
             .startActivityForSignInWithProvider(this, loginViewModel.provider.build())
             .addOnSuccessListener {
+                Log.e("antx", "signInMicrosoft")
             }
             .addOnFailureListener(
                 OnFailureListener {
-                    exception ->  exception.printStackTrace()
+                    Log.e(
+                        "antx",
+                        "signInMicrosoft:addOnFailureListener message:  $it \n message: ${it.message}"
+                    )
                 })
     }
 
@@ -107,10 +116,7 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
-        loginViewModel.initGoogleSingIn(this)
-        showErrorDiaLog = {
-            setShowDialog(it)
-        }
+
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
@@ -121,13 +127,6 @@ class LoginActivity : AppCompatActivity() {
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
-            }
-        }
-
-        fun signInGoogle() {
-            lifecycleScope.launch {
-                val signInIntent: Intent = loginViewModel.googleSignInClient.signInIntent
-                startForResultSignInGoogle.launch(signInIntent)
             }
         }
 
