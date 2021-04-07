@@ -62,7 +62,7 @@ android {
 
     flavorDimensions "version"
     productFlavors {
-        customer {
+        prod {
             dimension "version"
             resValue 'string', 'app_name', "ClearKeep"
             buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
@@ -70,15 +70,25 @@ android {
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "8188"
         }
-        dev {
+        staging {
             dimension "version"
-            applicationIdSuffix ".dev"
-            versionNameSuffix "-dev"
-            resValue 'string', 'app_name', "ClearKeep Dev"
+            applicationIdSuffix ".staging"
+            versionNameSuffix "-staging"
+            resValue 'string', 'app_name', "CK Stag"
             buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
             buildConfigField "int", 'PORT', "15000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "18188"
+        }
+        dev {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+            resValue 'string', 'app_name', "CK Dev"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "28188"
         }
     }
 
