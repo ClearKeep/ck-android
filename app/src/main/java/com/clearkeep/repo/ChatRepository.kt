@@ -145,12 +145,6 @@ class ChatRepository @Inject constructor(
     private suspend fun saveNewMessage(value: MessageOuterClass.MessageObjectResponse, messageString: String) {
         val groupId = value.groupId
         var room: ChatGroup? = groupRepository.getGroupByID(groupId)
-        if (room == null) {
-            room = groupRepository.getGroupFromAPI(groupId)
-            if (room != null) {
-                groupRepository.insertGroup(room)
-            }
-        }
 
         if (room == null) {
             printlnCK("insertNewMessage error: can not a room with id $groupId")

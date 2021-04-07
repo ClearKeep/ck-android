@@ -141,11 +141,20 @@ class GroupRepository @Inject constructor(
         )
     }
 
-    suspend fun insertGroup(group: ChatGroup) {
+    private suspend fun insertGroup(group: ChatGroup) {
         groupDAO.insert(group)
     }
 
-    suspend fun getGroupByID(groupId: Long) = groupDAO.getGroupById(groupId)
+    suspend fun getGroupByID(groupId: Long) : ChatGroup? {
+        var room: ChatGroup? = groupDAO.getGroupById(groupId)
+        if (room == null) {
+            room = getGroupFromAPI(groupId)
+            if (room != null) {
+                insertGroup(room)
+            }
+        }
+        return room
+    }
 
     suspend fun getGroupPeerByClientId(friend: People): ChatGroup? {
         return friend.let {

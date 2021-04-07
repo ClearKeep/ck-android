@@ -81,7 +81,7 @@ class ChatService : Service() {
         scope.launch {
             subscribe()
             updateMessageHistory()
-            updateDataInJoiningRoom()
+            updateMessageAndKeyInOnlineRoom()
         }
     }
 
@@ -246,7 +246,7 @@ class ChatService : Service() {
         groupRepository.fetchRoomsFromAPI()
     }
 
-    private suspend fun updateDataInJoiningRoom() {
+    private suspend fun updateMessageAndKeyInOnlineRoom() {
         val roomId = chatRepository.getJoiningRoomId()
         if (roomId > 0) {
             val group = groupRepository.getGroupByID(roomId)!!

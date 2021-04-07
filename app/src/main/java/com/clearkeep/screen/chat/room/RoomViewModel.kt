@@ -77,9 +77,11 @@ class RoomViewModel @Inject constructor(
     private fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
         viewModelScope.launch {
-            val ret = roomRepository.getGroupByID(groupId)!!
-            _group.value = ret
-            updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
+            val ret = roomRepository.getGroupByID(groupId)
+            if (ret != null) {
+                _group.value = ret
+                updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
+            }
         }
     }
 
