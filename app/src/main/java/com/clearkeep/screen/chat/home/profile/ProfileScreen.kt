@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.clearkeep.BuildConfig
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.screen.chat.home.HomeViewModel
@@ -26,49 +27,66 @@ fun ProfileScreen(
     homeViewModel: HomeViewModel,
     onLogout: () -> Unit,
 ) {
+    val versionName = BuildConfig.VERSION_NAME
+    val env = BuildConfig.FLAVOR
     val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
     val profile = profileViewModel.profile.observeAsState()
     val isLogoutProcessing = homeViewModel.isLogOutProcessing.observeAsState()
 
-    Column(modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+
     ) {
-        CKTopAppBar(
+        Column(modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CKTopAppBar(
                 title = {
                     Text(text = "Profile")
                 },
-        )
-        profile?.value?.let { user ->
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.height(60.dp))
-                CircleAvatar(emptyList(), user.userName ?: "", size = 72.dp)
-                Spacer(Modifier.height(20.dp))
-                Text(text = user.userName ?: "", style = MaterialTheme.typography.h5)
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(text = user.email ?: "", style = MaterialTheme.typography.body2)
-            }
-        }
-        Spacer(Modifier.height(40.dp))
-        isLogoutProcessing.value.let {
-            if (it == null || it == false) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 20.dp).clickable(onClick = {
-                        setShowReminderDialog(true)
-                    }),
-                    horizontalArrangement = Arrangement.Start
+            )
+            profile?.value?.let { user ->
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Login,
-                        contentDescription = ""
-                    )
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Text("Logout")
+                    Spacer(Modifier.height(60.dp))
+                    CircleAvatar(emptyList(), user.userName ?: "", size = 72.dp)
+                    Spacer(Modifier.height(20.dp))
+                    Text(text = user.userName ?: "", style = MaterialTheme.typography.h5)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(text = user.email ?: "", style = MaterialTheme.typography.body2)
                 }
             }
+            Spacer(Modifier.height(40.dp))
+            isLogoutProcessing.value.let {
+                if (it == null || it == false) {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .clickable(onClick = {
+                                setShowReminderDialog(true)
+                            }),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Login,
+                            contentDescription = ""
+                        )
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Text("Logout")
+                    }
+                }
+            }
+        }
+        Column(
+            modifier = Modifier.fillMaxSize().padding(end = 8.dp, bottom = 20.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.End
+        ) {
+            Text("version $versionName (${env.toUpperCase()})", style = MaterialTheme.typography.caption.copy(
+                color = MaterialTheme.colors.onPrimary
+            ))
         }
         LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
     }
