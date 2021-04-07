@@ -29,6 +29,13 @@
             {
               "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1092685949059-gfkapttahq1tuagf85lk3osr3d5i0bsg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.telred.clearkeep3.ios.dev"
+              }
             }
           ]
         }
@@ -58,6 +65,49 @@
             {
               "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1092685949059-gfkapttahq1tuagf85lk3osr3d5i0bsg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.telred.clearkeep3.ios.dev"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1092685949059:android:375570a90072070727d3b6",
+        "android_client_info": {
+          "package_name": "com.clearkeep.ck.staging"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDb9Ef0REPsMcKJH5sBaiVfcVi78YsbMIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1092685949059-gfkapttahq1tuagf85lk3osr3d5i0bsg.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.telred.clearkeep3.ios.dev"
+              }
             }
           ]
         }
