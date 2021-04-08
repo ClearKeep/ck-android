@@ -100,8 +100,6 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
                 MainComposable()
             }
         }
-
-        homeViewModel.initGoogleSignIn(context = this)
         subscriberLogout()
     }
 
@@ -270,9 +268,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun logout() {
         homeViewModel.logOut()
-        homeViewModel.logOutGoogle(this) {
-            Log.e("aantx", "Logout google success")
-        }
+        homeViewModel.logOutGoogle(this) {}
     }
 
     private fun navigateToRoomScreen(groupId: Long) {

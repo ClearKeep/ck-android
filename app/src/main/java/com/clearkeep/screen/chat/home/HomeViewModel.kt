@@ -38,8 +38,6 @@ class HomeViewModel @Inject constructor(
     private val managedChannel: ManagedChannel,
 ): ViewModel() {
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
-    lateinit var googleSignIn: GoogleSignInOptions
-    lateinit var googleSignInClient: GoogleSignInClient
 
     val isLogOutProcessing: LiveData<Boolean>
         get() = _isLogOutProcessing
@@ -87,9 +85,13 @@ class HomeViewModel @Inject constructor(
     }
 
     fun logOutGoogle(activity: Activity, onComplete: (() -> Unit)) {
-        googleSignInClient.signOut()
-            .addOnCompleteListener(activity) {
-                Log.e("HomeViewModel","antx logOutGoogle ${it.result.toString()}")
+        val googleSignIn = GoogleSignInOptions
+            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .build()
+        GoogleSignIn.getClient(activity, googleSignIn)
+            .signOut().addOnCompleteListener(activity) {
+                printlnCK("google sign out  = ${it.result.toString()} ")
+                onComplete.invoke()
             }
     }
 
@@ -109,13 +111,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun initGoogleSignIn(context: Context){
-        googleSignIn= GoogleSignInOptions
-            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestProfile()
-            .requestEmail()
-            .build()
-        googleSignInClient = GoogleSignIn.getClient(context, googleSignIn)
+
     }
 
 }
