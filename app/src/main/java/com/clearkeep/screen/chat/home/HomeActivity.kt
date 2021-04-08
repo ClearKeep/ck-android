@@ -48,6 +48,7 @@ import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -100,8 +101,8 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
+        homeViewModel.initGoogleSignIn(context = this)
         subscriberLogout()
-        homeViewModel.updateFirebaseToken()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -269,6 +270,9 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun logout() {
         homeViewModel.logOut()
+        homeViewModel.logOutGoogle(this) {
+            Log.e("aantx", "Logout google success")
+        }
     }
 
     private fun navigateToRoomScreen(groupId: Long) {
