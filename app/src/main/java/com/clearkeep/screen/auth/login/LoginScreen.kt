@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.login
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -104,11 +105,11 @@ fun LoginScreen(
                         .padding(vertical = 5.dp),
                     enabled = !isLoading
                 )
-/*
                 Spacer(Modifier.height(16.dp))
                 CKButton(
                     stringResource(R.string.btn_login_microsoft),
                     onClick = {
+                        Log.e("antx","onLoginMicrosoft invoke")
                         onLoginMicrosoft?.invoke()
                     },
                     modifier = Modifier
@@ -116,7 +117,6 @@ fun LoginScreen(
                         .padding(vertical = 5.dp),
                     enabled = !isLoading
                 )
-*/
 
                 Spacer(Modifier.height(30.dp))
 

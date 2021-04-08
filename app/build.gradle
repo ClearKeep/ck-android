@@ -118,6 +118,9 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
+    packagingOptions{
+        exclude("META-INF/jersey-module-version")
+    }
 }
 protobuf {
     protoc {
@@ -233,4 +236,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation(name:'libwebrtc', ext:'aar')
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+
+    implementation 'com.microsoft.identity.client:msal:2.0.8'
+
 }
+

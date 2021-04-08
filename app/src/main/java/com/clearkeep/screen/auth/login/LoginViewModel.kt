@@ -1,7 +1,6 @@
 package com.clearkeep.screen.auth.login
 
 import android.content.Context
-import android.provider.Settings.Global.getString
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
