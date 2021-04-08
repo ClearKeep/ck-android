@@ -121,7 +121,7 @@ class AuthRepository @Inject constructor(
                 }
                 return@withContext Resource.success(response)
             }
-            return@withContext Resource.success(response)
+            return@withContext Resource.error(response.baseResponse.errors.message, null)
         } catch (e: Exception) {
             printlnCK("login by google error: $e")
             return@withContext Resource.error(e.toString(), null)
