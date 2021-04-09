@@ -109,7 +109,6 @@ fun LoginScreen(
                 CKButton(
                     stringResource(R.string.btn_login_microsoft),
                     onClick = {
-                        Log.e("antx","onLoginMicrosoft invoke")
                         onLoginMicrosoft?.invoke()
                     },
                     modifier = Modifier

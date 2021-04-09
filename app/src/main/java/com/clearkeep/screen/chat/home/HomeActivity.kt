@@ -269,6 +269,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
     private fun logout() {
         homeViewModel.logOut()
         homeViewModel.logOutGoogle(this) {}
+        homeViewModel.onLogOutMicrosoft(this)
     }
 
     private fun navigateToRoomScreen(groupId: Long) {
