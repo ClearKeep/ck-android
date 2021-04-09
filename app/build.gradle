@@ -118,6 +118,9 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
+    packagingOptions{
+        exclude("META-INF/jersey-module-version")
+    }
 }
 protobuf {
     protoc {
@@ -220,8 +223,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging-ktx:21.0.0'
     implementation 'com.google.firebase:firebase-analytics-ktx:18.0.0'
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
-    implementation platform('com.google.firebase:firebase-bom:26.8.0')
-    implementation 'com.google.firebase:firebase-auth-ktx'
 
     // Test
     testImplementation 'junit:junit:4.+'
@@ -233,4 +234,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation(name:'libwebrtc', ext:'aar')
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+
+    implementation 'com.microsoft.identity.client:msal:2.0.8'
+
 }
+

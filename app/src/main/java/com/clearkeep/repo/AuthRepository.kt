@@ -129,6 +129,34 @@ class AuthRepository @Inject constructor(
 
     }
 
+    suspend fun loginByMicrosoft(
+        accessToken: String,
+        userName: String? = ""
+    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+        try {
+            val request = AuthOuterClass
+                .OfficeLoginReq
+                .newBuilder()
+                .setAccessToken(accessToken)
+                .build()
+            val response = authBlockingStub.loginOffice(request)
+            if (response.baseResponse.success) {
+                printlnCK("login by microsoft successfully")
+                userManager.saveLoginTime(getCurrentDateTime().time)
+                userManager.saveAccessKey(response.accessToken)
+                userManager.saveHashKey(response.hashKey)
+                userManager.saveRefreshToken(response.refreshToken)
+                if (userName != null) {
+                    userManager.saveUserName(userName)
+                }
+                return@withContext Resource.success(response)
+            }
+            return@withContext Resource.error(response.baseResponse.errors.message, null)
+        } catch (e: Exception) {
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
     suspend fun recoverPassword(email: String) : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
         printlnCK("recoverPassword: $email")
         try {
