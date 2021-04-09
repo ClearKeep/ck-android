@@ -2,7 +2,6 @@ package com.clearkeep.screen.chat.home
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -16,10 +15,7 @@ import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 import com.microsoft.identity.client.IPublicClientApplication
 import com.microsoft.identity.client.ISingleAccountPublicClientApplication
@@ -101,7 +97,7 @@ class HomeViewModel @Inject constructor(
             }
     }
 
-    private fun initMicrosoftSignIn(context: Context, onSuccess: (()->Unit)){
+    private fun getSingleAccountMicrosoft(context: Context, onSuccess: (()->Unit)){
         PublicClientApplication.createSingleAccountPublicClientApplication(
             context, R.raw.auth_config_single_account, object :
                 IPublicClientApplication.ISingleAccountApplicationCreatedListener {
@@ -117,7 +113,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onLogOutMicrosoft(activity: Activity){
-        initMicrosoftSignIn(activity) {
+        getSingleAccountMicrosoft(activity) {
             mSingleAccountApp?.signOut(object :
                 ISingleAccountPublicClientApplication.SignOutCallback {
                 override fun onSignOut() {
@@ -145,9 +141,4 @@ class HomeViewModel @Inject constructor(
             profileRepository.registerToken(token)
         }
     }
-
-    fun initGoogleSignIn(context: Context){
-
-    }
-
 }
