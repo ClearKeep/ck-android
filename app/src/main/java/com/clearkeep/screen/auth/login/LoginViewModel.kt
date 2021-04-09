@@ -1,7 +1,6 @@
 package com.clearkeep.screen.auth.login
 
 import android.content.Context
-import android.provider.Settings.Global.getString
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
@@ -9,26 +8,22 @@ import com.clearkeep.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
-
-import android.util.Log
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.OAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.microsoft.identity.client.*
+import com.microsoft.identity.client.exception.MsalException
 
 
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository
 ): ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
-    lateinit var googleSignInClient: GoogleSignInClient
-
 
     lateinit var googleSignIn: GoogleSignInOptions
     lateinit var googleSignInClient: GoogleSignInClient
-
+    val SCOPES_MICROSOFT = arrayOf("Files.Read","User.Read")
+    var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
 
     val isLoading: LiveData<Boolean>
         get() = _isLoading
@@ -43,14 +38,6 @@ class LoginViewModel @Inject constructor(
     val passError: LiveData<String>
         get() = _passError
 
-    var provider = OAuthProvider.newBuilder("microsoft.com").apply {
-        addCustomParameter("prompt", "consent");
-        val scopes = arrayListOf("profile","openid")
-        setScopes(scopes)
-
-    }
-    var firebaseAuth = Firebase.auth
-
     fun initGoogleSingIn(context: Context){
         googleSignIn= GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -61,23 +48,27 @@ class LoginViewModel @Inject constructor(
         googleSignInClient = GoogleSignIn.getClient(context, googleSignIn)
     }
 
-    fun loginByMicrosoft(){
-        val pendingResultTask = firebaseAuth.pendingAuthResult
-        if (pendingResultTask != null) {
-            pendingResultTask
-                .addOnSuccessListener {
-                    Log.e("antx","loginMicrosoft: ${it.user.providerData[0].uid}")
+    fun initMicrosoftSignIn(context: Context,onSuccess: (()->Unit),onError: ((String?)->Unit)){
+        PublicClientApplication.createSingleAccountPublicClientApplication(
+            context, R.raw.auth_config_single_account, object :
+                IPublicClientApplication.ISingleAccountApplicationCreatedListener {
+                override fun onCreated(application: ISingleAccountPublicClientApplication?) {
+                    mSingleAccountApp = application
+                    onSuccess.invoke()
                 }
-                .addOnFailureListener {
-                    Log.e("antx","loginMicrosoft: Error: $it")
-                }
-        } else {
 
-        }
+                override fun onError(exception: MsalException?) {
+                    onError.invoke(exception?.message)
+                }
+            })
     }
 
     suspend fun loginByGoogle(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
         return authRepo.loginByGoogle(token,userName)
+    }
+
+    suspend fun loginByMicrosoft(accessToken:String,userName: String?=""):Resource<AuthOuterClass.AuthRes>{
+        return authRepo.loginByMicrosoft(accessToken,userName)
     }
     suspend fun login(context: Context, email: String, password: String): Resource<AuthOuterClass.AuthRes>? {
         _emailError.value = ""
