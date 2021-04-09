@@ -3,6 +3,8 @@
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
     <string name="btn_login">Login</string>
+    <string name="btn_login_google">Login Google</string>
+    <string name="btn_login_microsoft">Login Microsoft</string>
     <string name="btn_register">Register</string>
     <string name="btn_create_account">Create an account</string>
     <string name="btn_forgot_password">Forgot password</string>

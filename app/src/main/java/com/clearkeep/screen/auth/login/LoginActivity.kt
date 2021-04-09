@@ -1,8 +1,11 @@
+
 package com.clearkeep.screen.auth.login
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
@@ -24,9 +27,14 @@ import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.chat.home.HomePreparingActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Status
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.OnFailureListener
 
 
 @AndroidEntryPoint
@@ -39,11 +47,54 @@ class LoginActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    var showErrorDiaLog: ((String) -> Unit)? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp()
         }
+    }
+
+    private val startForResultSignInGoogle =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data);
+            onlSignInGoogleResult(task)
+        }
+
+    private fun onlSignInGoogleResult(completedTask: Task<GoogleSignInAccount>) {
+        try {
+            val account = completedTask.getResult(ApiException::class.java)
+            lifecycleScope.launch{
+                account?.serverAuthCode
+                val res= account?.idToken?.let {
+                    loginViewModel.loginByGoogle(it,account?.account?.name)
+                }
+                when (res?.status) {
+                    Status.SUCCESS -> {
+                        navigateToHomeActivity()
+                    }
+                    Status.ERROR -> {
+                        showErrorDiaLog?.invoke(res.message ?: "unknown")
+                    }
+                    else -> {
+                        showErrorDiaLog?.invoke("unknown")
+                    }
+            }}
+        } catch (e: ApiException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun signInMicrosoft() {
+        loginViewModel.firebaseAuth
+            .startActivityForSignInWithProvider(this, loginViewModel.provider.build())
+            .addOnSuccessListener {
+            }
+            .addOnFailureListener(
+                OnFailureListener {
+                    exception ->  exception.printStackTrace()
+                })
     }
 
     @Composable
@@ -56,7 +107,10 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
-
+        loginViewModel.initGoogleSingIn(this)
+        showErrorDiaLog = {
+            setShowDialog(it)
+        }
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
@@ -67,6 +121,13 @@ class LoginActivity : AppCompatActivity() {
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
+            }
+        }
+
+        fun signInGoogle() {
+            lifecycleScope.launch {
+                val signInIntent: Intent = loginViewModel.googleSignInClient.signInIntent
+                startForResultSignInGoogle.launch(signInIntent)
             }
         }
 
@@ -87,7 +148,13 @@ class LoginActivity : AppCompatActivity() {
                         onForgotPasswordPress = {
                             navigateToForgotActivity()
                         },
-                        isLoading = isLoadingState.value ?: false
+                        isLoading = isLoadingState.value ?: false,
+                        onLoginGoogle = {
+                            signInGoogle()
+                        },
+                        onLoginMicrosoft = {
+                            signInMicrosoft()
+                        }
                     )
                 }
             }
