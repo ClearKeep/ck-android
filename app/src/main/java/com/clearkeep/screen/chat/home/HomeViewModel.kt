@@ -1,9 +1,13 @@
 package com.clearkeep.screen.chat.home
 
+import android.app.Activity
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clearkeep.R
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -11,6 +15,11 @@ import com.clearkeep.repo.*
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.FirebaseMessaging
 import io.grpc.ManagedChannel
 import kotlinx.coroutines.*
@@ -75,6 +84,17 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun logOutGoogle(activity: Activity, onComplete: (() -> Unit)) {
+        val googleSignIn = GoogleSignInOptions
+            .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .build()
+        GoogleSignIn.getClient(activity, googleSignIn)
+            .signOut().addOnCompleteListener(activity) {
+                printlnCK("google sign out  = ${it.result.toString()} ")
+                onComplete.invoke()
+            }
+    }
+
     private suspend fun clearDatabase() = withContext(Dispatchers.IO) {
         storage.clear()
         signalProtocolStore.clear()
@@ -89,4 +109,9 @@ class HomeViewModel @Inject constructor(
             profileRepository.registerToken(token)
         }
     }
+
+    fun initGoogleSignIn(context: Context){
+
+    }
+
 }

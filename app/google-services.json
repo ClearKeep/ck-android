@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "1092685949059-0cqiva15gvh7jgfcejp2oo32pgnaufc3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck",
+            "certificate_hash": "77eed1aaaebbb6ab43821fe15d17690e24149991"
+          }
+        },
+        {
+          "client_id": "1092685949059-1q9es0a7c5fioqels41jfn6pqh8g783e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck",
+            "certificate_hash": "7c13adeb46d26f9a9ae7cca8183d8ce8789e7326"
+          }
+        },
+        {
           "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -49,6 +65,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "1092685949059-1cl297ikbg5t7d03nsn1diroihkl6m6b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck.dev",
+            "certificate_hash": "7c13adeb46d26f9a9ae7cca8183d8ce8789e7326"
+          }
+        },
+        {
+          "client_id": "1092685949059-e1srkhadr3t0uv5sh50gvf3f82d62htk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.clearkeep.ck.dev",
+            "certificate_hash": "77eed1aaaebbb6ab43821fe15d17690e24149991"
+          }
+        },
         {
           "client_id": "1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com",
           "client_type": 3
