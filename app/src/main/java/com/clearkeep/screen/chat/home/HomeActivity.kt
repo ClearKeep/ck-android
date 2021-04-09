@@ -101,6 +101,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
         subscriberLogout()
+        homeViewModel.updateFirebaseToken()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
