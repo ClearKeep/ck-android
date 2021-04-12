@@ -11,6 +11,7 @@ fun CKButton(
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
+        buttonType: ButtonType = ButtonType.Blue
 ) {
     OutlinedButton(
             onClick = {
@@ -23,4 +24,11 @@ fun CKButton(
                 text = label,
         )
     }
+}
+
+enum class ButtonType {
+    White,
+    Blue,
+    Red,
+    BorderWhite,
 }

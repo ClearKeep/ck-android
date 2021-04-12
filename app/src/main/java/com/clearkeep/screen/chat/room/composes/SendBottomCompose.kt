@@ -13,11 +13,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.clearkeep.components.base.CKTextField
+import com.clearkeep.components.base.CKTextInputField
 
 @ExperimentalComposeUiApi
 @Composable
@@ -31,8 +30,7 @@ fun SendBottomCompose(
     ) {
 
         Column(modifier = Modifier.weight(0.66f).padding(start = 8.dp, top = 4.dp, bottom = 4.dp)) {
-            CKTextField(
-                "Enter message...",
+            CKTextInputField(
                 "Enter message...",
                 msgState,
                 keyboardType = KeyboardType.Text,

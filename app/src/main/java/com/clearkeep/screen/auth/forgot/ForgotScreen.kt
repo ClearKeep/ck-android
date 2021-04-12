@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextField
+import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKTopAppBar
 
 @Composable
@@ -52,9 +52,8 @@ fun ForgotScreen(
         Column (modifier = Modifier.padding(horizontal = 30.dp).fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.height(80.dp))
-            CKTextField(
+            CKTextInputField(
                     "Email",
-                    "",
                     email
             )
             Spacer(Modifier.height(15.dp))

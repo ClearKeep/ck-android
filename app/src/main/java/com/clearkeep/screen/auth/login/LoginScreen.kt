@@ -1,6 +1,5 @@
 package com.clearkeep.screen.auth.login
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextButton
-import com.clearkeep.components.base.CKTextField
+import com.clearkeep.components.base.CKTextInputField
 
 @Composable
 fun LoginScreen(
@@ -66,8 +65,7 @@ fun LoginScreen(
             Spacer(Modifier.height(30.dp))
 
             Column (modifier = Modifier.padding(horizontal = 20.dp)) {
-                CKTextField(
-                    "Email",
+                CKTextInputField(
                     "Email",
                     email,
                     keyboardType = KeyboardType.Email,
@@ -75,8 +73,7 @@ fun LoginScreen(
                     singleLine = true,
                 )
                 Spacer(Modifier.height(20.dp))
-                CKTextField(
-                    "Password",
+                CKTextInputField(
                     "Password",
                     password,
                     keyboardType = KeyboardType.Password,
