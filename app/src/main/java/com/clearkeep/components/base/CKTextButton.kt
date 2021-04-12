@@ -13,6 +13,7 @@ fun CKTextButton(
     title: String = "",
     onClick: () -> Unit,
     enabled: Boolean = true,
+    textButtonType: TextButtonType = TextButtonType.White
 ) {
     TextButton(
         onClick = onClick,
@@ -25,4 +26,9 @@ fun CKTextButton(
     ) {
         Text(title)
     }
+}
+
+enum class TextButtonType {
+    White,
+    Blue,
 }

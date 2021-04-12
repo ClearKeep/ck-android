@@ -19,7 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextField
+import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKTopAppBar
 
 @Composable
@@ -70,8 +70,7 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(30.dp))
 
-            CKTextField(
-                "Email",
+            CKTextInputField(
                 "Email",
                 email,
                 keyboardType = KeyboardType.Email,
@@ -79,16 +78,14 @@ fun RegisterScreen(
                 singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
-            CKTextField(
-                "Display name",
+            CKTextInputField(
                 "Display name",
                 displayName,
                 error = displayNameError.value,
                 singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
-            CKTextField(
-                "Password",
+            CKTextInputField(
                 "Password",
                 password,
                 keyboardType = KeyboardType.Password,
@@ -96,8 +93,7 @@ fun RegisterScreen(
                 singleLine = true,
             )
             Spacer(Modifier.height(10.dp))
-            CKTextField(
-                "Confirm password",
+            CKTextInputField(
                 "Confirm password",
                 confirmPassword,
                 keyboardType = KeyboardType.Password,

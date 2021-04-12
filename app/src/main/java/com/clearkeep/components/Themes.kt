@@ -1,11 +1,18 @@
 package com.clearkeep.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+
+val backgroundGradientStart = Color(0xff7773F3)
+val backgroundGradientEnd = Color(0xff8ABFF3)
 
 val lightThemeColors = lightColors(
     primary = Color.White,
@@ -59,7 +66,18 @@ fun CKTheme(
         shapes = Shapes,
         typography = ckTypography
     ) {
-        // TODO: update dark mode and remove surface color when have design
-        children()
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            backgroundGradientStart,
+                            backgroundGradientEnd
+                        )
+                    )
+                )
+        ) {
+            children()
+        }
     }
 }

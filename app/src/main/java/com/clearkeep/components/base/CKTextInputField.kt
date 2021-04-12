@@ -19,8 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CKTextField(
-    label: String,
+fun CKTextInputField(
     placeholder: String,
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
@@ -28,7 +27,8 @@ fun CKTextField(
     error: String? = null,
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
-    imeAction: ImeAction = ImeAction.Done
+    imeAction: ImeAction = ImeAction.Done,
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
     val isPasswordType = keyboardType == KeyboardType.Password
