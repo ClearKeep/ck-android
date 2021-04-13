@@ -1,11 +1,16 @@
 package com.clearkeep.screen.auth.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,6 +76,10 @@ fun LoginScreen(
                     keyboardType = KeyboardType.Email,
                     error = emailError.value,
                     singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Email, contentDescription = "")
+                    }
                 )
                 Spacer(Modifier.height(20.dp))
                 CKTextInputField(
