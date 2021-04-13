@@ -1,5 +1,6 @@
 package com.clearkeep.components.base
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
+import androidx.compose.ui.focus.isFocused
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -32,77 +35,105 @@ fun CKTextInputField(
     imeAction: ImeAction = ImeAction.Done,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {
+    val shape = MaterialTheme.shapes.large
+    val isError = !error.isNullOrBlank()
     val focusManager = LocalFocusManager.current
+
     val isPasswordType = keyboardType == KeyboardType.Password
     var passwordVisibility = remember { mutableStateOf(false) }
+
+    var rememberBorderShow = remember { mutableStateOf(false)}
     Column {
-        TextField(
-            value = textValue.value,
-            onValueChange = { textValue.value = it },
-            /*label = {
-                if (label.isNotBlank()) {
-                    Text(
-                        label, style = MaterialTheme.typography.body2.copy(
-                            color = MaterialTheme.colors.secondaryVariant
-                        )
-                    )
+        Card(
+            modifier = modifier,
+            shape = shape,
+            border = if (rememberBorderShow.value) {
+                if (isError) {
+                    BorderStroke(1.dp, errorDefault)
+                } else {
+                    BorderStroke(1.dp, grayscaleBlack)
                 }
-            },*/
-            placeholder = {
-                if (placeholder.isNotBlank()) {
-                    Text(
-                        placeholder, style = MaterialTheme.typography.body1.copy(
-                            color = grayscale3,
-                            fontWeight = FontWeight.Normal
+            } else null,
+            elevation = 0.dp
+        ) {
+            TextField(
+                value = textValue.value,
+                onValueChange = { textValue.value = it },
+                /*label = {
+                    if (label.isNotBlank()) {
+                        Text(
+                            label, style = MaterialTheme.typography.body2.copy(
+                                color = MaterialTheme.colors.secondaryVariant
+                            )
                         )
-                    )
-                }
-            },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = grayscaleBlack,
-                cursorColor = grayscaleBlack,
-                focusedBorderColor = if (error.isNullOrBlank()) grayscaleBlack else errorDefault,
-                unfocusedBorderColor = Color.Transparent,
-                backgroundColor = if (error.isNullOrBlank()) grayscale5 else errorLight,
-                leadingIconColor = pickledBlueWood,
-                errorCursorColor = errorLight,
-            ),
-            shape = MaterialTheme.shapes.large,
-            textStyle = MaterialTheme.typography.body1.copy(
-                color = grayscaleBlack,
-                fontWeight = FontWeight.Normal
-            ),
-            visualTransformation = if (isPasswordType) {
-                if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
-            } else {
-                VisualTransformation.None
-            },
-            modifier = modifier.fillMaxWidth(),
-            leadingIcon = leadingIcon,
-            trailingIcon = {
-                if (isPasswordType) {
-                    Icon(
-                        imageVector = if (!passwordVisibility.value) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                        contentDescription = "",
-                        tint = pickledBlueWood,
-                        modifier = Modifier.clickable(
-                            onClick = { passwordVisibility.value = !passwordVisibility.value }
+                    }
+                },*/
+                placeholder = {
+                    if (placeholder.isNotBlank()) {
+                        Text(
+                            placeholder, style = MaterialTheme.typography.body1.copy(
+                                color = grayscale3,
+                                fontWeight = FontWeight.Normal
+                            )
                         )
-                    )
-                }
-            },
-            singleLine = singleLine,
-            maxLines = maxLines,
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
-        )
-        if (!error.isNullOrBlank()) {
+                    }
+                },
+                colors = TextFieldDefaults.textFieldColors(
+                    textColor = grayscaleBlack,
+                    cursorColor = grayscaleBlack,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    backgroundColor = if (!isError) {
+                        if (rememberBorderShow.value) {
+                            grayscaleOffWhite
+                        } else {
+                            grayscale5
+                        }
+                    } else errorLight,
+                    leadingIconColor = pickledBlueWood,
+                    errorCursorColor = errorLight,
+                ),
+                textStyle = MaterialTheme.typography.body1.copy(
+                    color = grayscaleBlack,
+                    fontWeight = FontWeight.Normal
+                ),
+                visualTransformation = if (isPasswordType) {
+                    if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
+                } else {
+                    VisualTransformation.None
+                },
+                modifier = modifier.fillMaxWidth()
+                    .onFocusChanged {
+                        rememberBorderShow.value = it.isFocused
+                    },
+                leadingIcon = leadingIcon,
+                trailingIcon = {
+                    if (isPasswordType) {
+                        Icon(
+                            imageVector = if (!passwordVisibility.value) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                            contentDescription = "",
+                            tint = pickledBlueWood,
+                            modifier = Modifier.clickable(
+                                onClick = { passwordVisibility.value = !passwordVisibility.value }
+                            )
+                        )
+                    }
+                },
+                singleLine = singleLine,
+                maxLines = maxLines,
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
+            )
+        }
+        if (isError) {
             Spacer(modifier = Modifier.height(4.dp))
         }
-        if (!error.isNullOrBlank()) Text(
-            error,
-            style = MaterialTheme.typography.body2.copy(color = errorDefault),
-            modifier = Modifier.padding(start = 8.dp)
-        )
+        if (isError) error?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.body2.copy(color = errorDefault),
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
     }
 }
