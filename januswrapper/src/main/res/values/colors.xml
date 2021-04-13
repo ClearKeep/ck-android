@@ -2,4 +2,5 @@
 <resources>
     <color name="appCallBackground">@android:color/transparent</color>
     <color name="appCallTextColor">#ffffff</color>
+    <color name="line">#D9DBE9</color>
 </resources>
