@@ -51,7 +51,7 @@ fun InputSearchBox(
                     })
             }else{
                 Icon(Icons.Filled.Close, contentDescription = ""
-                    ,tint = colorResource(id = R.color.foreground_material_dark))
+                    ,tint = Color.White)
             }
 
         }

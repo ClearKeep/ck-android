@@ -7,16 +7,18 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.*
 
 @Composable
 fun CKTextInputField(
@@ -49,22 +51,26 @@ fun CKTextInputField(
             placeholder = {
                 if (placeholder.isNotBlank()) {
                     Text(
-                        placeholder, style = MaterialTheme.typography.body2.copy(
-                            color = MaterialTheme.colors.secondaryVariant
+                        placeholder, style = MaterialTheme.typography.body1.copy(
+                            color = grayscale3,
+                            fontWeight = FontWeight.Normal
                         )
                     )
                 }
             },
             colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = MaterialTheme.colors.secondaryVariant,
-                cursorColor = MaterialTheme.colors.secondaryVariant,
-                focusedBorderColor = Color.Transparent,
+                textColor = grayscaleBlack,
+                cursorColor = grayscaleBlack,
+                focusedBorderColor = if (error.isNullOrBlank()) grayscaleBlack else errorDefault,
                 unfocusedBorderColor = Color.Transparent,
-                backgroundColor = MaterialTheme.colors.secondary
+                backgroundColor = if (error.isNullOrBlank()) grayscale5 else errorLight,
+                leadingIconColor = pickledBlueWood,
+                errorCursorColor = errorLight,
             ),
-            shape = MaterialTheme.shapes.medium,
-            textStyle = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.secondaryVariant
+            shape = MaterialTheme.shapes.large,
+            textStyle = MaterialTheme.typography.body1.copy(
+                color = grayscaleBlack,
+                fontWeight = FontWeight.Normal
             ),
             visualTransformation = if (isPasswordType) {
                 if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
@@ -72,12 +78,13 @@ fun CKTextInputField(
                 VisualTransformation.None
             },
             modifier = modifier.fillMaxWidth(),
+            leadingIcon = leadingIcon,
             trailingIcon = {
                 if (isPasswordType) {
                     Icon(
-                        imageVector = if (!passwordVisibility.value) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        imageVector = if (!passwordVisibility.value) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                         contentDescription = "",
-                        tint = Color.Gray,
+                        tint = pickledBlueWood,
                         modifier = Modifier.clickable(
                             onClick = { passwordVisibility.value = !passwordVisibility.value }
                         )
@@ -89,12 +96,12 @@ fun CKTextInputField(
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
         )
-        if (!error.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(5.dp))
+        if (!error.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
         }
-        if (!error.isNullOrEmpty()) Text(
+        if (!error.isNullOrBlank()) Text(
             error,
-            style = MaterialTheme.typography.body2.copy(color = Color.Red),
+            style = MaterialTheme.typography.body2.copy(color = errorDefault),
             modifier = Modifier.padding(start = 8.dp)
         )
     }

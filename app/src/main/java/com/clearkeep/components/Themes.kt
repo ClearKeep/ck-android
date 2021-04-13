@@ -11,9 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-val backgroundGradientStart = Color(0xff7773F3)
-val backgroundGradientEnd = Color(0xff8ABFF3)
-
 val lightThemeColors = lightColors(
     primary = Color.White,
     primaryVariant = Color.Black,

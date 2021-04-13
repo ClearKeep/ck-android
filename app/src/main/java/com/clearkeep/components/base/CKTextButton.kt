@@ -6,6 +6,10 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.components.primaryDefault
 
 @Composable
 fun CKTextButton(
@@ -18,13 +22,23 @@ fun CKTextButton(
     TextButton(
         onClick = onClick,
         colors = ButtonDefaults.textButtonColors(
-            contentColor =
-            MaterialTheme.colors.surface
+            contentColor = getTextContentColor(textButtonType)
         ),
         enabled = enabled,
         modifier = modifier,
     ) {
-        Text(title)
+        Text(title,
+            style = MaterialTheme.typography.body1.copy(
+                fontSize = 12.sp
+            )
+        )
+    }
+}
+
+private fun getTextContentColor(textButtonType: TextButtonType): Color {
+    return when(textButtonType) {
+        TextButtonType.White -> grayscaleOffWhite
+        TextButtonType.Blue -> primaryDefault
     }
 }
 
