@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.grayscaleOffWhite
 
 private val height = 40.dp
 
@@ -40,7 +41,7 @@ fun CKButtonSignIn(
         textColor = Color.Red
     }
     OutlinedButton(
-        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = Color.White),
+        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = grayscaleOffWhite),
         shape = RoundedCornerShape(50),
         onClick = { onClick() },
         modifier = modifier.height(height),
