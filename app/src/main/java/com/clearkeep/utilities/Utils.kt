@@ -26,6 +26,12 @@ fun getTimeAsString(timeMs: Long) : String {
     return formatter.format(Date(timeMs))
 }
 
+fun getHourTimeAsString(timeMs: Long) : String {
+    val formatter = SimpleDateFormat("HH:mm")
+
+    return formatter.format(Date(timeMs))
+}
+
 fun printlnCK(str: String) {
     println("CKLog_$str")
 }
