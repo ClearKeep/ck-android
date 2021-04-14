@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.room
 
-import androidx.compose.compiler.plugins.kotlin.ComposeFqNames.remember
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -24,7 +23,6 @@ import androidx.navigation.compose.*
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
-import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
@@ -130,7 +128,6 @@ fun RoomScreen(
                         }
                 )
                 Column(modifier = Modifier
-                    .padding(16.dp, 8.dp, 16.dp, 8.dp)
                     .weight(
                         0.66f
                     )) {
