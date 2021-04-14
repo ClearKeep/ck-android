@@ -21,6 +21,7 @@ import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 import com.clearkeep.utilities.getTimeAsString
+import com.clearkeep.utilities.getHourTimeAsString
 
 @Composable
 fun ChatHistoryScreen(
@@ -109,7 +110,7 @@ fun RoomItem(
                         modifier = Modifier.weight(1.0f, true)
                     )
                     room.lastMessage?.let { lastMessage ->
-                        Text(text = getTimeAsString(lastMessage.createdTime),
+                        Text(text = getHourTimeAsString(lastMessage.createdTime),
                             style = MaterialTheme.typography.caption.copy(fontSize = 8.sp,
                                 color = MaterialTheme.colors.onPrimary
                             )

@@ -6,6 +6,9 @@ val colorIron = Color(0xFFDDE0E4)
 
 val colorTest = Color(0xffcccccc)
 
+/* Grayscale/Grey 2 */
+val grayscale2 = Color(0xff6E7191)
+
 /* Grayscale/Grey 3 */
 val grayscale3 = Color(0xffA0A3BD)
 
