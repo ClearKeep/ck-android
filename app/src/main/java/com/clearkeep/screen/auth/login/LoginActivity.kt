@@ -9,8 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -134,22 +132,12 @@ class LoginActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                    title = {
-                        Text("Error")
-                    },
-                    text = {
-                        Text(showDialog)
-                    },
-                    dismissButton = {
-                        Button(
-                                onClick = {
-                                    // Change the state to close the dialog
-                                    setShowDialog("")
-                                },
-                        ) {
-                            Text("OK")
-                        }
-                    },
+                title = "Error",
+                text = showDialog,
+                onDismissButtonClick = {
+                    // Change the state to close the dialog
+                    setShowDialog("")
+                },
             )
         }
     }

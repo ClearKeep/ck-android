@@ -2,7 +2,6 @@ package com.clearkeep.screen.chat.home.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -80,7 +79,9 @@ fun ProfileScreen(
             }
         }
         Column(
-            modifier = Modifier.fillMaxSize().padding(end = 8.dp, bottom = 20.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(end = 8.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.End
         ) {
@@ -100,31 +101,16 @@ fun LogoutConfirmDialog(
 ) {
     if (showReminder) {
         CKAlertDialog(
-                title = {
-                    Text("Logout")
-                },
-                text = {
-                    Text("Do you want to log out?")
-                },
-                dismissButton = {
-                    Button(
-                            onClick = {
-                                setShowDialog(false)
-                            },
-                    ) {
-                        Text("Cancel")
-                    }
-                },
-                confirmButton = {
-                    Button(
-                            onClick = {
-                                setShowDialog(false)
-                                onLogout()
-                            },
-                    ) {
-                        Text("Ok")
-                    }
-                },
+            title = "Logout",
+            text = "Do you want to log out?",
+            onDismissButtonClick = {
+                setShowDialog(false)
+            },
+            dismissTitle = "Cancel",
+            onConfirmButtonClick = {
+                setShowDialog(false)
+                onLogout()
+            },
         )
     }
 }

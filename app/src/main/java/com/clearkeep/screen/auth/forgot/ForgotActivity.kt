@@ -107,22 +107,11 @@ class ForgotActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                    title = {
-                        Text("Error")
-                    },
-                    text = {
-                        Text(showDialog)
-                    },
-                    dismissButton = {
-                        Button(
-                                onClick = {
-                                    // Change the state to close the dialog
-                                    setShowDialog("")
-                                },
-                        ) {
-                            Text("OK")
-                        }
-                    },
+                title = "Error",
+                text = showDialog,
+                onDismissButtonClick = {
+                    setShowDialog("")
+                },
             )
         }
     }
@@ -131,21 +120,11 @@ class ForgotActivity : AppCompatActivity() {
     fun ReminderDialog(showReminder: Boolean) {
         if (showReminder) {
             CKAlertDialog(
-                    title = {
-                        Text("Email is sent successfully")
-                    },
-                    text = {
-                        Text("Please check your email to reset password")
-                    },
-                    dismissButton = {
-                        Button(
-                                onClick = {
-                                    finish()
-                                },
-                        ) {
-                            Text("OK")
-                        }
-                    },
+                title = "Email is sent successfully",
+                text = "Please check your email to reset password",
+                onDismissButtonClick = {
+                    finish()
+                },
             )
         }
     }

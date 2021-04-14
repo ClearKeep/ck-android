@@ -12,36 +12,32 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 val lightThemeColors = lightColors(
-    primary = Color.White,
-    primaryVariant = Color.Black,
-    onPrimary = Color.Black,
+    primary = primaryDefault,
+    primaryVariant = grayscaleOffWhite,
+    onPrimary = grayscaleOffWhite,
 
-    secondary = Color.LightGray,
+    /*secondary = Color.LightGray,
     secondaryVariant = Color.Black,
-    onSecondary = Color.LightGray,
+    onSecondary = Color.LightGray,*/
 
-    background = Color.White,
-    onBackground = Color.Black,
+    background = grayscaleBackground,
+    onBackground = grayscaleBlack,
 
-    surface = Color.Blue,
+    surface = colorLightBlue,
     onSurface = Color.White,
 
-    error = Color(0xFFD00036),
-    onError = Color.White
+    error = errorLight,
+    onError = errorDefault
 )
 
-/**
- * Note: Dark Theme support is not yet available, it will come in 2020. This is just an example of
- * using dark colors.
- */
 val darkThemeColors = darkColors(
     primary = Color.Black,
-    primaryVariant = Color.Blue,
+    primaryVariant = Color.White,
     onPrimary = Color.White,
 
-    secondary = Color.DarkGray,
+    /*secondary = Color.DarkGray,
     secondaryVariant = Color.White,
-    onSecondary = Color.DarkGray,
+    onSecondary = Color.DarkGray,*/
 
     background = Color.Black,
     onBackground = Color.DarkGray,

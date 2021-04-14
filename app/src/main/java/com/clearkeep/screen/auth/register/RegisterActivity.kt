@@ -96,22 +96,12 @@ class RegisterActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                    title = {
-                        Text("Error")
-                    },
-                    text = {
-                        Text(showDialog)
-                    },
-                    dismissButton = {
-                        Button(
-                                onClick = {
-                                    // Change the state to close the dialog
-                                    setShowDialog("")
-                                },
-                        ) {
-                            Text("OK")
-                        }
-                    },
+                title = "Error",
+                text = showDialog,
+                onDismissButtonClick = {
+                    // Change the state to close the dialog
+                    setShowDialog("")
+                },
             )
         }
     }
@@ -120,21 +110,11 @@ class RegisterActivity : AppCompatActivity() {
     fun ReminderDialog(showReminder: Boolean) {
         if (showReminder) {
             CKAlertDialog(
-                    title = {
-                        Text("Register successfully")
-                    },
-                    text = {
-                        Text("Please check your email to activate account")
-                    },
-                    dismissButton = {
-                        Button(
-                                onClick = {
-                                    finish()
-                                },
-                        ) {
-                            Text("OK")
-                        }
-                    },
+                title = "Register successfully",
+                text = "Please check your email to activate account",
+                onDismissButtonClick = {
+                    finish()
+                },
             )
         }
     }
