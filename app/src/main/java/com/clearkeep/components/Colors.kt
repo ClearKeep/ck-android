@@ -21,6 +21,9 @@ val grayscaleBlack = Color(0xff000000)
 /* Primary/Default */
 val primaryDefault = Color(0xff6267FB)
 
+/* Secondary/Default */
+val colorSecondaryDefault = Color(0xffE06464)
+
 /* Error/Default */
 val errorDefault = Color(0xffED2E7E)
 
@@ -30,8 +33,14 @@ val errorLight = Color(0xffFFE8F1)
 /* Blue 1 */
 val blue1 = Color(0xff2F80ED)
 
+/* Light / Blue */
+val colorLightBlue = Color(0xff007AFF)
+
 /* Grayscale/Background */
 val grayscaleBackground = Color(0xffF7F7FC)
+
+/* Success/Default */
+val colorSuccessDefault = Color(0xff00BA88)
 
 val pickledBlueWood = Color(0xff2C3E50)
 val tiaMaria = Color(0xffDC3E15)
