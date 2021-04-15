@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups
@@ -40,29 +41,29 @@ fun CircleAvatar(
             ).padding(12.dp),
         )
     } else {
-        /*val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
-        Card(
+        val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
+        Surface(
             shape = CircleShape,
-            backgroundColor = colorTest,
-            contentColor = Color.White,
-            elevation = elevation,
+            color = MaterialTheme.colors.primary,
             modifier = Modifier
                 .size(size)
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(12.dp)
+                /*modifier = Modifier.padding(12.dp)*/
             ) {
-                Text(displayName.capitalize())
+                Text(displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
+                    color = MaterialTheme.colors.onSurface
+                ))
             }
-        }*/
-        Image(
+        }
+        /*Image(
             imageVector = Icons.Filled.Person,
             contentDescription = "",
             modifier = Modifier.size(size).clip(CircleShape).background(
                 color = colorTest
             ).padding(12.dp),
-        )
+        )*/
     }
 }
