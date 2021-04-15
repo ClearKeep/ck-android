@@ -18,31 +18,34 @@ import com.clearkeep.utilities.getHourTimeAsString
 
 @Composable
 fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
-            style = MaterialTheme.typography.caption.copy(
-                fontWeight = FontWeight.Medium,
-                color = grayscale3,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier.weight(1.0f, true),
-        )
-        Column(
-            modifier = Modifier.weight(2.0f, true),
-            horizontalAlignment = Alignment.End
-        ) {
-            Card (
-                backgroundColor = grayscale2,
-                shape = messageDisplayInfo.cornerShape,
+    Column {
+        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp ))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
+                style = MaterialTheme.typography.caption.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = grayscale3,
+                    textAlign = TextAlign.Start
+                ),
+                modifier = Modifier.weight(1.0f, true),
+            )
+            Column(
+                modifier = Modifier.weight(2.0f, true),
+                horizontalAlignment = Alignment.End
             ) {
-                Text(
-                    text = messageDisplayInfo.message.message,
-                    style = MaterialTheme.typography.body2.copy(
-                        color = grayscaleOffWhite
-                    ),
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                )
+                Card (
+                    backgroundColor = grayscale2,
+                    shape = messageDisplayInfo.cornerShape,
+                ) {
+                    Text(
+                        text = messageDisplayInfo.message.message,
+                        style = MaterialTheme.typography.body2.copy(
+                            color = grayscaleOffWhite
+                        ),
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }
