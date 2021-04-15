@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -27,6 +28,7 @@ import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
+@ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 @Composable
 fun RoomScreen(
