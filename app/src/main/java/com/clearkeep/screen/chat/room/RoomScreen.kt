@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
+import com.clearkeep.components.base.CKToolbarMessage
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
@@ -38,7 +39,7 @@ fun RoomScreen(
         onCallingClick: (() -> Unit)? = null
 ) {
     val group = roomViewModel.group.observeAsState()
-    group?.value?.let { group ->
+    group.value?.let { group ->
         if (group.id != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.id)
         }
@@ -78,57 +79,17 @@ fun RoomScreen(
                             onCallingClick?.invoke()
                         })
                 }
-                CKTopAppBar(
-                        title = {
-                            Box(modifier = Modifier.clickable(onClick = {
-                                if (group.isGroup()) {
-                                    navHostController.navigate("room_info_screen")
-                                }
-                            })) {
-                                Text(text = groupName,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
-                                )
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(
-                                    onClick = {
-                                        onFinishActivity()
-                                    }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowBack,
-                                    contentDescription = ""
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(
-                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
-                                onClick = {
-                                    roomViewModel.requestCall(group.id, true)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Call,
-                                    contentDescription = ""
-                                )
-                            }
-                            IconButton(
-                                /*enabled = requestCallViewState.value?.status != Status.LOADING,*/
-                                onClick = {
-                                    roomViewModel.requestCall(group.id, false)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.VideoCall,
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                )
+                CKToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
+                    onFinishActivity()
+                }, onUserClick = {
+
+                }, onAudioClick = {
+                    roomViewModel.requestCall(group.id, true)
+
+                },onVideoClick = {
+                    roomViewModel.requestCall(group.id, false)
+
+                })
                 Column(modifier = Modifier
                     .weight(
                         0.66f
@@ -144,8 +105,8 @@ fun RoomScreen(
                 }
                 SendBottomCompose(
                         onSendMessage = { message ->
-                            var validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                            if (validMessage.isNullOrEmpty()) {
+                            val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                            if (validMessage .isEmpty()) {
                                 return@SendBottomCompose
                             }
                             val groupResult = group
@@ -183,8 +144,6 @@ fun RoomScreen(
                     }
                 }
             }
-
-
         }
     }
 }

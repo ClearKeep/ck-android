@@ -27,7 +27,7 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 
 @Composable
-fun CKTextInputField(
+fun CKTextInputFieldChat(
     placeholder: String,
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
@@ -113,19 +113,7 @@ fun CKTextInputField(
                         rememberBorderShow.value = it.isFocused
                     },
                 leadingIcon = leadingIcon,
-                trailingIcon = {
-                    trailingIcon
-                    if (isPasswordType) {
-                        Icon(
-                            painter = if (!passwordVisibility.value) painterResource(R.drawable.ic_eye) else painterResource(R.drawable.ic_eye_cross),
-                            contentDescription = "",
-                            tint = pickledBlueWood,
-                            modifier = Modifier.clickable(
-                                onClick = { passwordVisibility.value = !passwordVisibility.value }
-                            )
-                        )
-                    }
-                },
+                trailingIcon = trailingIcon,
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
