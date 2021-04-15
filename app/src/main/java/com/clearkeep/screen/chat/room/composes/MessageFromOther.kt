@@ -20,6 +20,7 @@ import com.clearkeep.utilities.getHourTimeAsString
 @Composable
 fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
     Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp ))
         if (messageDisplayInfo.showAvatarAndName) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
