@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.room.composes
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,13 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.screen.chat.room.message_display_generator.convertMessageList
+import com.clearkeep.utilities.getHourTimeAsString
+import com.clearkeep.utilities.getTimeAsString
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 
 var mIsNewMessage = true
 
+@ExperimentalFoundationApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
@@ -39,6 +47,7 @@ fun MessageListView(
     )
 }
 
+@ExperimentalFoundationApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MessageListView(
@@ -48,6 +57,9 @@ private fun MessageListView(
     isGroup: Boolean,
 ) {
     val reversedMessage = messageList.reversed()
+    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.groupBy { getHourTimeAsString(it.createdTime) }.mapValues { entry ->
+        convertMessageList(entry.value, clients, myClientId, isGroup)
+    }
     Surface(
         color = grayscaleOffWhite
     ) {
@@ -64,14 +76,15 @@ private fun MessageListView(
             verticalArrangement = Arrangement.Top,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
         ) {
-            items(reversedMessage) { item ->
-                val isMyMessage = myClientId == item.senderId
-                val userName = clients.firstOrNull {
-                    it.id == item.senderId
-                }?.userName ?: item.senderId
-                Column {
-                    if (isMyMessage) MessageByMe(item) else MessageFromOther(item, userName, isGroup)
-                    Spacer(modifier = Modifier.height(16.dp))
+            groupedMessages.forEach { (date, messages) ->
+                items(messages) { item ->
+                    Column {
+                        if (item.isOwner) MessageByMe(item) else MessageFromOther(item)
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+                stickyHeader {
+                    DateHeader(date)
                 }
             }
         }
@@ -102,6 +115,18 @@ private fun MessageListView(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun DateHeader(date: String) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth().padding(8.dp)
+    ) {
+        Text(date, style = MaterialTheme.typography.h6.copy(
+            color = grayscale3
+        ))
     }
 }
 
