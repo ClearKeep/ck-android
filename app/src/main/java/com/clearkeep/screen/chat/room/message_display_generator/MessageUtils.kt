@@ -5,7 +5,8 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
 
-val roundSize = 24.dp
+val roundSizeLarge = 18.dp
+val roundSizeSmall = 4.dp
 
 fun convertMessageList(
     messages: List<Message>,
@@ -35,17 +36,24 @@ fun convertMessageList(
 fun getOtherShape(index: Int, size: Int): RoundedCornerShape {
     return if (index == size - 1 && size >= 2) {
         RoundedCornerShape(
-            topStart = roundSize,
-            topEnd = roundSize,
-            bottomEnd = roundSize,
-            bottomStart = 0.dp
+            topStart = roundSizeLarge,
+            topEnd = roundSizeLarge,
+            bottomEnd = roundSizeLarge,
+            bottomStart = roundSizeSmall
+        )
+    } else if (index == 0 && size >= 2) {
+        RoundedCornerShape(
+            topStart = roundSizeSmall,
+            topEnd = roundSizeLarge,
+            bottomEnd = roundSizeLarge,
+            bottomStart = roundSizeLarge
         )
     } else {
         RoundedCornerShape(
             topStart = 0.dp,
-            topEnd = roundSize,
-            bottomEnd = roundSize,
-            bottomStart = roundSize
+            topEnd = roundSizeLarge,
+            bottomEnd = roundSizeLarge,
+            bottomStart = roundSizeSmall
         )
     }
 }
@@ -53,17 +61,24 @@ fun getOtherShape(index: Int, size: Int): RoundedCornerShape {
 fun getOwnerShape(index: Int, size: Int): RoundedCornerShape {
     return if (index == 0 && size >= 2) {
         RoundedCornerShape(
-            topStart = roundSize,
-            topEnd = 0.dp,
-            bottomEnd = roundSize,
-            bottomStart = roundSize
+            topStart = roundSizeLarge,
+            topEnd = roundSizeSmall,
+            bottomEnd = roundSizeLarge,
+            bottomStart = roundSizeLarge
+        )
+    } else if (index == size - 1 && size >= 2) {
+        RoundedCornerShape(
+            topStart = roundSizeLarge,
+            topEnd = roundSizeLarge,
+            bottomEnd = roundSizeSmall,
+            bottomStart = roundSizeLarge
         )
     } else {
         RoundedCornerShape(
-            topStart = roundSize,
-            topEnd = roundSize,
-            bottomEnd = 0.dp,
-            bottomStart = roundSize
+            topStart = roundSizeLarge,
+            topEnd = roundSizeSmall,
+            bottomEnd = roundSizeSmall,
+            bottomStart = roundSizeLarge
         )
     }
 }
