@@ -1,6 +1,7 @@
 package com.clearkeep.components.base
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -15,12 +16,14 @@ import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.clearkeep.R
 import com.clearkeep.components.*
 
 @Composable
@@ -44,7 +47,7 @@ fun CKTextInputField(
 
     var rememberBorderShow = remember { mutableStateOf(false)}
     Column {
-        Card(
+        Surface(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
@@ -54,6 +57,7 @@ fun CKTextInputField(
                     BorderStroke(1.dp, grayscaleBlack)
                 }
             } else null,
+            color = Color.Transparent,
             elevation = 0.dp
         ) {
             TextField(
@@ -110,7 +114,7 @@ fun CKTextInputField(
                 trailingIcon = {
                     if (isPasswordType) {
                         Icon(
-                            imageVector = if (!passwordVisibility.value) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                            painter = if (!passwordVisibility.value) painterResource(R.drawable.ic_eye) else painterResource(R.drawable.ic_eye_cross),
                             contentDescription = "",
                             tint = pickledBlueWood,
                             modifier = Modifier.clickable(

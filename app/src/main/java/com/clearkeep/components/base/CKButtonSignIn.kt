@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.colorBlue1
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.components.colorTiaMaria
 
 private val height = 40.dp
 
@@ -35,10 +37,10 @@ fun CKButtonSignIn(
     val textColor: Color
     if (buttonType == LoginType.Google) {
         icon = painterResource(R.drawable.ic_icon_google)
-        textColor = Color.Blue
+        textColor = colorBlue1
     } else {
         icon = painterResource(R.drawable.ic_icon_office)
-        textColor = Color.Red
+        textColor = colorTiaMaria
     }
     OutlinedButton(
         colors = ButtonDefaults.outlinedButtonColors(backgroundColor = grayscaleOffWhite),
