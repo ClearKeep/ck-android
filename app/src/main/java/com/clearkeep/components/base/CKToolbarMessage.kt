@@ -29,79 +29,82 @@ import com.clearkeep.screen.chat.home.composes.CircleAvatar
 fun CKToolbarMessage(
     modifier: Modifier = Modifier,
     title: String = "",
-    isGroup: Boolean=false,
+    isGroup: Boolean = false,
     onBackClick: () -> Unit,
     onUserClick: () -> Unit,
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 
 ) {
-    TopAppBar( modifier = Modifier.background(color= Color.Transparent)) {
-        Row( verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBackClick) {
+    Row(modifier = Modifier.height(58.dp), verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = onBackClick) {
+            Icon(
+                painter = painterResource(R.drawable.ic_chev_left),
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
+
+        if (isGroup) {
+            Image(
+                imageVector = Icons.Filled.Groups,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        color = colorTest
+                    )
+            )
+        } else {
+            Image(
+                imageVector = Icons.Filled.Person,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        color = colorTest
+                    )
+            )
+        }
+
+        Spacer(Modifier.width(10.dp))
+
+        Text(text = title, color = Color.White, fontSize = 16.sp)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onAudioClick,
+                modifier
+                    .padding(8.dp)
+                    .width(36.dp)
+                    .height(36.dp)
+            ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_chev_left),
+                    painter = painterResource(R.drawable.ic_icon_call_audio),
                     contentDescription = null,
                     tint = Color.White
                 )
             }
-
-            if (isGroup) {
-                Image(
-                    imageVector = Icons.Filled.Groups,
-                    contentDescription = "",
-                    modifier = Modifier.size(36.dp).clip(CircleShape).background(
-                        color = colorTest
-                    )
-                )
-            } else {
-                Image(
-                    imageVector = Icons.Filled.Person,
-                    contentDescription = "",
-                    modifier = Modifier.size(36.dp).clip(CircleShape).background(
-                        color = colorTest
-                    )
-                )
-            }
-
-            Spacer(Modifier.width(10.dp))
-
-            Text(text = title, color = Color.White, fontSize = 16.sp)
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+            IconButton(
+                onClick = onVideoClick,
+                modifier
+                    .padding(8.dp)
+                    .width(36.dp)
+                    .height(36.dp)
             ) {
-                IconButton(
-                    onClick = onAudioClick,
-                    modifier
-                        .padding(8.dp)
-                        .width(36.dp)
-                        .height(36.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_icon_call_audio),
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-                IconButton(
-                    onClick = onVideoClick,
-                    modifier
-                        .padding(8.dp)
-                        .width(36.dp)
-                        .height(36.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_icon_call_video),
-                        contentDescription = null,
-                        tint = Color.White
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_icon_call_video),
+                    contentDescription = null,
+                    tint = Color.White
+                )
             }
-
+            Spacer(Modifier.width(10.dp))
         }
     }
 }
