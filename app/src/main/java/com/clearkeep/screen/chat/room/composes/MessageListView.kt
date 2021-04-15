@@ -70,7 +70,7 @@ private fun MessageListView(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(vertical = 10.dp),
             reverseLayout = true,
             state = listState,
             verticalArrangement = Arrangement.Top,
@@ -78,10 +78,7 @@ private fun MessageListView(
         ) {
             groupedMessages.forEach { (date, messages) ->
                 items(messages) { item ->
-                    Column {
-                        if (item.isOwner) MessageByMe(item) else MessageFromOther(item)
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                    if (item.isOwner) MessageByMe(item) else MessageFromOther(item)
                 }
                 stickyHeader {
                     DateHeader(date)
