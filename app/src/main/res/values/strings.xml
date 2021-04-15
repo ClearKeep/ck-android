@@ -24,6 +24,7 @@
 
     // error
     <string name="email_empty">Email must not be blank</string>
+    <string name="pls_check_again">Please check your details and try again</string>
     <string name="password_empty">Password must not be blank</string>
     <string name="confirm_password_empty">Confirm password must not be blank</string>
     <string name="confirm_password_is_not_match">Password and Confirm password do not match. Please try again!</string>
@@ -32,4 +33,8 @@
     <string name="tv_email">Email</string>
     <string name="tv_password">Password</string>
     <string name="tv_not_account">Don’t have an account?</string>
+    <string name="sign_up">Sign up</string>
+    <string name="sign_up_fill_information">Please fill in the information below to complete your sign up</string>
+    <string name="enter_email_reset_pass">Please enter your email to reset your password</string>
+    <string name="forgot_password">Forgot password</string>
 </resources>

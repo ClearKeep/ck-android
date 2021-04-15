@@ -62,7 +62,6 @@ fun LoginScreen(
                     stringResource(R.string.tv_email),
                     email,
                     keyboardType = KeyboardType.Email,
-                    error = emailError.value,
                     singleLine = true,
                     leadingIcon = {
                         Image(
@@ -76,7 +75,6 @@ fun LoginScreen(
                     stringResource(R.string.tv_password),
                     password,
                     keyboardType = KeyboardType.Password,
-                    error = passError.value,
                     singleLine = true,
                     leadingIcon = {
                         Image(

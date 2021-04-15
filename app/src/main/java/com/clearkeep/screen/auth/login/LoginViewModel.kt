@@ -38,6 +38,8 @@ class LoginViewModel @Inject constructor(
     val passError: LiveData<String>
         get() = _passError
 
+    val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
+
     fun initGoogleSingIn(context: Context){
         googleSignIn= GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -74,15 +76,32 @@ class LoginViewModel @Inject constructor(
         _emailError.value = ""
         _passError.value = ""
         _isLoading.value = true
-
         val result = if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
+            loginErrorMess.postValue(
+                LoginActivity.ErrorMessage(
+                    context.getString(R.string.email_empty),
+                    context.getString(R.string.pls_check_again)
+                )
+            )
             null
         } else if (!email.trim().isValidEmail()) {
             _emailError.value = context.getString(R.string.email_invalid)
+            loginErrorMess.postValue(
+                LoginActivity.ErrorMessage(
+                    context.getString(R.string.email_invalid),
+                    context.getString(R.string.pls_check_again)
+                )
+            )
             null
         } else if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
+            loginErrorMess.postValue(
+                LoginActivity.ErrorMessage(
+                    context.getString(R.string.password_empty),
+                    context.getString(R.string.pls_check_again)
+                )
+            )
             null
         } else {
             authRepo.login(email.trim(), password.trim())
