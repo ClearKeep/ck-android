@@ -34,7 +34,7 @@ val errorDefault = Color(0xffED2E7E)
 val errorLight = Color(0xffFFE8F1)
 
 /* Blue 1 */
-val blue1 = Color(0xff2F80ED)
+val colorBlue1 = Color(0xff2F80ED)
 
 /* Light / Blue */
 val colorLightBlue = Color(0xff007AFF)
@@ -46,7 +46,7 @@ val grayscaleBackground = Color(0xffF7F7FC)
 val colorSuccessDefault = Color(0xff00BA88)
 
 val pickledBlueWood = Color(0xff2C3E50)
-val tiaMaria = Color(0xffDC3E15)
+val colorTiaMaria = Color(0xffDC3E15)
 
 val backgroundGradientStart = Color(0xff7773F3)
 val backgroundGradientEnd = Color(0xff8ABFF3)
