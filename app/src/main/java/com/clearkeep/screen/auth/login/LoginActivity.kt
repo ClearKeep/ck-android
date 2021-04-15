@@ -48,7 +48,7 @@ class LoginActivity : AppCompatActivity() {
         viewModelFactory
     }
 
-    var showErrorDiaLog: ((String) -> Unit)? = null
+    var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
 
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +56,7 @@ class LoginActivity : AppCompatActivity() {
         setContent {
             MyApp()
         }
+        subscriberError()
     }
 
     @Composable
@@ -67,10 +68,10 @@ class LoginActivity : AppCompatActivity() {
 
     @Composable
     fun AppContent() {
-        val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+        val (messageError, setShowDialog) = remember { mutableStateOf<ErrorMessage?>(null) }
         loginViewModel.initGoogleSingIn(this)
         showErrorDiaLog = {
-            setShowDialog(it)
+            setShowDialog.invoke(it)
         }
         val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
@@ -80,7 +81,7 @@ class LoginActivity : AppCompatActivity() {
                 if (res.status == Status.SUCCESS) {
                     navigateToHomeActivity()
                 } else if (res.status == Status.ERROR) {
-                    setShowDialog(res.message ?: "unknown")
+                    setShowDialog(ErrorMessage(title = "Error",message = res.message.toString()))
                 }
             }
         }
@@ -124,22 +125,30 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
             }
-            ErrorDialog(showDialog, setShowDialog)
+            ErrorDialog(messageError, setShowDialog)
         }
     }
 
+
+    private fun subscriberError(){
+        loginViewModel.loginErrorMess.observe(this, {
+            showErrorDiaLog?.invoke(it)
+        })
+    }
+
     @Composable
-    fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
-        if (showDialog.isNotEmpty()) {
+    fun ErrorDialog(errorMessage: ErrorMessage?, setShowDialog: (ErrorMessage?) -> Unit) {
+        errorMessage?.let {
             CKAlertDialog(
-                title = "Error",
-                text = showDialog,
+                title = it.title,
+                text = it.message,
                 onDismissButtonClick = {
                     // Change the state to close the dialog
-                    setShowDialog("")
+                    setShowDialog(null)
                 },
             )
         }
+
     }
 
     private fun navigateToHomeActivity() {
@@ -171,7 +180,7 @@ class LoginActivity : AppCompatActivity() {
                     getAuthInteractiveCallback()
                 )
             }, onError = {
-                showErrorDiaLog?.invoke(it?:"unknown")
+                showErrorDiaLog?.invoke(ErrorMessage("Error",it.toString()))
             })
     }
 
@@ -206,7 +215,8 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             override fun onError(exception: MsalException) {
-                showErrorDiaLog?.invoke(exception.message ?: "unknown")
+                showErrorDiaLog?.invoke(ErrorMessage("Error",exception.message ?: "unknown"))
+
             }
 
             override fun onCancel() {
@@ -220,13 +230,15 @@ class LoginActivity : AppCompatActivity() {
                 navigateToHomeActivity()
             }
             Status.ERROR -> {
-                showErrorDiaLog?.invoke(res.message ?: "unknown")
+                showErrorDiaLog?.invoke(ErrorMessage("Error",res.message ?: "unknown"))
             }
             else -> {
-                showErrorDiaLog?.invoke("unknown")
+                showErrorDiaLog?.invoke(ErrorMessage("Error", "unknown"))
             }
         }
     }
+
+    data class ErrorMessage(val title:String, val message: String)
 }
 
 
