@@ -1,27 +1,17 @@
 package com.clearkeep.components.base
 
-import android.widget.ImageButton
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.components.colorTest
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
 
@@ -45,28 +35,11 @@ fun CKToolbarMessage(
             )
         }
 
-        if (isGroup) {
-            Image(
-                imageVector = Icons.Filled.Groups,
-                contentDescription = "",
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(
-                        color = colorTest
-                    )
-            )
-        } else {
-            Image(
-                imageVector = Icons.Filled.Person,
-                contentDescription = "",
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(
-                        color = colorTest
-                    )
-            )
+        if (!isGroup) {
+            CircleAvatar(emptyList(),
+                name = title,
+                size = 36.dp,
+                isGroup = isGroup)
         }
 
         Spacer(Modifier.width(10.dp))
