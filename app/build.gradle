@@ -28,8 +28,8 @@ android {
         applicationId "com.clearkeep.ck"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 19
-        versionName "1.19-ui"
+        versionCode 20
+        versionName "1.20-ui"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
