@@ -40,8 +40,9 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                     ) {
                         Text(
                             text = messageDisplayInfo.userName,
-                            style = MaterialTheme.typography.caption.copy(
+                            style = MaterialTheme.typography.body2.copy(
                                 color = colorSuccessDefault,
+                                fontWeight = FontWeight.W600
                             ),
                         )
                         Spacer(modifier = Modifier.height(8.dp))

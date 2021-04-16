@@ -34,51 +34,77 @@ fun convertMessageList(
 }
 
 fun getOtherShape(index: Int, size: Int): RoundedCornerShape {
-    return if (index == size - 1 && size >= 2) {
-        RoundedCornerShape(
-            topStart = roundSizeLarge,
-            topEnd = roundSizeLarge,
-            bottomEnd = roundSizeLarge,
-            bottomStart = roundSizeSmall
-        )
-    } else if (index == 0 && size >= 2) {
-        RoundedCornerShape(
+    if (size == 1) {
+        return RoundedCornerShape(
             topStart = roundSizeSmall,
             topEnd = roundSizeLarge,
             bottomEnd = roundSizeLarge,
             bottomStart = roundSizeLarge
         )
     } else {
-        RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = roundSizeLarge,
-            bottomEnd = roundSizeLarge,
-            bottomStart = roundSizeSmall
-        )
+        return when (index) {
+            size - 1 -> {
+                RoundedCornerShape(
+                    topStart = roundSizeLarge,
+                    topEnd = roundSizeLarge,
+                    bottomEnd = roundSizeLarge,
+                    bottomStart = roundSizeSmall
+                )
+            }
+            0 -> {
+                RoundedCornerShape(
+                    topStart = roundSizeSmall,
+                    topEnd = roundSizeLarge,
+                    bottomEnd = roundSizeLarge,
+                    bottomStart = roundSizeLarge
+                )
+            }
+            else -> {
+                RoundedCornerShape(
+                    topStart = roundSizeSmall,
+                    topEnd = roundSizeLarge,
+                    bottomEnd = roundSizeLarge,
+                    bottomStart = roundSizeSmall
+                )
+            }
+        }
     }
 }
 
 fun getOwnerShape(index: Int, size: Int): RoundedCornerShape {
-    return if (index == 0 && size >= 2) {
-        RoundedCornerShape(
-            topStart = roundSizeLarge,
-            topEnd = roundSizeSmall,
-            bottomEnd = roundSizeLarge,
-            bottomStart = roundSizeLarge
-        )
-    } else if (index == size - 1 && size >= 2) {
-        RoundedCornerShape(
+    if (size == 1) {
+        return RoundedCornerShape(
             topStart = roundSizeLarge,
             topEnd = roundSizeLarge,
             bottomEnd = roundSizeSmall,
             bottomStart = roundSizeLarge
         )
     } else {
-        RoundedCornerShape(
-            topStart = roundSizeLarge,
-            topEnd = roundSizeSmall,
-            bottomEnd = roundSizeSmall,
-            bottomStart = roundSizeLarge
-        )
+        return when (index) {
+            0 -> {
+                RoundedCornerShape(
+                    topStart = roundSizeLarge,
+                    topEnd = roundSizeSmall,
+                    bottomEnd = roundSizeLarge,
+                    bottomStart = roundSizeLarge
+                )
+            }
+            size - 1 -> {
+                RoundedCornerShape(
+                    topStart = roundSizeLarge,
+                    topEnd = roundSizeLarge,
+                    bottomEnd = roundSizeSmall,
+                    bottomStart = roundSizeLarge
+                )
+            }
+            else -> {
+                RoundedCornerShape(
+                    topStart = roundSizeLarge,
+                    topEnd = roundSizeSmall,
+                    bottomEnd = roundSizeSmall,
+                    bottomStart = roundSizeLarge
+                )
+            }
+        }
     }
 }

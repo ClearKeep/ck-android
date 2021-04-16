@@ -9,22 +9,21 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreenComingSoon
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
-import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -48,6 +47,9 @@ class RoomActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // To keep input text field above keyboard
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.backgroundGradientStart)
 
         val roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
