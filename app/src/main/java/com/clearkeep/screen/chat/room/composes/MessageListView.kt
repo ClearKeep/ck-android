@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,8 +15,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.grayscale3
+import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
@@ -57,11 +60,11 @@ private fun MessageListView(
     isGroup: Boolean,
 ) {
     val reversedMessage = messageList.reversed()
-    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.groupBy { getHourTimeAsString(it.createdTime) }.mapValues { entry ->
+    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
         convertMessageList(entry.value, clients, myClientId, isGroup)
     }
     Surface(
-        color = grayscaleOffWhite
+        color = grayscaleBackground
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -70,18 +73,21 @@ private fun MessageListView(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(vertical = 10.dp),
+            modifier = Modifier.fillMaxSize(),
             reverseLayout = true,
             state = listState,
             verticalArrangement = Arrangement.Top,
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
         ) {
             groupedMessages.forEach { (date, messages) ->
-                items(messages) { item ->
-                    if (item.isOwner) MessageByMe(item) else MessageFromOther(item)
-                }
-                stickyHeader {
-                    DateHeader(date)
+                itemsIndexed(messages) { index, item ->
+                    Column {
+                        if (index == messages.size -1) {
+                            DateHeader(date)
+                        }
+                        if (item.isOwner) MessageByMe(item) else MessageFromOther(item)
+                        if (index == 0) Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
             }
         }
@@ -119,10 +125,13 @@ private fun MessageListView(
 fun DateHeader(date: String) {
     Row(
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
     ) {
-        Text(date, style = MaterialTheme.typography.h6.copy(
-            color = grayscale3
+        Text(date, style = MaterialTheme.typography.body2.copy(
+            color = grayscale3,
+            fontWeight = FontWeight.W600
         ))
     }
 }
