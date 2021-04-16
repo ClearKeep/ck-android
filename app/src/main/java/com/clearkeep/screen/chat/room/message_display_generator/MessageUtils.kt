@@ -4,6 +4,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
+import kotlin.collections.ArrayList
+
 
 val roundSizeLarge = 18.dp
 val roundSizeSmall = 4.dp
@@ -14,11 +16,11 @@ fun convertMessageList(
     myClientId: String,
     isGroup: Boolean,
 ): List<MessageDisplayInfo> {
-    val groupedMessagesById = messages.groupBy { it.senderId }
+    val groupedMessagesById = separateMessageList(messages)
 
-    return groupedMessagesById.flatMap { entry ->
-        val groupedSize = entry.value.size
-        entry.value.mapIndexed { index, message ->
+    return groupedMessagesById.flatMap { subList ->
+        val groupedSize = subList.size
+        subList.mapIndexed { index, message ->
             val isOwner = myClientId == message.senderId
             val showAvatarAndName = (index == groupedSize - 1) && isGroup && !isOwner
             val showSpacerTop = index == groupedSize - 1
@@ -31,6 +33,26 @@ fun convertMessageList(
             )
         }
     }
+}
+
+fun separateMessageList(messages: List<Message>): List<List<Message>> {
+    val result: MutableList<MutableList<Message>> = ArrayList()
+
+    var cache: MutableList<Message> = ArrayList()
+    var currentSenderId = ""
+    for (message in messages) {
+        if (currentSenderId.isEmpty() || currentSenderId != message.senderId) {
+            currentSenderId = message.senderId
+            if (cache.isNotEmpty()) {
+                result.add(cache)
+            }
+            cache = ArrayList()
+        }
+        cache.add(message)
+    }
+    result.add(cache)
+
+    return result
 }
 
 fun getOtherShape(index: Int, size: Int): RoundedCornerShape {
