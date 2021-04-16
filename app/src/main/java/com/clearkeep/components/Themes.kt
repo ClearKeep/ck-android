@@ -40,9 +40,9 @@ val darkThemeColors = darkColors(
     onSecondary = Color.DarkGray,*/
 
     background = Color.Black,
-    onBackground = Color.DarkGray,
+    onBackground = Color.White,
 
-    surface = Color.White,
+    surface = colorLightBlue,
     onSurface = Color.White,
 
     error = Color(0xFFD00036),
