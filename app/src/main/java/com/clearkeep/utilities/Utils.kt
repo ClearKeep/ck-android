@@ -10,20 +10,42 @@ import android.net.NetworkCapabilities
 
 import android.net.ConnectivityManager
 import android.os.Build
-import android.util.DisplayMetrics
-
-
-
+import android.text.format.DateFormat
+import android.text.format.DateUtils
 
 
 fun getCurrentDateTime(): Date {
     return Calendar.getInstance().time
 }
 
-fun getTimeAsString(timeMs: Long) : String {
+/*fun getTimeAsString(timeMs: Long) : String {
     val formatter = SimpleDateFormat("EEE HH:mm")
 
-    return formatter.format(Date(timeMs))
+    *//*return formatter.format(Date(timeMs))*//*
+    return DateUtils.getRelativeTimeSpanString(timeMs).toString()
+}*/
+
+fun getTimeAsString(timeMs: Long): String {
+    val nowTime = Calendar.getInstance()
+
+    val inputTime = Calendar.getInstance()
+    inputTime.timeInMillis = timeMs
+
+    return if (
+        inputTime[Calendar.YEAR] === nowTime[Calendar.YEAR]
+        && inputTime[Calendar.MONTH] === nowTime[Calendar.MONTH]
+        && inputTime[Calendar.WEEK_OF_MONTH] === nowTime[Calendar.WEEK_OF_MONTH]
+    ) {
+        when {
+            nowTime[Calendar.DATE] === inputTime[Calendar.DATE] -> "Today"
+            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] === 1 -> "Yesterday"
+            else -> {
+                DateFormat.format("EEE", inputTime).toString()
+            }
+        }
+    } else {
+        DateFormat.format("yyyy/MM/dd", inputTime).toString()
+    }
 }
 
 fun getHourTimeAsString(timeMs: Long) : String {
