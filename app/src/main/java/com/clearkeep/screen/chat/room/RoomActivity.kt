@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -41,6 +42,7 @@ class RoomActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
