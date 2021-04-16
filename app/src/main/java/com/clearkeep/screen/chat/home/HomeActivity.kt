@@ -165,7 +165,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
             bottomBar = {
                 BottomNavigation(
-                    backgroundColor = MaterialTheme.colors.primary,
+                    backgroundColor = MaterialTheme.colors.background,
                 ){
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)

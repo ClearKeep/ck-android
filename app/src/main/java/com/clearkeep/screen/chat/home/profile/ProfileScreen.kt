@@ -86,7 +86,6 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.End
         ) {
             Text("version $versionName (${env.toUpperCase()})", style = MaterialTheme.typography.caption.copy(
-                color = MaterialTheme.colors.onPrimary
             ))
         }
         LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
