@@ -118,11 +118,11 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun decryptMessageFromPeer(value: MessageOuterClass.MessageObjectResponse) {
+    suspend fun decryptMessageFromPeer(value: MessageOuterClass.MessageObjectResponse,onSuccess : ((String)-> Unit)?=null) {
         try {
             val plainMessage = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
             saveNewMessage(value, plainMessage)
-
+            onSuccess?.invoke(plainMessage)
             printlnCK("decryptMessageFromPeer: $plainMessage")
         } catch (e: Exception) {
             saveNewMessage(value, getUnableErrorMessage(e.message))
@@ -130,10 +130,11 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    suspend fun decryptMessageFromGroup(value: MessageOuterClass.MessageObjectResponse) {
+    suspend fun decryptMessageFromGroup(value: MessageOuterClass.MessageObjectResponse,onSuccess : ((String)-> Unit)?=null) {
         try {
             val plainMessage = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
             saveNewMessage(value, plainMessage)
+            onSuccess?.invoke(plainMessage)
 
             printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
