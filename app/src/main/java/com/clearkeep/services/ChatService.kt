@@ -23,6 +23,24 @@ import notification.NotifyOuterClass
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import android.app.NotificationManager
+
+import android.app.PendingIntent
+
+import android.app.Notification
+import androidx.core.app.NotificationCompat
+import com.clearkeep.R
+import com.clearkeep.screen.chat.room.RoomActivity
+
+import android.app.NotificationChannel
+import android.media.AudioAttributes
+import android.media.RingtoneManager
+import android.util.Log
+import com.clearkeep.screen.videojanus.DismissNotificationReceiver
+import android.widget.RemoteViews
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.screen.videojanus.MessageNotificationHelper.showNotification
+
 
 @AndroidEntryPoint
 class ChatService : Service() {
@@ -138,7 +156,7 @@ class ChatService : Service() {
         subscribeMessageChannel()
     }
 
-    private suspend fun subscribeMessageChannel() : Boolean = withContext(Dispatchers.IO) {
+    private suspend fun subscribeMessageChannel(): Boolean = withContext(Dispatchers.IO) {
         val request = MessageOuterClass.SubscribeRequest.newBuilder()
             .setClientId(userManager.getClientId())
             .build()
@@ -158,7 +176,7 @@ class ChatService : Service() {
         }
     }
 
-    private suspend fun subscribeNotificationChannel() : Boolean = withContext(Dispatchers.IO) {
+    private suspend fun subscribeNotificationChannel(): Boolean = withContext(Dispatchers.IO) {
         val request = NotifyOuterClass.SubscribeRequest.newBuilder()
             .setClientId(userManager.getClientId())
             .build()
@@ -182,19 +200,25 @@ class ChatService : Service() {
             .setClientId(userManager.getClientId())
             .build()
 
-        MessageGrpc.newStub(networkChannel).listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
-            override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
-                printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
-                        ", groupId = ${value.groupId} groupType = ${value.groupType}")
-                scope.launch {
-                    // TODO
-                    if (!isGroup(value.groupType)) {
-                        chatRepository.decryptMessageFromPeer(value)
-                    } else {
-                        chatRepository.decryptMessageFromGroup(value)
+        MessageGrpc.newStub(networkChannel)
+            .listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
+                override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
+                    scope.launch {
+                        if (!isGroup(value.groupType)) {
+                            chatRepository.decryptMessageFromPeer(value) {
+                                val roomId = chatRepository.getJoiningRoomId()
+                                val groupId = value.groupId
+                                handleShowNotification(roomId=roomId,groupId=groupId,it)
+                            }
+                        } else {
+                            chatRepository.decryptMessageFromGroup(value) {
+                                val roomId = chatRepository.getJoiningRoomId()
+                                val groupId = value.groupId
+                                handleShowNotification(roomId=roomId,groupId=groupId,it)
+                            }
+                        }
                     }
                 }
-            }
 
             override fun onError(t: Throwable?) {
                 printlnCK("Listen message error: ${t.toString()}")
@@ -204,6 +228,28 @@ class ChatService : Service() {
                 printlnCK("listenMessageChannel, listen success")
             }
         })
+    }
+
+    fun handleShowNotification(roomId : Long, groupId: Long,message:String){
+        scope.launch {
+            val group = groupRepository.getGroupByID(groupId = groupId)
+            val groupName = if (group?.isGroup()==true) group.groupName else {
+                group?.clientList?.firstOrNull { client ->
+                    client.id != userManager.getClientId()
+                }?.userName ?: ""
+            }
+            group?.let {
+                if (roomId <= 0 || roomId != it.id) {
+                    showNotification(
+                        context = applicationContext,
+                        packageName = packageName,
+                        userName = groupName,
+                        message = message,
+                        groupId = it.id
+                    )
+                }
+            }
+        }
     }
 
     private fun listenNotificationChannel() {

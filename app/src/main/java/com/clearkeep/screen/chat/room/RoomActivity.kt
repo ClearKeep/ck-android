@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
@@ -9,6 +10,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -24,6 +26,8 @@ import com.clearkeep.screen.chat.group_invite.InviteGroupScreenComingSoon
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
+import com.clearkeep.utilities.ACTION_MESSAGE_REPLY
+import com.clearkeep.utilities.MESSAGE_NOTIFICATION_ID
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -117,6 +121,15 @@ class RoomActivity : AppCompatActivity() {
                 it.data?.let { requestInfo -> navigateToInComingCallActivity(requestInfo.chatGroup, requestInfo.isAudioMode) }
             }
         })
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.action == ACTION_MESSAGE_REPLY) {
+            NotificationManagerCompat.from(this).cancel(null, MESSAGE_NOTIFICATION_ID)
+            finish()
+            startActivity(intent)
+        }
     }
 
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
