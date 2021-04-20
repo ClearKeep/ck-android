@@ -8,6 +8,9 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="grey_200">#D8D8D8</color>
+    <color name="grey3">#A0A3BD</color>
+    <color name="grey1">#4E4B66</color>
+    <color name="primary_default">#6267FB</color>
 
     <color name="color_button_background">#423d3b</color>
 
