@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.colorBlue1
+import com.clearkeep.components.colorLightBlueFace
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.colorTiaMaria
 
@@ -35,12 +36,20 @@ fun CKButtonSignIn(
 ) {
     val icon: Painter
     val textColor: Color
-    if (buttonType == LoginType.Google) {
-        icon = painterResource(R.drawable.ic_icon_google)
-        textColor = colorBlue1
-    } else {
-        icon = painterResource(R.drawable.ic_icon_office)
-        textColor = colorTiaMaria
+    when (buttonType) {
+        LoginType.Google -> {
+            icon = painterResource(R.drawable.ic_icon_google)
+            textColor = colorBlue1
+        }
+        LoginType.Microsoft -> {
+            icon = painterResource(R.drawable.ic_icon_office)
+            textColor = colorTiaMaria
+        }
+        LoginType.Facebook->{
+            icon = painterResource(R.drawable.ic_icons_facebook)
+            textColor = colorLightBlueFace
+        }
+
     }
     OutlinedButton(
         colors = ButtonDefaults.outlinedButtonColors(backgroundColor = grayscaleOffWhite),
@@ -67,4 +76,5 @@ fun CKButtonSignIn(
 enum class LoginType {
     Google,
     Microsoft,
+    Facebook,
 }

@@ -2,7 +2,9 @@ package com.clearkeep.screen.auth.login
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +29,7 @@ import com.clearkeep.screen.chat.home.HomePreparingActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -36,6 +39,12 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
+import kotlin.math.log
+import com.facebook.FacebookSdk;
+
+import com.facebook.login.LoginResult
+
+import com.facebook.appevents.AppEventsLogger
 
 
 @AndroidEntryPoint
@@ -49,6 +58,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
+    val callbackManager = CallbackManager.Factory.create()
 
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +74,10 @@ class LoginActivity : AppCompatActivity() {
         CKTheme {
             AppContent()
         }
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        callbackManager.onActivityResult(requestCode, resultCode, data)
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     @Composable
@@ -108,6 +122,9 @@ class LoginActivity : AppCompatActivity() {
                         },
                         onLoginMicrosoft = {
                             signInMicrosoft()
+                        },
+                        onLoginFacebook={
+                            loginFacebook()
                         },
                         isLoading = isLoadingState.value ?: false,
                         )
@@ -210,7 +227,10 @@ class LoginActivity : AppCompatActivity() {
         return object : AuthenticationCallback {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
                 lifecycleScope.launch{
-                    val res=loginViewModel.loginByMicrosoft(authenticationResult.accessToken,authenticationResult.account.username)
+                    val res = loginViewModel.loginByMicrosoft(
+                        authenticationResult.accessToken,
+                        authenticationResult.account.username
+                    )
                     onSignInResult(res)
                 }
             }
@@ -236,6 +256,31 @@ class LoginActivity : AppCompatActivity() {
                 showErrorDiaLog?.invoke(ErrorMessage("Error", "unknown"))
             }
         }
+    }
+
+    private fun loginFacebook() {
+        loginViewModel.loginFacebookManager.logIn(this, arrayListOf("email", "public_profile"))
+        loginViewModel.loginFacebookManager.registerCallback(callbackManager,
+            object : FacebookCallback<LoginResult?> {
+                override fun onSuccess(loginResult: LoginResult?) {
+                    loginViewModel.getFacebookProfile(AccessToken.getCurrentAccessToken()) { name ->
+                        lifecycleScope.launch {
+                            val res = loginViewModel.loginByFacebook(
+                                token = AccessToken.getCurrentAccessToken().token,
+                                userName = name
+                            )
+                            onSignInResult(res)
+                        }
+                    }
+                }
+
+                override fun onCancel() {
+                }
+
+                override fun onError(exception: FacebookException) {
+                    showErrorDiaLog?.invoke(ErrorMessage("Error", exception.message ?: "unknown"))
+                }
+            })
     }
 
     data class ErrorMessage(val title:String, val message: String)

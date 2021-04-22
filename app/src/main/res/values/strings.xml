@@ -5,6 +5,7 @@
     <string name="btn_login">Log in</string>
     <string name="btn_login_google">Sign In with Google</string>
     <string name="btn_login_microsoft">Sign In with Office 365</string>
+    <string name="btn_login_facebook">Sign In with Facebook</string>
     <string name="btn_register">Register</string>
     <string name="btn_create_account">Create an account</string>
     <string name="btn_forgot_password">Forgot password?</string>
@@ -37,4 +38,7 @@
     <string name="sign_up_fill_information">Please fill in the information below to complete your sign up</string>
     <string name="enter_email_reset_pass">Please enter your email to reset your password</string>
     <string name="forgot_password">Forgot password</string>
+
+    <string name="facebook_app_id">2535496880092217</string>
+    <string name="fb_login_protocol_scheme">fb2535496880092217</string>
 </resources>
