@@ -37,8 +37,14 @@ const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
 const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
 
 const val INCOMING_NOTIFICATION_ID = 123456
+const val MESSAGE_NOTIFICATION_ID = 123456789
 const val INCOMING_CHANNEL_ID = "incoming_channel_id"
+const val MESSAGE_CHANNEL_ID = "message_channel_id_ck"
 const val INCOMING_CHANNEL_NAME = "incoming_channel_name"
+const val MESSAGE_CHANNEL_NAME = "message_channel_name_ck"
+
+const val ACTION_MESSAGE_CANCEL = "ck.action_message_cancel"
+const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 
 const val CALL_TYPE_AUDIO = "audio"
 const val CALL_TYPE_VIDEO = "video"

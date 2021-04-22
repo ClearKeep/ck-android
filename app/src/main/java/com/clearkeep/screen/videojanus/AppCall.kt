@@ -82,6 +82,7 @@ object AppCall {
                     PendingIntent.FLAG_UPDATE_CURRENT)
 
             val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
+            dismissIntent.action=ACTION_CALL_CANCEL
             dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
             dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
             val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
