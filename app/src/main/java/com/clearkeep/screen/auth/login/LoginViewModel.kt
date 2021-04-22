@@ -7,12 +7,17 @@ import com.clearkeep.R
 import com.clearkeep.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
+import com.facebook.AccessToken
+import com.facebook.login.LoginManager
 import javax.inject.Inject
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest
+import com.facebook.appevents.AppEventsLogger;
 
 
 class LoginViewModel @Inject constructor(
@@ -24,6 +29,7 @@ class LoginViewModel @Inject constructor(
     lateinit var googleSignInClient: GoogleSignInClient
     val SCOPES_MICROSOFT = arrayOf("Files.Read","User.Read")
     var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
+    var loginFacebookManager=LoginManager.getInstance()
 
     val isLoading: LiveData<Boolean>
         get() = _isLoading
@@ -68,6 +74,25 @@ class LoginViewModel @Inject constructor(
     suspend fun loginByGoogle(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
         return authRepo.loginByGoogle(token,userName)
     }
+
+    suspend fun loginByFacebook(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
+        return authRepo.loginByFacebook(token,userName)
+    }
+
+    fun getFacebookProfile(accessToken: AccessToken, getName: (String) -> Unit) {
+        val request = GraphRequest.newGraphPathRequest(
+            accessToken, "me"
+        ) {
+            try {
+                val name = it.jsonObject.get("name").toString()
+                getName.invoke(name)
+            } catch (e: Exception) {
+                getName.invoke("")
+            }
+        }
+        request.executeAsync()
+    }
+
 
     suspend fun loginByMicrosoft(accessToken:String,userName: String?=""):Resource<AuthOuterClass.AuthRes>{
         return authRepo.loginByMicrosoft(accessToken,userName)

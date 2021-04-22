@@ -129,6 +129,34 @@ class AuthRepository @Inject constructor(
 
     }
 
+    suspend fun loginByFacebook(token:String, userName: String? = ""):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+        try {
+            val request=AuthOuterClass
+                .FacebookLoginReq
+                .newBuilder()
+                .setAccessToken(token)
+                .build()
+            val response=authBlockingStub.loginFacebook(request)
+
+            if (response.baseResponse.success) {
+                printlnCK("login by facebook successfully: $response")
+                userManager.saveLoginTime(getCurrentDateTime().time)
+                userManager.saveAccessKey(response.accessToken)
+                userManager.saveHashKey(response.hashKey)
+                userManager.saveRefreshToken(response.refreshToken)
+                if (userName != null) {
+                    userManager.saveUserName(userName)
+                }
+                return@withContext Resource.success(response)
+            }
+            return@withContext Resource.error(response.baseResponse.errors.message, null)
+        } catch (e: Exception) {
+            printlnCK("login by facebook error: $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+
+    }
+
     suspend fun loginByMicrosoft(
         accessToken: String,
         userName: String? = ""
