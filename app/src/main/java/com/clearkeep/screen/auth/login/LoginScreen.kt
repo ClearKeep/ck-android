@@ -32,7 +32,8 @@ fun LoginScreen(
     onForgotPasswordPress: () -> Unit,
     isLoading: Boolean = false,
     onLoginGoogle: (() -> Unit)? = null,
-    onLoginMicrosoft: (() -> Unit)? = null
+    onLoginMicrosoft: (() -> Unit)? = null,
+    onLoginFacebook: (()->Unit)?=null
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -137,6 +138,18 @@ fun LoginScreen(
                         .padding(vertical = 5.dp),
                     enabled = !isLoading,
                     buttonType = LoginType.Microsoft
+                )
+                Spacer(Modifier.height(16.dp))
+                CKButtonSignIn(
+                    stringResource(R.string.btn_login_facebook),
+                    onClick = {
+                        onLoginFacebook?.invoke()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp),
+                    enabled = !isLoading,
+                    buttonType = LoginType.Facebook
                 )
                 Spacer(Modifier.height(42.dp))
                 Row(

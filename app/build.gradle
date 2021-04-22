@@ -236,6 +236,7 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:2.2.0'
 
     implementation 'com.microsoft.identity.client:msal:2.0.8'
+    implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
 
 }
 
