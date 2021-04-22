@@ -48,6 +48,7 @@ import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
+import com.facebook.login.LoginManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -271,6 +272,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
         homeViewModel.logOut()
         homeViewModel.logOutGoogle(this) {}
         homeViewModel.onLogOutMicrosoft(this)
+        LoginManager.getInstance().logOut()
     }
 
     private fun navigateToRoomScreen(groupId: Long) {

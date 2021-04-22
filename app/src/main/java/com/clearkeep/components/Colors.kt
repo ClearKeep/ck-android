@@ -38,6 +38,7 @@ val colorBlue1 = Color(0xff2F80ED)
 
 /* Light / Blue */
 val colorLightBlue = Color(0xff007AFF)
+val colorLightBlueFace = Color(0xff3F65EC)
 
 /* Grayscale/Background */
 val grayscaleBackground = Color(0xffF7F7FC)
