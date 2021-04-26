@@ -2,81 +2,51 @@ package com.clearkeep.screen.chat.home
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Contacts
-import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.*
 import androidx.navigation.compose.*
-import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
-import com.clearkeep.screen.chat.home.chat_history.ChatHistoryScreen
-import com.clearkeep.screen.chat.home.chat_history.ChatViewModel
-import com.clearkeep.screen.chat.home.contact_list.PeopleScreen
-import com.clearkeep.screen.chat.home.contact_list.PeopleViewModel
-import com.clearkeep.screen.chat.home.profile.ProfileScreen
-import com.clearkeep.screen.chat.home.profile.ProfileViewModel
+import com.clearkeep.screen.chat.home.home.HomeScreen
+import com.clearkeep.screen.chat.home.home.HomeViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import com.facebook.login.LoginManager
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
 
-val items = listOf(
-        Screen.Chat,
-        Screen.People,
-        Screen.Profile,
-)
-
-private val BottomNavigationHeight = 56.dp
-
 @AndroidEntryPoint
-class HomeActivity : AppCompatActivity(), LifecycleObserver {
+class MainActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val peopleViewModel: PeopleViewModel by viewModels {
-        viewModelFactory
-    }
-
-    private val chatViewModel: ChatViewModel by viewModels {
-        viewModelFactory
-    }
-
-    private val profileViewModel: ProfileViewModel by viewModels {
+    private val mainViewModel: MainViewModel by viewModels {
         viewModelFactory
     }
 
@@ -102,7 +72,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
         subscriberLogout()
-        homeViewModel.updateFirebaseToken()
+        mainViewModel.updateFirebaseToken()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -131,7 +101,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun subscriberLogout() {
-        homeViewModel.isLogOutCompleted.observe(this, { completed ->
+        mainViewModel.isLogOutCompleted.observe(this, { completed ->
             if (completed) {
                 restartActivityToRoot()
             }
@@ -163,84 +133,14 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
                             })
                 }
             },
-
-            bottomBar = {
-                BottomNavigation(
-                    backgroundColor = MaterialTheme.colors.background,
-                ){
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.arguments?.getString(KEY_ROUTE)
-                    items.forEach { screen ->
-                        BottomNavigationItem(
-                            selectedContentColor = MaterialTheme.colors.surface,
-                            unselectedContentColor = MaterialTheme.colors.onBackground,
-                            icon = {
-                                Icon(
-                                    imageVector = screen.iconId,
-                                    contentDescription = ""
-                                )
-                            },
-                            label = {
-                                Text(
-                                    stringResource(screen.resourceId),
-                                    style = MaterialTheme.typography.body2.copy(fontSize = 10.sp)
-                                )
-                            },
-                            selected = currentRoute == screen.route,
-                            onClick = {
-                                if (currentRoute != screen.route) {
-                                    navController.popBackStack(
-                                        navController.graph.startDestination,
-                                        false
-                                    )
-                                    navController.navigate(screen.route)
-                                }
-                            }
-                        )
-                    }
-                }
-            }
         ) {
             Box {
-                Column {
-                    Row(modifier = Modifier.weight(1.0f, true)) {
-                        NavHost(navController, startDestination = Screen.Chat.route) {
-                            composable(Screen.Chat.route) {
-                                ChatHistoryScreen(
-                                        chatViewModel,
-                                        onRoomSelected = { room ->
-                                            navigateToRoomScreen(room.id)
-                                        },
-                                        onCreateGroup = {
-                                            navigateToCreateGroupScreen()
-                                        }
-                                )
-                            }
-                            composable(Screen.People.route) {
-                                peopleViewModel.updateContactList()
-                                PeopleScreen(
-                                        peopleViewModel,
-                                        onFriendSelected = { friend ->
-                                            navigateToRoomScreen(friend)
-                                        },
-                                        onNavigateToSearch = {
-                                            navigateToSearchScreen()
-                                        }
-                                )
-                            }
-                            composable(Screen.Profile.route) {
-                                ProfileScreen(
-                                        profileViewModel,
-                                        homeViewModel,
-                                        onLogout = {
-                                            logout()
-                                        }
-                                )
-                            }
-                        }
+                NavHost(navController, startDestination = "home_screen") {
+                    composable("home_screen") {
+                        HomeScreen(
+                            homeViewModel,
+                        )
                     }
-                    // TODO: work around issue of scaffold
-                    Spacer(modifier = Modifier.height(BottomNavigationHeight))
                 }
                 LogoutProgress()
             }
@@ -249,7 +149,7 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun LogoutProgress() {
-        homeViewModel.isLogOutProcessing.observeAsState().value?.let { isProcessing ->
+        mainViewModel.isLogOutProcessing.observeAsState().value?.let { isProcessing ->
             if (isProcessing) {
                 Column(
                         modifier = Modifier.fillMaxSize(),
@@ -269,9 +169,9 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun logout() {
-        homeViewModel.logOut()
-        homeViewModel.logOutGoogle(this) {}
-        homeViewModel.onLogOutMicrosoft(this)
+        mainViewModel.logOut()
+        mainViewModel.logOutGoogle(this) {}
+        mainViewModel.onLogOutMicrosoft(this)
         LoginManager.getInstance().logOut()
     }
 
@@ -304,10 +204,4 @@ class HomeActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
         exitProcess(2)
     }
-}
-
-sealed class Screen(val route: String, @StringRes val resourceId: Int, val iconId: ImageVector) {
-    object Chat : Screen("chat_screen", R.string.bottom_nav_single, Icons.Filled.Message)
-    object People : Screen("contact_screen", R.string.bottom_nav_group, Icons.Filled.Contacts)
-    object Profile : Screen("profile_screen", R.string.bottom_nav_profile, Icons.Filled.Person)
 }

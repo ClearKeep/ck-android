@@ -10,10 +10,11 @@ import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
-import com.clearkeep.screen.chat.home.HomeViewModel
+import com.clearkeep.screen.chat.home.MainViewModel
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
-import com.clearkeep.screen.chat.home.HomePreparingViewModel
+import com.clearkeep.screen.chat.home.MainPreparingViewModel
+import com.clearkeep.screen.chat.home.home.HomeViewModel
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
@@ -67,13 +68,18 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
+    @ViewModelKey(MainViewModel::class)
+    abstract fun bindMainViewModel(mainViewModel: MainViewModel): ViewModel
+
+    @Binds
+    @IntoMap
     @ViewModelKey(HomeViewModel::class)
     abstract fun bindHomeViewModel(homeViewModel: HomeViewModel): ViewModel
 
     @Binds
     @IntoMap
-    @ViewModelKey(HomePreparingViewModel::class)
-    abstract fun bindHomePreparingViewModel(homePreparingViewModel: HomePreparingViewModel): ViewModel
+    @ViewModelKey(MainPreparingViewModel::class)
+    abstract fun bindHomePreparingViewModel(homePreparingViewModel: MainPreparingViewModel): ViewModel
 
     @Binds
     @IntoMap
