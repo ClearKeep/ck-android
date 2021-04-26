@@ -20,11 +20,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class HomePreparingActivity : AppCompatActivity() {
+class MainPreparingActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val homePreparingViewModel: HomePreparingViewModel by viewModels {
+    private val homePreparingViewModel: MainPreparingViewModel by viewModels {
         viewModelFactory
     }
 
@@ -84,7 +84,7 @@ class HomePreparingActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeScreen() {
-        startActivity(Intent(this, HomeActivity::class.java))
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 }

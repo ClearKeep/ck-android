@@ -2,9 +2,7 @@ package com.clearkeep.screen.auth.login
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,7 +23,7 @@ import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.home.HomePreparingActivity
+import com.clearkeep.screen.chat.home.MainPreparingActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -39,12 +37,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
-import kotlin.math.log
-import com.facebook.FacebookSdk;
 
 import com.facebook.login.LoginResult
-
-import com.facebook.appevents.AppEventsLogger
 
 
 @AndroidEntryPoint
@@ -169,7 +163,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, HomePreparingActivity::class.java))
+        startActivity(Intent(this, MainPreparingActivity::class.java))
         finish()
     }
 

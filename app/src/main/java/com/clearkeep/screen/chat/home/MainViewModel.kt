@@ -2,16 +2,16 @@ package com.clearkeep.screen.chat.home
 
 import android.app.Activity
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.clearkeep.R
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.repo.*
 import com.clearkeep.utilities.FIREBASE_TOKEN
+import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -25,18 +25,24 @@ import io.grpc.ManagedChannel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class HomeViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val authRepository: AuthRepository,
+    private val roomRepository: GroupRepository,
 
     private val signalProtocolStore: InMemorySignalProtocolStore,
 
     private val storage: UserPreferencesStorage,
+    private val userManager: UserManager,
     private val clearKeepDatabase: ClearKeepDatabase,
     private val signalKeyDatabase: SignalKeyDatabase,
 
     private val managedChannel: ManagedChannel,
 ): ViewModel() {
+    init {
+        // TODO: load channel and select first channel as default
+        selectChannel(1)
+    }
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
 
     val isLogOutProcessing: LiveData<Boolean>
@@ -47,17 +53,22 @@ class HomeViewModel @Inject constructor(
     val isLogOutCompleted: LiveData<Boolean>
         get() = _isLogOutCompleted
 
-    var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
-
-    fun networkAvailable() {
-        /*if (chatRepository.isNeedSubscribeAgain()) {
-            viewModelScope.launch {
-                chatRepository.reInitSubscribe()
-                updateNewMessages()
-            }
-        }*/
-        managedChannel.resetConnectBackoff()
+    val servers: LiveData<List<Server>> = liveData {
+        emit(listOf(Server(1, "CK Development", "")))
     }
+
+    val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+
+    val chatGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+
+    val directGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+
+    fun searchGroup(text: String) {}
+
+    fun selectChannel(channelId: Long) {}
+
+
+    var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
 
     fun updateFirebaseToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->

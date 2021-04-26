@@ -17,13 +17,13 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.BuildConfig
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.screen.chat.home.HomeViewModel
+import com.clearkeep.screen.chat.home.MainViewModel
 import com.clearkeep.screen.chat.home.composes.CircleAvatar
 
 @Composable
 fun ProfileScreen(
     profileViewModel: ProfileViewModel,
-    homeViewModel: HomeViewModel,
+    homeViewModel: MainViewModel,
     onLogout: () -> Unit,
 ) {
     val versionName = BuildConfig.VERSION_NAME
