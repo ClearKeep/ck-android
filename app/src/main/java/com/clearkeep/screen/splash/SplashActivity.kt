@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.auth.login.LoginActivity
-import com.clearkeep.screen.chat.home.HomePreparingActivity
+import com.clearkeep.screen.chat.home.MainPreparingActivity
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -53,7 +53,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, HomePreparingActivity::class.java))
+        startActivity(Intent(this, MainPreparingActivity::class.java))
         finish()
     }
 

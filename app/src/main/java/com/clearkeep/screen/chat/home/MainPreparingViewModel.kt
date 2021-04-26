@@ -8,7 +8,7 @@ import com.clearkeep.repo.*
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-class HomePreparingViewModel @Inject constructor(
+class MainPreparingViewModel @Inject constructor(
     private val signalKeyRepository: SignalKeyRepository,
     private val profileRepository: ProfileRepository,
 ): ViewModel() {
