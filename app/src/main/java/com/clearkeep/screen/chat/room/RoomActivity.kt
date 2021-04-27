@@ -22,7 +22,6 @@ import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.screen.chat.group_invite.InviteGroupScreenComingSoon
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
@@ -84,7 +83,7 @@ class RoomActivity : AppCompatActivity() {
                         )
                     }
                     composable("invite_group_screen") {
-                        InviteGroupScreenComingSoon(
+                        /*InviteGroupScreenComingSoon(
                                 inviteGroupViewModel,
                                 onFriendSelected = { friends ->
                                     if (!friends.isNullOrEmpty()) {
@@ -95,7 +94,7 @@ class RoomActivity : AppCompatActivity() {
                                     navController.popBackStack()
                                 },
                             selectedItem = selectedItem
-                        )
+                        )*/
                     }
                     composable("member_group_screen") {
                         GroupMemberScreen(

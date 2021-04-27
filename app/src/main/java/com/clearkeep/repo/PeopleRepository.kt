@@ -1,10 +1,7 @@
 package com.clearkeep.repo
 
-import androidx.lifecycle.liveData
-import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.PeopleDao
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,40 +16,7 @@ class PeopleRepository @Inject constructor(
         private val peopleDao: PeopleDao,
         private val userStub: UserGrpc.UserBlockingStub
 ) {
-    fun getFriends(clientId: String) = liveData {
-        emitSource(
-                peopleDao.getFriends().map {
-                    Resource.success(it)
-                }
-        )
-        /*val disposable = emitSource(
-                peopleDao.getFriends().map {
-                    Resource.loading(it)
-                }
-        )
-        try {
-            val friends = getFriendsFromAPI()
-            // Stop the previous emission to avoid dispatching the updated user
-            // as `loading`.
-            disposable.dispose()
-            // Update the database.
-            insertFriends(friends)
-            // Re-establish the emission with success type.
-            emitSource(
-                    peopleDao.getFriends().map {
-                        Resource.success(it)
-                    }
-            )
-        } catch(exception: IOException) {
-            // Any call to `emit` disposes the previous one automatically so we don't
-            // need to dispose it here as we didn't get an updated value.
-            emitSource(
-                    peopleDao.getFriends().map {
-                        Resource.error(exception.toString(), it)
-                    }
-            )
-        }*/
-    }
+    fun getFriends() = peopleDao.getFriends()
 
     suspend fun updatePeople() {
         try {

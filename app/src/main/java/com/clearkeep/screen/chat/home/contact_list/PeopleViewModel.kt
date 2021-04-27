@@ -16,9 +16,7 @@ class PeopleViewModel @Inject constructor(
 ): ViewModel() {
     fun getClientId() = userManager.getClientId()
 
-    val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-        emitSource(peopleRepository.getFriends(getClientId()))
-    }
+    val friends: LiveData<List<People>> = peopleRepository.getFriends()
 
     fun updateContactList() {
         printlnCK("update contact list from remote API")
