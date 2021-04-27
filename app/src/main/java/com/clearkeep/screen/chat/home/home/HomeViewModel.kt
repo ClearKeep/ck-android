@@ -20,9 +20,13 @@ class HomeViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
-    val chatGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+    val chatGroups: LiveData<List<ChatGroup>> = Transformations.map(groups) { all ->
+        all.filter { it.isGroup() }
+    }
 
-    val directGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+    val directGroups: LiveData<List<ChatGroup>> = Transformations.map(groups) { all ->
+        all.filter { !it.isGroup() }
+    }
 
     fun searchGroup(text: String) {}
 
