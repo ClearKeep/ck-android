@@ -15,6 +15,7 @@ import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.navigation.compose.*
+import com.clearkeep.db.clear_keep.model.People
 
 @AndroidEntryPoint
 class CreateGroupActivity : AppCompatActivity() {
@@ -32,6 +33,8 @@ class CreateGroupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, false)
+
         setContent {
             val navController = rememberNavController()
             CKTheme {
@@ -39,14 +42,16 @@ class CreateGroupActivity : AppCompatActivity() {
                     composable("invite_group") {
                         inviteGroupViewModel.updateContactList()
                         InviteGroupScreen(
-                                inviteGroupViewModel,
-                                onFriendSelected = { friends ->
-                                    createGroupViewModel.setFriendsList(friends)
-                                    navController.navigate("enter_group_name")
-                                },
-                                onBackPressed = {
-                                    finish()
-                                },
+                            inviteGroupViewModel,
+                            onFriendSelected = { friends ->
+                                createGroupViewModel.setFriendsList(friends)
+                                navController.navigate("enter_group_name")
+                            },
+                            onDirectFriendSelected = { handleDirectChat(it) },
+                            onBackPressed = {
+                                finish()
+                            },
+                            isCreatePeerGroup = isDirectChat
                         )
                     }
                     composable("enter_group_name") {
@@ -62,11 +67,20 @@ class CreateGroupActivity : AppCompatActivity() {
         subscribe()
     }
 
+    private fun handleDirectChat(people: People) {
+        val intent = Intent()
+        intent.putExtra(EXTRA_PEOPLE_ID, people.id)
+        intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
+        setResult(RESULT_OK, intent)
+        finish()
+    }
+
     private fun subscribe() {
         createGroupViewModel.createGroupState.observe(this, {
             if (it == CreateGroupSuccess) {
                 val intent = Intent()
                 intent.putExtra(EXTRA_GROUP_ID, createGroupViewModel.groupId)
+                intent.putExtra(EXTRA_IS_DIRECT_CHAT, false)
                 setResult(RESULT_OK, intent)
                 finish()
             }
@@ -75,5 +89,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_GROUP_ID = "extra_group_id"
+        const val EXTRA_PEOPLE_ID = "extra_people_id"
+        const val EXTRA_IS_DIRECT_CHAT = "extra_is_direct"
     }
 }

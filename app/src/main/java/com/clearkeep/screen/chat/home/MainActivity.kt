@@ -24,10 +24,10 @@ import androidx.lifecycle.*
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CkTopCalling
-import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
+import com.clearkeep.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.screen.chat.home.home.HomeScreen
 import com.clearkeep.screen.chat.home.home.HomeViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
@@ -56,9 +56,19 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private val startCreateGroupForResult = (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            val groupId = result.data?.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1) ?: -1
-            if (groupId > 0) {
-                navigateToRoomScreen(groupId)
+            result.data?.let { intent ->
+                val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
+                if (isDirectChat) {
+                    val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
+                    if (!friendId.isNullOrBlank()) {
+                        navigateToRoomScreenWithFriendId(friendId)
+                    }
+                } else {
+                    val groupId = intent.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1)
+                    if (groupId > 0) {
+                        navigateToRoomScreen(groupId)
+                    }
+                }
             }
         }
     }
@@ -181,14 +191,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
-    private fun navigateToRoomScreen(friend: People) {
+    private fun navigateToRoomScreenWithFriendId(friendId: String) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.FRIEND_ID, friend.id)
+        intent.putExtra(RoomActivity.FRIEND_ID, friendId)
         startActivity(intent)
     }
 
-    private fun navigateToCreateGroupScreen() {
+    private fun navigateToCreateGroupScreen(isDirectGroup: Boolean) {
         val intent = Intent(this, CreateGroupActivity::class.java)
+        intent.putExtra(EXTRA_IS_DIRECT_CHAT, isDirectGroup)
         startCreateGroupForResult.launch(intent)
     }
 

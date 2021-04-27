@@ -18,7 +18,7 @@ import com.clearkeep.BuildConfig
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.screen.chat.home.MainViewModel
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.CircleAvatar
 
 @Composable
 fun ProfileScreen(

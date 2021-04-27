@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.FriendListItem
+import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -26,7 +28,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun InviteGroupScreen(
         inviteGroupViewModel: InviteGroupViewModel,
         onFriendSelected: (List<People>) -> Unit,
+        onDirectFriendSelected: (People) -> Unit,
         onBackPressed: () -> Unit,
+        isCreatePeerGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
     val textSearch = remember { mutableStateOf("") }
@@ -58,7 +62,7 @@ fun InviteGroupScreen(
                     }
                 }
 
-                CKTextButton(
+                if (!isCreatePeerGroup) CKTextButton(
                     title = "Next",
                     onClick = {
                         onFriendSelected(selectedItem)
@@ -93,12 +97,18 @@ fun InviteGroupScreen(
                     contentPadding = PaddingValues(end = 16.dp),
                 ) {
                     itemsIndexed(values) { _, friend ->
-                        FriendItem(friend,
-                            selectedItem.contains(friend),
-                            onFriendSelected = { people, isAdd ->
-                                if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
-                            }
-                        )
+                        if (isCreatePeerGroup) {
+                            FriendListItem(friend, onFriendSelected = {
+                                onDirectFriendSelected(it)
+                            })
+                        } else {
+                            FriendListItemSelectable(friend,
+                                selectedItem.contains(friend),
+                                onFriendSelected = { people, isAdd ->
+                                    if (isAdd) selectedItem.add(people) else selectedItem.remove(people)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -121,45 +131,6 @@ fun SelectedHorizontalBox(selectedItem: List<People>, unSelectItem: (people: Peo
     ) {
         itemsIndexed(selectedItem) { _, friend ->
             SelectedFriendBox(people = friend, onRemove = { unSelectItem(it) })
-        }
-    }
-}
-
-@Composable
-fun FriendItem(
-        friend: People,
-        isSelected: Boolean,
-        onFriendSelected: (people: People, isAdd: Boolean) -> Unit,
-) {
-    Column(modifier = Modifier
-        .selectable(
-            selected = isSelected,
-            onClick = { onFriendSelected(friend, !isSelected) })
-    ) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircleAvatar(
-                emptyList(),
-                friend.userName,
-                size = 64.dp
-            )
-            Column(modifier = Modifier
-                .padding(start = 16.dp)
-                .weight(1.0f, true)) {
-                Text(text = friend.userName,
-                    style = MaterialTheme.typography.body2.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = grayscale2
-                    ),
-                )
-            }
-            CKRadioButton(
-                    selected = isSelected,
-                    onClick = { onFriendSelected(friend, !isSelected) }
-            )
         }
     }
 }
