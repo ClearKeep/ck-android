@@ -2,46 +2,35 @@ package com.clearkeep.screen.chat.group_create
 
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.utilities.UserManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CreateGroupViewModel @Inject constructor(
-        private val peopleRepository: PeopleRepository,
         private val userManager: UserManager,
         private val groupRepository: GroupRepository
 ): ViewModel() {
         var groupId: Long = -1
 
-        private val invitedFriends: MutableList<String> = mutableListOf()
+        val invitedFriends: MutableList<People> = mutableListOf()
 
         private val _createGroupState = MutableLiveData<CreateGroupState>()
 
         val createGroupState: LiveData<CreateGroupState>
                 get() = _createGroupState
 
-        val selectedFriends: List<People> = emptyList()
-
         fun getClientId() = userManager.getClientId()
-
-        val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-                emitSource(peopleRepository.getFriends(getClientId()))
-        }
 
         fun setFriendsList(friends: List<People>) {
                 invitedFriends.clear()
-                invitedFriends.add(getClientId())
-                invitedFriends.addAll(friends.map { it.id })
+                invitedFriends.addAll(friends)
         }
 
         fun createGroup(groupName: String) {
                 viewModelScope.launch {
                         _createGroupState.value = CreateGroupProcessing
-                        val invitedFriendsAsString = invitedFriends
+                        val invitedFriendsAsString = getInvitedFriendId(invitedFriends)
                         val res = groupRepository.createGroupFromAPI(getClientId(), groupName, invitedFriendsAsString, true)
                         if (res != null) {
                                 groupId = res.id
@@ -50,6 +39,12 @@ class CreateGroupViewModel @Inject constructor(
                                 _createGroupState.value = CreateGroupError
                         }
                 }
+        }
+
+        private fun getInvitedFriendId(invitedFriends: MutableList<People>): List<String> {
+                val res: MutableList<String> = invitedFriends.map { it.id } as MutableList<String>
+                res.add(getClientId())
+                return res
         }
 }
 

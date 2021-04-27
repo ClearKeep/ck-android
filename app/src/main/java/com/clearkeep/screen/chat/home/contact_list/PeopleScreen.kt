@@ -41,7 +41,7 @@ fun PeopleScreen(
                     }
                 }
         )
-        friends.value?.data?.let { people ->
+        friends.value?.let { people ->
             LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 30.dp, end = 20.dp, start = 20.dp, bottom = 30.dp),

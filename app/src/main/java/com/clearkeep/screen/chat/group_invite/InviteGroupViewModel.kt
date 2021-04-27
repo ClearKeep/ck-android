@@ -2,11 +2,9 @@ package com.clearkeep.screen.chat.group_invite
 
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,12 +14,31 @@ class InviteGroupViewModel @Inject constructor(
 ): ViewModel() {
         fun getClientId() = userManager.getClientId()
 
-        val friends: LiveData<Resource<List<People>>> = liveData(context = viewModelScope.coroutineContext + Dispatchers.IO) {
-                emitSource(peopleRepository.getFriends(getClientId()))
+        private var textSearch = MutableLiveData<String>()
+
+        val friends: LiveData<List<People>> = peopleRepository.getFriends()
+
+        val filterFriends = liveData<List<People>> {
+                val result = MediatorLiveData<List<People>>()
+                result.addSource(friends) { friendList ->
+                        result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
+                }
+                result.addSource(textSearch) { text ->
+                        result.value = getFilterFriends(friends.value ?: emptyList(), text)
+                }
+                emitSource(result)
+        }
+
+        private fun getFilterFriends(list: List<People>, search: String): List<People> {
+                return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
         }
 
         fun inviteFriends(friends: List<People>) {
                 //
+        }
+
+        fun search(text: String) {
+                textSearch.value = text.trim().toLowerCase()
         }
 
         fun updateContactList() {

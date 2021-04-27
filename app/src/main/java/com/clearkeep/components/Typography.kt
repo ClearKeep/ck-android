@@ -40,7 +40,7 @@ val ckTypography = Typography(
     h5 = TextStyle(
         fontFamily = poppinsFontFamily,
         fontWeight = FontWeight.W600,
-        fontSize = 24.sp
+        fontSize = 20.sp
     ),
     h6 = TextStyle(
         fontFamily = poppinsFontFamily,
