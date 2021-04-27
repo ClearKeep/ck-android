@@ -1,8 +1,8 @@
-package com.clearkeep.screen.main
+package com.clearkeep.screen.main_antx
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.clearkeep.screen.main.item.WorkSpaceEntity
+import com.clearkeep.screen.main_antx.item.WorkSpaceEntity
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(): ViewModel() {
