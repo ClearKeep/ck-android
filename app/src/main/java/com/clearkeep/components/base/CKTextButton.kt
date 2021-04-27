@@ -7,6 +7,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
@@ -17,6 +18,7 @@ fun CKTextButton(
     title: String = "",
     onClick: () -> Unit,
     enabled: Boolean = true,
+    fontSize: TextUnit = 12.sp,
     textButtonType: TextButtonType = TextButtonType.White
 ) {
     TextButton(
@@ -29,7 +31,7 @@ fun CKTextButton(
     ) {
         Text(title,
             style = MaterialTheme.typography.body1.copy(
-                fontSize = 12.sp
+                fontSize = fontSize
             )
         )
     }
