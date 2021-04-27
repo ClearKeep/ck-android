@@ -1,4 +1,4 @@
-package com.clearkeep.screen.main_antx.composes
+package com.clearkeep.screen.chat.home.home.composes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +19,7 @@ import com.clearkeep.components.backgroundGradientStart
 
 
 @Composable
-fun CircleAvatarWorkSpace(url:String, name:String, size: Dp = 48.dp, ) {
+fun CircleAvatarWorkSpace(url:String?, name:String, size: Dp = 48.dp, ) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
     Surface(
         shape = CircleShape,
