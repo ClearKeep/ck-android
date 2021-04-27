@@ -12,17 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.FriendListItem
 
 @Composable
 fun EnterGroupNameScreen(
@@ -87,35 +84,10 @@ fun EnterGroupNameScreen(
                     contentPadding = PaddingValues(end = 16.dp),
                 ) {
                     itemsIndexed(values) { _, friend ->
-                        FriendItem(friend)
+                        FriendListItem(friend)
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun FriendItem(
-    friend: People,
-) {
-    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CircleAvatar(
-            emptyList(),
-            friend.userName,
-            size = 64.dp
-        )
-        Column(modifier = Modifier
-            .padding(start = 16.dp)
-            .weight(1.0f, true)) {
-            Text(text = friend.userName,
-                style = MaterialTheme.typography.body2.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = grayscale2
-                ),
-            )
         }
     }
 }

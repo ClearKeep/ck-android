@@ -12,7 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.CircleAvatar
 
 
 @Composable

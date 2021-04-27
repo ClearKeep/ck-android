@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.composes
+package com.clearkeep.screen.chat.composes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
