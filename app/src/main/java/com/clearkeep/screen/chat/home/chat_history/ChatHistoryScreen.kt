@@ -19,8 +19,7 @@ import com.clearkeep.R
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
-import com.clearkeep.utilities.getTimeAsString
+import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.getHourTimeAsString
 
 @Composable

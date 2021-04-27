@@ -14,7 +14,7 @@ import com.clearkeep.components.colorSuccessDefault
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
 
