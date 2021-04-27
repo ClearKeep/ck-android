@@ -27,8 +27,21 @@ class HomeViewModel @Inject constructor(
     val directGroups: LiveData<List<ChatGroup>> = Transformations.map(groups) { all ->
         all.filter { !it.isGroup() }
     }
+    val chatGroupDummy: LiveData<List<ChatGroupDummy>> = liveData {
+        emit(
+            listOf(
+            ChatGroupDummy(1,"name dummy 1",1),
+            ChatGroupDummy(2,"name dummy 2",6),
+            ChatGroupDummy(3,"name dummy 3",4),
+            ChatGroupDummy(4,"name dummy 4",10),
+            ChatGroupDummy(5,"name dummy 5",12),
+            ChatGroupDummy(6,"name dummy 6",13),
+        )
+        )
+    }
 
     fun searchGroup(text: String) {}
 
     fun selectChannel(channelId: Long) {}
 }
+data class ChatGroupDummy(val id:Int,val name:String,val numberUnread:Int)
