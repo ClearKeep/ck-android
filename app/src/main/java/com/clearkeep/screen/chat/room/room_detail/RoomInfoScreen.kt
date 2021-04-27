@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.screen.chat.home.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.RoomViewModel
 
 @Composable
