@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,12 +39,14 @@ class CreateGroupActivity : AppCompatActivity() {
 
         setContent {
             val navController = rememberNavController()
+            val selectedItem = remember { mutableStateListOf<People>() }
             CKTheme {
                 NavHost(navController, startDestination = "invite_group") {
                     composable("invite_group") {
                         inviteGroupViewModel.updateContactList()
                         InviteGroupScreen(
                             inviteGroupViewModel,
+                            selectedItem = selectedItem,
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)
                                 navController.navigate("enter_group_name")
