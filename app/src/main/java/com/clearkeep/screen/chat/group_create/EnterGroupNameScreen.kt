@@ -16,9 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscaleBlack
-import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.chat.composes.FriendListItem
 
 @Composable
@@ -31,7 +28,7 @@ fun EnterGroupNameScreen(
     val friends = createGroupViewModel.invitedFriends
 
     Surface(
-        color = grayscaleOffWhite
+        color = MaterialTheme.colors.background
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
@@ -53,7 +50,7 @@ fun EnterGroupNameScreen(
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "",
-                            tint = grayscale1
+                            tint = MaterialTheme.colors.primaryVariant
                         )
                     }
                 }
@@ -67,12 +64,10 @@ fun EnterGroupNameScreen(
                 )
             }
             Spacer(modifier = Modifier.height(25.dp))
-            Text("New Group Message", style = MaterialTheme.typography.h5.copy(
-                color = grayscaleBlack,
-            ))
+            CKHeaderText("New Group Message", headerTextType = HeaderTextType.Medium)
             Spacer(modifier = Modifier.height(24.dp))
             Text("Group Name", style = MaterialTheme.typography.body2.copy(
-                color = grayscale1,
+                color = MaterialTheme.colors.secondaryVariant,
             ))
             CKTextInputField(
                 "Name this group",

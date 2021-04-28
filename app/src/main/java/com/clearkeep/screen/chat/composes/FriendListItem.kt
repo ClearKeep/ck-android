@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.clearkeep.components.grayscale2
 import com.clearkeep.db.clear_keep.model.People
 
 @Composable
@@ -38,7 +37,7 @@ fun FriendListItem(
                 Text(text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
-                        color = grayscale2
+                        color = MaterialTheme.colors.onBackground
                     ),
                 )
             }

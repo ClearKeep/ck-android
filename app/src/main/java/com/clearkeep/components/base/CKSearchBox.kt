@@ -39,7 +39,7 @@ fun CKSearchBox(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
-                BorderStroke(1.dp, grayscaleBlack)
+                BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
             } else null,
             color = Color.Transparent,
             elevation = 0.dp
@@ -50,27 +50,27 @@ fun CKSearchBox(
                 placeholder = {
                     Text(
                         "Search", style = MaterialTheme.typography.body1.copy(
-                            color = grayscale3,
+                            color = MaterialTheme.colors.onSecondary,
                             fontWeight = FontWeight.Normal
                         )
                     )
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = grayscaleBlack,
-                    cursorColor = grayscaleBlack,
+                    textColor = MaterialTheme.colors.secondaryVariant,
+                    cursorColor = MaterialTheme.colors.secondaryVariant,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (rememberBorderShow.value) {
                         grayscaleOffWhite
                     } else {
-                        grayscale5
+                        MaterialTheme.colors.secondary
                     },
-                    leadingIconColor = grayscale1,
-                    trailingIconColor = grayscale1,
-                    errorCursorColor = errorLight,
+                    leadingIconColor = MaterialTheme.colors.secondaryVariant,
+                    trailingIconColor = MaterialTheme.colors.secondaryVariant,
+                    errorCursorColor = MaterialTheme.colors.error,
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = grayscaleBlack,
+                    color = MaterialTheme.colors.secondaryVariant,
                     fontWeight = FontWeight.Normal
                 ),
                 modifier = modifier
