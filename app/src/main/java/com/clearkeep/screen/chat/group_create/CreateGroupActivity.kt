@@ -11,12 +11,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.navigation.compose.*
+import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.db.clear_keep.model.People
 
 @AndroidEntryPoint
@@ -40,7 +40,7 @@ class CreateGroupActivity : AppCompatActivity() {
         setContent {
             val navController = rememberNavController()
             val selectedItem = remember { mutableStateListOf<People>() }
-            CKTheme {
+            CKSimpleTheme {
                 NavHost(navController, startDestination = "invite_group") {
                     composable("invite_group") {
                         inviteGroupViewModel.updateContactList()

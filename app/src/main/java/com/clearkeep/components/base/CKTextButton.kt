@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.components.primaryDefault
 
 @Composable
 fun CKTextButton(
@@ -24,7 +24,8 @@ fun CKTextButton(
     TextButton(
         onClick = onClick,
         colors = ButtonDefaults.textButtonColors(
-            contentColor = getTextContentColor(textButtonType)
+            contentColor = getTextContentColor(textButtonType),
+            disabledContentColor = grayscale3
         ),
         enabled = enabled,
         modifier = modifier,
@@ -37,10 +38,11 @@ fun CKTextButton(
     }
 }
 
+@Composable
 private fun getTextContentColor(textButtonType: TextButtonType): Color {
     return when(textButtonType) {
         TextButtonType.White -> grayscaleOffWhite
-        TextButtonType.Blue -> primaryDefault
+        TextButtonType.Blue -> MaterialTheme.colors.primary
     }
 }
 

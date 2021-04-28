@@ -35,7 +35,7 @@ fun InviteGroupScreen(
     val textSearch = remember { mutableStateOf("") }
 
     Surface(
-        color = grayscaleOffWhite
+        color = MaterialTheme.colors.background
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -55,7 +55,7 @@ fun InviteGroupScreen(
                         Icon(
                             imageVector = Icons.Filled.Close,
                             contentDescription = "",
-                            tint = grayscale1
+                            tint = MaterialTheme.colors.primaryVariant
                         )
                     }
                 }
@@ -71,9 +71,7 @@ fun InviteGroupScreen(
                 )
             }
             Spacer(modifier = Modifier.height(25.dp))
-            Text("New Message", style = MaterialTheme.typography.h5.copy(
-                color = grayscaleBlack,
-            ))
+            CKHeaderText("New Message", headerTextType = HeaderTextType.Medium)
             Spacer(modifier = Modifier.height(24.dp))
             CKSearchBox(textSearch)
             if (selectedItem.isNotEmpty()) {
@@ -86,7 +84,7 @@ fun InviteGroupScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text("User in this Channel", style = MaterialTheme.typography.body2.copy(
-                color = grayscale2,
+                color = MaterialTheme.colors.onBackground,
                 fontSize = 16.sp
             ))
             Spacer(modifier = Modifier.height(16.dp))
