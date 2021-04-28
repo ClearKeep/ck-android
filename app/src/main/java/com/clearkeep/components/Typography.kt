@@ -1,7 +1,6 @@
 package com.clearkeep.components
 
 import androidx.compose.material.Typography
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -35,16 +34,16 @@ val ckTypography = Typography(
     h4 = TextStyle(
         fontFamily = poppinsFontFamily,
         fontWeight = FontWeight.W600,
-        fontSize = 34.sp
+        fontSize = 24.sp
     ),
     h5 = TextStyle(
         fontFamily = poppinsFontFamily,
         fontWeight = FontWeight.W600,
-        fontSize = 20.sp
+        fontSize = 20.sp,
     ),
     h6 = TextStyle(
         fontFamily = poppinsFontFamily,
-        fontWeight = FontWeight.W400,
+        fontWeight = FontWeight.W600,
         fontSize = 16.sp
     ),
     subtitle1 = TextStyle(

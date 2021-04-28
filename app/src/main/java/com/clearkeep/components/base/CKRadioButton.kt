@@ -44,7 +44,7 @@ fun CKRadioButton(
                 Icon(
                     painter = painterResource(R.drawable.ic_done),
                     contentDescription = null,
-                    tint = Color.White
+                    tint = MaterialTheme.colors.onPrimary,
                 )
             }
         }
