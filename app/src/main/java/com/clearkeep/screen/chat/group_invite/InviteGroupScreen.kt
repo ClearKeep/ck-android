@@ -4,21 +4,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import kotlinx.coroutines.flow.collect
@@ -26,15 +24,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun InviteGroupScreen(
-        inviteGroupViewModel: InviteGroupViewModel,
-        onFriendSelected: (List<People>) -> Unit,
-        onDirectFriendSelected: (People) -> Unit,
-        onBackPressed: () -> Unit,
-        isCreatePeerGroup: Boolean = true
+    inviteGroupViewModel: InviteGroupViewModel,
+    selectedItem: SnapshotStateList<People>,
+    onFriendSelected: (List<People>) -> Unit,
+    onDirectFriendSelected: (People) -> Unit,
+    onBackPressed: () -> Unit,
+    isCreatePeerGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
     val textSearch = remember { mutableStateOf("") }
-    val selectedItem = remember { mutableStateListOf<People>() }
 
     Surface(
         color = grayscaleOffWhite
