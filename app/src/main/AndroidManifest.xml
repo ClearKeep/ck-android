@@ -146,6 +146,10 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".screen.main_antx.MainActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
     </application>
 
 </manifest>

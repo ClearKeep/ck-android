@@ -9,6 +9,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val roomRepository: GroupRepository,
 ): ViewModel() {
+    var channelIdLive : Long?=null
     init {
         // TODO: load channel and select first channel as default
         selectChannel(1)
@@ -30,5 +31,7 @@ class HomeViewModel @Inject constructor(
 
     fun searchGroup(text: String) {}
 
-    fun selectChannel(channelId: Long) {}
+    fun selectChannel(channelId: Long) {
+        this.channelIdLive=channelId
+    }
 }
