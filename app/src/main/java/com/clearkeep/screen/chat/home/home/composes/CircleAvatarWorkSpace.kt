@@ -1,10 +1,11 @@
 package com.clearkeep.screen.chat.home.home.composes
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -12,19 +13,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.grayscale2
+import com.clearkeep.components.primaryDefault
+import com.clearkeep.db.clear_keep.model.Server
 
 
 @Composable
-fun CircleAvatarWorkSpace(url:String?, name:String, size: Dp = 48.dp, ) {
-    val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
+fun CircleAvatarWorkSpace(item: Server, idLive: Long?) {
+    val displayName =
+        if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
+    Column(modifier = if (idLive == item.id) Modifier
+        .size(60.dp)
+        .background(shape = CircleShape,color = Color.Transparent)
+        .border(2.dp, Color.Magenta,shape = CircleShape)
+
+    else Modifier.height(56.dp).width(56.dp)
+        .background(
+            shape = CircleShape,
+            color = Color.White
+        )
+        ,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
     Surface(
         shape = CircleShape,
         modifier = Modifier
-            .size(size)
+            .size(48.dp)
     ) {
         Column(
             modifier = Modifier.background(
@@ -43,5 +62,6 @@ fun CircleAvatarWorkSpace(url:String?, name:String, size: Dp = 48.dp, ) {
                 color = MaterialTheme.colors.onSurface,
             ))
         }
+    }
     }
 }
