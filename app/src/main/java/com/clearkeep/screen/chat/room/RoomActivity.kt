@@ -52,7 +52,6 @@ class RoomActivity : AppCompatActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.backgroundGradientStart)
 
         val roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""

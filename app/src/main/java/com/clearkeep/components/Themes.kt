@@ -64,8 +64,8 @@ fun CKTheme(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            backgroundGradientStart,
-                            backgroundGradientEnd
+                            if (darkTheme) grayscaleBlack else backgroundGradientStart,
+                            if (darkTheme) grayscaleBlack else backgroundGradientEnd,
                         )
                     )
                 )
