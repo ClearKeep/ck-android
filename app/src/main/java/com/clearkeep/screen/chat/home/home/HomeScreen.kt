@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
+import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.ChatGroup
@@ -46,12 +47,10 @@ fun HomeScreen(
     Row(
         Modifier
             .fillMaxSize()
-            .background(grayscaleOffWhite)
     ) {
         Box(
             Modifier
                 .width(84.dp)
-                .background(Color.White)
         ) {
             LeftMenu(homeViewModel)
         }
@@ -69,16 +68,15 @@ fun HomeScreen(
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.size(20.dp))
         Column(
             modifier = Modifier
-                .weight(0.66f)
+                .weight(0.66f).padding(top = 20.dp)
                 .background(
                     shape = RoundedCornerShape(topEnd = 30.dp),
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            backgroundGradientStart,
-                            backgroundGradientEnd
+                            if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
+                            if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
                         )
                     )
                 ),horizontalAlignment = Alignment.CenterHorizontally
@@ -128,8 +126,8 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            backgroundGradientStart,
-                            backgroundGradientEnd
+                            if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
+                            if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
                         )
                     )
                 ),
@@ -159,7 +157,6 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String,onItemClickListener: ((Long) -> Unit)? = null) {
     Row(
         modifier = Modifier
-            .padding(top = 16.dp)
             .clickable {
                 onItemClickListener?.invoke(chatGroup.id)
             }
@@ -170,13 +167,16 @@ fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String,onItemClickListe
             }?.userName ?: ""
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             CircleAvatarStatus(url = "", name = roomName, status = "")
             Text(
                 text = roomName, modifier = Modifier
                     .padding(start = 16.dp)
                     .weight(0.66f), style = TextStyle(
-                    color = grayscale2, fontSize = 14.sp, fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colors.onBackground, fontSize = 14.sp, fontWeight = FontWeight.Bold
                 )
             )
             /*Column(
@@ -209,16 +209,15 @@ fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String,onItemClickListe
 fun ChatGroupItemView(chatGroup: ChatGroup, onItemClickListener: ((Long) -> Unit)? = null) {
     Row(
         modifier = Modifier
-            .padding(top = 16.dp)
             .clickable {
                 onItemClickListener?.invoke(chatGroup.id)
             },
     ) {
-        Row() {
+        Row(modifier = Modifier.padding(top = 16.dp)) {
             Text(
                 text = chatGroup.groupName, modifier = Modifier
                     .weight(0.66f), style = TextStyle(
-                    color = grayscale2, fontSize = 14.sp, fontWeight = FontWeight.Bold
+                    color = MaterialTheme.colors.onBackground, fontSize = 14.sp, fontWeight = FontWeight.Bold
                 )
             )
             /*Column(
@@ -429,18 +428,7 @@ fun WorkSpaceView(
         }
 
         Spacer(Modifier.height(16.dp))
-
-        CKTextInputField(
-            stringResource(R.string.search),
-            singleLine = true,
-            leadingIcon = {
-                Image(
-                    painterResource(R.drawable.ic_search),
-                    contentDescription = null
-                )
-            }, modifier = Modifier, textValue = searchKey
-        )
-
+        CKSearchBox(searchKey)
         Spacer(modifier = Modifier.size(24.dp))
         NoteView()
         Spacer(modifier = Modifier.size(24.dp))
