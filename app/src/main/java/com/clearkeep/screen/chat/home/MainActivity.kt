@@ -152,6 +152,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 navigateToSearchScreen()
                             }, createGroupChat = {
                                 navigateToCreateGroupScreen(isDirectGroup = it)
+                            },gotoRoomById = {
+                                navigateToRoomScreen(it)
                             }
                         )
                     }

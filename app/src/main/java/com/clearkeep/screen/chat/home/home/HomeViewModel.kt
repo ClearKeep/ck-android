@@ -13,6 +13,7 @@ class HomeViewModel @Inject constructor(
     ): ViewModel() {
     var channelIdLive : Long?=null
     var myClintId: String =""
+
     init {
         // TODO: load channel and select first channel as default
         selectChannel(1)
