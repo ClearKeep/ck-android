@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -48,7 +49,7 @@ fun HomeScreen(
     ) {
         Box(
             Modifier
-                .width(88.dp)
+                .width(84.dp)
                 .background(Color.White)
         ) {
             LeftMenu(homeViewModel)
@@ -68,6 +69,8 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.size(20.dp))
+        Box {
+        }
         Column(
             modifier = Modifier
                 .weight(0.66f)
@@ -81,19 +84,32 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                     )
                 )
         ) {
-            Column {
+            Column(
+                Modifier.background(
+                    color = grayscaleOverlay, shape = RoundedCornerShape(topEnd = 30.dp),
+                ),horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 workSpaces.value?.let { item ->
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = 30.dp,
-                            end = 20.dp,
-                            start = 20.dp,
-                            bottom = 30.dp
+                            top = 20.dp,
+                            end = 10.dp,
+                            start = 10.dp,
+                            bottom = 20.dp
                         ),
                     ) {
                         itemsIndexed(item) { _, workSpace ->
-                            CircleAvatarWorkSpace(workSpace,mainViewModel.channelIdLive)
+                            Column(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(color = Color.Transparent)
+                                    .border(BorderStroke(1.dp, primaryDefault), shape = CircleShape),
+                                horizontalAlignment = Alignment.CenterHorizontally,verticalArrangement = Arrangement.Center
+
+                            ) {
+                                CircleAvatarWorkSpace(workSpace, mainViewModel.channelIdLive)
+                            }
                         }
 
                     }
@@ -115,21 +131,30 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                         )
                     )
                 ),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_button_profile),
-                null,
-                Modifier.size(50.dp),
-                alignment = Alignment.Center
-            )
+
+            ) {
+            Column(
+                Modifier
+                    .height(98.dp)
+                    .fillMaxWidth()
+                    .background(
+                        color = grayscaleOverlay,
+                    ), horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_button_profile),
+                    null,
+                    Modifier.size(50.dp),
+                    alignment = Alignment.Center
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ItemListDirectMessage(chatGroup: ChatGroup,clintId:String) {
+fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String) {
     Row(
         modifier = Modifier
             .padding(top = 16.dp)
@@ -224,11 +249,12 @@ fun ChatGroupView(viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boo
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             Row(
                 modifier = Modifier
-                    .weight(0.66f)
+                    .weight(0.66f),verticalAlignment = Alignment.CenterVertically
             ) {
                 CKHeaderText(
-                    text = "Group Chat (${chatGroups.value?.size})",headerTextType = HeaderTextType.Medium
-                    )
+                    text = "Group Chat (${chatGroups.value?.size})",
+                    headerTextType = HeaderTextType.Normal
+                )
                 Box(modifier = Modifier
                     .clickable {
                         rememberitemGroup.value = !rememberitemGroup.value
@@ -301,10 +327,11 @@ fun DirectMessagesView(
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             Row(
                 modifier = Modifier
-                    .weight(0.66f)
+                    .weight(0.66f),verticalAlignment = Alignment.CenterVertically
             ) {
                 CKHeaderText(
-                    text = "Direct Messages (${chatGroupDummy.value?.size})", headerTextType = HeaderTextType.Medium
+                    text = "Direct Messages (${chatGroupDummy.value?.size})",
+                    headerTextType = HeaderTextType.Normal
                 )
                 Box(modifier = Modifier
                     .clickable {
@@ -354,7 +381,7 @@ fun DirectMessagesView(
                         ),
                     ) {
                         itemsIndexed(item) { _, chatGroup ->
-                            ItemListDirectMessage(chatGroup,viewModel.myClintId)
+                            ItemListDirectMessage(chatGroup, viewModel.myClintId)
                         }
                     }
                 }
@@ -376,10 +403,10 @@ fun WorkSpaceView(
             .padding(start = 16.dp, end = 16.dp, top = 50.dp)
     ) {
         Spacer(modifier = Modifier.size(24.dp))
-        Row {
+        Row(modifier = Modifier,verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
                 text = "CK Development", modifier = Modifier
-                    .weight(0.66f),headerTextType = HeaderTextType.Large
+                    .weight(0.66f), headerTextType = HeaderTextType.Large
             )
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -421,7 +448,7 @@ fun NoteView() {
             contentDescription = null,
         )
         CKHeaderText(
-            text = "Notes", modifier = Modifier,headerTextType = HeaderTextType.Medium
+            text = "Notes", modifier = Modifier, headerTextType = HeaderTextType.Normal
         )
     }
 }
