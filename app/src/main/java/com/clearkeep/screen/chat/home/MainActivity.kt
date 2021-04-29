@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
+import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.CKTheme
@@ -31,6 +32,8 @@ import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.screen.chat.home.home.HomeScreen
 import com.clearkeep.screen.chat.home.home.HomeViewModel
+import com.clearkeep.screen.chat.home.profile.ProfileScreen
+import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity
@@ -52,6 +55,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private val homeViewModel: HomeViewModel by viewModels {
+        viewModelFactory
+    }
+
+    private val profileViewModel: ProfileViewModel by viewModels {
         viewModelFactory
     }
 
@@ -155,8 +162,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 navigateToCreateGroupScreen(isDirectGroup = it)
                             },gotoRoomById = {
                                 navigateToRoomScreen(it)
+                            },gotoProfile = {
+                                navigateToProfileScreen(navController)
                             }
                         )
+                    }
+                    composable("profile"){
+                        ProfileScreen(profileViewModel = profileViewModel, homeViewModel = mainViewModel) {
+                            logout()
+                        }
                     }
                 }
                 LogoutProgress()
@@ -190,6 +204,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         mainViewModel.logOutGoogle(this) {}
         mainViewModel.onLogOutMicrosoft(this)
         LoginManager.getInstance().logOut()
+    }
+
+    private fun navigateToProfileScreen(navController: NavController){
+        navController.navigate("profile")
     }
 
     private fun navigateToRoomScreen(groupId: Long) {
