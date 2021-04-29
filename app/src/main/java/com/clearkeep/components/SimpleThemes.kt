@@ -8,10 +8,11 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+@SuppressLint("ConflictingOnColor")
 val simpleLightThemeColors = lightColors(
     primary = primaryDefault,
-    primaryVariant = Color.White,
-    onPrimary = grayscale1,
+    primaryVariant = grayscale1,
+    onPrimary = Color.White,
 
     secondary = grayscale5,
     secondaryVariant = grayscale1,
