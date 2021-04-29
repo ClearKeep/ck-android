@@ -41,7 +41,8 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     gotoSearch: (() -> Unit),
     createGroupChat: ((isDirectGroup: Boolean) -> Unit),
-    gotoRoomById: ((idRoom: Long) -> Unit)
+    gotoRoomById: ((idRoom: Long) -> Unit),
+    gotoProfile: (() -> Unit),
 ) {
     val rooms = homeViewModel.groups.observeAsState()
     Row(
@@ -57,7 +58,7 @@ fun HomeScreen(
         Column(
             Modifier.fillMaxSize()
         ) {
-            WorkSpaceView(homeViewModel, gotoSearch, createGroupChat,onItemClickListener = gotoRoomById)
+            WorkSpaceView(homeViewModel, gotoSearch, createGroupChat,onItemClickListener = gotoRoomById,gotoProfile)
         }
     }
 
@@ -402,7 +403,8 @@ fun WorkSpaceView(
     homeViewModel: HomeViewModel,
     gotoSearch: () -> Unit,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
-    onItemClickListener: ((Long) -> Unit)?
+    onItemClickListener: ((Long) -> Unit)?,
+    gotoProfile:() -> Unit
 ) {
     val searchKey = remember { mutableStateOf("") }
     Column(
@@ -417,8 +419,9 @@ fun WorkSpaceView(
                     .weight(0.66f), headerTextType = HeaderTextType.Large
             )
             Column(
+                modifier = Modifier.clickable { gotoProfile.invoke() },
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_hamburger),
