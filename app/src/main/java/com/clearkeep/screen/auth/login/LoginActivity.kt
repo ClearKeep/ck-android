@@ -3,6 +3,7 @@ package com.clearkeep.screen.auth.login
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -199,6 +200,7 @@ class LoginActivity : AppCompatActivity() {
     private fun onSignInGoogleResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
+            Log.e("antx","onSignInGoogleResult: ${account.toString()}")
             lifecycleScope.launch {
                 account?.serverAuthCode
                 val res = account?.idToken?.let {
