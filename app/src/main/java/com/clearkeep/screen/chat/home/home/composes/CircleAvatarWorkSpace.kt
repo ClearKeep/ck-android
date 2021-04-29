@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.Server
 
 
@@ -24,17 +25,12 @@ fun CircleAvatarWorkSpace(item: Server, idWorkSpaceLive: Long?) {
         if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
     Surface(
         shape = CircleShape,
-        modifier = Modifier.size(48.dp)
+        modifier = Modifier.size(32.dp)
     ) {
         Column(
             modifier = Modifier.background(
                 shape = CircleShape,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        backgroundGradientStart,
-                        backgroundGradientEnd
-                    )
-                )
+                color = primaryDefault
             ),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
