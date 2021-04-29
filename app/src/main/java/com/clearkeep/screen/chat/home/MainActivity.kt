@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import androidx.navigation.compose.*
+import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.screen.auth.login.LoginActivity
@@ -77,7 +78,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         setContent {
-            CKTheme {
+            CKSimpleTheme {
                 MainComposable()
             }
         }
