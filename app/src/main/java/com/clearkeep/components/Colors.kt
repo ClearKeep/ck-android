@@ -23,6 +23,7 @@ val grayscale5 = Color(0xffEFF0F7)
 
 /* Grayscale/Off-white */
 val grayscaleOffWhite = Color(0xffFCFCFC)
+val grayscaleOverlay = Color(0xB8FCFCFC)
 
 /* Grayscale/Black */
 val grayscaleBlack = Color(0xff000000)
