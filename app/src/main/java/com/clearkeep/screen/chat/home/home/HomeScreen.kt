@@ -17,10 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
@@ -39,7 +39,8 @@ import com.clearkeep.screen.chat.home.home.composes.CircleAvatarWorkSpace
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     gotoSearch: (() -> Unit),
-    createGroupChat: ((isDirectGroup: Boolean) -> Unit)
+    createGroupChat: ((isDirectGroup: Boolean) -> Unit),
+    gotoRoomById: ((idRoom: Long) -> Unit)
 ) {
     val rooms = homeViewModel.groups.observeAsState()
     Row(
@@ -57,7 +58,7 @@ fun HomeScreen(
         Column(
             Modifier.fillMaxSize()
         ) {
-            WorkSpaceView(homeViewModel, gotoSearch, createGroupChat)
+            WorkSpaceView(homeViewModel, gotoSearch, createGroupChat,onItemClickListener = gotoRoomById)
         }
     }
 
@@ -69,8 +70,6 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.size(20.dp))
-        Box {
-        }
         Column(
             modifier = Modifier
                 .weight(0.66f)
@@ -82,7 +81,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                             backgroundGradientEnd
                         )
                     )
-                )
+                ),horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
                 Modifier.background(
@@ -91,7 +90,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
             ) {
                 workSpaces.value?.let { item ->
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),horizontalAlignment = Alignment.CenterHorizontally,
                         contentPadding = PaddingValues(
                             top = 20.dp,
                             end = 10.dp,
@@ -104,7 +103,10 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                 modifier = Modifier
                                     .size(48.dp)
                                     .background(color = Color.Transparent)
-                                    .border(BorderStroke(1.dp, primaryDefault), shape = CircleShape),
+                                    .border(
+                                        BorderStroke(1.5.dp, primaryDefault),
+                                        shape = CircleShape
+                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally,verticalArrangement = Arrangement.Center
 
                             ) {
@@ -117,7 +119,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
             }
         }
 
-        Spacer(modifier = Modifier.size(2.dp))
+        Spacer(modifier = Modifier.size(1.dp))
 
         Column(
             modifier = Modifier
@@ -154,10 +156,13 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 }
 
 @Composable
-fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String) {
+fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String,onItemClickListener: ((Long) -> Unit)? = null) {
     Row(
         modifier = Modifier
             .padding(top = 16.dp)
+            .clickable {
+                onItemClickListener?.invoke(chatGroup.id)
+            }
     ) {
         val roomName = if (chatGroup.isGroup()) chatGroup.groupName else {
             chatGroup.clientList.firstOrNull { client ->
@@ -165,7 +170,7 @@ fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String) {
             }?.userName ?: ""
         }
 
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             CircleAvatarStatus(url = "", name = roomName, status = "")
             Text(
                 text = roomName, modifier = Modifier
@@ -201,10 +206,13 @@ fun ItemListDirectMessage(chatGroup: ChatGroup, clintId: String) {
 
 
 @Composable
-fun ChatGroupItemView(chatGroup: ChatGroup) {
+fun ChatGroupItemView(chatGroup: ChatGroup, onItemClickListener: ((Long) -> Unit)? = null) {
     Row(
         modifier = Modifier
             .padding(top = 16.dp)
+            .clickable {
+                onItemClickListener?.invoke(chatGroup.id)
+            },
     ) {
         Row() {
             Text(
@@ -240,7 +248,10 @@ fun ChatGroupItemView(chatGroup: ChatGroup) {
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ChatGroupView(viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boolean) -> Unit) {
+fun ChatGroupView(
+    viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boolean) -> Unit,
+    onItemClickListener: ((Long) -> Unit)? = null
+) {
     val chatGroups = viewModel.chatGroups.observeAsState()
     val rememberitemGroup = remember { mutableStateOf(true) }
     Column(
@@ -251,22 +262,22 @@ fun ChatGroupView(viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boo
                 modifier = Modifier
                     .weight(0.66f),verticalAlignment = Alignment.CenterVertically
             ) {
-                CKHeaderText(
-                    text = "Group Chat (${chatGroups.value?.size})",
-                    headerTextType = HeaderTextType.Normal
-                )
-                Box(modifier = Modifier
-                    .clickable {
-                        rememberitemGroup.value = !rememberitemGroup.value
-                    }
-                    .padding(8.dp)) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_chev_down),
-                        null,
-                        alignment = Alignment.Center
+                Row(modifier = Modifier.clickable {
+                    rememberitemGroup.value = !rememberitemGroup.value
+                },verticalAlignment = Alignment.CenterVertically) {
+                    CKHeaderText(
+                        text = "Group Chat (${chatGroups.value?.size})",
+                        headerTextType = HeaderTextType.Normal,color = grayscale2
                     )
-                }
 
+                    Box(modifier = Modifier.padding(8.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_chev_down),
+                            null,
+                            alignment = Alignment.Center
+                        )
+                    }
+                }
             }
             Box(modifier = Modifier
                 .clickable {
@@ -297,13 +308,12 @@ fun ChatGroupView(viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boo
                 chatGroups.value?.let { item ->
                     LazyColumn(
                         contentPadding = PaddingValues(
-                            top = 16.dp,
+                            top = 4.dp,
                             start = 20.dp,
-                            bottom = 16.dp
                         ),
                     ) {
                         itemsIndexed(item) { _, chatGroup ->
-                            ChatGroupItemView(chatGroup)
+                            ChatGroupItemView(chatGroup,onItemClickListener)
                         }
                     }
                 }
@@ -317,34 +327,33 @@ fun ChatGroupView(viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boo
 @Composable
 fun DirectMessagesView(
     viewModel: HomeViewModel,
-    createGroupChat: (isDirectGroup: Boolean) -> Unit
+    createGroupChat: (isDirectGroup: Boolean) -> Unit,
+    onItemClickListener: ((Long) -> Unit)? = null
 ) {
     val chatGroupDummy = viewModel.directGroups.observeAsState()
-    val rememberitemGroup = remember { mutableStateOf(true) }
-    Column(
-        modifier = Modifier.wrapContentHeight()
-    ) {
+    val rememberItemGroup = remember { mutableStateOf(true) }
+    Column(modifier = Modifier.wrapContentHeight()) {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             Row(
                 modifier = Modifier
-                    .weight(0.66f),verticalAlignment = Alignment.CenterVertically
+                    .weight(0.66f), verticalAlignment = Alignment.CenterVertically
             ) {
-                CKHeaderText(
-                    text = "Direct Messages (${chatGroupDummy.value?.size})",
-                    headerTextType = HeaderTextType.Normal
-                )
-                Box(modifier = Modifier
+                Row(modifier = Modifier
                     .clickable {
-                        rememberitemGroup.value = !rememberitemGroup.value
-                    }
-                    .padding(8.dp)) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_chev_down),
-                        null,
-                        alignment = Alignment.Center
+                        rememberItemGroup.value = !rememberItemGroup.value
+                    }, verticalAlignment = Alignment.CenterVertically) {
+                    CKHeaderText(
+                        text = "Direct Messages (${chatGroupDummy.value?.size})",
+                        headerTextType = HeaderTextType.Normal,color = grayscale2
                     )
+                    Box(modifier = Modifier.padding(8.dp)) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_chev_down),
+                            null,
+                            alignment = Alignment.Center
+                        )
+                    }
                 }
-
             }
             Box(modifier = Modifier
                 .clickable {
@@ -360,7 +369,7 @@ fun DirectMessagesView(
         }
         Column() {
             AnimatedVisibility(
-                visible = rememberitemGroup.value,
+                visible = rememberItemGroup.value,
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
                     animationSpec = tween(300, easing = LinearOutSlowInEasing)
@@ -375,13 +384,12 @@ fun DirectMessagesView(
                 chatGroupDummy.value?.let { item ->
                     LazyColumn(
                         contentPadding = PaddingValues(
-                            top = 4.dp,
                             start = 20.dp,
-                            bottom = 16.dp
+                            top = 4.dp
                         ),
                     ) {
                         itemsIndexed(item) { _, chatGroup ->
-                            ItemListDirectMessage(chatGroup, viewModel.myClintId)
+                            ItemListDirectMessage(chatGroup, viewModel.myClintId,onItemClickListener)
                         }
                     }
                 }
@@ -394,13 +402,14 @@ fun DirectMessagesView(
 fun WorkSpaceView(
     homeViewModel: HomeViewModel,
     gotoSearch: () -> Unit,
-    createGroupChat: (isDirectGroup: Boolean) -> Unit
+    createGroupChat: (isDirectGroup: Boolean) -> Unit,
+    onItemClickListener: ((Long) -> Unit)?
 ) {
     val searchKey = remember { mutableStateOf("") }
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 50.dp)
+            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
     ) {
         Spacer(modifier = Modifier.size(24.dp))
         Row(modifier = Modifier,verticalAlignment = Alignment.CenterVertically) {
@@ -419,10 +428,10 @@ fun WorkSpaceView(
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(16.dp))
 
         CKTextInputField(
-            "Search",
+            stringResource(R.string.search),
             singleLine = true,
             leadingIcon = {
                 Image(
@@ -435,8 +444,16 @@ fun WorkSpaceView(
         Spacer(modifier = Modifier.size(24.dp))
         NoteView()
         Spacer(modifier = Modifier.size(24.dp))
-        ChatGroupView(homeViewModel, createGroupChat = createGroupChat)
-        DirectMessagesView(homeViewModel, createGroupChat = createGroupChat)
+        ChatGroupView(
+            homeViewModel, createGroupChat = createGroupChat,
+            onItemClickListener = onItemClickListener
+        )
+        Spacer(modifier = Modifier.size(24.dp))
+        DirectMessagesView(
+            homeViewModel,
+            createGroupChat = createGroupChat,
+            onItemClickListener = onItemClickListener
+        )
     }
 }
 
@@ -448,7 +465,7 @@ fun NoteView() {
             contentDescription = null,
         )
         CKHeaderText(
-            text = "Notes", modifier = Modifier, headerTextType = HeaderTextType.Normal
+            text = stringResource(R.string.notes), modifier = Modifier.padding(start = 10.dp), headerTextType = HeaderTextType.Normal,color = grayscale2,
         )
     }
 }

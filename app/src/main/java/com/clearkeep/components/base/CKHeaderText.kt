@@ -5,6 +5,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
@@ -13,16 +14,19 @@ import com.clearkeep.components.grayscaleOffWhite
 fun CKHeaderText(
     text: String,
     modifier: Modifier = Modifier,
-    headerTextType: HeaderTextType = HeaderTextType.Normal
+    headerTextType: HeaderTextType = HeaderTextType.Normal,
+    color: Color = grayscaleBlack
 ) {
     Text(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(
-            color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack
+            color = if (isSystemInDarkTheme()) grayscaleOffWhite else color
         )
     )
 }
+
+
 
 @Composable
 fun getTypography(headerTextType: HeaderTextType): TextStyle {
