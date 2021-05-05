@@ -156,13 +156,13 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 NavHost(navController, startDestination = "home_screen") {
                     composable("home_screen") {
                         HomeScreen(
-                            homeViewModel, gotoSearch = {
+                            homeViewModel,profileViewModel,navController, gotoSearch = {
                                 navigateToSearchScreen()
                             }, createGroupChat = {
                                 navigateToCreateGroupScreen(isDirectGroup = it)
                             },gotoRoomById = {
                                 navigateToRoomScreen(it)
-                            },gotoProfile = {
+                            },logout = {
                                 navigateToProfileScreen(navController)
                             }
                         )
