@@ -118,38 +118,35 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun decryptMessageFromPeer(value: MessageOuterClass.MessageObjectResponse,onSuccess : ((String)-> Unit)?=null) {
-        try {
+    suspend fun decryptMessageFromPeer(value: MessageOuterClass.MessageObjectResponse) : Message? {
+        return try {
             val plainMessage = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
-            saveNewMessage(value, plainMessage)
-            onSuccess?.invoke(plainMessage)
             printlnCK("decryptMessageFromPeer: $plainMessage")
-        } catch (e: Exception) {
-            saveNewMessage(value, getUnableErrorMessage(e.message))
-            printlnCK("decryptMessageFromPeer error : $e")
-        }
-    }
-
-    suspend fun decryptMessageFromGroup(value: MessageOuterClass.MessageObjectResponse,onSuccess : ((String)-> Unit)?=null) {
-        try {
-            val plainMessage = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
             saveNewMessage(value, plainMessage)
-            onSuccess?.invoke(plainMessage)
-
-            printlnCK("decryptMessageFromGroup: $plainMessage")
         } catch (e: Exception) {
+            printlnCK("decryptMessageFromPeer error : $e")
             saveNewMessage(value, getUnableErrorMessage(e.message))
-            printlnCK("decryptMessageFromGroup error : $e")
         }
     }
 
-    private suspend fun saveNewMessage(value: MessageOuterClass.MessageObjectResponse, messageString: String) {
+    suspend fun decryptMessageFromGroup(value: MessageOuterClass.MessageObjectResponse) : Message? {
+        return try {
+            val plainMessage = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
+            printlnCK("decryptMessageFromGroup: $plainMessage")
+            saveNewMessage(value, plainMessage)
+        } catch (e: Exception) {
+            printlnCK("decryptMessageFromGroup error : $e")
+            saveNewMessage(value, getUnableErrorMessage(e.message))
+        }
+    }
+
+    private suspend fun saveNewMessage(value: MessageOuterClass.MessageObjectResponse, messageString: String) : Message? {
         val groupId = value.groupId
         var room: ChatGroup? = groupRepository.getGroupByID(groupId)
 
         if (room == null) {
             printlnCK("insertNewMessage error: can not a room with id $groupId")
-            return
+            return null
         }
 
         val messageRecord = convertMessageResponse(value, messageString)
@@ -176,6 +173,8 @@ class ChatRepository @Inject constructor(
             lastMessageSyncTimestamp = room.lastMessageSyncTimestamp
         )
         groupRepository.updateRoom(updateRoom)
+
+        return messageRecord
     }
 
     private fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String): Message {

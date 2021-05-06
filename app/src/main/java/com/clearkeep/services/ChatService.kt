@@ -23,23 +23,9 @@ import notification.NotifyOuterClass
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import android.app.NotificationManager
-
-import android.app.PendingIntent
-
-import android.app.Notification
-import androidx.core.app.NotificationCompat
-import com.clearkeep.R
-import com.clearkeep.screen.chat.room.RoomActivity
-
-import android.app.NotificationChannel
-import android.media.AudioAttributes
-import android.media.RingtoneManager
-import android.util.Log
-import com.clearkeep.screen.videojanus.DismissNotificationReceiver
-import android.widget.RemoteViews
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.screen.videojanus.MessageNotificationHelper.showNotification
+import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.screen.videojanus.generateMessagingStyleNotification
 
 
 @AndroidEntryPoint
@@ -205,16 +191,18 @@ class ChatService : Service() {
                 override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
                     scope.launch {
                         if (!isGroup(value.groupType)) {
-                            chatRepository.decryptMessageFromPeer(value) {
+                            val res = chatRepository.decryptMessageFromPeer(value)
+                            if (res != null) {
                                 val roomId = chatRepository.getJoiningRoomId()
                                 val groupId = value.groupId
-                                handleShowNotification(roomId=roomId,groupId=groupId,it)
+                                handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
                             }
                         } else {
-                            chatRepository.decryptMessageFromGroup(value) {
+                            val res = chatRepository.decryptMessageFromGroup(value)
+                            if (res != null) {
                                 val roomId = chatRepository.getJoiningRoomId()
                                 val groupId = value.groupId
-                                handleShowNotification(roomId=roomId,groupId=groupId,it)
+                                handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
                             }
                         }
                     }
@@ -230,22 +218,17 @@ class ChatService : Service() {
         })
     }
 
-    fun handleShowNotification(roomId : Long, groupId: Long,message:String){
+    fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message) {
         scope.launch {
             val group = groupRepository.getGroupByID(groupId = groupId)
-            val groupName = if (group?.isGroup()==true) group.groupName else {
-                group?.clientList?.firstOrNull { client ->
-                    client.id != userManager.getClientId()
-                }?.userName ?: ""
-            }
+            val user = People(userManager.getUserName(), userManager.getClientId())
             group?.let {
-                if (roomId <= 0 || roomId != it.id) {
-                    showNotification(
+                if (joiningRoomId != groupId) {
+                    generateMessagingStyleNotification(
                         context = applicationContext,
-                        packageName = packageName,
-                        userName = groupName,
-                        message = message,
-                        groupId = it.id
+                        me = user,
+                        chatGroup = it,
+                        messages = listOf(message),
                     )
                 }
             }
