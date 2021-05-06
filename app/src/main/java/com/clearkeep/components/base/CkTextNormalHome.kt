@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun CkTextNormalHome(
+fun CkTextNormal(
     text: String,
     color: Color? = MaterialTheme.colors.onBackground,
     fontSize: TextUnit = 14.sp,

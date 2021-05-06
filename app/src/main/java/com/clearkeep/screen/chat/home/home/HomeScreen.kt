@@ -21,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +29,6 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
-import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.home.home.composes.CircleAvatarStatus
@@ -47,7 +45,7 @@ fun HomeScreen(
     gotoSearch: (() -> Unit),
     createGroupChat: ((isDirectGroup: Boolean) -> Unit),
     gotoRoomById: ((idRoom: Long) -> Unit),
-    logout: (() -> Unit),
+    onlogout: (() -> Unit),
 ) {
     val rooms = homeViewModel.groups.observeAsState()
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
@@ -95,10 +93,11 @@ fun HomeScreen(
             Modifier
                 .fillMaxSize()
                 .focusable(true)
+
         ) {
             SiteMenuScreen(homeViewModel,profileViewModel,navController, closeSiteMenu = {
                 rememberStateSiteMenu.value = false
-            })
+            }, onLogout = onlogout)
         }
     }
 
@@ -108,6 +107,7 @@ fun HomeScreen(
 @Composable
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
+
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
