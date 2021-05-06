@@ -44,6 +44,11 @@
     <string name="notes">Notes</string>
     <string name="search">Search</string>
 
+    //profile
+    <string name="enter_new_password">Enter Your New Password</string>
+    <string name="enter_detail_change_pass">Please enter your details to change password</string>
+    <string name="save">Save</string>
+
     <string name="reply_label">Reply</string>
     <string name="reply_name">Me</string>
 </resources>
