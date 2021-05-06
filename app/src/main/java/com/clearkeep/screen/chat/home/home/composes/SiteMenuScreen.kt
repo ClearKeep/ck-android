@@ -3,14 +3,15 @@ package com.clearkeep.screen.chat.home.site_menu
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -22,10 +23,11 @@ import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CkTextNormalHome
+import com.clearkeep.components.base.CkTextNormal
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.screen.chat.home.home.HomeViewModel
 import com.clearkeep.screen.chat.home.home.composes.CircleAvatarSite
+import com.clearkeep.screen.chat.home.profile.LogoutConfirmDialog
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 
 @Composable
@@ -33,28 +35,26 @@ fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
     profileViewModel: ProfileViewModel,
     navController:NavController,
-    closeSiteMenu: (() -> Unit)
+    closeSiteMenu: (() -> Unit),
+    onLogout: (()->Unit)
 ) {
-    Surface(
-        color=Color.White.copy(0.6f),
+    val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
+    Box(
         modifier = Modifier
-            .background(
+            .background(grayscaleOverlay)
+            .focusable()
+            .clickable(enabled = true, onClick = { null })
+    ) {
+        Row(Modifier.background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
                         if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart40,
                         if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd40
-                    )
-                )
-
-            )
-            .focusable()
-            .clickable(enabled = true, onClick = { null })
-    ) {
-        Row() {
+                    ))
+                )) {
             Box(
                 Modifier
                     .width(108.dp)
-                    .background(color = grayscaleOverlay),
             ) {
 
             }
@@ -64,7 +64,7 @@ fun SiteMenuScreen(
                     .padding(top = 20.dp, bottom = 20.dp)
                     .background(
                         Color.White,
-                        shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp)
+                        shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
                     ),
 
                 ) {
@@ -73,21 +73,23 @@ fun SiteMenuScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp)
                 ) {
-                    Spacer(Modifier.size(36.dp))
+                    Spacer(Modifier.size(24.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_cross),
-                            contentDescription = null, modifier = Modifier
-                                .clickable {
-                                    closeSiteMenu.invoke()
-                                }
-                        )
+                        IconButton(
+                            onClick = { closeSiteMenu.invoke() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "",
+                                tint = MaterialTheme.colors.primaryVariant
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.size(16.dp))
                     HeaderSite(profileViewModel)
                     Spacer(modifier = Modifier.size(24.dp))
                     Divider(color = grayscale3)
@@ -95,7 +97,11 @@ fun SiteMenuScreen(
                         "CK Development", navController
                     )
                     Divider(color = grayscale3)
-                    SettingGeneral(navController)
+                    SettingGeneral(navController) {
+                        setShowReminderDialog.invoke(true)
+                    }
+                    LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
+
                 }
             }
         }
@@ -121,7 +127,7 @@ fun HeaderSite(profileViewModel: ProfileViewModel) {
                     text = "Online",
                     style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
                 )
-                Box(modifier = Modifier.padding(8.dp)) {
+                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_chev_down),
                         null,
@@ -149,6 +155,7 @@ fun SettingServer(
 @Composable
 fun SettingGeneral(
     navController: NavController,
+    onClickAction: () -> Unit
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
         CKHeaderText(text = "General", headerTextType = HeaderTextType.Normal, color = grayscale2)
@@ -156,7 +163,7 @@ fun SettingGeneral(
             navController.navigate("profile")
         })
         ItemSiteSetting("Application Settings", R.drawable.ic_gear)
-        ItemSiteSetting("Logout", R.drawable.ic_logout, textColor = errorDefault)
+        ItemSiteSetting("Logout", R.drawable.ic_logout, textColor = errorDefault,onClickAction = onClickAction)
     }
 }
 
@@ -169,9 +176,9 @@ fun ItemSiteSetting(
 ) {
     Row(modifier = Modifier
         .padding(top = 16.dp)
-        .clickable { onClickAction?.invoke() }) {
+        .clickable { onClickAction?.invoke() },verticalAlignment = Alignment.CenterVertically) {
         Image(painter = painterResource(icon), contentDescription = null)
-        CkTextNormalHome(
+        CkTextNormal(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)
                 .padding(start = 16.dp)
