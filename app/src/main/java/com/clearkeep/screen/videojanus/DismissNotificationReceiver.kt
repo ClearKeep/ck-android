@@ -3,7 +3,6 @@ package com.clearkeep.screen.videojanus
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
@@ -34,7 +33,7 @@ class DismissNotificationReceiver : BroadcastReceiver() {
             }
             ACTION_MESSAGE_CANCEL -> {
                 printlnCK("onReceive action ACTION_MESSAGE_CANCEL ")
-                NotificationManagerCompat.from(context).cancel(null, MESSAGE_NOTIFICATION_ID)
+                NotificationManagerCompat.from(context).cancel(null, MESSAGE_HEADS_UP_NOTIFICATION_ID)
             }
         }
     }
