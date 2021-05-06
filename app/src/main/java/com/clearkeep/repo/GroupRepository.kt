@@ -105,7 +105,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun getGroupFromAPI(groupId: Long): ChatGroup? = withContext(Dispatchers.IO) {
+    private suspend fun getGroupFromAPI(groupId: Long): ChatGroup? = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
         try {
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
@@ -196,9 +196,22 @@ class GroupRepository @Inject constructor(
         val oldGroup = groupDAO.getGroupById(response.groupId)
         val isRegisteredKey = oldGroup?.isJoined ?: false
         val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: userManager.getLoginTime()
+
+        val clientList = response.lstClientList.map {
+            People(
+                id = it.id,
+                userName = it.displayName
+            )
+        }
+        val groupName = if (isGroup(response.groupType)) response.groupName else {
+            clientList?.firstOrNull { client ->
+                client.id != userManager.getClientId()
+            }?.userName ?: ""
+        }
+
         return ChatGroup(
                 id = response.groupId,
-                groupName = response.groupName,
+                groupName = groupName,
                 groupAvatar = response.groupAvatar,
                 groupType = response.groupType,
                 createBy = response.createdByClientId,
@@ -206,12 +219,7 @@ class GroupRepository @Inject constructor(
                 updateBy = response.updatedByClientId,
                 updateAt = response.updatedAt,
                 rtcToken = response.groupRtcToken,
-                clientList = response.lstClientList.map {
-                    People(
-                        id = it.id,
-                        userName = it.displayName
-                    )
-                },
+                clientList = clientList,
                 isJoined = isRegisteredKey,
                 lastMessage = convertAndInsertLastMessageResponseFromGroup(
                         response.lastMessage, clientBlocking,
