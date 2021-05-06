@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun CkTextNormal(
+fun SideBarLabel(
     text: String,
     color: Color? = MaterialTheme.colors.onBackground,
     fontSize: TextUnit = 14.sp,
