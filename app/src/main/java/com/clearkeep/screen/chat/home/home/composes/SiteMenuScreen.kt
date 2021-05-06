@@ -23,7 +23,7 @@ import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CkTextNormal
+import com.clearkeep.components.base.SideBarLabel
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.screen.chat.home.home.HomeViewModel
 import com.clearkeep.screen.chat.home.home.composes.CircleAvatarSite
@@ -63,7 +63,7 @@ fun SiteMenuScreen(
                     .fillMaxSize()
                     .padding(top = 20.dp, bottom = 20.dp)
                     .background(
-                        Color.White,
+                        if (isSystemInDarkTheme()) grayscale1 else Color.White,
                         shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
                     ),
 
@@ -177,8 +177,8 @@ fun ItemSiteSetting(
     Row(modifier = Modifier
         .padding(top = 16.dp)
         .clickable { onClickAction?.invoke() },verticalAlignment = Alignment.CenterVertically) {
-        Image(painter = painterResource(icon), contentDescription = null)
-        CkTextNormal(
+        Icon(painter = painterResource(icon), contentDescription = null)
+        SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)
                 .padding(start = 16.dp)
