@@ -3,8 +3,6 @@ package com.clearkeep.screen.chat.home.profile
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Login
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
@@ -15,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +50,6 @@ fun ProfileScreen(
                 )
             )
     ) {
-        Spacer(modifier = Modifier.size(24.dp))
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,8 +58,9 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        color = Color.White
-                    ), horizontalAlignment = Alignment.CenterHorizontally
+                        color = if (isSystemInDarkTheme()) Color.Black else Color.White
+                    )
+                    .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
                 profile?.value?.let { user ->
@@ -83,12 +80,12 @@ fun ProfileScreen(
                                 Modifier.padding(start = 16.dp),
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                CkTextNormal(
+                                SideBarLabel(
                                     text = "Change profile picture",
                                     color = primaryDefault,
                                     fontSize = 14.sp,
                                 )
-                                CkTextNormal(
+                                SideBarLabel(
                                     text = " Maximum fize size 5MB",
                                     color = grayscale3,
                                     modifier = Modifier,
@@ -106,24 +103,26 @@ fun ProfileScreen(
                         ChangePassword(onChangePassword)
                         Spacer(Modifier.height(24.dp))
                         TwoFaceAuthView (authCheckedChange)
+                        Spacer(Modifier.height(24.dp))
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(end = 8.dp, bottom = 20.dp),
+                            verticalArrangement = Arrangement.Bottom,
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            Text(
+                                "version $versionName (${env.toUpperCase()})",
+                                style = MaterialTheme.typography.caption.copy(
+                                )
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(40.dp))
 
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(end = 8.dp, bottom = 20.dp),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    "version $versionName (${env.toUpperCase()})",
-                    style = MaterialTheme.typography.caption.copy(
-                    )
-                )
-            }
+
         }
     }
 }
@@ -163,7 +162,7 @@ fun HeaderProfile(onCloseView: () -> Unit) {
             }
         }
         Spacer(modifier = Modifier.size(16.dp))
-        CkTextNormal(text = "Profile Settings", fontSize = 20.sp, color = grayscaleBlack)
+        SideBarLabel(text = "Profile Settings", fontSize = 20.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack)
         Spacer(modifier = Modifier.size(16.dp))
     }
 }
@@ -205,9 +204,9 @@ fun ItemInformationView(header: String, textValue: MutableState<String>, enable:
 @Composable
 fun ChangePassword(onChangePassword: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-        CkTextNormal(
+        SideBarLabel(
             text = "Change Password", modifier = Modifier
-                .weight(0.66f), fontSize = 14.sp, color = primaryDefault
+                .weight(0.66f), fontSize = 14.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack
         )
         Column(
             modifier = Modifier.clickable { },
@@ -231,9 +230,9 @@ fun ChangePassword(onChangePassword: () -> Unit) {
 fun TwoFaceAuthView(mutableState: MutableState<Boolean>) {
     Column() {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CkTextNormal(
+            SideBarLabel(
                 text = "Two Factors Authentication", modifier = Modifier
-                    .weight(0.66f), fontSize = 16.sp, color = grayscaleBlack
+                    .weight(0.66f), fontSize = 16.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack
             )
             Column(
                 modifier = Modifier.clickable { },
@@ -245,7 +244,9 @@ fun TwoFaceAuthView(mutableState: MutableState<Boolean>) {
                     onCheckedChange = { mutableState.value = it },
                     colors = SwitchDefaults.colors(checkedThumbColor = primaryDefault,checkedTrackColor = primaryDefault,
                     uncheckedThumbColor = grayscale3,uncheckedTrackColor = grayscale3),
-                    modifier = Modifier.width(64.dp).height(36.dp)
+                    modifier = Modifier
+                        .width(64.dp)
+                        .height(36.dp)
                 )
             }
         }
