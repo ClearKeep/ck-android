@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.videojanus.generateMessagingStyleNotification
+import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 
 
 @AndroidEntryPoint
@@ -224,11 +224,11 @@ class ChatService : Service() {
             val user = People(userManager.getUserName(), userManager.getClientId())
             group?.let {
                 if (joiningRoomId != groupId) {
-                    generateMessagingStyleNotification(
+                    showMessagingStyleNotification(
                         context = applicationContext,
                         me = user,
                         chatGroup = it,
-                        messages = listOf(message),
+                        messageHistory = listOf(message),
                     )
                 }
             }
