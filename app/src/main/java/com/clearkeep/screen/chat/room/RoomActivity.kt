@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.room
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
@@ -11,13 +10,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.People
@@ -25,8 +22,7 @@ import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
-import com.clearkeep.utilities.ACTION_MESSAGE_REPLY
-import com.clearkeep.utilities.MESSAGE_NOTIFICATION_ID
+import com.clearkeep.utilities.MESSAGE_HEADS_UP_NOTIFICATION_ID
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -55,6 +51,11 @@ class RoomActivity : AppCompatActivity() {
 
         val roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
+
+        NotificationManagerCompat.from(this).cancel(null, MESSAGE_HEADS_UP_NOTIFICATION_ID)
+        if (roomId > 0) {
+            NotificationManagerCompat.from(this).cancel(null, roomId.toInt())
+        }
 
         roomViewModel.joinRoom(roomId, friendId)
 
@@ -119,15 +120,6 @@ class RoomActivity : AppCompatActivity() {
                 it.data?.let { requestInfo -> navigateToInComingCallActivity(requestInfo.chatGroup, requestInfo.isAudioMode) }
             }
         })
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        if (intent?.action == ACTION_MESSAGE_REPLY) {
-            NotificationManagerCompat.from(this).cancel(null, MESSAGE_NOTIFICATION_ID)
-            finish()
-            startActivity(intent)
-        }
     }
 
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
