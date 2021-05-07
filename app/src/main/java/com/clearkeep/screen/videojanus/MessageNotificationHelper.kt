@@ -35,7 +35,7 @@ fun showMessagingStyleNotification(
     val message = messageHistory.first()
     val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
-    showMessageNotificationToSystemBar(context = context, me = me, chatGroup = chatGroup, messages = messageHistory)
+    /*showMessageNotificationToSystemBar(context = context, me = me, chatGroup = chatGroup, messages = messageHistory)*/
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -59,9 +59,9 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, 0)
 
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         var mChannel = notificationManager.getNotificationChannel(channelId)
-            ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+            ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
         notificationManager.createNotificationChannel(mChannel)
     }
 
@@ -85,12 +85,11 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
                 R.color.primaryDefault
             )
         )
-        .setVisibility(NotificationCompat.VISIBILITY_SECRET)
         .setFullScreenIntent(trickPendingIntent, true) // trick here to not auto launch activity
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
         .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
-        .setPriority(NotificationCompat.PRIORITY_MIN)
+        .setPriority(NotificationCompat.PRIORITY_MAX)
         .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
         .build()
 
@@ -160,7 +159,7 @@ fun showMessageNotificationToSystemBar(
     )
 
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         var mChannel = notificationManager.getNotificationChannel(channelId)
         if (mChannel == null) {
             val attributes = AudioAttributes.Builder()
@@ -169,7 +168,7 @@ fun showMessageNotificationToSystemBar(
                 .build()
             val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             mChannel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
             mChannel.setSound(notification, attributes)
             notificationManager.createNotificationChannel(mChannel)
         }
@@ -182,7 +181,6 @@ fun showMessageNotificationToSystemBar(
         .setContentText("Has new messages")
         .setSmallIcon(R.drawable.ic_logo)
         .setContentIntent(mainPendingIntent)
-        .setDefaults(NotificationCompat.DEFAULT_ALL)
         .setColor(
             ContextCompat.getColor(
                 context.applicationContext,
@@ -191,11 +189,9 @@ fun showMessageNotificationToSystemBar(
         )
         .setGroupSummary(true)
         .setGroup(chatGroup.id.toString())
-        .setCategory(Notification.CATEGORY_MESSAGE) // Sets priority for 25 and below. For 26 and above, 'priority' is deprecated for
-        .setPriority(NotificationCompat.PRIORITY_HIGH) // Sets lock-screen visibility for 25 and below. For 26 and above, lock screen
-        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setWhen(System.currentTimeMillis() + HEADS_UP_APPEAR_DURATION)
-        .setShowWhen(true)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+        .setCategory(Notification.CATEGORY_MESSAGE)
 
     val notification: Notification = builder.build()
     notificationManager.notify(notificationId, notification)
