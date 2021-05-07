@@ -1,5 +1,6 @@
 package com.clearkeep.repo
 
+import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.PeopleDao
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.utilities.printlnCK
@@ -16,7 +17,9 @@ class PeopleRepository @Inject constructor(
         private val peopleDao: PeopleDao,
         private val userStub: UserGrpc.UserBlockingStub
 ) {
-    fun getFriends() = peopleDao.getFriends()
+    fun getFriends() = peopleDao.getFriends().map { list ->
+        list.sortedBy { it.userName.toLowerCase() }
+    }
 
     suspend fun updatePeople() {
         try {
@@ -24,7 +27,8 @@ class PeopleRepository @Inject constructor(
             if (friends.isNotEmpty()) {
                 insertFriends(friends)
             }
-        } catch(exception: IOException) {
+        } catch(exception: Exception) {
+            printlnCK("updatePeople: $exception")
         }
     }
 
