@@ -42,14 +42,6 @@ fun ProfileScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
-                    )
-                )
-            )
     ) {
         Box(
             modifier = Modifier
@@ -58,9 +50,6 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        color = if (isSystemInDarkTheme()) Color.Black else Color.White
-                    )
                     .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
@@ -163,7 +152,7 @@ fun HeaderProfile(onCloseView: () -> Unit) {
             }
         }
         Spacer(modifier = Modifier.size(16.dp))
-        SideBarLabel(text = "Profile Settings", fontSize = 20.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack)
+        CKHeaderText("Profile Settings", headerTextType = HeaderTextType.Medium)
         Spacer(modifier = Modifier.size(16.dp))
     }
 }
@@ -207,7 +196,7 @@ fun ChangePassword(onChangePassword: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         SideBarLabel(
             text = "Change Password", modifier = Modifier
-                .weight(0.66f), fontSize = 14.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack
+                .weight(0.66f), fontSize = 14.sp, color = MaterialTheme.colors.primary
         )
         Column(
             modifier = Modifier.clickable { },
@@ -231,9 +220,8 @@ fun ChangePassword(onChangePassword: () -> Unit) {
 fun TwoFaceAuthView(mutableState: MutableState<Boolean>) {
     Column() {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            SideBarLabel(
-                text = "Two Factors Authentication", modifier = Modifier
-                    .weight(0.66f), fontSize = 16.sp, color = if (isSystemInDarkTheme()) grayscaleOffWhite else grayscaleBlack
+            CKHeaderText("Two Factors Authentication",
+                modifier = Modifier.weight(0.66f)
             )
             Column(
                 modifier = Modifier.clickable { },

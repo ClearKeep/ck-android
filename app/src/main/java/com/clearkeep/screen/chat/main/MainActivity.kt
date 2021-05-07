@@ -31,7 +31,7 @@ import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.screen.chat.main.home.HomeScreen
 import com.clearkeep.screen.chat.main.home.HomeViewModel
-import com.clearkeep.screen.chat.main.profile.ChangePassWordScreen
+import com.clearkeep.screen.chat.main.profile.change_pass_word.ChangePassWordScreen
 import com.clearkeep.screen.chat.main.profile.ProfileScreen
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
