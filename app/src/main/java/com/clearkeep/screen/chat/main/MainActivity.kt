@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home
+package com.clearkeep.screen.chat.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -29,11 +29,11 @@ import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
-import com.clearkeep.screen.chat.home.home.HomeScreen
-import com.clearkeep.screen.chat.home.home.HomeViewModel
-import com.clearkeep.screen.chat.home.profile.ChangePassWordScreen
-import com.clearkeep.screen.chat.home.profile.ProfileScreen
-import com.clearkeep.screen.chat.home.profile.ProfileViewModel
+import com.clearkeep.screen.chat.main.home.HomeScreen
+import com.clearkeep.screen.chat.main.home.HomeViewModel
+import com.clearkeep.screen.chat.main.profile.ChangePassWordScreen
+import com.clearkeep.screen.chat.main.profile.ProfileScreen
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.InCallActivity

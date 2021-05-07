@@ -22,7 +22,7 @@ import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.home.MainActivity
+import com.clearkeep.screen.chat.main.MainActivity
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 

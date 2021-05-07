@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.home
+package com.clearkeep.screen.chat.main.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -31,10 +31,10 @@ import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.screen.chat.home.home.composes.CircleAvatarStatus
-import com.clearkeep.screen.chat.home.home.composes.CircleAvatarWorkSpace
-import com.clearkeep.screen.chat.home.profile.ProfileViewModel
-import com.clearkeep.screen.chat.home.site_menu.SiteMenuScreen
+import com.clearkeep.screen.chat.main.home.composes.CircleAvatarStatus
+import com.clearkeep.screen.chat.main.home.composes.CircleAvatarWorkSpace
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
+import com.clearkeep.screen.chat.main.home.composes.SiteMenuScreen
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
