@@ -1,8 +1,6 @@
-package com.clearkeep.components.base
+package com.clearkeep.screen.chat.main.home.composes
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

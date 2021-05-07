@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.site_menu
+package com.clearkeep.screen.chat.main.home.composes
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -23,12 +23,10 @@ import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.SideBarLabel
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.screen.chat.home.home.HomeViewModel
-import com.clearkeep.screen.chat.home.home.composes.CircleAvatarSite
-import com.clearkeep.screen.chat.home.profile.LogoutConfirmDialog
-import com.clearkeep.screen.chat.home.profile.ProfileViewModel
+import com.clearkeep.screen.chat.main.home.HomeViewModel
+import com.clearkeep.screen.chat.main.profile.LogoutConfirmDialog
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 
 @Composable
 fun SiteMenuScreen(
@@ -46,7 +44,7 @@ fun SiteMenuScreen(
             .clickable(enabled = true, onClick = { null })
     ) {
         Row(Modifier.background(
-                brush = Brush.horizontalGradient(
+                brush = Brush.verticalGradient(
                     colors = listOf(
                         if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart40,
                         if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd40

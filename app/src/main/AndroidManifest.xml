@@ -82,10 +82,10 @@
             android:label="@string/btn_forgot_password"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".screen.chat.home.MainActivity"
+            android:name=".screen.chat.main.MainActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".screen.chat.home.MainPreparingActivity"
+            android:name=".screen.chat.main.MainPreparingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
