@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.main.profile
+package com.clearkeep.screen.chat.main.profile.change_pass_word
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +24,7 @@ import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKToolbarBack
 import com.clearkeep.screen.chat.main.MainViewModel
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 
 @Composable
 fun ChangePassWordScreen(
@@ -37,8 +38,8 @@ fun ChangePassWordScreen(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                        if (isSystemInDarkTheme()) grayscaleBlack else backgroundGradientStart,
+                        if (isSystemInDarkTheme()) grayscaleBlack else backgroundGradientEnd
                     )
                 )
             )
@@ -47,8 +48,9 @@ fun ChangePassWordScreen(
         val newPassWord = remember { mutableStateOf("") }
         val confirmPassWord = remember { mutableStateOf("") }
 
-        Spacer(Modifier.height(80.dp))
-        CKToolbarBack(title = stringResource(R.string.enter_new_password), onClick = {
+        Spacer(Modifier.height(58.dp))
+        CKToolbarBack(modifier = Modifier.padding(start = 6.dp),
+            title = stringResource(R.string.enter_new_password), onClick = {
             onBackPress.invoke()
         })
         Spacer(Modifier.height(26.dp))
