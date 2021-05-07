@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.home
+package com.clearkeep.screen.chat.main.home
 
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.ChatGroup

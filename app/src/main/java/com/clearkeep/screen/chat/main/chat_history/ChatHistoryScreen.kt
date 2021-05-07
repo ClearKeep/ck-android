@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.chat_history
+package com.clearkeep.screen.chat.main.chat_history
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

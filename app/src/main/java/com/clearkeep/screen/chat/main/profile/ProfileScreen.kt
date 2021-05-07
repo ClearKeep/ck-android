@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.profile
+package com.clearkeep.screen.chat.main.profile
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -20,8 +20,9 @@ import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.screen.chat.home.MainViewModel
+import com.clearkeep.screen.chat.main.MainViewModel
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.screen.chat.main.home.composes.SideBarLabel
 
 @Composable
 fun ProfileScreen(

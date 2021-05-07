@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.profile
+package com.clearkeep.screen.chat.main.profile
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel

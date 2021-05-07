@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.contact_list
+package com.clearkeep.screen.chat.main.contact_list
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

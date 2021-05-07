@@ -1,12 +1,10 @@
-package com.clearkeep.screen.chat.home.contact_list
+package com.clearkeep.screen.chat.main.contact_list
 
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.PeopleRepository
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
