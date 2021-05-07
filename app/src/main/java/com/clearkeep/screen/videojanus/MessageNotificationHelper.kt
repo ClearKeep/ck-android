@@ -43,70 +43,70 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     sender: People,
     message: Message
 ) {
+    val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
+    val channelName = MESSAGE_HEADS_UP_CHANNEL_NAME
+    val notificationId = MESSAGE_HEADS_UP_NOTIFICATION_ID
+
+    val intent = Intent(context, RoomActivity::class.java)
+    intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
+    val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+    val trickIntent = Intent()
+    val trickPendingIntent = PendingIntent.getActivity(context, 0, trickIntent, 0)
+
+    val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
+    dismissIntent.action = ACTION_MESSAGE_CANCEL
+    val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, 0)
+
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
-        val channelName = MESSAGE_HEADS_UP_CHANNEL_NAME
-        val notificationId = MESSAGE_HEADS_UP_NOTIFICATION_ID
-
-        val intent = Intent(context, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-
-        val trickIntent = Intent()
-        val trickPendingIntent = PendingIntent.getActivity(context, 0, trickIntent, 0)
-
-        val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
-        dismissIntent.action = ACTION_MESSAGE_CANCEL
-        val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, 0)
-
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         var mChannel = notificationManager.getNotificationChannel(channelId)
             ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
         notificationManager.createNotificationChannel(mChannel)
-
-        val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
-        val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_message_view_expand)
-        headsUpLayout.apply {
-            setTextViewText(R.id.tvFrom,"New message from ${sender.userName}" )
-            setTextViewText(R.id.tvMessage, message.message)
-            setOnClickPendingIntent(R.id.tvMute, pendingDismissIntent)
-            setOnClickPendingIntent(R.id.tvReply, pendingIntent)
-        }
-
-        val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
-        val notification = builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(smallLayout)
-            .setCustomHeadsUpContentView(headsUpLayout)
-            .setSmallIcon(R.drawable.ic_logo)
-            .setColor(
-                ContextCompat.getColor(
-                    context.applicationContext,
-                    R.color.primaryDefault
-                )
-            )
-            .setVisibility(NotificationCompat.VISIBILITY_SECRET)
-            .setFullScreenIntent(trickPendingIntent, true) // trick here to not auto launch activity
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-            .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-            .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
-            .build()
-
-        val target = NotificationTarget(
-            context,
-            R.id.imageButton,
-            headsUpLayout,
-            notification,
-            notificationId)
-        Glide.with(context.applicationContext)
-            .asBitmap()
-            .circleCrop()
-            .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
-            .into(target)
-
-        notificationManager.notify(notificationId, notification)
     }
+
+    val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
+    val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_message_view_expand)
+    headsUpLayout.apply {
+        setTextViewText(R.id.tvFrom,"New message from ${sender.userName}" )
+        setTextViewText(R.id.tvMessage, message.message)
+        setOnClickPendingIntent(R.id.tvMute, pendingDismissIntent)
+        setOnClickPendingIntent(R.id.tvReply, pendingIntent)
+    }
+
+    val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
+    val notification = builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
+        .setCustomContentView(smallLayout)
+        .setCustomHeadsUpContentView(headsUpLayout)
+        .setSmallIcon(R.drawable.ic_logo)
+        .setColor(
+            ContextCompat.getColor(
+                context.applicationContext,
+                R.color.primaryDefault
+            )
+        )
+        .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+        .setFullScreenIntent(trickPendingIntent, true) // trick here to not auto launch activity
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+        .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
+        .setPriority(NotificationCompat.PRIORITY_MIN)
+        .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
+        .build()
+
+    val target = NotificationTarget(
+        context,
+        R.id.imageButton,
+        headsUpLayout,
+        notification,
+        notificationId)
+    Glide.with(context.applicationContext)
+        .asBitmap()
+        .circleCrop()
+        .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
+        .into(target)
+
+    notificationManager.notify(notificationId, notification)
 }
 
 fun showMessageNotificationToSystemBar(
@@ -115,52 +115,52 @@ fun showMessageNotificationToSystemBar(
     chatGroup: ChatGroup,
     messages: List<Message>,
 ) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val channelId = MESSAGE_CHANNEL_ID
-        val channelName = MESSAGE_CHANNEL_NAME
-        val notificationId = chatGroup.id.toInt()
+    val channelId = MESSAGE_CHANNEL_ID
+    val channelName = MESSAGE_CHANNEL_NAME
+    val notificationId = chatGroup.id.toInt()
 
-        val contentTitle = chatGroup.groupName
-        val participants = chatGroup.clientList
+    val contentTitle = chatGroup.groupName
+    val participants = chatGroup.clientList
 
-        val messagingStyle: NotificationCompat.MessagingStyle = NotificationCompat.MessagingStyle(
-            Person.Builder()
-                .setName(me.userName)
-                .setKey(me.id)
-                .build()
-        )
-            .setConversationTitle(contentTitle)
+    val messagingStyle: NotificationCompat.MessagingStyle = NotificationCompat.MessagingStyle(
+        Person.Builder()
+            .setName(me.userName)
+            .setKey(me.id)
+            .build()
+    )
+        .setConversationTitle(contentTitle)
 
-        for (message in messages) {
-            val people = participants.find { it.id == message.senderId }
-            messagingStyle.addMessage(
-                NotificationCompat.MessagingStyle.Message(
-                    message.message,
-                    message.createdTime,
-                    Person.Builder().setName(people?.userName ?: "unknown").setKey(message.senderId).build()
-                )
+    for (message in messages) {
+        val people = participants.find { it.id == message.senderId }
+        messagingStyle.addMessage(
+            NotificationCompat.MessagingStyle.Message(
+                message.message,
+                message.createdTime,
+                Person.Builder().setName(people?.userName ?: "unknown").setKey(message.senderId).build()
             )
-        }
-        messagingStyle.isGroupConversation = chatGroup.isGroup()
-
-        // 3. Set up main Intent for notification.
-        val notifyIntent = Intent(context, RoomActivity::class.java)
-        notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.id)
-
-        val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
-        // Adds the back stack
-        stackBuilder.addParentStack(MainActivity::class.java)
-        // Adds the Intent to the top of the stack
-        stackBuilder.addNextIntent(notifyIntent)
-        // Gets a PendingIntent containing the entire back stack
-        val mainPendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
         )
+    }
+    messagingStyle.isGroupConversation = chatGroup.isGroup()
 
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    // 3. Set up main Intent for notification.
+    val notifyIntent = Intent(context, RoomActivity::class.java)
+    notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.id)
+
+    val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
+    // Adds the back stack
+    stackBuilder.addParentStack(MainActivity::class.java)
+    // Adds the Intent to the top of the stack
+    stackBuilder.addNextIntent(notifyIntent)
+    // Gets a PendingIntent containing the entire back stack
+    val mainPendingIntent = PendingIntent.getActivity(
+        context,
+        0,
+        notifyIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         var mChannel = notificationManager.getNotificationChannel(channelId)
         if (mChannel == null) {
             val attributes = AudioAttributes.Builder()
@@ -169,35 +169,34 @@ fun showMessageNotificationToSystemBar(
                 .build()
             val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             mChannel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
             mChannel.setSound(notification, attributes)
             notificationManager.createNotificationChannel(mChannel)
         }
-
-
-        val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
-        builder // MESSAGING_STYLE sets title and content for API 16 and above devices.
-            .setStyle(messagingStyle) // Title for API < 16 devices.
-            .setContentTitle(contentTitle) // Content for API < 16 devices.
-            .setContentText("Has new messages")
-            .setSmallIcon(R.drawable.ic_logo)
-            .setContentIntent(mainPendingIntent)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setColor(
-                ContextCompat.getColor(
-                    context.applicationContext,
-                    R.color.primaryDefault
-                )
-            )
-            .setGroupSummary(true)
-            .setGroup(chatGroup.id.toString())
-            .setCategory(Notification.CATEGORY_MESSAGE) // Sets priority for 25 and below. For 26 and above, 'priority' is deprecated for
-            .setPriority(NotificationCompat.PRIORITY_MAX) // Sets lock-screen visibility for 25 and below. For 26 and above, lock screen
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setWhen(System.currentTimeMillis() + HEADS_UP_APPEAR_DURATION)
-            .setShowWhen(true)
-
-        val notification: Notification = builder.build()
-        notificationManager.notify(notificationId, notification)
     }
+
+    val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
+    builder // MESSAGING_STYLE sets title and content for API 16 and above devices.
+        .setStyle(messagingStyle) // Title for API < 16 devices.
+        .setContentTitle(contentTitle) // Content for API < 16 devices.
+        .setContentText("Has new messages")
+        .setSmallIcon(R.drawable.ic_logo)
+        .setContentIntent(mainPendingIntent)
+        .setDefaults(NotificationCompat.DEFAULT_ALL)
+        .setColor(
+            ContextCompat.getColor(
+                context.applicationContext,
+                R.color.primaryDefault
+            )
+        )
+        .setGroupSummary(true)
+        .setGroup(chatGroup.id.toString())
+        .setCategory(Notification.CATEGORY_MESSAGE) // Sets priority for 25 and below. For 26 and above, 'priority' is deprecated for
+        .setPriority(NotificationCompat.PRIORITY_HIGH) // Sets lock-screen visibility for 25 and below. For 26 and above, lock screen
+        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        .setWhen(System.currentTimeMillis() + HEADS_UP_APPEAR_DURATION)
+        .setShowWhen(true)
+
+    val notification: Notification = builder.build()
+    notificationManager.notify(notificationId, notification)
 }
