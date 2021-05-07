@@ -200,12 +200,13 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 
 @Composable
 fun ItemListDirectMessage(
+    modifier: Modifier,
     chatGroup: ChatGroup,
     clintId: String,
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clickable {
                 onItemClickListener?.invoke(chatGroup.id)
             }
@@ -231,36 +232,19 @@ fun ItemListDirectMessage(
                     fontWeight = FontWeight.Bold
                 )
             )
-            /*Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .background(
-                        shape = CircleShape,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Red,
-                                Color.Red
-                            )
-                        )
-                    )
-                    .size(24.dp)
-            ) {
-                Text(
-                    text = "",
-                    style = TextStyle(color = Color.White, fontSize = 12.sp)
-                )
-
-            }*/
         }
     }
 }
 
 
 @Composable
-fun ChatGroupItemView(chatGroup: ChatGroup, onItemClickListener: ((Long) -> Unit)? = null) {
+fun ChatGroupItemView(
+    modifier: Modifier,
+    chatGroup: ChatGroup,
+    onItemClickListener: ((Long) -> Unit)? = null
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clickable {
                 onItemClickListener?.invoke(chatGroup.id)
             },
@@ -275,27 +259,6 @@ fun ChatGroupItemView(chatGroup: ChatGroup, onItemClickListener: ((Long) -> Unit
                     fontWeight = FontWeight.Bold
                 )
             )
-            /*Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .background(
-                        shape = CircleShape,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Red,
-                                Color.Red
-                            )
-                        )
-                    )
-                    .size(24.dp)
-            ) {
-                Text(
-                    text = chatGroup.toString(),
-                    style = TextStyle(color = Color.White, fontSize = 12.sp)
-                )
-
-            }*/
         }
     }
 }
@@ -348,6 +311,7 @@ fun ChatGroupView(
         Column() {
             AnimatedVisibility(
                 visible = rememberitemGroup.value,
+                modifier = Modifier.padding(top = 4.dp),
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
                     animationSpec = tween(300, easing = LinearOutSlowInEasing)
@@ -360,14 +324,9 @@ fun ChatGroupView(
 
             ) {
                 chatGroups.value?.let { item ->
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            top = 4.dp,
-                            start = 20.dp,
-                        ),
-                    ) {
-                        itemsIndexed(item) { _, chatGroup ->
-                            ChatGroupItemView(chatGroup, onItemClickListener)
+                    Column {
+                        item.forEach { chatGroup ->
+                            ChatGroupItemView(modifier = Modifier.padding(start = 15.dp),chatGroup = chatGroup, onItemClickListener = onItemClickListener)
                         }
                     }
                 }
@@ -426,6 +385,7 @@ fun DirectMessagesView(
         Column() {
             AnimatedVisibility(
                 visible = rememberItemGroup.value,
+                modifier = Modifier.padding(bottom = 20.dp),
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
                     animationSpec = tween(300, easing = LinearOutSlowInEasing)
@@ -438,14 +398,10 @@ fun DirectMessagesView(
 
             ) {
                 chatGroupDummy.value?.let { item ->
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            start = 20.dp,
-                            top = 4.dp
-                        ),
-                    ) {
-                        itemsIndexed(item) { _, chatGroup ->
+                    Column {
+                        item.forEach { chatGroup ->
                             ItemListDirectMessage(
+                                modifier = Modifier.padding(start = 16.dp),
                                 chatGroup,
                                 viewModel.myClintId,
                                 onItemClickListener
@@ -494,17 +450,24 @@ fun WorkSpaceView(
         CKSearchBox(searchKey)
         Spacer(modifier = Modifier.size(24.dp))
         NoteView()
-        Spacer(modifier = Modifier.size(24.dp))
-        ChatGroupView(
-            homeViewModel, createGroupChat = createGroupChat,
-            onItemClickListener = onItemClickListener
-        )
-        Spacer(modifier = Modifier.size(24.dp))
-        DirectMessagesView(
-            homeViewModel,
-            createGroupChat = createGroupChat,
-            onItemClickListener = onItemClickListener
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+
+        ) {
+            Spacer(modifier = Modifier.size(24.dp))
+            ChatGroupView(
+                homeViewModel, createGroupChat = createGroupChat,
+                onItemClickListener = onItemClickListener
+            )
+            Spacer(modifier = Modifier.size(28.dp))
+            DirectMessagesView(
+                homeViewModel,
+                createGroupChat = createGroupChat,
+                onItemClickListener = onItemClickListener
+            )
+        }
     }
 }
 
