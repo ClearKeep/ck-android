@@ -43,13 +43,17 @@ fun SiteMenuScreen(
             .focusable()
             .clickable(enabled = true, onClick = { null })
     ) {
-        Row(Modifier.background(
+        Row(
+            Modifier.background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart40,
-                        if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd40
-                    ))
-                )) {
+                        if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
+                        if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                    )
+                ),
+                alpha = 0.4f
+            )
+        ) {
             Box(
                 Modifier
                     .width(108.dp)
