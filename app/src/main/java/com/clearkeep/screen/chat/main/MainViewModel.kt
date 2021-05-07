@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home
+package com.clearkeep.screen.chat.main
 
 import android.app.Activity
 import android.content.Context

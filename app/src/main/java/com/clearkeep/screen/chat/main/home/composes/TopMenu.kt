@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.home.composes
+package com.clearkeep.screen.chat.main.home.composes
 
 import androidx.compose.runtime.Composable
 

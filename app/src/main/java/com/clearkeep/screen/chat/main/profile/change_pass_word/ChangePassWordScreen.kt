@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.profile
+package com.clearkeep.screen.chat.main.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,7 +23,7 @@ import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKToolbarBack
-import com.clearkeep.screen.chat.home.MainViewModel
+import com.clearkeep.screen.chat.main.MainViewModel
 
 @Composable
 fun ChangePassWordScreen(

@@ -1,12 +1,9 @@
-package com.clearkeep.screen.chat.home.home.composes
+package com.clearkeep.screen.chat.main.home.composes
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,12 +12,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 
 @Composable
-fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: String) {
+fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.dp, status: String) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
 
     Column(Modifier.size(size)) {
@@ -55,4 +51,11 @@ fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: Strin
             )
         ))
     }
+}
+
+enum class UserStatus {
+    ONLINE,
+    OFFLINE,
+    BUSY,
+    DEFAULT
 }

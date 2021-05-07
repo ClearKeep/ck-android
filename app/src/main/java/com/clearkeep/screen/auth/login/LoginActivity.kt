@@ -24,7 +24,7 @@ import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.home.MainPreparingActivity
+import com.clearkeep.screen.chat.main.MainPreparingActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status

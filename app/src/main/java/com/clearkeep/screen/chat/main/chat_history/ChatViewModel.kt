@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.home.chat_history
+package com.clearkeep.screen.chat.main.chat_history
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
