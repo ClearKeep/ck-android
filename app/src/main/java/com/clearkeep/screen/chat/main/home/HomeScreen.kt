@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -222,8 +223,9 @@ fun ItemListDirectMessage(
             CircleAvatarStatus(url = "", name = roomName, status = "")
             Text(
                 text = roomName, modifier = Modifier
-                    .padding(start = 16.dp)
-                    .weight(0.66f), style = TextStyle(
+                    .fillMaxWidth()
+                    .padding(start = 16.dp),
+                maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -265,8 +267,9 @@ fun ChatGroupItemView(chatGroup: ChatGroup, onItemClickListener: ((Long) -> Unit
     ) {
         Row(modifier = Modifier.padding(top = 16.dp)) {
             Text(
-                text = chatGroup.groupName, modifier = Modifier
-                    .weight(0.66f), style = TextStyle(
+                text = chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
+                maxLines = 2, overflow = TextOverflow.Ellipsis,
+                style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
