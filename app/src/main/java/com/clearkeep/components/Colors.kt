@@ -58,3 +58,6 @@ val colorTiaMaria = Color(0xffDC3E15)
 
 val backgroundGradientStart = Color(0xff7773F3)
 val backgroundGradientEnd = Color(0xff8ABFF3)
+
+val backgroundGradientStart40 = Color(0x667773F3)
+val backgroundGradientEnd40 = Color(0x668ABFF3)

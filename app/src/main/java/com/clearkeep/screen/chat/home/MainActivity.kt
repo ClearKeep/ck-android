@@ -24,7 +24,6 @@ import androidx.lifecycle.*
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CkTopCalling
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
@@ -32,6 +31,7 @@ import com.clearkeep.screen.chat.group_create.CreateGroupActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.screen.chat.home.home.HomeScreen
 import com.clearkeep.screen.chat.home.home.HomeViewModel
+import com.clearkeep.screen.chat.home.profile.ChangePassWordScreen
 import com.clearkeep.screen.chat.home.profile.ProfileScreen
 import com.clearkeep.screen.chat.home.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
@@ -62,28 +62,30 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
-    private val startCreateGroupForResult = (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.let { intent ->
-                val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
-                if (isDirectChat) {
-                    val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
-                    if (!friendId.isNullOrBlank()) {
-                        navigateToRoomScreenWithFriendId(friendId)
-                    }
-                } else {
-                    val groupId = intent.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1)
-                    if (groupId > 0) {
-                        navigateToRoomScreen(groupId)
+    private val startCreateGroupForResult =
+        (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.let { intent ->
+                    val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
+                    if (isDirectChat) {
+                        val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
+                        if (!friendId.isNullOrBlank()) {
+                            navigateToRoomScreenWithFriendId(friendId)
+                        }
+                    } else {
+                        val groupId = intent.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1)
+                        if (groupId > 0) {
+                            navigateToRoomScreen(groupId)
+                        }
                     }
                 }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
         setContent {
             CKSimpleTheme {
                 MainComposable()
@@ -135,12 +137,13 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 remember.value?.let {
                     if (it.isCalling)
                         CkTopCalling(title = {
-                            Box{
+                            Box {
                                 Text(
                                     text = it.nameInComeCall ?: "",
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         },
                             navigationIcon = {
@@ -156,21 +159,33 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 NavHost(navController, startDestination = "home_screen") {
                     composable("home_screen") {
                         HomeScreen(
-                            homeViewModel, gotoSearch = {
+                            homeViewModel, profileViewModel, navController, gotoSearch = {
                                 navigateToSearchScreen()
                             }, createGroupChat = {
                                 navigateToCreateGroupScreen(isDirectGroup = it)
-                            },gotoRoomById = {
+                            }, gotoRoomById = {
                                 navigateToRoomScreen(it)
-                            },gotoProfile = {
-                                navigateToProfileScreen(navController)
+                            }, onlogout = {
+                                logout()
                             }
                         )
                     }
-                    composable("profile"){
-                        ProfileScreen(profileViewModel = profileViewModel, homeViewModel = mainViewModel) {
-                            logout()
-                        }
+                    composable("profile") {
+                        ProfileScreen(
+                            profileViewModel = profileViewModel,
+                            homeViewModel = mainViewModel, onCloseView = {
+                                navController.popBackStack()
+                            }, onChangePassword = {
+                                navigateToChangePassword(navController)
+                            })
+                    }
+                    composable("change_pass_word") {
+                        ChangePassWordScreen(
+                            profileViewModel = profileViewModel,
+                            homeViewModel = mainViewModel,
+                            onBackPress = {
+                                navController.popBackStack()
+                            })
                     }
                 }
                 LogoutProgress()
@@ -183,16 +198,19 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         mainViewModel.isLogOutProcessing.observeAsState().value?.let { isProcessing ->
             if (isProcessing) {
                 Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         CircularProgressIndicator(color = Color.Blue)
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(text = "Log out...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                        Text(
+                            text = "Log out...",
+                            style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
@@ -206,8 +224,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         LoginManager.getInstance().logOut()
     }
 
-    private fun navigateToProfileScreen(navController: NavController){
+    private fun navigateToProfileScreen(navController: NavController) {
         navController.navigate("profile")
+    }
+    private fun navigateToChangePassword(navController: NavController){
+        navController.navigate("change_pass_word")
     }
 
     private fun navigateToRoomScreen(groupId: Long) {
