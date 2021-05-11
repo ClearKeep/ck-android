@@ -2,15 +2,14 @@ package com.clearkeep.components.base
 
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
@@ -51,21 +50,17 @@ fun CKButtonSignIn(
         }
 
     }
-    OutlinedButton(
-        colors = ButtonDefaults.outlinedButtonColors(backgroundColor = grayscaleOffWhite),
-        shape = RoundedCornerShape(50),
-        onClick = { onClick() },
-        modifier = modifier.height(height),
-        enabled = enabled,
+    Row(
+        modifier = Modifier.background(
+            grayscaleOffWhite, shape = RoundedCornerShape(50),
+        ).clickable { onClick() }.size(56.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row {
-            Text(
-                text = label,
-                color = textColor,
-                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            )
             Image(
-                modifier = Modifier.padding(start = 16.dp),
+                modifier = Modifier
+                    .size(24.dp),
                 painter = icon,
                 contentDescription = null
             )

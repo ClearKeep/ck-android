@@ -100,58 +100,90 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    CKTextButton(
-                        modifier = Modifier.padding(0.dp),
-                        stringResource(R.string.btn_forgot_password),
-                        onClick = onForgotPasswordPress,
-                        enabled = !isLoading,
-                        textButtonType = TextButtonType.White
-                    )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        CKTextButton(
+                            modifier = Modifier.padding(0.dp),
+                            stringResource(R.string.btn_forgot_password),
+                            onClick = onForgotPasswordPress,
+                            enabled = !isLoading,
+                            textButtonType = TextButtonType.White
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        CKTextButton(
+                            modifier = Modifier.padding(0.dp),
+                            stringResource(R.string.advance_server_settings),
+                            onClick = onForgotPasswordPress,
+                            enabled = !isLoading,
+                            textButtonType = TextButtonType.White
+                        )
+                    }
                 }
-                Spacer(Modifier.height(24.dp))
 
+                Spacer(Modifier.height(24.dp))
                 Divider(color = colorResource(R.color.line), thickness = 1.dp)
                 Spacer(Modifier.height(24.dp))
-                CKButtonSignIn(
-                    stringResource(R.string.btn_login_google),
-                    onClick = {
-                        onLoginGoogle?.invoke()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp),
-                    enabled = !isLoading,
-                    buttonType = LoginType.Google
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Social Sign-in",
+                        color = Color.White,
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    )
+                }
                 Spacer(Modifier.height(16.dp))
-                CKButtonSignIn(
-                    stringResource(R.string.btn_login_microsoft),
-                    onClick = {
-                        onLoginMicrosoft?.invoke()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp),
-                    enabled = !isLoading,
-                    buttonType = LoginType.Microsoft
-                )
-                Spacer(Modifier.height(16.dp))
-                CKButtonSignIn(
-                    stringResource(R.string.btn_login_facebook),
-                    onClick = {
-                        onLoginFacebook?.invoke()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp),
-                    enabled = !isLoading,
-                    buttonType = LoginType.Facebook
-                )
-                Spacer(Modifier.height(42.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CKButtonSignIn(
+                        stringResource(R.string.btn_login_google),
+                        onClick = {
+                            onLoginGoogle?.invoke()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        enabled = !isLoading,
+                        buttonType = LoginType.Google
+                    )
+                    Spacer(Modifier.width(40.dp))
+                    CKButtonSignIn(
+                        stringResource(R.string.btn_login_microsoft),
+                        onClick = {
+                            onLoginMicrosoft?.invoke()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        enabled = !isLoading,
+                        buttonType = LoginType.Microsoft
+                    )
+                    Spacer(Modifier.width(40.dp))
+                    CKButtonSignIn(
+                        stringResource(R.string.btn_login_facebook),
+                        onClick = {
+                            onLoginFacebook?.invoke()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 5.dp),
+                        enabled = !isLoading,
+                        buttonType = LoginType.Facebook
+                    )
+                }
+                Spacer(modifier = Modifier.height(80.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -174,7 +206,6 @@ fun LoginScreen(
                     buttonType = ButtonType.BorderWhite
 
                 )
-
                 Spacer(Modifier.height(48.dp))
             }
         }
