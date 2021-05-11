@@ -35,7 +35,6 @@ fun showMessagingStyleNotification(
     val message = messageHistory.first()
     val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
-    /*showMessageNotificationToSystemBar(context = context, me = me, chatGroup = chatGroup, messages = messageHistory)*/
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -45,25 +44,19 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 ) {
     val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
     val channelName = MESSAGE_HEADS_UP_CHANNEL_NAME
-    val notificationId = MESSAGE_HEADS_UP_NOTIFICATION_ID
+    val notificationId = message.createdTime.toInt()
 
     val intent = Intent(context, RoomActivity::class.java)
     intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
-    val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+    val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val trickIntent = Intent()
-    val trickPendingIntent = PendingIntent.getActivity(context, 0, trickIntent, 0)
+    val trickPendingIntent = PendingIntent.getActivity(context, 0, trickIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
     dismissIntent.action = ACTION_MESSAGE_CANCEL
-    val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, 0)
-
-    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        var mChannel = notificationManager.getNotificationChannel(channelId)
-            ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
-        notificationManager.createNotificationChannel(mChannel)
-    }
+    val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
     val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_message_view_expand)
@@ -74,9 +67,17 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         setOnClickPendingIntent(R.id.tvReply, pendingIntent)
     }
 
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        var mChannel = notificationManager.getNotificationChannel(channelId)
+            ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
+        notificationManager.createNotificationChannel(mChannel)
+    }
+
     val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
     val notification = builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
         .setCustomContentView(smallLayout)
+        .setCustomBigContentView(smallLayout)
         .setCustomHeadsUpContentView(headsUpLayout)
         .setSmallIcon(R.drawable.ic_logo)
         .setColor(
@@ -87,8 +88,10 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         )
         .setFullScreenIntent(trickPendingIntent, true) // trick here to not auto launch activity
         .setContentIntent(pendingIntent)
-        .setAutoCancel(true)
-        .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
+        .setOngoing(true)
+        /*.setAutoCancel(true)
+        .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)*/
+        .setGroup(message.groupId.toString())
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
         .build()
@@ -190,7 +193,6 @@ fun showMessageNotificationToSystemBar(
         .setGroupSummary(true)
         .setGroup(chatGroup.id.toString())
         .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
         .setCategory(Notification.CATEGORY_MESSAGE)
 
     val notification: Notification = builder.build()
