@@ -1,5 +1,9 @@
 package com.clearkeep.screen.chat.room
 
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
@@ -26,6 +30,10 @@ import com.clearkeep.utilities.MESSAGE_HEADS_UP_NOTIFICATION_ID
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import android.service.notification.StatusBarNotification
+import androidx.annotation.RequiresApi
+import com.clearkeep.utilities.printlnCK
+
 
 @AndroidEntryPoint
 class RoomActivity : AppCompatActivity() {
@@ -40,6 +48,8 @@ class RoomActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    private var roomId: Long = 0
+
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +59,19 @@ class RoomActivity : AppCompatActivity() {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
-        val roomId = intent.getLongExtra(GROUP_ID, 0)
+        roomId = intent.getLongExtra(GROUP_ID, 0)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
-        NotificationManagerCompat.from(this).cancel(null, MESSAGE_HEADS_UP_NOTIFICATION_ID)
         if (roomId > 0) {
-            NotificationManagerCompat.from(this).cancel(null, roomId.toInt())
+            val notificationManagerCompat = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                for (statusBarNotification in notificationManagerCompat.activeNotifications)  {
+                    if (roomId.toString() == statusBarNotification.notification.group) {
+                        printlnCK("cancel")
+                        notificationManagerCompat.cancel(statusBarNotification.id)
+                    }
+                }
+            }
         }
 
         roomViewModel.joinRoom(roomId, friendId)
@@ -107,6 +124,15 @@ class RoomActivity : AppCompatActivity() {
         }
 
         subscriber()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val newRoomId = intent.getLongExtra(GROUP_ID, 0)
+        if (newRoomId > 0 && newRoomId != roomId) {
+            finish()
+            startActivity(intent)
+        }
     }
 
     override fun onDestroy() {
