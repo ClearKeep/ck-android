@@ -17,6 +17,7 @@
     <string name="invalid_pw">Password cannot be blank</string>
     <string name="error_username_or_password">Username or password is invalid</string>
     <string name="empty_conversation_history">Start a conversation by clicking Chat or Create Room</string>
+    <string name="advance_server_settings">Advance Server Settings</string>
 
     <string name="bottom_nav_single">Chat</string>
     <string name="bottom_nav_group">Contact</string>
@@ -38,6 +39,7 @@
     <string name="sign_up_fill_information">Please fill in the information below to complete your sign up</string>
     <string name="enter_email_reset_pass">Please enter your email to reset your password</string>
     <string name="forgot_password">Forgot password</string>
+    <string name="advance_settings">Advance Server Settings</string>
 
     <string name="facebook_app_id">2535496880092217</string>
     <string name="fb_login_protocol_scheme">fb2535496880092217</string>
