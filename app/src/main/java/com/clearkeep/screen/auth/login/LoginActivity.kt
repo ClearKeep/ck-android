@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
@@ -18,10 +19,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
 import auth.AuthOuterClass
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.chat.main.MainPreparingActivity
@@ -67,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun MyApp() {
         CKTheme {
-            AppContent()
+            MainComposable()
         }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -76,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun AppContent() {
+    fun AppContent(navController: NavController) {
         val (messageError, setShowDialog) = remember { mutableStateOf<ErrorMessage?>(null) }
         loginViewModel.initGoogleSingIn(this)
         showErrorDiaLog = {
@@ -121,6 +128,9 @@ class LoginActivity : AppCompatActivity() {
                         onLoginFacebook={
                             loginFacebook()
                         },
+                        advanceSetting={
+                            navigateToAdvanceSetting(navController)
+                        },
                         isLoading = isLoadingState.value ?: false,
                         )
                 }
@@ -139,8 +149,26 @@ class LoginActivity : AppCompatActivity() {
             }
             ErrorDialog(messageError, setShowDialog)
         }
-    }
 
+    }
+    @OptIn(ExperimentalAnimationApi::class)
+    @Composable
+    fun MainComposable(){
+        val navController = rememberNavController()
+        Box(Modifier
+            .fillMaxSize()) {
+            NavHost(navController, startDestination = "login"){
+                composable("login"){
+                    AppContent(navController)
+                }
+                composable("advance_setting"){
+                    CustomServerScreen(loginViewModel = loginViewModel, onBackPress = {
+                        onBackPressed()
+                    })
+                }
+            }
+        }
+    }
 
     private fun subscriberError(){
         loginViewModel.loginErrorMess.observe(this, {
@@ -175,6 +203,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun navigateToForgotActivity() {
         startActivity(Intent(this, ForgotActivity::class.java))
+    }
+    private fun navigateToAdvanceSetting(navController: NavController){
+        navController.navigate("advance_setting")
     }
 
     private fun signInGoogle() {
