@@ -52,8 +52,9 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(58.dp))
             CKToolbarBack(
+                modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_settings),
                 onClick = { onBackPress() })
             Spacer(Modifier.height(26.dp))
@@ -120,7 +121,14 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
                                     singleLine = true,
                                 )
                             }
-                            Box(modifier = Modifier) {
+                            CKTextInputField(
+                                "Port",
+                                rememberServerUrl,
+                                modifier = Modifier.width(76.dp),
+                                keyboardType = KeyboardType.Text,
+                                singleLine = true,
+                            )
+                            /*Box(modifier = Modifier) {
                                 OutlinedButton(
                                     onClick = {
                                         if (rememberServerUrl.value.isNotEmpty()) {
@@ -141,7 +149,7 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Normal))
                                 }
-                            }
+                            }*/
                         }
 
                     }
