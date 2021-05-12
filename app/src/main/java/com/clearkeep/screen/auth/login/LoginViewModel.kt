@@ -46,6 +46,8 @@ class LoginViewModel @Inject constructor(
 
     val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
 
+    val urlCustomServer= MutableLiveData<String>()
+
     fun initGoogleSingIn(context: Context){
         googleSignIn= GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
