@@ -11,6 +11,7 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.utilities.*
 import androidx.core.app.Person
@@ -35,6 +36,7 @@ fun showMessagingStyleNotification(
     val message = messageHistory.first()
     val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
+    printlnCK("showMessagingStyleNotification: message = ${message.message}")
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -60,6 +62,10 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
     val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_message_view_expand)
+    smallLayout.apply {
+        setTextViewText(R.id.tvFrom,"New message from ${sender.userName}" )
+        setTextViewText(R.id.tvMessage, message.message)
+    }
     headsUpLayout.apply {
         setTextViewText(R.id.tvFrom,"New message from ${sender.userName}" )
         setTextViewText(R.id.tvMessage, message.message)
@@ -69,9 +75,10 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        var mChannel = notificationManager.getNotificationChannel(channelId)
+        var channel = notificationManager.getNotificationChannel(channelId)
             ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
-        notificationManager.createNotificationChannel(mChannel)
+        channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+        notificationManager.createNotificationChannel(channel)
     }
 
     val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
@@ -93,6 +100,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)*/
         .setGroup(message.groupId.toString())
         .setPriority(NotificationCompat.PRIORITY_MAX)
+        .setVisibility(VISIBILITY_PUBLIC)
         .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
         .build()
 
