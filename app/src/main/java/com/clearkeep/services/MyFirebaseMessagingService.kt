@@ -32,29 +32,31 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         when (remoteMessage.data["notify_type"]) {
             "request_call" -> {
-                val groupId = remoteMessage.data["group_id"]
-                val groupType = remoteMessage.data["group_type"]?: ""
-                val groupName = remoteMessage.data["group_name"]?: ""
-                val groupCallType = remoteMessage.data["call_type"]
-                val avatar = remoteMessage.data["from_client_avatar"] ?: ""
-                //val fromClientId = remoteMessage.data["from_client_id"]
-                val fromClientName = remoteMessage.data["from_client_name"]
-                val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+                val toClientId = remoteMessage.data["client_id"]
+                if (toClientId == userManager.getClientId()) {
+                    val groupId = remoteMessage.data["group_id"]
+                    val groupType = remoteMessage.data["group_type"]?: ""
+                    val groupName = remoteMessage.data["group_name"]?: ""
+                    val groupCallType = remoteMessage.data["call_type"]
+                    val avatar = remoteMessage.data["from_client_avatar"] ?: ""
+                    val fromClientName = remoteMessage.data["from_client_name"]
+                    val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
 
-                val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
-                val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
+                    val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
+                    val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
 
-                val turnConfigJsonObject = JSONObject(turnConfigJson)
-                val stunConfigJsonObject = JSONObject(stunConfigJson)
-                val turnUrl = turnConfigJsonObject.getString("server")
-                val stunUrl = stunConfigJsonObject.getString("server")
-                val turnUser = turnConfigJsonObject.getString("user")
-                val turnPass = turnConfigJsonObject.getString("pwd")
-                val isAudioMode = groupCallType == CALL_TYPE_AUDIO
+                    val turnConfigJsonObject = JSONObject(turnConfigJson)
+                    val stunConfigJsonObject = JSONObject(stunConfigJson)
+                    val turnUrl = turnConfigJsonObject.getString("server")
+                    val stunUrl = stunConfigJsonObject.getString("server")
+                    val turnUser = turnConfigJsonObject.getString("user")
+                    val turnPass = turnConfigJsonObject.getString("pwd")
+                    val isAudioMode = groupCallType == CALL_TYPE_AUDIO
 
-                val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-                AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"", userManager.getClientId(), fromClientName, avatar,
-                    turnUrl, turnUser, turnPass, stunUrl)
+                    val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
+                    AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"", userManager.getClientId(), fromClientName, avatar,
+                        turnUrl, turnUser, turnPass, stunUrl)
+                }
             }
             "cancel_request_call" -> {
                 val groupId = remoteMessage.data["group_id"]
