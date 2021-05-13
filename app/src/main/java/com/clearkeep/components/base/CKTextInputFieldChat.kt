@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
@@ -79,7 +80,9 @@ fun CKTextInputFieldChat(
                             placeholder, style = MaterialTheme.typography.body1.copy(
                                 color = grayscale3,
                                 fontWeight = FontWeight.Normal
-                            )
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 },
