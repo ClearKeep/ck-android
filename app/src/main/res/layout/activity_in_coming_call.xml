@@ -1,120 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootViewCallIn"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/appCallBackgroundColor"
-    tools:background="@color/appCallBackground">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/rlToolbar"
+    <ImageView
+        android:id="@+id/imageBackground"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        tools:layout_height="50dp"
-        android:background="@android:color/transparent"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/txtAudioMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"
-            tools:textColor="@android:color/black"
-            tools:text="@string/title_call_screen" />
-    </RelativeLayout>
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_bg_gradient" />
 
     <TextView
         android:id="@+id/tvUserName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/rlToolbar"
         android:layout_centerHorizontal="true"
-        android:textColor="@android:color/black"
-        tools:textColor="@android:color/black"
-        android:textSize="30sp"
-        android:layout_marginTop="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgThumb"
         tools:text="Kitagawa Keiko" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/tvUserName"
-        android:background="@android:color/transparent"
-        android:gravity="center_horizontal">
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/imgThumb"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/baseline_person_black_36"
-            app:civ_border_color="@android:color/darker_gray"
-            app:civ_border_width="12dp"
-            app:civ_circle_background_color="@android:color/darker_gray"/>
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/bottomButtonContainer"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/imgEnd"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true">
-        <LinearLayout
-            android:id="@+id/llMainButtonContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:layout_marginBottom="87dp"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:id="@+id/imgEnd"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="?attr/buttonEndCall"
-                    tools:src="@drawable/ic_string_ee_call" />
-                <TextView
-                    android:id="@+id/tvEndButtonDescription"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="?attr/buttonEndCallDescription"
-                    tools:text="Decline"
-                    android:textColor="?attr/appCallTextColor"
-                    tools:textColor="@android:color/white"
-                    android:textSize="18sp" />
-            </LinearLayout>
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_button_decline"
+        app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
+        app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
+        app:layout_constraintStart_toStartOf="@+id/tvEndButtonDescription"
+        tools:src="@drawable/ic_button_decline" />
 
-            <LinearLayout
-                android:id="@+id/answerButtonContainer"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-                <ImageView
-                    android:id="@+id/imgAnswer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="?attr/buttonAnswer"
-                    tools:src="@drawable/ic_string_ee_answer" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="?attr/buttonAnswerDescription"
-                    tools:text="Accept"
-                    android:textColor="?attr/appCallTextColor"
-                    tools:textColor="@android:color/white"
-                    android:textSize="18sp" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-</RelativeLayout>
+    <TextView
+        android:id="@+id/tvEndButtonDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="42dp"
+        android:layout_marginBottom="60dp"
+        android:text="Decline"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Decline"
+        tools:textColor="@android:color/white" />
+
+    <ImageView
+        android:id="@+id/imgAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_button_answer"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="@+id/imgEnd"
+        tools:src="@drawable/ic_button_answer" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="42dp"
+        android:text="Answer"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvEndButtonDescription"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvEndButtonDescription"
+        tools:text="Answer"
+        tools:textColor="@android:color/white" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imgThumb"
+        android:layout_width="159dp"
+        android:layout_height="159dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:src="@drawable/ic_bg_gradient"
+        app:layout_constraintBottom_toTopOf="@+id/tvUserName"
+        app:layout_constraintEnd_toEndOf="@+id/txtAudioMode"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/txtAudioMode"
+        app:layout_constraintTop_toBottomOf="@+id/txtAudioMode" />
+
+    <TextView
+        android:id="@+id/tvNickName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="40sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imgThumb"
+        app:layout_constraintEnd_toEndOf="@+id/imgThumb"
+        app:layout_constraintStart_toStartOf="@+id/imgThumb"
+        app:layout_constraintTop_toTopOf="@+id/imgThumb" />
+
+
+    <TextView
+        android:id="@+id/txtAudioMode"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="100dp"
+        android:text="Incoming Voice Call"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

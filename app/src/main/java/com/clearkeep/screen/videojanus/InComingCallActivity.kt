@@ -1,5 +1,6 @@
 package com.clearkeep.screen.videojanus
 
+import android.annotation.SuppressLint
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -17,16 +18,21 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.R
+import androidx.core.content.ContextCompat
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.activity_in_coming_call.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.bumptech.glide.request.RequestOptions.bitmapTransform
+import com.bumptech.glide.Glide
+import com.clearkeep.R
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
@@ -52,7 +58,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private val endCallReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
-            printlnCK("receive a end call event with group id = $groupId")
             if (mGroupId == groupId) {
                 finishAndRemoveFromTask()
             }
@@ -123,9 +128,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         tvUserName = findViewById(R.id.tvUserName)
         imgAnswer.setOnClickListener(this)
         imgEnd.setOnClickListener(this)
-
-        val txtAudioMode :TextView = findViewById(R.id.txtAudioMode)
-        txtAudioMode.text = if (mIsAudioMode) "audio call" else "video call"
         updateConversationInformation()
     }
 
@@ -135,6 +137,29 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         }
         if (!TextUtils.isEmpty(mAvatarInConversation)) {
             AvatarImageTask(imgThumb).execute(mAvatarInConversation)
+        } else {
+            tvNickName.visibility = View.VISIBLE
+            val displayName =
+                if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
+            tvNickName.text = displayName
+        }
+
+        if (!mIsGroupCall){
+            Glide.with(this)
+                .load(mAvatarInConversation)
+                .placeholder(R.drawable.ic_bg_gradient)
+                .error(R.drawable.ic_bg_gradient)
+                .apply(bitmapTransform(BlurTransformation(25,10)))
+                .into(imageBackground)
+        }else{
+            imgThumb.visibility=View.GONE
+            tvNickName.visibility=View.GONE
+        }
+
+        if (mIsAudioMode){
+            imgAnswer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.ic_button_answer))
+        }else {
+            imgAnswer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.ic_button_answer_video))
         }
     }
 
