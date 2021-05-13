@@ -3,25 +3,45 @@ package com.clearkeep.services
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.GroupRepository
+import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.screen.chat.utils.decryptGroupMessage
+import com.clearkeep.screen.chat.utils.decryptPeerMessage
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.utilities.*
+import com.google.common.reflect.TypeToken
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
+import com.google.protobuf.ByteString
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
-
+import java.util.HashMap
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var userManager: UserManager
+
+    @Inject
+    lateinit var signalProtocolStore: InMemorySignalProtocolStore
+
+    @Inject
+    lateinit var senderKeyStore: InMemorySenderKeyStore
+
+    @Inject
+    lateinit var clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub
 
     @Inject
     lateinit var groupRepository: GroupRepository
@@ -32,36 +52,85 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         when (remoteMessage.data["notify_type"]) {
             "request_call" -> {
-                val toClientId = remoteMessage.data["client_id"]
-                if (toClientId == userManager.getClientId()) {
-                    val groupId = remoteMessage.data["group_id"]
-                    val groupType = remoteMessage.data["group_type"]?: ""
-                    val groupName = remoteMessage.data["group_name"]?: ""
-                    val groupCallType = remoteMessage.data["call_type"]
-                    val avatar = remoteMessage.data["from_client_avatar"] ?: ""
-                    val fromClientName = remoteMessage.data["from_client_name"]
-                    val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
-
-                    val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
-                    val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
-
-                    val turnConfigJsonObject = JSONObject(turnConfigJson)
-                    val stunConfigJsonObject = JSONObject(stunConfigJson)
-                    val turnUrl = turnConfigJsonObject.getString("server")
-                    val stunUrl = stunConfigJsonObject.getString("server")
-                    val turnUser = turnConfigJsonObject.getString("user")
-                    val turnPass = turnConfigJsonObject.getString("pwd")
-                    val isAudioMode = groupCallType == CALL_TYPE_AUDIO
-
-                    val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-                    AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"", userManager.getClientId(), fromClientName, avatar,
-                        turnUrl, turnUser, turnPass, stunUrl)
-                }
+                handleRequestCall(remoteMessage)
             }
             "cancel_request_call" -> {
                 val groupId = remoteMessage.data["group_id"]
                 if (!groupId.isNullOrBlank()) {
                     handleCancelCall(groupId)
+                }
+            }
+            "new_message" -> {
+                handleNewMessage(remoteMessage)
+            }
+        }
+    }
+
+    private fun handleRequestCall(remoteMessage: RemoteMessage) {
+        val toClientId = remoteMessage.data["client_id"]
+        if (toClientId == userManager.getClientId()) {
+            val groupId = remoteMessage.data["group_id"]
+            val groupType = remoteMessage.data["group_type"]?: ""
+            val groupName = remoteMessage.data["group_name"]?: ""
+            val groupCallType = remoteMessage.data["call_type"]
+            val avatar = remoteMessage.data["from_client_avatar"] ?: ""
+            val fromClientName = remoteMessage.data["from_client_name"]
+            val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+
+            val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
+            val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
+
+            val turnConfigJsonObject = JSONObject(turnConfigJson)
+            val stunConfigJsonObject = JSONObject(stunConfigJson)
+            val turnUrl = turnConfigJsonObject.getString("server")
+            val stunUrl = stunConfigJsonObject.getString("server")
+            val turnUser = turnConfigJsonObject.getString("user")
+            val turnPass = turnConfigJsonObject.getString("pwd")
+            val isAudioMode = groupCallType == CALL_TYPE_AUDIO
+
+            val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
+            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"", userManager.getClientId(), fromClientName, avatar,
+                turnUrl, turnUser, turnPass, stunUrl)
+        }
+    }
+
+    private fun handleNewMessage(remoteMessage: RemoteMessage) {
+        val toClientId = remoteMessage.data["client_id"]
+        val data: Map<String, String> = Gson().fromJson(
+            remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
+        )
+        if (toClientId == userManager.getClientId()) {
+            val id = data["id"] ?: ""
+            val clientId = data["client_id"] ?: ""
+            val createdAt = data["created_at"]?.toLong() ?: 0
+            val fromClientID = data["from_client_id"] ?: ""
+            val groupId = data["group_id"]?.toLong() ?: 0
+            val groupType = data["group_type"] ?: ""
+            val message: ByteString = ByteString.copyFrom(data["message"] ?: "", charset("UTF-8"))
+            GlobalScope.launch {
+                try {
+                    /*val plainMessage = if (!isGroup(groupType)) {
+                        decryptPeerMessage(fromClientID, message, signalProtocolStore)
+                    } else {
+                        decryptGroupMessage(fromClientID, groupId, message, senderKeyStore, clientBlocking)
+                    }
+                    Log.w(TAG, "onMessageReceived: decrypted -> $plainMessage")*/
+                    val groupAsyncRes = async { groupRepository.getGroupByID(groupId) }
+                    val group = groupAsyncRes.await()
+                    val me = People(userManager.getUserName(), userManager.getClientId())
+                    group?.let {
+                        showMessagingStyleNotification(
+                            context = applicationContext,
+                            me = me,
+                            chatGroup = it,
+                            messageHistory = listOf(Message(
+                                id, groupId, groupType, fromClientID,
+                                clientId, "Have new message", createdAt, createdAt
+                            ))
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "onMessageReceived: error -> $e")
                 }
             }
         }
