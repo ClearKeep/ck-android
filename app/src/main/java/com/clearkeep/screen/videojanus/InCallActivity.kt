@@ -10,6 +10,7 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
+import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
@@ -20,6 +21,12 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.januswrapper.JanusConnection
@@ -33,14 +40,19 @@ import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.qualifiers.ApplicationContext
+import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call.*
+import kotlinx.android.synthetic.main.activity_in_call.imageBackground
+import kotlinx.android.synthetic.main.activity_in_call.imgThumb
+import kotlinx.android.synthetic.main.activity_in_call.tvNickName
+import kotlinx.android.synthetic.main.activity_in_coming_call.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.*
 import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
+import kotlin.math.log2
 
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
@@ -86,6 +98,9 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
     private var busySignalPlayer: MediaPlayer? = null
+    var isFromComingCall: Boolean=false
+    var avatarInConversation=""
+    var groupName=""
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,7 +184,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         listenerCallingState.postValue(CallingStateData(true,userNameInConversation))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
-        val avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
+        avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         if (!TextUtils.isEmpty(groupName)) {
             binding.tvUserName.text = groupName
         }
@@ -181,6 +196,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
         // update to add first local stream
         updateRenders()
+
     }
 
     private fun runDelayToHideBottomButton() {
@@ -191,7 +207,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     override fun onPermissionsAvailable() {
-        val isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
+         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
             if (isFromComingCall) {
@@ -225,6 +241,14 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                     }
                 }
             }
+
+        }
+
+        if (!isFromComingCall){
+            waitingCallView.visibility=View.VISIBLE
+            initWaitingCallView()
+        }else {
+            waitingCallView.visibility=View.GONE
         }
     }
 
@@ -311,6 +335,59 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         }
     }
 
+   private fun initWaitingCallView(){
+        tvUserName2.text = mGroupName
+        tvNickName.visibility = View.VISIBLE
+        val displayName =
+            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
+        tvNickName.text = displayName
+
+        if (!mIsGroupCall) {
+            Glide.with(this)
+                .load(avatarInConversation)
+                .placeholder(R.drawable.ic_bg_gradient)
+                .error(R.drawable.ic_bg_gradient)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
+                .into(imageBackground)
+
+            Glide.with(this)
+                .load(avatarInConversation)
+                .placeholder(R.drawable.ic_bg_gradient)
+                .error(R.drawable.ic_bg_gradient)
+                .listener(object : RequestListener<Drawable>{
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        tvNickName.visibility = View.VISIBLE
+                        return false
+                    }
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        tvNickName.visibility = View.GONE
+                        return false
+                    }
+
+                })
+                .into(imgThumb2)
+        } else {
+            imgThumb2.visibility = View.GONE
+            tvNickName.visibility = View.GONE
+        }
+
+        imgEndWaiting.setOnClickListener {
+            hangup()
+            finishAndReleaseResource()
+        }
+    }
+
     private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
         printlnCK("Janus URL: $JANUS_URI")
@@ -372,6 +449,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 stopRingBackTone()
                 displayCountUpClockOfConversation()
                 updateUIByStateAndMode()
+
             }
         }
     }
@@ -408,6 +486,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
             if (mCurrentCallState == CallState.ANSWERED) {
                 showOrHideAvatar(false)
+                waitingCallView.visibility=View.GONE
             }
         } else {
             if (mCurrentCallState != CallState.CALLING) {
