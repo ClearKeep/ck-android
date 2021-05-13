@@ -58,7 +58,6 @@ fun SiteMenuScreen(
                 Modifier
                     .width(108.dp)
             ) {
-
             }
             Column(
                 Modifier
@@ -73,9 +72,9 @@ fun SiteMenuScreen(
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 20.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    Spacer(Modifier.size(24.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -102,11 +101,10 @@ fun SiteMenuScreen(
                     SettingGeneral(navController) {
                         setShowReminderDialog.invoke(true)
                     }
-                    LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
-
                 }
             }
         }
+        LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
     }
 
 
@@ -166,6 +164,7 @@ fun SettingGeneral(
         })
         ItemSiteSetting("Application Settings", R.drawable.ic_gear)
         ItemSiteSetting("Logout", R.drawable.ic_logout, textColor = errorDefault,onClickAction = onClickAction)
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
