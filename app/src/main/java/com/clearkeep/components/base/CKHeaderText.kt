@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
 
@@ -21,8 +23,10 @@ fun CKHeaderText(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(
-            color = if (isSystemInDarkTheme()) grayscaleOffWhite else color
-        )
+            color = if (isSystemInDarkTheme()) grayscaleOffWhite else color,
+        ),
+        maxLines = 3,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
