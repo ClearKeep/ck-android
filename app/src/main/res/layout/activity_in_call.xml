@@ -12,74 +12,73 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/black"
-        android:orientation="vertical"
         android:keepScreenOn="true"
-        tools:context="in.minewave.janusvideoroom.MainActivity">
-    </RelativeLayout>
+        android:orientation="vertical"
+        tools:context="in.minewave.janusvideoroom.MainActivity" />
 
     <RelativeLayout
         android:id="@+id/containerAudioCover"
-        android:background="@android:color/background_dark"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
-    </RelativeLayout>
+        android:background="@android:color/background_dark"
+        android:visibility="gone" />
 
     <RelativeLayout
         android:id="@+id/rlToolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        tools:layout_height="60dp"
         android:background="@android:color/transparent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        tools:layout_height="60dp">
+
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgBack"
             android:layout_width="36dp"
             android:layout_height="36dp"
+            android:layout_centerVertical="true"
             android:layout_marginStart="14dp"
             android:layout_marginEnd="30dp"
-            android:layout_centerVertical="true"
             android:src="@drawable/baseline_close_fullscreen_white_24"
             app:civ_border_color="@color/color_button_background"
             app:civ_border_width="12dp"
-            app:civ_circle_background_color="@color/color_button_background"/>
+            app:civ_circle_background_color="@color/color_button_background" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:textSize="18sp"
+            android:text="@string/title_call_screen"
             android:textColor="?attr/appCallTextColor"
-            tools:textColor="@android:color/white"
+            android:textSize="18sp"
             android:visibility="gone"
-            android:text="@string/title_call_screen" />
+            tools:textColor="@android:color/white" />
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgSwitchCamera"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginEnd="20dp"
-            tools:visibility="gone"
-            android:visibility="gone"
             android:src="@drawable/baseline_cameraswitch_white_24"
+            android:visibility="gone"
             app:civ_border_color="@color/color_button_background"
             app:civ_border_width="12dp"
-            app:civ_circle_background_color="@color/color_button_background"/>
+            app:civ_circle_background_color="@color/color_button_background"
+            tools:visibility="gone" />
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgSwitchAudioToVideo"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginEnd="20dp"
-            android:visibility="gone"
             android:src="@drawable/baseline_videocam_white_24"
+            android:visibility="gone"
             app:civ_border_color="@color/color_button_background"
             app:civ_border_width="12dp"
-            app:civ_circle_background_color="@color/color_button_background"/>
+            app:civ_circle_background_color="@color/color_button_background" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -87,12 +86,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/rlToolbar">
+
         <LinearLayout
             android:id="@+id/avatarContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:gravity="center_horizontal">
+
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgThumb"
                 android:layout_width="80dp"
@@ -100,7 +101,7 @@
                 android:src="@drawable/baseline_person_black_36"
                 app:civ_border_color="@android:color/darker_gray"
                 app:civ_border_width="12dp"
-                app:civ_circle_background_color="@android:color/darker_gray"/>
+                app:civ_circle_background_color="@android:color/darker_gray" />
         </LinearLayout>
 
         <TextView
@@ -109,11 +110,11 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/avatarContainer"
             android:layout_centerHorizontal="true"
-            android:textColor="?attr/appCallTextColor"
-            tools:textColor="@android:color/white"
-            android:textSize="30sp"
             android:layout_marginTop="7dp"
-            tools:text="Kitagawa Keiko" />
+            android:textColor="?attr/appCallTextColor"
+            android:textSize="30sp"
+            tools:text="Kitagawa Keiko"
+            tools:textColor="@android:color/white" />
 
         <RelativeLayout
             android:id="@+id/statusContainer"
@@ -122,16 +123,17 @@
             android:layout_below="@id/tvUserName"
             android:layout_marginTop="14dp"
             android:layout_marginBottom="30dp">
+
             <TextView
                 android:id="@+id/tvCallState"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:textColor="?attr/appCallTextColor"
-                tools:textColor="@android:color/white"
-                tools:visibility="gone"
                 android:textSize="16sp"
-                tools:text="@string/text_calling" />
+                tools:text="@string/text_calling"
+                tools:textColor="@android:color/white"
+                tools:visibility="gone" />
         </RelativeLayout>
     </RelativeLayout>
 
@@ -140,24 +142,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/containerUserInfo"
+        android:layout_centerHorizontal="true"
         android:layout_margin="8dp"
         android:textColor="?attr/appCallTextColor"
-        tools:textColor="@android:color/white"
         android:visibility="gone"
-        tools:visibility="visible"
-        android:layout_centerHorizontal="true"/>
+        tools:textColor="@android:color/white"
+        tools:visibility="visible" />
 
     <LinearLayout
         android:id="@+id/bottomButtonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
+        android:layout_alignParentBottom="true"
         android:background="@drawable/bottom_call_button_background"
-        android:paddingBottom="20dp"
-        android:paddingTop="30dp"
+        android:clickable="true"
         android:gravity="center"
         android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:paddingTop="30dp"
+        android:paddingBottom="20dp">
+
         <ImageView
             android:id="@+id/imgVideoMute"
             android:layout_width="wrap_content"
@@ -165,16 +168,17 @@
             android:layout_marginEnd="30dp"
             android:src="?attr/buttonMuteVideoOff"
             android:visibility="gone"
-            tools:visibility="visible"
-            tools:src="@drawable/ic_video_mute_on" />
+            tools:src="@drawable/ic_video_mute_on"
+            tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/imgSpeaker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="?attr/buttonSpeakerOff"
             android:layout_marginEnd="30dp"
+            android:src="?attr/buttonSpeakerOff"
             tools:src="@drawable/ic_string_ee_sound_off" />
+
         <ImageView
             android:id="@+id/imgMute"
             android:layout_width="wrap_content"
@@ -182,6 +186,7 @@
             android:layout_marginEnd="30dp"
             android:src="?attr/buttonMuteOff"
             tools:src="@drawable/ic_string_ee_mute_off" />
+
         <ImageView
             android:id="@+id/imgEnd"
             android:layout_width="40dp"
@@ -189,4 +194,166 @@
             android:src="?attr/buttonEndCall"
             tools:src="@drawable/ic_string_ee_call" />
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/waitingCallView"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/imageBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_bg_gradient" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Mute"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/imageView4"
+            app:layout_constraintStart_toStartOf="@+id/imageView4"
+            app:layout_constraintTop_toBottomOf="@+id/imageView4" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Facetime"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/imageView6"
+            app:layout_constraintStart_toStartOf="@+id/imageView6"
+            app:layout_constraintTop_toBottomOf="@+id/imageView6" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Speaker"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@+id/imageView5"
+            app:layout_constraintStart_toStartOf="@+id/imageView5"
+            app:layout_constraintTop_toBottomOf="@+id/imageView5" />
+
+        <TextView
+            android:id="@+id/tvUserName2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imgThumb2"
+            tools:text="Kitagawa Keiko" />
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/imgThumb2"
+            android:layout_width="159dp"
+            android:layout_height="159dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:src="@drawable/ic_bg_gradient"
+            app:layout_constraintBottom_toTopOf="@+id/tvUserName2"
+            app:layout_constraintEnd_toEndOf="@+id/imageBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtAudioMode" />
+
+        <TextView
+            android:id="@+id/tvNickName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="40sp"
+            app:layout_constraintBottom_toBottomOf="@+id/imgThumb2"
+            app:layout_constraintEnd_toEndOf="@+id/imgThumb2"
+            app:layout_constraintStart_toStartOf="@+id/imgThumb2"
+            app:layout_constraintTop_toTopOf="@+id/imgThumb2" />
+
+
+        <TextView
+            android:id="@+id/txtAudioMode"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="100dp"
+            android:text="Calling"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="200dp"
+            android:src="@drawable/ic_button_mute_on"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imageView6"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/imageBackground" />
+
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_button_audio_on"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/imageView6"
+            app:layout_constraintTop_toTopOf="@+id/imageView6" />
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_button_video_on"
+            app:layout_constraintEnd_toStartOf="@+id/imageView5"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/imageView4"
+            app:layout_constraintTop_toTopOf="@+id/imageView4" />
+
+        <ImageView
+            android:id="@+id/imgEndWaiting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/ic_button_decline"
+            app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
+            app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
+            app:layout_constraintStart_toStartOf="@+id/tvEndButtonDescription" />
+
+        <TextView
+            android:id="@+id/tvEndButtonDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="60dp"
+            android:text="Cancel"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Decline"
+            tools:textColor="@android:color/white" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </RelativeLayout>
