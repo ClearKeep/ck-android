@@ -133,6 +133,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         updateConversationInformation()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateConversationInformation() {
         if (!TextUtils.isEmpty(mGroupName)) {
             tvUserName.text = mGroupName
@@ -162,6 +163,21 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             imgAnswer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.ic_button_answer))
         }else {
             imgAnswer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.ic_button_answer_video))
+        }
+
+        if (mIsGroupCall){
+            if (mIsAudioMode){
+                txtAudioMode.text=getString(R.string.incoming_voice_group)
+            }else {
+                txtAudioMode.text=getString(R.string.incoming_video_group)
+            }
+        }else {
+            if (mIsAudioMode){
+                txtAudioMode.text=getString(R.string.incoming_voice_single)
+
+            }else {
+                txtAudioMode.text=getString(R.string.incoming_video_single)
+            }
         }
     }
 
