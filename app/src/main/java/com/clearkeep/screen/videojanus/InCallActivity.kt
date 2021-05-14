@@ -185,6 +185,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         listenerCallingState.postValue(CallingStateData(true,userNameInConversation))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
+        //todo avatarInConversation hardcode test
+        avatarInConversation="https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         if (!TextUtils.isEmpty(groupName)) {
             binding.tvUserName.text = groupName
         }
