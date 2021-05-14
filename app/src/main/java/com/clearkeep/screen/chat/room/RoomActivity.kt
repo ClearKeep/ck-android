@@ -67,7 +67,6 @@ class RoomActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 for (statusBarNotification in notificationManagerCompat.activeNotifications)  {
                     if (roomId.toString() == statusBarNotification.notification.group) {
-                        printlnCK("cancel")
                         notificationManagerCompat.cancel(statusBarNotification.id)
                     }
                 }
