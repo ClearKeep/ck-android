@@ -1,8 +1,10 @@
 package com.clearkeep.services
 
 import android.content.Intent
+import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
+import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.GroupRepository
@@ -25,6 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import signal.SignalKeyDistributionGrpc
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
 
@@ -45,6 +48,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var messageDAO: MessageDAO
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -106,15 +112,23 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val fromClientID = data["from_client_id"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val groupType = data["group_type"] ?: ""
-            val message: ByteString = ByteString.copyFrom(data["message"] ?: "", charset("UTF-8"))
+            val messageUTF8AsBytes = (data["message"] ?: "").toByteArray(StandardCharsets.UTF_8)
+            val messageBase64 = Base64.decode(messageUTF8AsBytes, Base64.DEFAULT)
+            val messageContent: ByteString = ByteString.copyFrom(messageBase64)
             GlobalScope.launch {
                 try {
-                    /*val plainMessage = if (!isGroup(groupType)) {
-                        decryptPeerMessage(fromClientID, message, signalProtocolStore)
+                    val plainMessage = if (!isGroup(groupType)) {
+                        decryptPeerMessage(fromClientID, messageContent, signalProtocolStore)
                     } else {
-                        decryptGroupMessage(fromClientID, groupId, message, senderKeyStore, clientBlocking)
+                        decryptGroupMessage(fromClientID, groupId, messageContent, senderKeyStore, clientBlocking)
                     }
-                    Log.w(TAG, "onMessageReceived: decrypted -> $plainMessage")*/
+                    Log.i(TAG, "onMessageReceived: decrypted -> $plainMessage")
+                    val message = Message(
+                        id, groupId, groupType, fromClientID,
+                        clientId, plainMessage, createdAt, createdAt
+                    )
+                    messageDAO.insert(message)
+
                     val groupAsyncRes = async { groupRepository.getGroupByID(groupId) }
                     val group = groupAsyncRes.await()
                     val me = People(userManager.getUserName(), userManager.getClientId())
@@ -123,10 +137,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                             context = applicationContext,
                             me = me,
                             chatGroup = it,
-                            messageHistory = listOf(Message(
-                                id, groupId, groupType, fromClientID,
-                                clientId, "Have new message", createdAt, createdAt
-                            ))
+                            messageHistory = listOf(message)
                         )
                     }
                 } catch (e: Exception) {
