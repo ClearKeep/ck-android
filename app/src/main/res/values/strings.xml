@@ -53,4 +53,8 @@
 
     <string name="reply_label">Reply</string>
     <string name="reply_name">Me</string>
+    <string name="incoming_voice_group">Incomming Voice Group Call</string>
+    <string name="incoming_video_group">Incomming Video Group Call</string>
+    <string name="incoming_voice_single">Incomming Voice Call</string>
+    <string name="incoming_video_single">Incomming Video Call</string>
 </resources>
