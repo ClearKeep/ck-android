@@ -43,9 +43,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call.imageBackground
-import kotlinx.android.synthetic.main.activity_in_call.imgThumb
 import kotlinx.android.synthetic.main.activity_in_call.tvNickName
-import kotlinx.android.synthetic.main.activity_in_coming_call.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.*
@@ -380,6 +378,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 })
                 .into(imgThumb2)
         } else {
+            txtAudioMode.text= "Calling Group"
             imgThumb2.visibility = View.GONE
             tvNickName.visibility = View.GONE
         }
