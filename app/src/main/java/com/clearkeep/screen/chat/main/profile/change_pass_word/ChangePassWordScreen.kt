@@ -38,8 +38,9 @@ fun ChangePassWordScreen(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        if (isSystemInDarkTheme()) grayscaleBlack else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) grayscaleBlack else backgroundGradientEnd
+                        //todo disable dark mode
+                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
+                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
                     )
                 )
             )
