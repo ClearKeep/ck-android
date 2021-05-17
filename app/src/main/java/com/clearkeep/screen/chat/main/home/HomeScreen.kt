@@ -117,9 +117,10 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                 .background(
                     shape = RoundedCornerShape(topEnd = 30.dp),
                     brush = Brush.horizontalGradient(
+                        //todo disable dark mode
                         colors = listOf(
-                            if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                            if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                            if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
+                            if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
                         )
                     )
                 ), horizontalAlignment = Alignment.CenterHorizontally
@@ -170,6 +171,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                 .fillMaxWidth()
                 .background(
                     brush = Brush.horizontalGradient(
+                        //todo disable dark mode
                         colors = listOf(
                             if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
                             if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
