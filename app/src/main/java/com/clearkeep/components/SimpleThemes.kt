@@ -53,8 +53,9 @@ fun CKSimpleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     children: @Composable () -> Unit
 ) {
+    //todo disable dark mode
     MaterialTheme(
-        colors = if (darkTheme) simpleDarkThemeColors else simpleLightThemeColors,
+        colors = if (darkTheme) simpleLightThemeColors else simpleLightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
