@@ -47,8 +47,9 @@ fun SiteMenuScreen(
             Modifier.background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                        //todo disable dark mode
+                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
+                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
                     )
                 ),
                 alpha = 0.4f
@@ -64,7 +65,8 @@ fun SiteMenuScreen(
                     .fillMaxSize()
                     .padding(top = 20.dp, bottom = 20.dp)
                     .background(
-                        if (isSystemInDarkTheme()) grayscale1 else Color.White,
+                        //todo disable dark mode
+                        if (isSystemInDarkTheme()) Color.White else Color.White,
                         shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
                     ),
 
