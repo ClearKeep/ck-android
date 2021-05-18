@@ -55,7 +55,7 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
             Spacer(Modifier.height(58.dp))
             CKToolbarBack(
                 modifier = Modifier.padding(start = 6.dp),
-                title = stringResource(R.string.advance_settings),
+                title = stringResource(R.string.advance_server_settings),
                 onClick = { onBackPress() })
             Spacer(Modifier.height(26.dp))
             Row(
