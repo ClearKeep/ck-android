@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    tools:background="@color/black"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Mute"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/toggleMute"
+        app:layout_constraintStart_toStartOf="@+id/toggleMute"
+        app:layout_constraintTop_toBottomOf="@+id/toggleMute" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Facetime"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/toggleFaceTime"
+        app:layout_constraintStart_toStartOf="@+id/toggleFaceTime"
+        app:layout_constraintTop_toBottomOf="@+id/toggleFaceTime" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Speaker"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/toggleSpeaker"
+        app:layout_constraintStart_toStartOf="@+id/toggleSpeaker"
+        app:layout_constraintTop_toBottomOf="@+id/toggleSpeaker" />
+
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/toggleMute"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:checked="true"
+        app:layout_constraintEnd_toStartOf="@+id/toggleFaceTime"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tib_drawable_off="@drawable/ic_bottom_mic_off"
+        app:tib_drawable_on="@drawable/ic_button_mute_on" />
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/toggleFaceTime"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:checked="false"
+        app:layout_constraintEnd_toStartOf="@+id/toggleSpeaker"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/toggleMute"
+        app:layout_constraintTop_toTopOf="@+id/toggleMute"
+        app:tib_drawable_off="@drawable/ic_button_video_on"
+        app:tib_drawable_on="@drawable/ic_button_answer_video" />
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/toggleSpeaker"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        android:checked="false"
+        app:layout_constraintStart_toEndOf="@+id/toggleFaceTime"
+        app:layout_constraintTop_toTopOf="@+id/toggleFaceTime"
+        app:tib_drawable_off="@drawable/ic_button_audio_off"
+        app:tib_drawable_on="@drawable/ic_button_audio_on" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
