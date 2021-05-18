@@ -106,6 +106,14 @@
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="true"
             android:theme="@style/Theme.FastGo.Call" />
+
+        <activity
+            android:name=".screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.FastGo.Call" />
+
         <activity
             android:name=".screen.videojanus.InComingCallActivity"
             android:screenOrientation="portrait"
@@ -146,10 +154,6 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".screen.main_antx.MainActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
     </application>
 
 </manifest>
