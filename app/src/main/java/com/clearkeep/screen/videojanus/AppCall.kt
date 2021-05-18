@@ -11,6 +11,8 @@ import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.clearkeep.R
+import com.clearkeep.screen.chat.utils.isGroup
+import com.clearkeep.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
 import com.clearkeep.utilities.*
 
 
@@ -24,7 +26,11 @@ object AppCall {
              turnUrl: String = "", turnUser: String = "", turnPass: String = "",
              stunUrl: String = ""
     ) {
-        val intent = Intent(context, InCallActivity::class.java)
+        val intent: Intent = if (isGroup(groupType)) {
+            Intent(context, InCallActivity::class.java)
+        } else {
+            Intent(context, InCallPeerToPeerActivity::class.java)
+        }
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_TOKEN, token)
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
@@ -115,7 +121,11 @@ object AppCall {
         val intent = if (isWaitingScreen) {
             Intent(context, InComingCallActivity::class.java)
         } else {
-            Intent(context, InCallActivity::class.java)
+             if (isGroup(groupType)) {
+                 Intent(context, InCallActivity::class.java)
+            } else {
+                 Intent(context, InCallPeerToPeerActivity::class.java)
+             }
         }
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
