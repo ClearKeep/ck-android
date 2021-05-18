@@ -55,7 +55,8 @@ fun CKTheme(
     children: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = if (darkTheme) darkThemeColors else lightThemeColors,
+        //todo disable dark mode
+        colors = if (darkTheme) lightThemeColors else lightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
@@ -64,8 +65,8 @@ fun CKTheme(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            if (darkTheme) grayscaleBlack else backgroundGradientStart,
-                            if (darkTheme) grayscaleBlack else backgroundGradientEnd,
+                            if (darkTheme) backgroundGradientStart else backgroundGradientStart,
+                            if (darkTheme) backgroundGradientEnd else backgroundGradientEnd,
                         )
                     )
                 )

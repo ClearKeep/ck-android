@@ -19,11 +19,12 @@ fun CKHeaderText(
     headerTextType: HeaderTextType = HeaderTextType.Normal,
     color: Color = grayscaleBlack
 ) {
+    //todo disable dark mode
     Text(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(
-            color = if (isSystemInDarkTheme()) grayscaleOffWhite else color,
+            color = if (isSystemInDarkTheme()) color else color,
         ),
         maxLines = 3,
         overflow = TextOverflow.Ellipsis
