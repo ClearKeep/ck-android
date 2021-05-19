@@ -13,7 +13,10 @@ class SurfacePositionFactory {
             4 -> FourSurfaceGenerator(context)
             5 -> FiveSurfaceGenerator(context)
             6 -> SixSurfaceGenerator(context)
-            else -> SixSurfaceGenerator(context)
+            7 -> SixSurfaceGenerator(context)
+            8 -> SixSurfaceGenerator(context)
+            9 -> NineSurfaceGenerator(context)
+            else -> NineSurfaceGenerator(context)
         }
     }
 }

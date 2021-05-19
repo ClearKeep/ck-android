@@ -1,7 +1,6 @@
 package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -17,8 +16,8 @@ import android.os.*
 import android.text.TextUtils
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
@@ -50,7 +49,9 @@ import org.webrtc.*
 import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.log2
+import android.widget.TextView
+import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
+
 
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
@@ -649,6 +650,46 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
             remoteRenders[connection.handleId] = remoteRender
 
+            val remoteRender1 = SurfaceViewRenderer(this)
+            remoteRender1.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender1))
+            remoteRenders[100.toBigInteger()] = remoteRender1
+
+            val remoteRender2 = SurfaceViewRenderer(this)
+            remoteRender2.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender2))
+            remoteRenders[101.toBigInteger()] = remoteRender2
+
+            val remoteRender3 = SurfaceViewRenderer(this)
+            remoteRender3.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender3))
+            remoteRenders[102.toBigInteger()] = remoteRender3
+
+            val remoteRender4 = SurfaceViewRenderer(this)
+            remoteRender4.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender4))
+            remoteRenders[103.toBigInteger()] = remoteRender4
+
+            val remoteRender5 = SurfaceViewRenderer(this)
+            remoteRender5.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender5))
+            remoteRenders[104.toBigInteger()] = remoteRender5
+
+            val remoteRender6 = SurfaceViewRenderer(this)
+            remoteRender6.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender6))
+            remoteRenders[105.toBigInteger()] = remoteRender6
+
+            val remoteRender7 = SurfaceViewRenderer(this)
+            remoteRender7.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender7))
+            remoteRenders[106.toBigInteger()] = remoteRender7
+
+            val remoteRender8 = SurfaceViewRenderer(this)
+            remoteRender8.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender8))
+            remoteRenders[107.toBigInteger()] = remoteRender8
+
             updateRenders()
         }
     }
@@ -689,12 +730,42 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
-            val params = LinearLayout.LayoutParams(remoteSurfacePosition.width, remoteSurfacePosition.height).apply {
-                leftMargin = remoteSurfacePosition.marginStart
-                topMargin = remoteSurfacePosition.marginTop
-            }
-            binding.surfaceRootContainer.addView(renders.elementAt(index), params)
+            val view = createRemoteView(renders.elementAt(index), "Elon musk"
+                , remoteSurfacePosition)
+            binding.surfaceRootContainer.addView(view)
         }
+    }
+
+    private fun createRemoteView(
+        renderer: SurfaceViewRenderer, remoteName: String,
+        remoteSurfacePosition: SurfacePosition
+    ): RelativeLayout {
+        val params = RelativeLayout.LayoutParams(
+            remoteSurfacePosition.width, remoteSurfacePosition.height
+        ).apply {
+            leftMargin = remoteSurfacePosition.marginStart
+            topMargin = remoteSurfacePosition.marginTop
+        }
+        val relativeLayout = RelativeLayout(this)
+        relativeLayout.layoutParams = params
+
+
+        val tv = TextView(this)
+        tv.text = remoteName
+        val nameLayoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        nameLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT)
+
+        val rendererParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
+
+        relativeLayout.addView(renderer, rendererParams)
+        relativeLayout.addView(tv, nameLayoutParams)
+        return relativeLayout
     }
 
     private fun showAskPermissionDialog() {
