@@ -9,12 +9,15 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.app.NotificationManagerCompat
@@ -752,19 +755,32 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
         val tv = TextView(this)
         tv.text = remoteName
+        tv.typeface = Typeface.DEFAULT_BOLD
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,14f)
+        tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
+        tv.setPadding(0, 0, 0, 24)
+        tv.setTextColor(resources.getColor(R.color.grayscaleOffWhite))
         val nameLayoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        nameLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+
+        val muteImage = ImageView(this)
+        muteImage.setImageResource(R.drawable.ic_status_muted)
+        val muteLayoutParams = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.WRAP_CONTENT,
             RelativeLayout.LayoutParams.WRAP_CONTENT
         )
-        nameLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT)
+        muteLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
 
         val rendererParams = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT
         )
-
         relativeLayout.addView(renderer, rendererParams)
         relativeLayout.addView(tv, nameLayoutParams)
+        relativeLayout.addView(muteImage, muteLayoutParams)
         return relativeLayout
     }
 
