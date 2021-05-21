@@ -33,7 +33,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     var mIsAudioMode= MutableLiveData<Boolean>(null)
     var totalTimeRun : Long=0
     var totalTimeRunJob: Job?=null
-
+    var mIsMute = MutableLiveData<Boolean>(false)
 
     fun startVideo(context: Context,mLocalSurfaceRenderer: SurfaceViewRenderer,ourClientId:String,groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
         printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
