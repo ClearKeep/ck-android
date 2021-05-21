@@ -27,81 +27,85 @@ fun RoomInfoScreen(
 ) {
     val groupState = roomViewModel.group.observeAsState()
     groupState?.value?.let { group ->
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Surface(
+            color = MaterialTheme.colors.background
         ) {
-            CKTopAppBar(
-                title = {
-                    Text(text = "${group.groupName} details")
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navHostController.popBackStack(navHostController.graph.startDestination, false)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = ""
-                        )
-                    }
-                },
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Column(modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                CircleAvatar(emptyList(), group.groupName, size = 72.dp, isGroup = group.isGroup())
-                Spacer(modifier = Modifier.height(15.dp))
-                Text(text = group.groupName, style = MaterialTheme.typography.h5.copy(color = MaterialTheme.colors.onPrimary))
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text(text = "Other features", style = MaterialTheme.typography.body1.copy(color = Color.Gray.copy(alpha = 0.8f)))
+                CKTopAppBar(
+                    title = {
+                        Text(text = "${group.groupName} details")
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navHostController.popBackStack(navHostController.graph.startDestination, false)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = ""
+                            )
+                        }
+                    },
+                )
                 Spacer(modifier = Modifier.height(20.dp))
-                group.let {
-                    if (it.isGroup()) {
-                        Row(modifier = Modifier.clickable(onClick = {
-                            navHostController.navigate("invite_group_screen")
-                        }),
+                Column(modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircleAvatar(emptyList(), group.groupName, size = 72.dp, isGroup = group.isGroup())
+                    Spacer(modifier = Modifier.height(15.dp))
+                    Text(text = group.groupName, style = MaterialTheme.typography.h5)
+                }
+                Spacer(modifier = Modifier.height(30.dp))
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    Text(text = "Other features", style = MaterialTheme.typography.body1.copy(color = Color.Gray.copy(alpha = 0.8f)))
+                    Spacer(modifier = Modifier.height(20.dp))
+                    group.let {
+                        if (it.isGroup()) {
+                            Row(modifier = Modifier.clickable(onClick = {
+                                /*navHostController.navigate("invite_group_screen")*/
+                            }),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically) {
-                            Surface(
+                                Surface(
                                     color = Color.Gray.copy(alpha = 0.8f),
                                     shape = CircleShape,
                                     modifier = Modifier.size(30.dp, 30.dp).clickable(onClick = {
-                                        navHostController.navigate("invite_group_screen")
+                                        /*navHostController.navigate("invite_group_screen")*/
                                     })
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Add,
-                                    contentDescription = ""
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Add,
+                                        contentDescription = ""
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(text = "Add members", style = MaterialTheme.typography.body2)
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Add members", style = MaterialTheme.typography.body2.copy(color = MaterialTheme.colors.onPrimary))
                         }
                     }
-                }
-                group.let {
-                    if (it.isGroup()) {
-                        Row(modifier = Modifier.padding(top = 20.dp).clickable(onClick = {
-                            navHostController.navigate("member_group_screen")
-                        }),
+                    group.let {
+                        if (it.isGroup()) {
+                            Row(modifier = Modifier.padding(top = 20.dp).clickable(onClick = {
+                                navHostController.navigate("member_group_screen")
+                            }),
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically) {
-                            Surface(
+                                Surface(
                                     color = Color.Gray.copy(alpha = 0.8f),
                                     shape = CircleShape,
                                     modifier = Modifier.size(30.dp, 30.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Person,
-                                    contentDescription = ""
-                                )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Person,
+                                        contentDescription = ""
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(text = "Show members", style = MaterialTheme.typography.body2)
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Show members", style = MaterialTheme.typography.body2.copy(color = MaterialTheme.colors.onPrimary))
                         }
                     }
                 }

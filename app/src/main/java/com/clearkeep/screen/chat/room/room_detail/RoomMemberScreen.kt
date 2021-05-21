@@ -8,14 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
 
 @Composable
@@ -25,56 +22,37 @@ fun GroupMemberScreen(
 ) {
     val groupState = roomViewModel.group.observeAsState()
     groupState?.value?.let { group ->
-        Column {
-            CKTopAppBar(
-                title = {
-                    Text(text = "Group members")
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            navHostController.popBackStack()
+        Surface(
+            color = MaterialTheme.colors.background
+        ) {
+            Column {
+                CKTopAppBar(
+                    title = {
+                        Text(text = "Member")
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                navHostController.popBackStack()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = ""
+                            )
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = ""
-                        )
+                    },
+                )
+                Spacer(modifier = Modifier.height(30.dp))
+                LazyColumn(
+                    modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                    contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                ) {
+                    itemsIndexed(group.clientList) { _, friend ->
+                        FriendListItem(friend)
                     }
-                },
-            )
-            Spacer(modifier = Modifier.height(30.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp),
-            ) {
-                itemsIndexed(group.clientList) { _, friend ->
-                    FriendItem(friend)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun FriendItem(
-        friend: People,
-) {
-    Column() {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircleAvatar(emptyList(), friend.userName)
-            Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
-                Text(text = friend.userName,
-                        style = MaterialTheme.typography.h6.copy(
-                            color = MaterialTheme.colors.onPrimary
-                        )
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
-        Spacer(modifier = Modifier.height(10.dp))
     }
 }
