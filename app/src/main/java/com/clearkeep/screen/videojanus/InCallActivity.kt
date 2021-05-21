@@ -15,8 +15,10 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.ToggleButton
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.isVisible
@@ -36,6 +38,7 @@ import com.clearkeep.januswrapper.WebSocketChannel
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
+import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
@@ -193,8 +196,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         }
 
         runDelayToHideBottomButton()
+        initWaitingCallView()
 
-        // update to add first local stream
         updateRenders()
 
     }
@@ -242,13 +245,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 }
             }
 
-        }
-
-        if (!isFromComingCall){
-            waitingCallView.visibility=View.VISIBLE
-            initWaitingCallView()
-        }else {
-            waitingCallView.visibility=View.GONE
         }
     }
 
@@ -440,6 +436,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                     finishAndReleaseResource()
                 }
             }
+
             CallState.ENDED -> {
                 binding.tvCallState.text = getString(R.string.text_end)
                 hangup()
@@ -450,7 +447,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
                 stopRingBackTone()
                 displayCountUpClockOfConversation()
                 updateUIByStateAndMode()
-
             }
         }
     }
@@ -575,6 +571,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             createVideoCapture(this),
             handleId
         )
+
         peerConnectionClient?.createOffer(handleId)
     }
 
@@ -784,15 +781,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         busySignalPlayer?.stop()
         busySignalPlayer?.release()
         busySignalPlayer = null
-    }
-
-    enum class CallState {
-        CALLING,
-        RINGING,
-        ANSWERED,
-        BUSY,
-        ENDED,
-        CALL_NOT_READY
     }
 
     companion object {

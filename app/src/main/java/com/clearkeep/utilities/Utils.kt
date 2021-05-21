@@ -2,6 +2,7 @@ package com.clearkeep.utilities
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.res.Resources
 import android.util.Patterns
 import com.clearkeep.BuildConfig
 import java.text.SimpleDateFormat
@@ -116,4 +117,20 @@ fun convertDpToPixel(dp: Float, context: Context): Float {
 
 fun convertPixelsToDp(px: Float, context: Context): Float {
     return px / (context.resources.displayMetrics.density)
+}
+
+fun dp2px(dpValue: Float): Int {
+    val scale = Resources.getSystem().displayMetrics.density
+    return (dpValue * scale + 0.5f).toInt()
+}
+
+
+fun convertSecondsToHMmSs(seconds: Long): String? {
+    val s = seconds % 60
+    val m = seconds / 60 % 60
+    val h = seconds / (60 * 60) % 24
+    if (h<1){
+        return String.format("%02d:%02d",m, s)
+    }
+    return String.format("%02d:%02d:%02d", h, m, s)
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="16dp"
+    android:background="#D9DBE9">
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/bottomToggleMute"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="16dp"
+        android:checked="true"
+        app:layout_constraintEnd_toStartOf="@+id/bottomToggleFaceTime"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tib_drawable_off="@drawable/ic_button_mute_on"
+        app:tib_drawable_on="@drawable/ic_bottom_mic_off" />
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/bottomToggleFaceTime"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:checked="true"
+        app:layout_constraintEnd_toStartOf="@+id/bottomToggleSwitchCamera"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/bottomToggleMute"
+        app:layout_constraintTop_toTopOf="@+id/bottomToggleMute"
+        app:tib_drawable_off="@drawable/ic_button_video_on"
+        app:tib_drawable_on="@drawable/ic_bottom_video_on" />
+
+    <net.colindodd.toggleimagebutton.ToggleImageButton
+        android:id="@+id/bottomToggleSwitchCamera"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:checked="true"
+        app:layout_constraintEnd_toStartOf="@+id/bottomImgEndCall"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/bottomToggleFaceTime"
+        app:layout_constraintTop_toTopOf="@+id/bottomToggleMute"
+        app:tib_drawable_off="@drawable/ic_bottom_swap_camera_off"
+        app:tib_drawable_on="@drawable/ic_bottom_swap_camera" />
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/bottomImgEndCall"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginEnd="16dp"
+        android:background="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/bottomToggleSwitchCamera"
+        android:src="@drawable/ic_button_decline"
+        app:layout_constraintTop_toTopOf="@+id/bottomToggleSwitchCamera"
+ />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

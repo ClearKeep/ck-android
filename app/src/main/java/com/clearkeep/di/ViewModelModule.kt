@@ -15,6 +15,7 @@ import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
 import com.clearkeep.screen.chat.main.MainPreparingViewModel
 import com.clearkeep.screen.chat.main.home.HomeViewModel
+import com.clearkeep.screen.videojanus.CallViewModel
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
@@ -93,4 +94,9 @@ abstract class ViewModelModule {
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CallViewModel::class)
+    abstract fun bindCalViewModelFactory(callViewModel: CallViewModel): ViewModel
 }
