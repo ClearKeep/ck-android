@@ -31,10 +31,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
-import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.januswrapper.JanusRTCInterface
-import com.clearkeep.januswrapper.PeerConnectionClient
-import com.clearkeep.januswrapper.WebSocketChannel
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
@@ -53,6 +49,9 @@ import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
 import android.widget.TextView
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.januswrapper.*
+import com.clearkeep.repo.GroupRepository
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
 
@@ -77,13 +76,16 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
 
+    @Inject
+    lateinit var groupRepository: GroupRepository
+
     // surface and render
     private lateinit var rootEglBase: EglBase
     private var peerConnectionClient: PeerConnectionClient? = null
     private var mWebSocketChannel: WebSocketChannel? = null
     private lateinit var mLocalSurfaceRenderer: SurfaceViewRenderer
 
-    private val remoteRenders: MutableMap<BigInteger, SurfaceViewRenderer> = HashMap()
+    private val remoteRenders: MutableMap<BigInteger, RemoteInfo> = HashMap()
 
     // resource id
     private var mResIdSpeakerOn = 0
@@ -96,6 +98,8 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
+    private var group: ChatGroup? = null
 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
@@ -214,6 +218,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
          isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
+            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong())
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -594,11 +599,11 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         peerConnectionClient?.setRemoteDescription(handleId, sessionDescription)
     }
 
-    override fun subscriberHandleRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
+    override fun subscriberHandleRemoteJsep(janusHandle: JanusHandle, jsep: JSONObject) {
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(handleId, sessionDescription)
+        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -651,32 +656,50 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             val remoteRender = SurfaceViewRenderer(this)
             remoteRender.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
-            remoteRenders[connection.handleId] = remoteRender
+            remoteRenders[connection.handleId] = RemoteInfo(
+                connection.display,
+                remoteRender
+            )
 
             val remoteRender1 = SurfaceViewRenderer(this)
             remoteRender1.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender1))
-            remoteRenders[100.toBigInteger()] = remoteRender1
+            remoteRenders[100.toBigInteger()] = RemoteInfo(
+                connection.display,
+                remoteRender1
+            )
 
             val remoteRender2 = SurfaceViewRenderer(this)
             remoteRender2.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender2))
-            remoteRenders[101.toBigInteger()] = remoteRender2
+            remoteRenders[101.toBigInteger()] = RemoteInfo(
+                connection.display,
+                remoteRender2
+            )
 
             val remoteRender3 = SurfaceViewRenderer(this)
             remoteRender3.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender3))
-            remoteRenders[102.toBigInteger()] = remoteRender3
+            remoteRenders[102.toBigInteger()] = RemoteInfo(
+                connection.display,
+                remoteRender3
+            )
 
             val remoteRender4 = SurfaceViewRenderer(this)
             remoteRender4.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender4))
-            remoteRenders[103.toBigInteger()] = remoteRender4
+            remoteRenders[103.toBigInteger()] = RemoteInfo(
+                connection.display,
+                remoteRender4
+            )
 
             val remoteRender5 = SurfaceViewRenderer(this)
             remoteRender5.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender5))
-            remoteRenders[104.toBigInteger()] = remoteRender5
+            remoteRenders[104.toBigInteger()] = RemoteInfo(
+                connection.display,
+                remoteRender5
+            )
 
             /*val remoteRender6 = SurfaceViewRenderer(this)
             remoteRender6.init(rootEglBase.eglBaseContext, null)
@@ -710,7 +733,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private fun removeRemoteRender(handleId: BigInteger) {
         runOnUiThread {
             val render = remoteRenders.remove(handleId)
-            render?.release()
+            render?.surfaceViewRenderer?.release()
 
             if (remoteRenders.isEmpty() && !isGroup(mGroupType)) {
                 updateCallStatus(CallState.ENDED)
@@ -738,7 +761,9 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
-            val view = createRemoteView(renders.elementAt(index), "Elon musk"
+            val remoteInfo = renders.elementAt(index)
+            val user = group?.clientList?.find { it.id == remoteInfo.clientId }
+            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
                 , remoteSurfacePosition)
             binding.surfaceRootContainer.addView(view)
         }
@@ -886,6 +911,11 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         ENDED,
         CALL_NOT_READY
     }
+
+    data class RemoteInfo(
+        val clientId: String,
+        val surfaceViewRenderer: SurfaceViewRenderer
+    )
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
