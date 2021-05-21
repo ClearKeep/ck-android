@@ -18,8 +18,8 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tib_drawable_off="@drawable/ic_bottom_mic_off"
-        app:tib_drawable_on="@drawable/ic_button_mute_on" />
+        app:tib_drawable_off="@drawable/ic_button_mute_on"
+        app:tib_drawable_on="@drawable/ic_bottom_mic_off" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/bottomToggleFaceTime"
@@ -30,7 +30,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/bottomToggleMute"
         app:layout_constraintTop_toTopOf="@+id/bottomToggleMute"
-        app:tib_drawable_off="@drawable/ic_icon_call_video"
+        app:tib_drawable_off="@drawable/ic_button_video_on"
         app:tib_drawable_on="@drawable/ic_bottom_video_on" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton

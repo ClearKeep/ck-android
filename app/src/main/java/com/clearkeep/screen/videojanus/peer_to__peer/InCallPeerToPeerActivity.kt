@@ -66,7 +66,6 @@ class InCallPeerToPeerActivity : BaseActivity(){
         viewModelFactory
     }
 
-    private var mIsMute = false
     private var mIsMuteVideo = false
     private var mIsSpeaker = false
     private var mIsAudioMode: Boolean = false
@@ -88,6 +87,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     var isFromComingCall: Boolean = false
     var avatarInConversation = ""
     var groupName = ""
+
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,6 +125,13 @@ class InCallPeerToPeerActivity : BaseActivity(){
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
         mIsSpeaker = isSpeaker
         mIsMuteVideo = isMuteVideo
+        controlCallAudioView.apply {
+            toggleSpeaker?.isChecked=mIsSpeaker
+        }
+        controlCallVideoView.apply {
+            bottomToggleFaceTime?.isChecked=!mIsMuteVideo
+        }
+        callViewModel.onFaceTimeChange(!isMuteVideo)
     }
 
     private fun initViews() {
@@ -219,18 +226,16 @@ class InCallPeerToPeerActivity : BaseActivity(){
 
      private fun onClickControlCall() {
          controlCallAudioView.apply {
-             toggleFaceTime.isChecked=false
-             toggleFaceTime.isChecked
-
-             Log.e("antx","toggleMute: ${toggleMute.isChecked} toggleFaceTime : ${toggleFaceTime.isChecked} ${toggleSpeaker.isChecked}")
-
              this.toggleMute.setOnClickListener {
-                 callViewModel.onMuteChange((it as ToggleButton).isChecked)
+                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
+                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value!= true)
              }
              this.toggleFaceTime.setOnClickListener {
                  callViewModel.onFaceTimeChange((it as ToggleButton).isChecked)
                  callViewModel.mIsAudioMode.postValue(it.isChecked)
+                 mIsMuteVideo = !mIsMuteVideo
                  switchToVideoMode()
+                 controlCallVideoView.bottomToggleFaceTime.isChecked = true
              }
              this.toggleSpeaker.setOnClickListener {
                  callViewModel.onSpeakChange((it as ToggleButton).isChecked)
@@ -238,11 +243,12 @@ class InCallPeerToPeerActivity : BaseActivity(){
          }
          controlCallVideoView.apply {
              this.bottomToggleMute.setOnClickListener {
-                 callViewModel.onMuteChange((it as ToggleButton).isChecked)
+                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
+                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value!= true)
              }
              this.bottomToggleFaceTime.setOnClickListener {
-                 Log.e("antx","bottomToggleFaceTime ${(it as ToggleButton).isChecked}")
-                 callViewModel.onFaceTimeChange(it.isChecked)
+                 callViewModel.onFaceTimeChange(mIsMuteVideo)
+                 mIsMuteVideo = !mIsMuteVideo
                  switchToVideoMode()
              }
              this.bottomToggleSwitchCamera.setOnClickListener {
@@ -259,11 +265,15 @@ class InCallPeerToPeerActivity : BaseActivity(){
              finishAndReleaseResource()
          }
          callViewModel.mIsAudioMode.observe(this,{
-             Log.e("antx","mIsAudioMode: $it")
              if (it==false && mIsAudioMode){
                  updateUIbyStateView(CallStateView.CALLED_VIDEO)
 
              }
+         })
+
+         callViewModel.mIsMute.observe(this,{
+             controlCallVideoView.bottomToggleMute.isChecked=it
+             controlCallAudioView.toggleMute.isChecked=it
          })
 
          imgWaitingBack.setOnClickListener {

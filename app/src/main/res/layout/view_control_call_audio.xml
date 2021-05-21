@@ -46,13 +46,13 @@
         android:id="@+id/toggleMute"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:checked="true"
+        android:checked="false"
         app:layout_constraintEnd_toStartOf="@+id/toggleFaceTime"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tib_drawable_off="@drawable/ic_bottom_mic_off"
-        app:tib_drawable_on="@drawable/ic_button_mute_on" />
+        app:tib_drawable_off="@drawable/ic_button_mute_on"
+        app:tib_drawable_on="@drawable/ic_bottom_mic_off" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleFaceTime"
