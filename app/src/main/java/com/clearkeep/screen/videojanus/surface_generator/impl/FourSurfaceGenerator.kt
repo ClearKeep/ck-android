@@ -12,8 +12,8 @@ class FourSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
         return SurfacePosition(
             halfWidthPx,
             halfHeightPx,
-            0,
-            0
+            halfWidthPx,
+            halfHeightPx
         )
     }
 
@@ -26,6 +26,12 @@ class FourSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
             SurfacePosition(
                 halfWidthPx,
                 halfHeightPx,
+                0,
+                0
+            ),
+            SurfacePosition(
+                halfWidthPx,
+                halfHeightPx,
                 widthPx - halfWidthPx,
                 0
             ),
@@ -35,12 +41,6 @@ class FourSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
                 0,
                 heightPx - halfHeightPx
             ),
-            SurfacePosition(
-                halfWidthPx,
-                halfHeightPx,
-                widthPx - halfWidthPx,
-                heightPx - halfHeightPx
-            )
         )
     }
 }

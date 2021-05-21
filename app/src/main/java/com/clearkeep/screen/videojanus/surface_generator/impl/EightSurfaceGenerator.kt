@@ -3,62 +3,68 @@ package com.clearkeep.screen.videojanus.surface_generator.impl
 import android.content.Context
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
-class NineSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
+class EightSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
     override fun getLocalSurface(): SurfacePosition {
         val heightPx = getHeight()
         val widthPx = getWidth()
-        val aThirdHeightPx = heightPx / 3
+        val aFourHeightPx = heightPx / 4
         val halfWidthPx = widthPx / 2
         return SurfacePosition(
             halfWidthPx,
-            aThirdHeightPx,
-            0,
-            0
+            heightPx - 3 * aFourHeightPx,
+            widthPx - halfWidthPx,
+            3 * aFourHeightPx
         )
     }
 
     override fun getRemoteSurfaces(): List<SurfacePosition> {
         val heightPx = getHeight()
         val widthPx = getWidth()
-        val aThirdHeightPx = heightPx / 3
+        val aFourHeightPx = heightPx / 4
         val halfWidthPx = widthPx / 2
 
         return listOf(
             SurfacePosition(
                 halfWidthPx,
-                aThirdHeightPx,
+                aFourHeightPx,
+                0,
+                0
+            ),
+            SurfacePosition(
+                halfWidthPx,
+                aFourHeightPx,
                 widthPx - halfWidthPx,
                 0
             ),
             SurfacePosition(
                 halfWidthPx,
-                aThirdHeightPx,
+                aFourHeightPx,
                 0,
-                aThirdHeightPx
+                aFourHeightPx
             ),
             SurfacePosition(
                 halfWidthPx,
-                aThirdHeightPx,
+                aFourHeightPx,
                 widthPx - halfWidthPx,
-                aThirdHeightPx
-            ),
-            SurfacePosition(
-                widthPx,
-                heightPx - 2 * aThirdHeightPx,
-                0,
-                2 * aThirdHeightPx
+                aFourHeightPx
             ),
             SurfacePosition(
                 halfWidthPx,
-                aThirdHeightPx,
+                heightPx - 2 * aFourHeightPx,
                 0,
-                3 * aThirdHeightPx
+                2 * aFourHeightPx
             ),
             SurfacePosition(
                 halfWidthPx,
-                aThirdHeightPx,
+                heightPx - 2 * aFourHeightPx,
                 widthPx - halfWidthPx,
-                3 * aThirdHeightPx
+                2 * aFourHeightPx
+            ),
+            SurfacePosition(
+                halfWidthPx,
+                heightPx - 3 * aFourHeightPx,
+                0,
+                3 * aFourHeightPx
             ),
         )
     }

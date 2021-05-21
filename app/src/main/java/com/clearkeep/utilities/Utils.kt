@@ -117,3 +117,7 @@ fun convertDpToPixel(dp: Float, context: Context): Float {
 fun convertPixelsToDp(px: Float, context: Context): Float {
     return px / (context.resources.displayMetrics.density)
 }
+
+fun isOdd(num: Int) : Boolean {
+    return num % 2 != 0
+}

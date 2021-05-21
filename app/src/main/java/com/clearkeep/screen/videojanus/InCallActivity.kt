@@ -678,7 +678,7 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender5))
             remoteRenders[104.toBigInteger()] = remoteRender5
 
-            val remoteRender6 = SurfaceViewRenderer(this)
+            /*val remoteRender6 = SurfaceViewRenderer(this)
             remoteRender6.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender6))
             remoteRenders[105.toBigInteger()] = remoteRender6
@@ -692,6 +692,11 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             remoteRender8.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender8))
             remoteRenders[107.toBigInteger()] = remoteRender8
+
+            val remoteRender9 = SurfaceViewRenderer(this)
+            remoteRender9.init(rootEglBase.eglBaseContext, null)
+            connection.videoTrack.addRenderer(VideoRenderer(remoteRender9))
+            remoteRenders[108.toBigInteger()] = remoteRender9*/
 
             updateRenders()
         }
