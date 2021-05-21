@@ -1,5 +1,6 @@
 package com.clearkeep.components.base
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -47,9 +48,18 @@ fun CKToolbarMessage(
 
         Row(
             modifier = Modifier
-                .weight(1.0f, true),
+                .weight(1.0f, true)
+                .clickable {
+                    onUserClick()
+                },
         ) {
-            Text(text = title, color = Color.White, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = title,
+                color = Color.White,
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
 
         Row(
