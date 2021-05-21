@@ -82,7 +82,9 @@ fun RoomScreen(
                 CKToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
                     onFinishActivity()
                 }, onUserClick = {
-
+                    if (group.isGroup()) {
+                        navHostController.navigate("room_info_screen")
+                    }
                 }, onAudioClick = {
                     roomViewModel.requestCall(group.id, true)
 
