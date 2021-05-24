@@ -29,14 +29,11 @@ const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 
 fun showMessagingStyleNotification(
     context: Context,
-    me: People,
     chatGroup: ChatGroup,
-    messageHistory: List<Message>,
+    message: Message,
 ) {
-    val message = messageHistory.first()
     val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
-    printlnCK("showMessagingStyleNotification: message = ${message.message}")
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -59,6 +56,10 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
     dismissIntent.action = ACTION_MESSAGE_CANCEL
     val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+    val showSummaryIntent = Intent(context, ShowSummaryNotificationReceiver::class.java)
+    showSummaryIntent.putExtra(EXTRA_GROUP_ID, message.groupId)
+    val pendingShowSummaryIntent = PendingIntent.getBroadcast(context, 0, showSummaryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
     val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_message_view_expand)
@@ -86,6 +87,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         .setCustomContentView(smallLayout)
         .setCustomBigContentView(smallLayout)
         .setCustomHeadsUpContentView(headsUpLayout)
+        .setDeleteIntent(pendingShowSummaryIntent)
         .setSmallIcon(R.drawable.ic_logo)
         .setColor(
             ContextCompat.getColor(
@@ -96,9 +98,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         .setFullScreenIntent(trickPendingIntent, true) // trick here to not auto launch activity
         .setContentIntent(pendingIntent)
         .setOngoing(true)
-        /*.setAutoCancel(true)
-        .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)*/
-        .setGroup(message.groupId.toString())
+        .setAutoCancel(true)
+        .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setVisibility(VISIBILITY_PUBLIC)
         .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
@@ -139,6 +140,7 @@ fun showMessageNotificationToSystemBar(
             .build()
     )
         .setConversationTitle(contentTitle)
+        .setGroupConversation(chatGroup.isGroup())
 
     for (message in messages) {
         val people = participants.find { it.id == message.senderId }
@@ -150,10 +152,10 @@ fun showMessageNotificationToSystemBar(
             )
         )
     }
-    messagingStyle.isGroupConversation = chatGroup.isGroup()
 
     // 3. Set up main Intent for notification.
     val notifyIntent = Intent(context, RoomActivity::class.java)
+    notifyIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
     notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.id)
 
     val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
@@ -164,7 +166,7 @@ fun showMessageNotificationToSystemBar(
     // Gets a PendingIntent containing the entire back stack
     val mainPendingIntent = PendingIntent.getActivity(
         context,
-        0,
+        notificationId,
         notifyIntent,
         PendingIntent.FLAG_UPDATE_CURRENT
     )
@@ -179,7 +181,7 @@ fun showMessageNotificationToSystemBar(
                 .build()
             val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             mChannel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             mChannel.setSound(notification, attributes)
             notificationManager.createNotificationChannel(mChannel)
         }
@@ -189,7 +191,8 @@ fun showMessageNotificationToSystemBar(
     builder // MESSAGING_STYLE sets title and content for API 16 and above devices.
         .setStyle(messagingStyle) // Title for API < 16 devices.
         .setContentTitle(contentTitle) // Content for API < 16 devices.
-        .setContentText("Has new messages")
+        .setContentTitle("${messages.size} new messages with " + me.userName)
+        .setContentText("new messages")
         .setSmallIcon(R.drawable.ic_logo)
         .setContentIntent(mainPendingIntent)
         .setColor(
@@ -198,7 +201,7 @@ fun showMessageNotificationToSystemBar(
                 R.color.primaryDefault
             )
         )
-        .setGroupSummary(true)
+        .setGroupSummary(chatGroup.isGroup())
         .setGroup(chatGroup.id.toString())
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setCategory(Notification.CATEGORY_MESSAGE)

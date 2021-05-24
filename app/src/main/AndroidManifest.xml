@@ -123,6 +123,7 @@
 
 
         <receiver android:name=".screen.videojanus.DismissNotificationReceiver" />
+        <receiver android:name=".screen.videojanus.ShowSummaryNotificationReceiver" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
