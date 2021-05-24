@@ -22,6 +22,9 @@ interface MessageDAO {
     @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time ASC")
     suspend fun getMessages(groupId: Long): List<Message>
 
+    @Query("SELECT * FROM message WHERE group_id = :groupId AND created_time > :fromTime")
+    suspend fun getMessagesAfterTime(groupId: Long, fromTime: Long): List<Message>
+
     @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time ASC")
     fun getMessagesAsState(groupId: Long): LiveData<List<Message>>
 }

@@ -221,14 +221,12 @@ class ChatService : Service() {
     fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message) {
         scope.launch {
             val group = groupRepository.getGroupByID(groupId = groupId)
-            val user = People(userManager.getUserName(), userManager.getClientId())
             group?.let {
                 if (joiningRoomId != groupId) {
                     showMessagingStyleNotification(
                         context = applicationContext,
-                        me = user,
                         chatGroup = it,
-                        messageHistory = listOf(message),
+                        message,
                     )
                 }
             }

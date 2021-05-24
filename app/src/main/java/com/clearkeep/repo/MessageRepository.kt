@@ -37,6 +37,11 @@ class MessageRepository @Inject constructor(
 
     suspend fun getMessage(messageId: String) = messageDAO.getMessage(messageId)
 
+    suspend fun getUnreadMessage(groupId: Long, ourClientId: String) : List<Message> {
+        val group = groupDAO.getGroupById(groupId)!!
+        return messageDAO.getMessagesAfterTime(groupId, group.lastMessageSyncTimestamp).dropWhile { it.senderId ==  ourClientId}
+    }
+
     suspend fun insert(message: Message) = messageDAO.insert(message)
 
     suspend fun updateMessageFromAPI(groupId: Long, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
