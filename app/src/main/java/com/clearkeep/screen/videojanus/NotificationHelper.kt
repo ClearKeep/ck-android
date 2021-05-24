@@ -55,6 +55,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
     dismissIntent.action = ACTION_MESSAGE_CANCEL
+    dismissIntent.putExtra(MESSAGE_HEADS_UP_CANCEL_NOTIFICATION_ID, notificationId)
     val pendingDismissIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val showSummaryIntent = Intent(context, ShowSummaryNotificationReceiver::class.java)
