@@ -3,7 +3,6 @@ package com.clearkeep.screen.chat.room
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
@@ -13,7 +12,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
@@ -26,12 +24,9 @@ import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
-import com.clearkeep.utilities.MESSAGE_HEADS_UP_NOTIFICATION_ID
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import android.service.notification.StatusBarNotification
-import androidx.annotation.RequiresApi
 import com.clearkeep.utilities.printlnCK
 
 
@@ -64,13 +59,7 @@ class RoomActivity : AppCompatActivity() {
 
         if (roomId > 0) {
             val notificationManagerCompat = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                for (statusBarNotification in notificationManagerCompat.activeNotifications)  {
-                    if (roomId.toString() == statusBarNotification.notification.group) {
-                        notificationManagerCompat.cancel(statusBarNotification.id)
-                    }
-                }
-            }
+            notificationManagerCompat.cancel(roomId.toInt())
         }
 
         roomViewModel.joinRoom(roomId, friendId)
@@ -128,6 +117,7 @@ class RoomActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val newRoomId = intent.getLongExtra(GROUP_ID, 0)
+        printlnCK("onNewIntent, $newRoomId")
         if (newRoomId > 0 && newRoomId != roomId) {
             finish()
             startActivity(intent)
