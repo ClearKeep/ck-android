@@ -33,7 +33,8 @@ class DismissNotificationReceiver : BroadcastReceiver() {
             }
             ACTION_MESSAGE_CANCEL -> {
                 printlnCK("onReceive action ACTION_MESSAGE_CANCEL ")
-                NotificationManagerCompat.from(context).cancel(null, MESSAGE_HEADS_UP_NOTIFICATION_ID)
+                val notificationId = intent.getIntExtra(MESSAGE_HEADS_UP_CANCEL_NOTIFICATION_ID, 0)
+                NotificationManagerCompat.from(context).cancel(null, notificationId)
             }
         }
     }
