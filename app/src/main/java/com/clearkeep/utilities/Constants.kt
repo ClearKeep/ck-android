@@ -44,6 +44,7 @@ const val INCOMING_CHANNEL_NAME = "incoming_channel_name"
 
 const val MESSAGE_HEADS_UP_CHANNEL_ID = "channel_heads_up_message"
 const val MESSAGE_HEADS_UP_CHANNEL_NAME = "channel_name_heads_up"
+const val MESSAGE_HEADS_UP_CANCEL_NOTIFICATION_ID = "message_heads_up_cancel_id"
 const val MESSAGE_HEADS_UP_NOTIFICATION_ID = 100
 
 const val MESSAGE_CHANNEL_ID = "message_channel_id_ck"
