@@ -4,10 +4,9 @@ import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MessageRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.decryptGroupMessage
@@ -50,7 +49,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var groupRepository: GroupRepository
 
     @Inject
-    lateinit var messageDAO: MessageDAO
+    lateinit var messageRepository: MessageRepository
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -127,17 +126,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         id, groupId, groupType, fromClientID,
                         clientId, plainMessage, createdAt, createdAt
                     )
-                    messageDAO.insert(message)
+                    messageRepository.insert(message)
 
                     val groupAsyncRes = async { groupRepository.getGroupByID(groupId) }
                     val group = groupAsyncRes.await()
-                    val me = People(userManager.getUserName(), userManager.getClientId())
                     group?.let {
                         showMessagingStyleNotification(
                             context = applicationContext,
-                            me = me,
                             chatGroup = it,
-                            messageHistory = listOf(message)
+                            message
                         )
                     }
                 } catch (e: Exception) {
