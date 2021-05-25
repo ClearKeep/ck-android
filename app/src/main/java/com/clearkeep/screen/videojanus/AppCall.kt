@@ -9,7 +9,10 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
@@ -60,56 +63,76 @@ object AppCall {
                      turnUrl: String, turnUser: String, turnPass: String,
                      stunUrl: String) {
         printlnCK("token = $token, groupID = $groupId, turnURL= $turnUrl, turnUser=$turnUser, turnPass= $turnPass, stunUrl = $stunUrl")
-        val intent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = INCOMING_CHANNEL_ID
+        val channelName = INCOMING_CHANNEL_NAME
+        val notificationId = INCOMING_NOTIFICATION_ID
+
+        val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
+        dismissIntent.action=ACTION_CALL_CANCEL
+        dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
+        dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
+        val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ourClientId, userName, avatar, turnUrl, turnUser, turnPass, stunUrl, true)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            val channelId = INCOMING_CHANNEL_ID
-            val channelName = INCOMING_CHANNEL_NAME
-            val notificationId = INCOMING_NOTIFICATION_ID
-            var mChannel = notificationManager.getNotificationChannel(channelId)
-            if (mChannel == null) {
+        val pendingWaitIntent = PendingIntent.getActivity(context, 0, waitIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName, ourClientId,
+            userName, avatar, turnUrl, turnUser, turnPass, stunUrl, false)
+        val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+
+        val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_call)
+        headsUpLayout.apply {
+            setTextViewText(R.id.tvCallFrom, context.resources.getString(R.string.notification_incoming_peer))
+            setTextViewText(R.id.tvCallGroupName, groupName)
+            setOnClickPendingIntent(R.id.tvDecline, dismissPendingIntent)
+            setOnClickPendingIntent(R.id.tvAnswer, pendingInCallIntent)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var channel = notificationManager.getNotificationChannel(channelId)
+            if (channel == null) {
                 val attributes = AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                     .build()
                 val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-                mChannel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
-                mChannel.setSound(notification, attributes)
-                notificationManager.createNotificationChannel(mChannel)
+                channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+                channel.setSound(notification, attributes)
+                notificationManager.createNotificationChannel(channel)
             }
-            val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
-            val pendingIntent = PendingIntent.getActivity(context, 0, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT)
-
-            val intentToInCall = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName, ourClientId,
-                    userName, avatar, turnUrl, turnUser, turnPass, stunUrl, false)
-            val pendingIntentToInCall = PendingIntent.getActivity(context, 0, intentToInCall,
-                    PendingIntent.FLAG_UPDATE_CURRENT)
-
-            val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
-            dismissIntent.action=ACTION_CALL_CANCEL
-            dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
-            dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
-            val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-            builder.setSmallIcon(R.drawable.ic_logo)
-                    .setContentTitle(context.getString(R.string.app_name))
-                    .setContentText("$userName calling ${if(isAudioMode) "audio" else "video"}")
-                    .setPriority(NotificationCompat.PRIORITY_MAX)
-                    .setCategory(NotificationCompat.CATEGORY_CALL)
-                    .setFullScreenIntent(pendingIntent, true)
-                    .setAutoCancel(true)
-                    .setTimeoutAfter(20 * 1000)
-                    .setOngoing(true)
-                    .addAction(R.drawable.ic_string_ee_answer, "Answer", pendingIntentToInCall)
-                    .addAction(R.drawable.ic_close_call, "End", dismissPendingIntent)
-            val notification: Notification = builder.build()
-            notificationManager.notify(notificationId, notification)
-        } else {
-            val newIntent = intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(newIntent)
         }
+        val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
+        builder.setSmallIcon(R.drawable.ic_logo)
+            /*.setCustomContentView(headsUpLayout)
+            .setCustomBigContentView(headsUpLayout)*/
+            .setCustomHeadsUpContentView(headsUpLayout)
+            .setContentTitle(context.getString(R.string.app_name))
+            .setContentText("$userName calling ${if(isAudioMode) "audio" else "video"}")
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setFullScreenIntent(pendingWaitIntent, true)
+            .setAutoCancel(true)
+            .setTimeoutAfter(60 * 1000)
+            .setOngoing(true)
+        val notification: Notification = builder.build()
+
+        val target = NotificationTarget(
+            context,
+            R.id.imageButton,
+            headsUpLayout,
+            notification,
+            notificationId)
+        Glide.with(context.applicationContext)
+            .asBitmap()
+            .circleCrop()
+            .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
+            .into(target)
+
+        notificationManager.notify(notificationId, notification)
     }
 
     private fun createIncomingCallIntent(context: Context, isAudioMode: Boolean, token: String,
