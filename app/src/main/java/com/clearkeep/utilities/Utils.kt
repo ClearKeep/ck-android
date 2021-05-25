@@ -13,6 +13,7 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
 import android.text.format.DateUtils
+import android.view.View
 
 
 fun getCurrentDateTime(): Date {
@@ -123,6 +124,21 @@ fun dp2px(dpValue: Float): Int {
     val scale = Resources.getSystem().displayMetrics.density
     return (dpValue * scale + 0.5f).toInt()
 }
+fun View.gone() {
+    if (visibility != View.GONE)
+        visibility = View.GONE
+}
+
+fun View.visible() {
+    if (visibility != View.VISIBLE)
+        visibility = View.VISIBLE
+}
+
+fun View.invisible() {
+    if (visibility != View.INVISIBLE)
+        visibility = View.INVISIBLE
+}
+
 
 
 fun convertSecondsToHMmSs(seconds: Long): String? {

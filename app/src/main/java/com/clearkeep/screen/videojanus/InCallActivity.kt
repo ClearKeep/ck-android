@@ -1,7 +1,6 @@
 package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,7 +9,6 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.TypedArray
-import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
@@ -18,17 +16,8 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.ToggleButton
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.januswrapper.JanusConnection
@@ -37,16 +26,21 @@ import com.clearkeep.januswrapper.PeerConnectionClient
 import com.clearkeep.januswrapper.WebSocketChannel
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
-import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
-import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call.*
-import kotlinx.android.synthetic.main.activity_in_call.imageBackground
-import kotlinx.android.synthetic.main.activity_in_call.tvNickName
+import kotlinx.android.synthetic.main.activity_in_call.controlCallAudioView
+import kotlinx.android.synthetic.main.activity_in_call.controlCallVideoView
+import kotlinx.android.synthetic.main.activity_in_call.imgEndWaiting
+import kotlinx.android.synthetic.main.activity_in_call.tvUserName2
+import kotlinx.android.synthetic.main.activity_in_call.waitingCallView
+import kotlinx.android.synthetic.main.toolbar_call_default.*
+import kotlinx.android.synthetic.main.toolbar_call_default.view.*
+import kotlinx.android.synthetic.main.view_control_call_audio.view.*
+import kotlinx.android.synthetic.main.view_control_call_video.view.*
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.*
@@ -56,7 +50,8 @@ import javax.inject.Inject
 import kotlin.math.log2
 
 @AndroidEntryPoint
-class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, PeerConnectionClient.PeerConnectionEvents {
+class InCallActivity : BaseActivity(), JanusRTCInterface,
+    PeerConnectionClient.PeerConnectionEvents {
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
 
@@ -84,14 +79,6 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
     private val remoteRenders: MutableMap<BigInteger, SurfaceViewRenderer> = HashMap()
 
-    // resource id
-    private var mResIdSpeakerOn = 0
-    private var mResIdSpeakerOff = 0
-    private var mResIdMuteOn = 0
-    private var mResIdMuteOff = 0
-    private var mResIdMuteVideoOn = 0
-    private var mResIdMuteVideoOff = 0
-
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
@@ -99,9 +86,9 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
     private var busySignalPlayer: MediaPlayer? = null
-    var isFromComingCall: Boolean=false
-    var avatarInConversation=""
-    var groupName=""
+    var isFromComingCall: Boolean = false
+    var avatarInConversation = ""
+    var groupName = ""
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,33 +99,12 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         val view = binding.root
         setContentView(view)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
-
-        val a: TypedArray = theme.obtainStyledAttributes(
-                intArrayOf(
-                        R.attr.buttonSpeakerOn, R.attr.buttonSpeakerOff,
-                        R.attr.buttonMuteOn, R.attr.buttonMuteOff,
-                        R.attr.buttonMuteVideoOn, R.attr.buttonMuteVideoOff
-                )
-        )
-        try {
-            mResIdSpeakerOn = a.getResourceId(0, R.drawable.ic_string_ee_sound_on)
-            mResIdSpeakerOff = a.getResourceId(1, R.drawable.ic_string_ee_sound_off)
-            mResIdMuteOn = a.getResourceId(2, R.drawable.ic_string_ee_mute_on)
-            mResIdMuteOff = a.getResourceId(3, R.drawable.ic_string_ee_mute_off)
-            mResIdMuteVideoOn = a.getResourceId(4, R.drawable.baseline_videocam_white_18)
-            mResIdMuteVideoOff = a.getResourceId(5, R.drawable.baseline_videocam_off_white_18)
-        } finally {
-            a.recycle()
-        }
-
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
-
         rootEglBase = EglBase.create()
 
         mLocalSurfaceRenderer = SurfaceViewRenderer(this)
@@ -168,49 +134,44 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
         mIsMuteVideo = isMuteVideo
         enableMuteVideo(mIsMuteVideo)
+
     }
 
     private fun initViews() {
-        binding.imgBack.setOnClickListener(this)
-        binding.imgSpeaker.setOnClickListener(this)
-        binding.imgMute.setOnClickListener(this)
-        binding.imgEnd.setOnClickListener(this)
-        binding.imgVideoMute.setOnClickListener(this)
-        binding.imgSwitchCamera.setOnClickListener(this)
-        binding.imgSwitchAudioToVideo.setOnClickListener(this)
-        binding.surfaceRootContainer.setOnClickListener(this)
-
+        onAction()
         updateUIByStateAndMode()
-
         val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        listenerCallingState.postValue(CallingStateData(true,userNameInConversation))
+        listenerCallingState.postValue(CallingStateData(true, userNameInConversation))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
-        avatarInConversation="https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
+        avatarInConversation =
+            "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
+        tvCallStateVideo.text = "Calling"
+        tvUserName.text = groupName
+        tvCallState.text = "Calling"
+
         if (!TextUtils.isEmpty(groupName)) {
-            binding.tvUserName.text = groupName
-        }
-        if (!TextUtils.isEmpty(avatarInConversation)) {
-            AvatarImageTask(binding.imgThumb).execute(avatarInConversation)
+            includeToolbar.title.text = groupName
         }
 
         runDelayToHideBottomButton()
         initWaitingCallView()
-
         updateRenders()
-
     }
 
     private fun runDelayToHideBottomButton() {
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
         hideBottomButtonHandler.postDelayed(Runnable {
-            binding.bottomButtonContainer.visibility = View.GONE
+            if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED) {
+                includeToolbar.gone()
+                controlCallVideoView.gone()
+            }
         }, 5 * 1000)
     }
 
     override fun onPermissionsAvailable() {
-         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
+        isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
             if (isFromComingCall) {
@@ -259,124 +220,90 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     override fun onDestroy() {
         listenerCallingState.postValue(CallingStateData(false))
         super.onDestroy()
-        if (binding.chronometer.visibility == View.VISIBLE) {
-            binding.chronometer.stop()
+        if (chronometerTimeCall.visibility == View.VISIBLE) {
+            chronometerTimeCall.stop()
         }
     }
 
     override fun onPictureInPictureModeChanged(
-            isInPictureInPictureMode: Boolean,
-            newConfig: Configuration
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
     ) {
         if (isInPictureInPictureMode) {
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
-            binding.imgBack.visibility = View.GONE
-            binding.imgSpeaker.visibility = View.GONE
-            binding.imgMute.visibility = View.GONE
-            binding.imgEnd.visibility = View.GONE
-            binding.imgSwitchCamera.visibility = View.GONE
+            includeToolbar.gone()
+            controlCallVideoView.gone()
         } else {
             // Restore the full-screen UI.
-            binding.imgBack.visibility = View.VISIBLE
-            binding.imgSpeaker.visibility = View.VISIBLE
-            binding.imgMute.visibility = View.VISIBLE
-            binding.imgEnd.visibility = View.VISIBLE
-            binding.imgSwitchCamera.visibility = View.VISIBLE
+            includeToolbar.visible()
+            if (!mIsAudioMode)
+                controlCallVideoView.visible()
         }
     }
 
-    override fun onClick(view: View) {
-        when (view.id) {
-            R.id.imgEnd -> {
+    fun onAction() {
+        imgEndWaiting.setOnClickListener {
+            hangup()
+            finishAndReleaseResource()
+        }
+        includeToolbar.imgBack.setOnClickListener {
+            if (hasSupportPIP()) {
+                enterPIPMode()
+            } else {
                 hangup()
                 finishAndReleaseResource()
             }
-            R.id.imgBack -> {
-                if (hasSupportPIP()) {
-                    enterPIPMode()
+        }
+
+        controlCallAudioView.toggleSpeaker.setOnClickListener {
+            mIsSpeaker = !mIsSpeaker
+            enableSpeaker(mIsSpeaker)
+        }
+
+        controlCallAudioView.toggleMute.setOnClickListener {
+            mIsMute = !mIsMute
+            enableMute(mIsMute)
+            controlCallVideoView.bottomToggleMute.isChecked = mIsMute
+            runDelayToHideBottomButton()
+        }
+
+        controlCallAudioView.toggleFaceTime.setOnClickListener {
+            switchToVideoMode()
+        }
+
+        controlCallVideoView.bottomToggleMute.setOnClickListener {
+            mIsMute = !mIsMute
+            enableMute(mIsMute)
+            controlCallAudioView.toggleMute.isChecked = mIsMute
+            runDelayToHideBottomButton()
+        }
+
+        controlCallVideoView.bottomToggleFaceTime.setOnClickListener {
+            mIsMuteVideo = !mIsMuteVideo
+            enableMuteVideo(mIsMuteVideo)
+            runDelayToHideBottomButton()
+
+        }
+
+        controlCallVideoView.bottomToggleSwitchCamera.setOnClickListener {
+            peerConnectionClient?.switchCamera()
+        }
+
+        controlCallVideoView.bottomImgEndCall.setOnClickListener {
+            hangup()
+            finishAndReleaseResource()
+
+        }
+        surfaceRootContainer.setOnClickListener {
+            if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED)
+                if (includeToolbar.visibility == View.VISIBLE) {
+                    includeToolbar.gone()
+                    controlCallVideoView.gone()
                 } else {
-                    hangup()
-                    finishAndReleaseResource()
-                }
-            }
-            R.id.imgSpeaker -> {
-                mIsSpeaker = !mIsSpeaker
-                enableSpeaker(mIsSpeaker)
-                runDelayToHideBottomButton()
-            }
-            R.id.imgMute -> {
-                mIsMute = !mIsMute
-                enableMute(mIsMute)
-                runDelayToHideBottomButton()
-            }
-            R.id.imgSwitchCamera -> {
-                peerConnectionClient?.switchCamera()
-            }
-            R.id.imgSwitchAudioToVideo -> {
-                switchToVideoMode()
-            }
-            R.id.imgVideoMute -> {
-                mIsMuteVideo = !mIsMuteVideo
-                enableMuteVideo(mIsMuteVideo)
-                runDelayToHideBottomButton()
-            }
-            R.id.surfaceRootContainer -> {
-                if (bottomButtonContainer.visibility == View.VISIBLE) {
-                    binding.bottomButtonContainer.visibility = View.GONE
-                } else {
-                    binding.bottomButtonContainer.visibility = View.VISIBLE
+                    includeToolbar.visible()
+                    controlCallVideoView.visible()
                     runDelayToHideBottomButton()
                 }
-            }
-        }
-    }
-
-   private fun initWaitingCallView(){
-        tvUserName2.text = mGroupName
-        tvNickName.visibility = View.VISIBLE
-        val displayName =
-            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
-        tvNickName.text = displayName
-
-        if (!mIsGroupCall) {
-            Glide.with(this)
-                .load(avatarInConversation)
-                .placeholder(R.drawable.ic_bg_gradient)
-                .error(R.drawable.ic_bg_gradient)
-                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
-                .into(imageBackground)
-
-            Glide.with(this)
-                .load(avatarInConversation)
-                .placeholder(R.drawable.ic_bg_gradient)
-                .error(R.drawable.ic_bg_gradient)
-                .listener(object : RequestListener<Drawable>{
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        tvNickName.visibility = View.VISIBLE
-                        return false
-                    }
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        tvNickName.visibility = View.GONE
-                        return false
-                    }
-
-                })
-                .into(imgThumb2)
-        } else {
-            txtAudioMode.text= "Calling Group"
-            imgThumb2.visibility = View.GONE
-            tvNickName.visibility = View.GONE
         }
 
         imgEndWaiting.setOnClickListener {
@@ -385,11 +312,29 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
         }
     }
 
-    private fun startVideo(groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
+    private fun initWaitingCallView() {
+        tvUserName2.text = mGroupName
+        if (mIsAudioMode)
+            controlCallVideoView.gone()
+        else
+            controlCallVideoView.visible()
+        includeToolbar.gone()
+    }
+
+    private fun startVideo(
+        groupId: Int,
+        stunUrl: String,
+        turnUrl: String,
+        turnUser: String,
+        turnPass: String,
+        token: String
+    ) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
         printlnCK("Janus URL: $JANUS_URI")
-        printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
-                ", group = $groupId, token = $token")
+        printlnCK(
+            "startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
+                    ", group = $groupId, token = $token"
+        )
         mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
@@ -406,28 +351,24 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun displayCountUpClockOfConversation() {
-        if (binding.chronometer.isVisible) {
-            return
+        includeToolbar.chronometerTimeCall.apply {
+            base = SystemClock.elapsedRealtime()
+            start()
         }
-        binding.chronometer.visibility = View.VISIBLE
-        binding.tvCallState.visibility = View.GONE
-
-        binding.chronometer.base = SystemClock.elapsedRealtime()
-        binding.chronometer.start()
     }
 
     private fun updateCallStatus(newState: CallState) {
         printlnCK("update call state: $newState")
         mCurrentCallState = newState
+
         when (mCurrentCallState) {
             CallState.CALLING -> {
-                binding.tvCallState.text = getString(R.string.text_calling)
                 playRingBackTone()
             }
-            CallState.RINGING ->
-                binding.tvCallState.text = getString(R.string.text_ringing)
+            CallState.RINGING -> {
+            }
             CallState.BUSY, CallState.CALL_NOT_READY -> {
-                binding.tvCallState.text = getString(R.string.text_busy)
+                tvCallState.text = getString(R.string.text_busy)
                 stopRingBackTone()
                 playBusySignalSound()
                 GlobalScope.launch {
@@ -438,25 +379,15 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
             }
 
             CallState.ENDED -> {
-                binding.tvCallState.text = getString(R.string.text_end)
+                tvCallState.text = getString(R.string.text_end)
                 hangup()
                 finishAndReleaseResource()
             }
             CallState.ANSWERED -> {
-                binding.tvCallState.text = getString(R.string.text_started)
+                tvCallState.text = getString(R.string.text_started)
                 stopRingBackTone()
                 displayCountUpClockOfConversation()
                 updateUIByStateAndMode()
-            }
-        }
-    }
-
-    private fun showOrHideAvatar(isShowAvatar: Boolean) {
-        runOnUiThread {
-            if (isShowAvatar) {
-                binding.containerUserInfo.visibility = View.VISIBLE
-            } else {
-                binding.containerUserInfo.visibility = View.GONE
             }
         }
     }
@@ -471,57 +402,51 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     }
 
     private fun updateUIByStateAndMode() {
-        if (!mIsAudioMode) {
-            binding.imgSwitchAudioToVideo.visibility = View.GONE
-            binding.imgSwitchCamera.visibility = View.VISIBLE
-            binding.containerAudioCover.visibility = View.GONE
+        if (mCurrentCallState == CallState.ANSWERED) {
+            groupAudioWaiting.gone()
+            waitingCallVideoView.gone()
 
-            // display bottom button in video mode
-            binding.imgVideoMute.visibility = View.VISIBLE
-            binding.imgSpeaker.visibility = View.VISIBLE
-            binding.imgMute.visibility = View.VISIBLE
-
-            if (mCurrentCallState == CallState.ANSWERED) {
-                showOrHideAvatar(false)
-                waitingCallView.visibility=View.GONE
+            if (mIsAudioMode) {
+                includeToolbar.visible()
+                controlCallVideoView.gone()
+                tvEndButtonDescription.text="End Call"
+            } else {
+                waitingCallView.gone()
+                includeToolbar.visible()
+                controlCallVideoView.visible()
             }
         } else {
-            if (mCurrentCallState != CallState.CALLING) {
-                binding.imgSwitchAudioToVideo.visibility = View.VISIBLE
+            if (!mIsAudioMode) {
+                waitingCallView.gone()
+                includeToolbar.gone()
+                controlCallVideoView.visible()
+                waitingCallVideoView.visible()
+            } else {
+                waitingCallView.visible()
+                groupAudioWaiting.visible()
+                waitingCallVideoView.gone()
             }
-            binding.imgSwitchCamera.visibility = View.GONE
-            binding.containerAudioCover.visibility = View.VISIBLE
+
         }
     }
 
     private fun enableSpeaker(isEnable: Boolean) {
-        binding.imgSpeaker.isClickable = true
-        if (isEnable) {
-            binding.imgSpeaker.setImageResource(mResIdSpeakerOn)
-        } else {
-            binding.imgSpeaker.setImageResource(mResIdSpeakerOff)
-        }
+        controlCallAudioView.toggleSpeaker.isChecked = isEnable
         setSpeakerphoneOn(isEnable)
     }
 
     private fun enableMute(isMuting: Boolean) {
-        binding.imgMute.isClickable = true
-        if (isMuting) {
-            binding.imgMute.setImageResource(mResIdMuteOn)
-        } else {
-            binding.imgMute.setImageResource(mResIdMuteOff)
-        }
+        Log.e("antx","enableMute isMuting $isMuting")
+        controlCallAudioView.toggleMute.isChecked = isMuting
+        controlCallVideoView.bottomToggleMute.isChecked = isMuting
         peerConnectionClient?.setAudioEnabled(!isMuting)
     }
 
     private fun enableMuteVideo(isMuteVideo: Boolean) {
-        binding.imgVideoMute.isClickable = true
-        if (isMuteVideo) {
-            binding.imgVideoMute.setImageResource(mResIdMuteVideoOff)
-        } else {
-            binding.imgVideoMute.setImageResource(mResIdMuteVideoOn)
-        }
+        Log.e("antx","enableMute enableMuteVideo $isMuteVideo")
 
+        controlCallAudioView.toggleFaceTime.isChecked = isMuteVideo
+        controlCallVideoView.bottomToggleFaceTime.isChecked = isMuteVideo
         peerConnectionClient?.setLocalVideoEnable(!isMuteVideo)
     }
 
@@ -674,22 +599,27 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
 
         val renders = remoteRenders.values
 
-        val surfaceGenerator = SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
+        val surfaceGenerator =
+            SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
         // add local stream
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        val localParams = LinearLayout.LayoutParams(localSurfacePosition.width, localSurfacePosition.height).apply {
-            leftMargin = localSurfacePosition.marginStart
-            topMargin = localSurfacePosition.marginTop
-        }
+        val localParams =
+            LinearLayout.LayoutParams(localSurfacePosition.width, localSurfacePosition.height)
+                .apply {
+                    leftMargin = localSurfacePosition.marginStart
+                    topMargin = localSurfacePosition.marginTop
+                }
         binding.surfaceRootContainer.addView(mLocalSurfaceRenderer, localParams)
 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
-            val params = LinearLayout.LayoutParams(remoteSurfacePosition.width, remoteSurfacePosition.height).apply {
-                leftMargin = remoteSurfacePosition.marginStart
-                topMargin = remoteSurfacePosition.marginTop
-            }
+            val params =
+                LinearLayout.LayoutParams(remoteSurfacePosition.width, remoteSurfacePosition.height)
+                    .apply {
+                        leftMargin = remoteSurfacePosition.marginStart
+                        topMargin = remoteSurfacePosition.marginTop
+                    }
             binding.surfaceRootContainer.addView(renders.elementAt(index), params)
         }
     }
@@ -697,8 +627,10 @@ class InCallActivity : BaseActivity(), View.OnClickListener, JanusRTCInterface, 
     private fun showAskPermissionDialog() {
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle("Permissions Required")
-            .setMessage("You have forcefully denied some of the required permissions " +
-                    "for this action. Please open settings, go to permissions and allow them.")
+            .setMessage(
+                "You have forcefully denied some of the required permissions " +
+                        "for this action. Please open settings, go to permissions and allow them."
+            )
             .setPositiveButton("Settings") { _, _ ->
                 openSettingScreen()
             }
