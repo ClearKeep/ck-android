@@ -8,28 +8,32 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.content.res.TypedArray
+import android.graphics.Typeface
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
 import android.text.TextUtils
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.iterator
 import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
-import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.januswrapper.JanusRTCInterface
-import com.clearkeep.januswrapper.PeerConnectionClient
-import com.clearkeep.januswrapper.WebSocketChannel
+import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.januswrapper.*
+import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
+import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.UserManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call.controlCallAudioView
@@ -47,7 +51,6 @@ import org.webrtc.*
 import java.math.BigInteger
 import java.util.*
 import javax.inject.Inject
-import kotlin.math.log2
 
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), JanusRTCInterface,
@@ -71,17 +74,25 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
 
+    @Inject
+    lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var userManager: UserManager
+
     // surface and render
     private lateinit var rootEglBase: EglBase
     private var peerConnectionClient: PeerConnectionClient? = null
     private var mWebSocketChannel: WebSocketChannel? = null
     private lateinit var mLocalSurfaceRenderer: SurfaceViewRenderer
 
-    private val remoteRenders: MutableMap<BigInteger, SurfaceViewRenderer> = HashMap()
+    private val remoteRenders: MutableMap<BigInteger, RemoteInfo> = HashMap()
 
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
+    private var group: ChatGroup? = null
 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
@@ -174,6 +185,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
+            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong())
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -512,11 +524,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         peerConnectionClient?.setRemoteDescription(handleId, sessionDescription)
     }
 
-    override fun subscriberHandleRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
+    override fun subscriberHandleRemoteJsep(janusHandle: JanusHandle, jsep: JSONObject) {
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(handleId, sessionDescription)
+        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -569,7 +581,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             val remoteRender = SurfaceViewRenderer(this)
             remoteRender.init(rootEglBase.eglBaseContext, null)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
-            remoteRenders[connection.handleId] = remoteRender
+            remoteRenders[connection.handleId] = RemoteInfo(
+                connection.display,
+                remoteRender
+            )
 
             updateRenders()
         }
@@ -583,7 +598,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private fun removeRemoteRender(handleId: BigInteger) {
         runOnUiThread {
             val render = remoteRenders.remove(handleId)
-            render?.release()
+            render?.surfaceViewRenderer?.release()
 
             if (remoteRenders.isEmpty() && !isGroup(mGroupType)) {
                 updateCallStatus(CallState.ENDED)
@@ -595,33 +610,75 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun updateRenders() {
+        for (child in binding.surfaceRootContainer.iterator()) {
+            (child as RelativeLayout).removeAllViews()
+        }
         binding.surfaceRootContainer.removeAllViews()
 
         val renders = remoteRenders.values
 
+        val me = group?.clientList?.find { it.id == userManager.getClientId() }
         val surfaceGenerator =
             SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
-        // add local stream
+
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        val localParams =
-            LinearLayout.LayoutParams(localSurfacePosition.width, localSurfacePosition.height)
-                .apply {
-                    leftMargin = localSurfacePosition.marginStart
-                    topMargin = localSurfacePosition.marginTop
-                }
-        binding.surfaceRootContainer.addView(mLocalSurfaceRenderer, localParams)
+        val view = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: ""
+            , localSurfacePosition)
+        binding.surfaceRootContainer.addView(view)
 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
-            val params =
-                LinearLayout.LayoutParams(remoteSurfacePosition.width, remoteSurfacePosition.height)
-                    .apply {
-                        leftMargin = remoteSurfacePosition.marginStart
-                        topMargin = remoteSurfacePosition.marginTop
-                    }
-            binding.surfaceRootContainer.addView(renders.elementAt(index), params)
+            val remoteInfo = renders.elementAt(index)
+            val user = group?.clientList?.find { it.id == remoteInfo.clientId }
+            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
+                , remoteSurfacePosition)
+            binding.surfaceRootContainer.addView(view)
         }
+    }
+
+    private fun createRemoteView(
+        renderer: SurfaceViewRenderer, remoteName: String,
+        remoteSurfacePosition: SurfacePosition
+    ): RelativeLayout {
+        val params = RelativeLayout.LayoutParams(
+            remoteSurfacePosition.width, remoteSurfacePosition.height
+        ).apply {
+            leftMargin = remoteSurfacePosition.marginStart
+            topMargin = remoteSurfacePosition.marginTop
+        }
+        val relativeLayout = RelativeLayout(this)
+        relativeLayout.layoutParams = params
+
+        val tv = TextView(this)
+        tv.text = remoteName
+        tv.typeface = Typeface.DEFAULT_BOLD
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,14f)
+        tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
+        tv.setPadding(0, 0, 0, 24)
+        tv.setTextColor(resources.getColor(R.color.grayscaleOffWhite))
+        val nameLayoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        nameLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+
+        /*val muteImage = ImageView(this)
+        muteImage.setImageResource(R.drawable.ic_status_muted)
+        val muteLayoutParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        )
+        muteLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)*/
+
+        val rendererParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT
+        )
+        relativeLayout.addView(renderer, rendererParams)
+        relativeLayout.addView(tv, nameLayoutParams)
+        /*relativeLayout.addView(muteImage, muteLayoutParams)*/
+        return relativeLayout
     }
 
     private fun showAskPermissionDialog() {
@@ -714,6 +771,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         busySignalPlayer?.release()
         busySignalPlayer = null
     }
+
+    data class RemoteInfo(
+        val clientId: String,
+        val surfaceViewRenderer: SurfaceViewRenderer
+    )
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000

@@ -376,7 +376,7 @@ public class PeerConnectionClient {
             new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
   }
 
-  private PeerConnection createPeerConnection(BigInteger handleId, boolean type) {
+  private PeerConnection createPeerConnection(BigInteger handleId, String display, boolean type) {
     Log.d(TAG, "Create peer connection.");
     PeerConnection.IceServer iceServer = new PeerConnection.IceServer(peerConnectionParameters.turnUrl,
         peerConnectionParameters.turnUser,
@@ -407,6 +407,7 @@ public class PeerConnectionClient {
 
     JanusConnection janusConnection = new JanusConnection();
     janusConnection.handleId = handleId;
+    janusConnection.display = display;
     janusConnection.sdpObserver = sdpObserver;
     janusConnection.peerConnection = peerConnection;
     janusConnection.type = type;
@@ -430,7 +431,7 @@ public class PeerConnectionClient {
     Log.d(TAG, "EGLContext: " + renderEGLContext);
     factory.setVideoHwAccelerationOptions(renderEGLContext, renderEGLContext);
 
-    PeerConnection peerConnection = createPeerConnection(handleId, true);
+    PeerConnection peerConnection = createPeerConnection(handleId, "", true);
 
     mediaStream = factory.createLocalMediaStream("ARDAMS");
     mediaStream.addTrack(createVideoTrack(videoCapturer));
@@ -572,11 +573,11 @@ public class PeerConnectionClient {
     });
   }
 
-  public void subscriberHandleRemoteJsep(final BigInteger handleId, final SessionDescription sdp) {
+  public void subscriberHandleRemoteJsep(final BigInteger handleId, final String display, final SessionDescription sdp) {
       executor.execute(new Runnable() {
         @Override
         public void run() {
-          PeerConnection peerConnection = createPeerConnection(handleId, false);
+          PeerConnection peerConnection = createPeerConnection(handleId, display, false);
           SDPObserver sdpObserver = peerConnectionMap.get(handleId).sdpObserver;
           if (peerConnection == null || isError) {
             return;
