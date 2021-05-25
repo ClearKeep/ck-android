@@ -9,6 +9,7 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
@@ -84,9 +85,13 @@ object AppCall {
         val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
+        val titleCall = if (isGroup(groupType)) context.resources.getString(R.string.notification_incoming_group)
+        else context.resources.getString(R.string.notification_incoming_peer)
+
         val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_call)
         headsUpLayout.apply {
-            setTextViewText(R.id.tvCallFrom, context.resources.getString(R.string.notification_incoming_peer))
+            setViewVisibility(R.id.imageButton, if (isGroup(groupType)) View.GONE else View.VISIBLE)
+            setTextViewText(R.id.tvCallFrom, titleCall)
             setTextViewText(R.id.tvCallGroupName, groupName)
             setOnClickPendingIntent(R.id.tvDecline, dismissPendingIntent)
             setOnClickPendingIntent(R.id.tvAnswer, pendingInCallIntent)
@@ -120,17 +125,20 @@ object AppCall {
             .setOngoing(true)
         val notification: Notification = builder.build()
 
-        val target = NotificationTarget(
-            context,
-            R.id.imageButton,
-            headsUpLayout,
-            notification,
-            notificationId)
-        Glide.with(context.applicationContext)
-            .asBitmap()
-            .circleCrop()
-            .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
-            .into(target)
+        if (!isGroup(groupType)) {
+            val target = NotificationTarget(
+                context,
+                R.id.imageButton,
+                headsUpLayout,
+                notification,
+                notificationId
+            )
+            Glide.with(context.applicationContext)
+                .asBitmap()
+                .circleCrop()
+                .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
+                .into(target)
+        }
 
         notificationManager.notify(notificationId, notification)
     }
