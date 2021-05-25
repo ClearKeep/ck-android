@@ -16,4 +16,11 @@
 
     <color name="backgroundGradientStart">#7773F3</color>
     <color name="grayscaleOffWhite">#FCFCFC</color>
+
+    /* Success/Default */
+    <color name="colorSuccessDefault">#00BA88</color>
+    /* Error/Default */
+    <color name="errorDefault">#ED2E7E</color>
+    /* Grayscale/Background */
+    <color name="grayscaleBackground">#F7F7FC</color>
 </resources>
