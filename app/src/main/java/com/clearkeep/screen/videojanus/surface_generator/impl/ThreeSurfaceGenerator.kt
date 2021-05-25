@@ -1,32 +1,40 @@
 package com.clearkeep.screen.videojanus.surface_generator.impl
 
 import android.content.Context
-import android.widget.LinearLayout
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
 class ThreeSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
     override fun getLocalSurface(): SurfacePosition {
+        val heightPx = getHeight()
+        val halfHeightPx = heightPx / 2
+        val widthPx = getWidth()
+        val halfWidthPx = widthPx / 2
         return SurfacePosition(
-            200, 300,
-            30,
-            100
+            halfWidthPx,
+            heightPx - halfHeightPx,
+            halfWidthPx,
+            halfHeightPx
         )
     }
 
     override fun getRemoteSurfaces(): List<SurfacePosition> {
         val heightPx = getHeight()
         val halfHeightPx = heightPx / 2
+        val widthPx = getWidth()
+        val halfWidthPx = widthPx / 2
         return listOf(
             SurfacePosition(
-                LinearLayout.LayoutParams.MATCH_PARENT,
+                widthPx,
                 halfHeightPx,
-                0, 0
+                0,
+                0
             ),
             SurfacePosition(
-                LinearLayout.LayoutParams.MATCH_PARENT,
+                halfWidthPx,
                 heightPx - halfHeightPx,
-                0, halfHeightPx
-            ),
+                0,
+                halfHeightPx
+            )
         )
     }
 }

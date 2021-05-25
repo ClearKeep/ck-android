@@ -6,19 +6,23 @@ import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
 class TwoSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
     override fun getLocalSurface(): SurfacePosition {
+        val heightPx = getHeight()
+        val halfHeightPx = heightPx / 2
         return SurfacePosition(
-            200, 300,
-            30,
-            100
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            halfHeightPx,
+            0, 0
         )
     }
 
     override fun getRemoteSurfaces(): List<SurfacePosition> {
+        val heightPx = getHeight()
+        val halfHeightPx = heightPx / 2
         return listOf(
             SurfacePosition(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                0, 0
+                heightPx - halfHeightPx,
+                0, halfHeightPx
             )
         )
     }
