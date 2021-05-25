@@ -20,7 +20,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.iterator
-import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
@@ -152,7 +151,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         onAction()
         updateUIByStateAndMode()
         val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        listenerCallingState.postValue(CallingStateData(true, userNameInConversation))
+        AppCall.listenerCallingState.postValue(CallingStateData(true, userNameInConversation, false))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
@@ -230,7 +229,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     override fun onDestroy() {
-        listenerCallingState.postValue(CallingStateData(false))
+        AppCall.listenerCallingState.postValue(CallingStateData(false))
         super.onDestroy()
         if (chronometerTimeCall.visibility == View.VISIBLE) {
             chronometerTimeCall.stop()
@@ -779,6 +778,5 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
-        var listenerCallingState = MutableLiveData<CallingStateData>()
     }
 }

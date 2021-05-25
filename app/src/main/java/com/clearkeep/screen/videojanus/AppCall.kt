@@ -12,6 +12,7 @@ import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
@@ -21,6 +22,8 @@ import com.clearkeep.utilities.*
 
 
 object AppCall {
+    var listenerCallingState = MutableLiveData<CallingStateData>()
+
     fun call(context: Context,
              isAudioMode: Boolean,
              token: String?,
@@ -179,10 +182,14 @@ object AppCall {
         return false
     }
 
-    fun openCallAvailable(context: Context) {
-        val intent = Intent(context, InCallActivity::class.java)
+    fun openCallAvailable(context: Context, isPeer: Boolean) {
+        val intent = if (isPeer) {
+            Intent(context, InCallPeerToPeerActivity::class.java)
+        } else {
+            Intent(context, InCallActivity::class.java)
+        }
         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
     }
 }
-data class CallingStateData(val isCalling: Boolean, val nameInComeCall: String? = "")
+data class CallingStateData(val isCalling: Boolean, val nameInComeCall: String? = "", val isCallPeer: Boolean = false)

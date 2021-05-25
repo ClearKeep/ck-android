@@ -57,6 +57,7 @@
         <activity
             android:name=".screen.chat.room.RoomActivity"
             android:launchMode="singleTask"
+            android:taskAffinity="room.activity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.splash.SplashActivity"

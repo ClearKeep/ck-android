@@ -76,8 +76,8 @@ class RoomActivity : AppCompatActivity() {
                             onFinishActivity = {
                                 finish()
                             },
-                            onCallingClick = {
-                                AppCall.openCallAvailable(this@RoomActivity)
+                            onCallingClick = { isPeer ->
+                                AppCall.openCallAvailable(this@RoomActivity, isPeer)
                             }
                         )
                     }
