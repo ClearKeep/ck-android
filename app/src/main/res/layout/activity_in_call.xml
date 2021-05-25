@@ -1,42 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     android:background="?attr/appCallBackgroundColor"
     tools:background="@color/appCallBackground">
-
-    <RelativeLayout
-        android:id="@+id/surfaceRootContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/black"
-        android:keepScreenOn="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/controlCallVideoView"
-        app:layout_constraintTop_toBottomOf="@+id/includeToolbar"
-        tools:context="in.minewave.janusvideoroom.MainActivity" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/waitingCallView"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:focusable="true"
-        android:visibility="visible">
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <ImageView
-            android:id="@+id/imageBackground"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:id="@+id/surfaceRootContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:keepScreenOn="true"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:animateLayoutChanges="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/waitingCallView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_bg_gradient" />
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="visible">
 
+            <ImageView
+                android:id="@+id/imageBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_bg_gradient" />
+
+
+            <TextView
+                android:id="@+id/tvUserName2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="32dp"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvCallState"
+                tools:text="Kitagawa Keiko" />
+
+            <TextView
+                android:id="@+id/tvCallState"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginTop="100dp"
+                android:text="Calling"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/imgEndWaiting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_button_decline"
+                app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
+                app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
+                app:layout_constraintStart_toStartOf="@+id/tvEndButtonDescription" />
+
+            <TextView
+                android:id="@+id/tvEndButtonDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="60dp"
+                android:text="Cancel"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="Decline"
+                tools:textColor="@android:color/white" />
+
+            <include
+                android:id="@+id/controlCallAudioView"
+                layout="@layout/view_control_call_audio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.532"
+                tools:layout_editor_absoluteX="0dp" />
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/groupAudioWaiting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:constraint_referenced_ids="tvCallState,tvUserName2"
+                tools:visibility="visible" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <include
+            android:id="@+id/includeToolbar"
+            layout="@layout/toolbar_call_default"
+            android:visibility="visible"
+            tools:visibility="visible" />
+
+        <include
+            android:id="@+id/controlCallVideoView"
+            layout="@layout/view_control_call_video"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="gone" />
 
         <TextView
-            android:id="@+id/tvUserName2"
+            android:id="@+id/tvUserName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -49,11 +150,11 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvCallState"
+            app:layout_constraintTop_toBottomOf="@+id/tvCallStateVideo"
             tools:text="Kitagawa Keiko" />
 
         <TextView
-            android:id="@+id/tvCallState"
+            android:id="@+id/tvCallStateVideo"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginTop="100dp"
@@ -64,99 +165,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/imgEndWaiting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_button_decline"
-            app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
-            app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
-            app:layout_constraintStart_toStartOf="@+id/tvEndButtonDescription" />
-
-        <TextView
-            android:id="@+id/tvEndButtonDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="60dp"
-            android:text="Cancel"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="Decline"
-            tools:textColor="@android:color/white" />
-
-        <include
-            android:id="@+id/controlCallAudioView"
-            layout="@layout/view_control_call_audio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.532"
-            tools:layout_editor_absoluteX="0dp" />
-
         <androidx.constraintlayout.widget.Group
-            android:id="@+id/groupAudioWaiting"
+            android:id="@+id/waitingCallVideoView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="tvCallState,tvUserName2"
-            tools:visibility="visible" />
+            app:constraint_referenced_ids="tvUserName,tvCallStateVideo"
+            android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <include
-        android:id="@+id/includeToolbar"
-        layout="@layout/toolbar_call_default"
-        android:visibility="visible"
-        tools:visibility="visible" />
-
-    <include
-        android:id="@+id/controlCallVideoView"
-        layout="@layout/view_control_call_video"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="gone" />
-
-    <TextView
-        android:id="@+id/tvUserName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvCallStateVideo"
-        tools:text="Kitagawa Keiko" />
-
-    <TextView
-        android:id="@+id/tvCallStateVideo"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginTop="100dp"
-        android:text="Calling"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/waitingCallVideoView"
-        android:layout_width="wrap_content"
-        app:constraint_referenced_ids="tvUserName,tvCallStateVideo"
-        android:layout_height="wrap_content"/>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

@@ -9,6 +9,7 @@ import java.math.BigInteger;
 
 public class JanusConnection {
     public BigInteger handleId;
+    public String display;
     public PeerConnection peerConnection;
     public PeerConnectionClient.SDPObserver sdpObserver;
     public VideoTrack videoTrack;

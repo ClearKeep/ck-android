@@ -5,10 +5,7 @@ import android.media.AudioManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.januswrapper.JanusRTCInterface
-import com.clearkeep.januswrapper.PeerConnectionClient
-import com.clearkeep.januswrapper.WebSocketChannel
+import com.clearkeep.januswrapper.*
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.utilities.JANUS_URI
@@ -65,11 +62,11 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         peerConnectionClient.setRemoteDescription(handleId, sessionDescription)
     }
 
-    override fun subscriberHandleRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
+    override fun subscriberHandleRemoteJsep(janusHandle: JanusHandle, jsep: JSONObject) {
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient.subscriberHandleRemoteJsep(handleId, sessionDescription)
+        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
     }
 
     override fun onLeaving(handleId: BigInteger) {

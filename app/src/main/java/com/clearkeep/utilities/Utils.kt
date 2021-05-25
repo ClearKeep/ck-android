@@ -150,3 +150,7 @@ fun convertSecondsToHMmSs(seconds: Long): String? {
     }
     return String.format("%02d:%02d:%02d", h, m, s)
 }
+
+fun isOdd(num: Int) : Boolean {
+    return num % 2 != 0
+}

@@ -361,7 +361,7 @@ public class WebSocketChannel {
             janusHandle.handleId = new BigInteger(jo.optJSONObject("data").optString("id"));
             janusHandle.feedId = feed;
             janusHandle.display = display;
-            janusHandle.onRemoteJsep = (jh, jsep) -> delegate.subscriberHandleRemoteJsep(jh.handleId, jsep);
+            janusHandle.onRemoteJsep = (jh, jsep) -> delegate.subscriberHandleRemoteJsep(jh, jsep);
             janusHandle.onLeaving = jh -> subscriberOnLeaving(jh);
             handles.put(janusHandle.handleId, janusHandle);
             feeds.put(janusHandle.feedId, janusHandle);
