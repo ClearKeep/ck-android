@@ -64,7 +64,7 @@
         app:layout_constraintStart_toEndOf="@+id/toggleMute"
         app:layout_constraintTop_toTopOf="@+id/toggleMute"
         app:tib_drawable_off="@drawable/ic_button_video_on"
-        app:tib_drawable_on="@drawable/ic_button_answer_video" />
+        app:tib_drawable_on="@drawable/ic_button_video_on" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleSpeaker"
