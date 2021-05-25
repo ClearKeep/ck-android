@@ -11,9 +11,9 @@ class SixSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
         val halfWidthPx = widthPx / 2
         return SurfacePosition(
             halfWidthPx,
-            aThirdHeightPx,
-            0,
-            0
+            heightPx - 2 * aThirdHeightPx,
+            widthPx - halfWidthPx,
+            2 * aThirdHeightPx
         )
     }
 
@@ -24,6 +24,12 @@ class SixSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
         val halfWidthPx = widthPx / 2
 
         return listOf(
+            SurfacePosition(
+                halfWidthPx,
+                aThirdHeightPx,
+                0,
+                0
+            ),
             SurfacePosition(
                 halfWidthPx,
                 aThirdHeightPx,
@@ -48,12 +54,6 @@ class SixSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
                 0,
                 2 * aThirdHeightPx
             ),
-            SurfacePosition(
-                halfWidthPx,
-                heightPx - 2 * aThirdHeightPx,
-                widthPx - halfWidthPx,
-                2 * aThirdHeightPx
-            )
         )
     }
 }

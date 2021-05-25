@@ -11,9 +11,9 @@ class FiveSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
         val halfWidthPx = widthPx / 2
         return SurfacePosition(
             halfWidthPx,
-            aThirdHeightPx,
-            0,
-            0
+            heightPx - 2 * aThirdHeightPx,
+            widthPx - halfWidthPx,
+            2 * aThirdHeightPx
         )
     }
 
@@ -25,9 +25,9 @@ class FiveSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
 
         return listOf(
             SurfacePosition(
-                halfWidthPx,
+                widthPx,
                 aThirdHeightPx,
-                widthPx - halfWidthPx,
+                0,
                 0
             ),
             SurfacePosition(
@@ -43,11 +43,11 @@ class FiveSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
                 aThirdHeightPx
             ),
             SurfacePosition(
-                widthPx,
+                halfWidthPx,
                 heightPx - 2 * aThirdHeightPx,
                 0,
                 2 * aThirdHeightPx
-            )
+            ),
         )
     }
 }
