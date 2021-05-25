@@ -7,24 +7,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.components.base.CkTopCalling
+import com.clearkeep.components.base.TopBoxCallingStatus
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
@@ -36,7 +32,6 @@ import com.clearkeep.screen.chat.main.profile.ProfileScreen
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.screen.videojanus.InCallActivity
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import com.facebook.login.LoginManager
@@ -131,27 +126,14 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     @Composable
     private fun MainComposable() {
         val navController = rememberNavController()
-        val remember = InCallActivity.listenerCallingState.observeAsState()
+        val remember = AppCall.listenerCallingState.observeAsState()
         Scaffold(
             topBar = {
                 remember.value?.let {
                     if (it.isCalling)
-                        CkTopCalling(title = {
-                            Box {
-                                Text(
-                                    text = it.nameInComeCall ?: "",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        },
-                            navigationIcon = {
-                                Icon(imageVector = Icons.Filled.Call, contentDescription = "")
-                            },
-                            modifier = Modifier.clickable {
-                                AppCall.openCallAvailable(this)
-                            })
+                        TopBoxCallingStatus(callingStateData = it, onClick = { isCallPeer ->
+                            AppCall.openCallAvailable(this, isCallPeer)
+                        })
                 }
             },
         ) {
@@ -234,12 +216,14 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     private fun navigateToRoomScreen(groupId: Long) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.GROUP_ID, groupId)
+        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
 
     private fun navigateToRoomScreenWithFriendId(friendId: String) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friendId)
+        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
 
