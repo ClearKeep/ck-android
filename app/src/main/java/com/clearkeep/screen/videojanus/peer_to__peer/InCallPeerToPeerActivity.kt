@@ -30,6 +30,7 @@ import com.clearkeep.R
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
+import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.BaseActivity
 import com.clearkeep.screen.videojanus.CallViewModel
 import com.clearkeep.screen.videojanus.CallingStateData
@@ -146,7 +147,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
         }
 
         val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        listenerCallingState.postValue(CallingStateData(true, userNameInConversation))
+        AppCall.listenerCallingState.postValue(CallingStateData(true, userNameInConversation, true))
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
         avatarInConversation =
@@ -206,7 +207,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
     override fun onDestroy() {
-        listenerCallingState.postValue(CallingStateData(false))
+        AppCall.listenerCallingState.postValue(CallingStateData(false))
         super.onDestroy()
     }
 
@@ -578,7 +579,6 @@ class InCallPeerToPeerActivity : BaseActivity(){
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
-        var listenerCallingState = MutableLiveData<CallingStateData>()
     }
 
 

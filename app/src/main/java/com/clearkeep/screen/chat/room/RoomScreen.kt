@@ -1,13 +1,8 @@
 package com.clearkeep.screen.chat.room
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -15,17 +10,15 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
 import com.clearkeep.components.base.CKToolbarMessage
-import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.components.base.CkTopCalling
+import com.clearkeep.components.base.TopBoxCallingStatus
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
-import com.clearkeep.screen.videojanus.InCallActivity
+import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 
@@ -36,7 +29,7 @@ fun RoomScreen(
         roomViewModel: RoomViewModel,
         navHostController: NavHostController,
         onFinishActivity: () -> Unit,
-        onCallingClick: (() -> Unit)? = null
+        onCallingClick: ((isPeer: Boolean) -> Unit)
 ) {
     val group = roomViewModel.group.observeAsState()
     group.value?.let { group ->
@@ -56,28 +49,10 @@ fun RoomScreen(
             Column(
                     modifier = Modifier.fillMaxSize()
             ) {
-                val remember = InCallActivity.listenerCallingState.observeAsState()
+                val remember = AppCall.listenerCallingState.observeAsState()
                 remember.value?.let {
                     if (it.isCalling)
-                        CkTopCalling(title = {
-                            Box{
-                                Text(
-                                    text = it.nameInComeCall ?: "",
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
-                                )
-                            }
-                        },
-                            navigationIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Call,
-                                    contentDescription = ""
-                                )
-                            },
-                        modifier = Modifier.clickable {
-                            onCallingClick?.invoke()
-                        })
+                        TopBoxCallingStatus(callingStateData = it, onClick = { isCallPeer -> onCallingClick(isCallPeer)})
                 }
                 CKToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
                     onFinishActivity()
