@@ -30,8 +30,8 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/bottomToggleMute"
         app:layout_constraintTop_toTopOf="@+id/bottomToggleMute"
-        app:tib_drawable_off="@drawable/ic_button_video_on"
-        app:tib_drawable_on="@drawable/ic_bottom_video_on" />
+        app:tib_drawable_off="@drawable/ic_bottom_video_on"
+        app:tib_drawable_on="@drawable/ic_button_video_on" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/bottomToggleSwitchCamera"
@@ -42,8 +42,8 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/bottomToggleFaceTime"
         app:layout_constraintTop_toTopOf="@+id/bottomToggleMute"
-        app:tib_drawable_off="@drawable/ic_bottom_swap_camera_off"
-        app:tib_drawable_on="@drawable/ic_bottom_swap_camera" />
+        app:tib_drawable_off="@drawable/ic_bottom_swap_camera"
+        app:tib_drawable_on="@drawable/ic_bottom_swap_camera_off" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/bottomImgEndCall"
