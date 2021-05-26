@@ -192,4 +192,9 @@ object AppCall {
         context.startActivity(intent)
     }
 }
-data class CallingStateData(val isCalling: Boolean, val nameInComeCall: String? = "", val isCallPeer: Boolean = false)
+data class CallingStateData(
+    val isCalling: Boolean,
+    val nameInComeCall: String? = "",
+    val isCallPeer: Boolean = false,
+    val timeStarted: Long
+)
