@@ -62,11 +62,13 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var mIsSpeaker = false
 
     private var mCurrentCallState: CallState = CallState.CALLING
+    private var mTimeStarted: Long = 0
 
     private var mIsAudioMode: Boolean = false
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
+    private lateinit var mUserNameInConversation: String
     private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
 
@@ -115,6 +117,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
+        mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
+
         rootEglBase = EglBase.create()
 
         mLocalSurfaceRenderer = SurfaceViewRenderer(this)
@@ -136,6 +140,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         requestCallPermissions()
         updateCallStatus(mCurrentCallState)
+        dispatchCallStatus(true)
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -150,8 +155,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private fun initViews() {
         onAction()
         updateUIByStateAndMode()
-        val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        AppCall.listenerCallingState.postValue(CallingStateData(true, userNameInConversation, false))
         val groupName = intent.getStringExtra(EXTRA_GROUP_NAME)
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
@@ -229,8 +232,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     override fun onDestroy() {
-        AppCall.listenerCallingState.postValue(CallingStateData(false))
         super.onDestroy()
+        dispatchCallStatus(false)
         if (chronometerTimeCall.visibility == View.VISIBLE) {
             chronometerTimeCall.stop()
         }
@@ -362,8 +365,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun displayCountUpClockOfConversation() {
+        mTimeStarted = SystemClock.elapsedRealtime()
         includeToolbar.chronometerTimeCall.apply {
-            base = SystemClock.elapsedRealtime()
+            base = mTimeStarted
             start()
         }
     }
@@ -399,8 +403,13 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 stopRingBackTone()
                 displayCountUpClockOfConversation()
                 updateUIByStateAndMode()
+                dispatchCallStatus(true)
             }
         }
+    }
+
+    private fun dispatchCallStatus(isStarted: Boolean) {
+        AppCall.listenerCallingState.postValue(CallingStateData(isStarted, mUserNameInConversation, false, mTimeStarted))
     }
 
     private fun switchToVideoMode() {

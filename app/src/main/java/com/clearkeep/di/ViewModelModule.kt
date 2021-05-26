@@ -93,10 +93,10 @@ abstract class ViewModelModule {
     abstract fun bindSearchViewModel(searchViewModel: SearchViewModel): ViewModel
 
     @Binds
-    abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
-
-    @Binds
     @IntoMap
     @ViewModelKey(CallViewModel::class)
-    abstract fun bindCalViewModelFactory(callViewModel: CallViewModel): ViewModel
+    abstract fun bindCalViewModel(callViewModel: CallViewModel): ViewModel
+
+    @Binds
+    abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
 }
