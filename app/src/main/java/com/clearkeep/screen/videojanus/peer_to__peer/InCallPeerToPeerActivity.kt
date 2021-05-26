@@ -129,7 +129,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
             toggleSpeaker?.isChecked=mIsSpeaker
         }
         controlCallVideoView.apply {
-            bottomToggleFaceTime?.isChecked=!mIsMuteVideo
+            bottomToggleFaceTime?.isChecked=mIsMuteVideo
         }
         callViewModel.onFaceTimeChange(!isMuteVideo)
     }
@@ -235,7 +235,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
                  callViewModel.mIsAudioMode.postValue(it.isChecked)
                  mIsMuteVideo = !mIsMuteVideo
                  switchToVideoMode()
-                 controlCallVideoView.bottomToggleFaceTime.isChecked = true
+                 controlCallVideoView.bottomToggleFaceTime.isChecked = false
              }
              this.toggleSpeaker.setOnClickListener {
                  callViewModel.onSpeakChange((it as ToggleButton).isChecked)
@@ -267,7 +267,6 @@ class InCallPeerToPeerActivity : BaseActivity(){
          callViewModel.mIsAudioMode.observe(this,{
              if (it==false && mIsAudioMode){
                  updateUIbyStateView(CallStateView.CALLED_VIDEO)
-
              }
          })
 
