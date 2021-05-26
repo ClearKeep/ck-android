@@ -12,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.colorSuccessDefault
 import com.clearkeep.components.grayscale5
@@ -37,7 +38,9 @@ fun TopBoxCallingStatus(
         }
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (callingStateData.isCallPeer) {
@@ -48,13 +51,17 @@ fun TopBoxCallingStatus(
                         isGroup = false)
                 }
             }
-            Column {
+            Column(modifier = Modifier
+                .weight(1.0f, true)) {
                 Text(text = callingStateData.nameInComeCall ?: "", style = MaterialTheme.typography.h6.copy(
                     color = grayscale5,
-                ))
+                ), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(text = "Tap here to return to call screen", style = MaterialTheme.typography.caption.copy(
                     color = grayscale5,
-                ))
+                ), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            if (callingStateData.timeStarted > 0) {
+                CKChronometer(base = callingStateData.timeStarted, modifier = Modifier.padding(start = 8.dp))
             }
         }
     }
