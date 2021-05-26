@@ -73,6 +73,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
+    private lateinit var mUserNameInConversation: String
     private var mIsGroupCall: Boolean = false
 
     @Inject
@@ -89,6 +90,8 @@ class InCallPeerToPeerActivity : BaseActivity(){
     var avatarInConversation = ""
     var groupName = ""
 
+    private var mTimeStarted: Long = 0
+
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +106,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
+        mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         callViewModel.mIsAudioMode.postValue(mIsAudioMode)
 
         initViews()
@@ -121,6 +125,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
             updateCallStatus(it)
         })
         onClickControlCall()
+        dispatchCallStatus(true)
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -146,8 +151,6 @@ class InCallPeerToPeerActivity : BaseActivity(){
             setEnableHardwareScaler(true)
         }
 
-        val userNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
-        AppCall.listenerCallingState.postValue(CallingStateData(true, userNameInConversation, true))
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
         avatarInConversation =
@@ -207,7 +210,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
     override fun onDestroy() {
-        AppCall.listenerCallingState.postValue(CallingStateData(false))
+        dispatchCallStatus(false)
         super.onDestroy()
     }
 
@@ -475,6 +478,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     private var listenerOnRemoteRenderAdd = fun(connection: JanusConnection) {
         connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
         startTimeInterval()
+        dispatchCallStatus(true)
     }
 
     private fun showAskPermissionDialog() {
@@ -568,7 +572,8 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
     private fun startTimeInterval() {
-        callViewModel.totalTimeRunJob = startCoroutineTimer(delayMillis = 0, repeatMillis = 1000) {
+        mTimeStarted = SystemClock.elapsedRealtime()
+        callViewModel.totalTimeRunJob = startCoroutineTimer(delayMillis = 1000, repeatMillis = 1000) {
             callViewModel.totalTimeRun+=1
             runOnUiThread {
                 tvTimeCall.text= convertSecondsToHMmSs(callViewModel.totalTimeRun)
@@ -627,5 +632,9 @@ class InCallPeerToPeerActivity : BaseActivity(){
         } else {
             action()
         }
+    }
+
+    private fun dispatchCallStatus(isStarted: Boolean) {
+        AppCall.listenerCallingState.postValue(CallingStateData(isStarted, mUserNameInConversation, true, mTimeStarted))
     }
 }

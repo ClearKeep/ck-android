@@ -141,7 +141,7 @@ fun View.invisible() {
 
 
 
-fun convertSecondsToHMmSs(seconds: Long): String? {
+fun convertSecondsToHMmSs(seconds: Long): String {
     val s = seconds % 60
     val m = seconds / 60 % 60
     val h = seconds / (60 * 60) % 24
