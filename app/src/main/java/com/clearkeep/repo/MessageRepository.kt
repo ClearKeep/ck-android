@@ -12,9 +12,11 @@ import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.getUnableErrorMessage
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import message.MessageGrpc
 import message.MessageOuterClass
+import org.whispersystems.libsignal.DuplicateMessageException
 import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -94,14 +96,25 @@ class MessageRepository @Inject constructor(
             return oldMessage
         }
         val decryptedMessage = try {
-            if (!isGroup(messageResponse.groupType)) {
+            val result = if (!isGroup(messageResponse.groupType)) {
                 decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
             } else {
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId,
                         messageResponse.message, senderKeyStore, clientBlocking)
             }
+            printlnCK("parseMessageResponse, success: $result")
+            result
+        } catch (e: DuplicateMessageException) {
+            printlnCK("parseMessageResponse, error: $e")
+            /**
+             * To fix case: both load message and receive message from socket at the same time
+             * Need wait 1.5s to load old message before save unableDecryptMessage
+             */
+            delay(1500)
+            val oldMessage = messageDAO.getMessage(messageResponse.id)
+            oldMessage?.message ?: getUnableErrorMessage(e.message)
         } catch (e: Exception) {
-            printlnCK("load message with id= ${messageResponse.id}, group id = ${messageResponse.groupId} type= ${messageResponse.groupType}, error : $e")
+            printlnCK("parseMessageResponse, error: id= ${messageResponse.id}, group id = ${messageResponse.groupId} type= ${messageResponse.groupType}, error : $e")
             getUnableErrorMessage(e.message)
         }
         return Message(
