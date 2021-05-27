@@ -27,6 +27,37 @@
         app:layout_constraintBottom_toTopOf="@+id/controlCallVideoView"
         app:layout_constraintEnd_toEndOf="@+id/remoteRender" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/viewConnecting"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/controlCallVideoView"
+        app:layout_constraintTop_toTopOf="parent" >
+
+        <ImageView
+            android:id="@+id/imageConnecting"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_bg_gradient" />
+
+        <TextView
+            android:id="@+id/tvConnecting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connecting"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.23" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <TextView
         android:id="@+id/tvStateVideoCall"
         android:layout_width="wrap_content"
@@ -120,8 +151,6 @@
         android:layout_height="match_parent"
         android:visibility="visible"
         tools:visibility="gone">
-
-
         <ImageView
             android:id="@+id/imageBackground"
             android:layout_width="match_parent"
@@ -245,5 +274,8 @@
             android:layout_height="wrap_content"
             app:constraint_referenced_ids="imgWaitingBack,tvTimeCall"/>
 
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

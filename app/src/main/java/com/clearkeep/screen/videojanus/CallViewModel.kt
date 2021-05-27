@@ -2,6 +2,7 @@ package com.clearkeep.screen.videojanus
 
 import android.content.Context
 import android.media.AudioManager
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,6 +16,7 @@ import org.json.JSONObject
 import org.webrtc.*
 import java.lang.ref.WeakReference
 import java.math.BigInteger
+import java.util.logging.Handler
 import javax.inject.Inject
 
 class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
@@ -27,6 +29,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     private lateinit var mLocalSurfaceRenderer: WeakReference<SurfaceViewRenderer>
     var mCurrentCallState = MutableLiveData(CallState.CALLING)
     var listenerOnRemoteRenderAdd: ((JanusConnection) -> Unit)? = null
+    var listenerOnPublisherJoined: (() -> Unit)? = null
     var mIsAudioMode= MutableLiveData<Boolean>(null)
     var totalTimeRun : Long=0
     var totalTimeRunJob: Job?=null
@@ -53,6 +56,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
 
     override fun onPublisherJoined(handleId: BigInteger) {
         offerPeerConnection(handleId)
+        Log.e("antx","onPublisherJoined")
     }
 
     override fun onPublisherRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
@@ -133,6 +137,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
             handleId
         )
         peerConnectionClient.createOffer(handleId)
+        listenerOnPublisherJoined?.invoke()
     }
 
     override fun onCameraChane(isOn: Boolean) {
