@@ -11,6 +11,7 @@ import com.google.protobuf.ByteString
 import kotlinx.coroutines.*
 import message.MessageGrpc
 import message.MessageOuterClass
+import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -123,6 +124,18 @@ class ChatRepository @Inject constructor(
             val plainMessage = decryptPeerMessage(value.fromClientId, value.message, signalProtocolStore)
             printlnCK("decryptMessageFromPeer: $plainMessage")
             saveNewMessage(value, plainMessage)
+        } catch (e: DuplicateMessageException) {
+            printlnCK("decryptMessageFromPeer, error: $e")
+            /**
+             * To fix case: both load message and receive message from socket at the same time
+             * Need wait 1.5s to load old message before save unableDecryptMessage
+             */
+            delay(1500)
+            val oldMessage = messageDAO.getMessage(value.id)
+            if (oldMessage != null) {
+                printlnCK("decryptMessageFromPeer, success: ${oldMessage.message}")
+            }
+            oldMessage ?: saveNewMessage(value, getUnableErrorMessage(e.message))
         } catch (e: Exception) {
             printlnCK("decryptMessageFromPeer error : $e")
             saveNewMessage(value, getUnableErrorMessage(e.message))
@@ -134,6 +147,15 @@ class ChatRepository @Inject constructor(
             val plainMessage = decryptGroupMessage(value.fromClientId, value.groupId, value.message, senderKeyStore, clientBlocking)
             printlnCK("decryptMessageFromGroup: $plainMessage")
             saveNewMessage(value, plainMessage)
+        } catch (e: DuplicateMessageException) {
+            printlnCK("decryptMessageFromGroup, error: $e")
+            /**
+             * To fix case: both load message and receive message from socket at the same time
+             * Need wait 1.5s to load old message before save unableDecryptMessage
+             */
+            delay(1500)
+            val oldMessage = messageDAO.getMessage(value.id)
+            oldMessage ?: saveNewMessage(value, getUnableErrorMessage(e.message))
         } catch (e: Exception) {
             printlnCK("decryptMessageFromGroup error : $e")
             saveNewMessage(value, getUnableErrorMessage(e.message))

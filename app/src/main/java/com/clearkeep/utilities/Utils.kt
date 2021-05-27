@@ -61,7 +61,7 @@ fun printlnCK(str: String) {
 }
 
 fun getUnableErrorMessage(message: String?): String {
-    return if (BuildConfig.DEBUG) {
+    return if (BuildConfig.FLAVOR == "dev" || BuildConfig.FLAVOR == "staging") {
         message ?: "unable to decrypt this message"
     } else {
         "unable to decrypt this message"

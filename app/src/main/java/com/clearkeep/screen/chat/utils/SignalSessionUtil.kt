@@ -22,7 +22,7 @@ import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import java.nio.charset.StandardCharsets
 
-@Throws(Exception::class)
+@Throws(Exception::class, DuplicateMessageException::class)
 suspend fun decryptPeerMessage(
         fromClientId: String, message: ByteString,
         signalProtocolStore: InMemorySignalProtocolStore,
@@ -39,7 +39,7 @@ suspend fun decryptPeerMessage(
     return@withContext String(message, StandardCharsets.UTF_8)
 }
 
-@Throws(Exception::class)
+@Throws(Exception::class, DuplicateMessageException::class)
 suspend fun decryptGroupMessage(
         fromClientId: String, groupId: Long, message: ByteString,
         senderKeyStore: InMemorySenderKeyStore,
