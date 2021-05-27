@@ -11,7 +11,6 @@ import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.os.*
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ToggleButton
@@ -29,6 +28,7 @@ import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.BaseActivity
@@ -49,8 +49,6 @@ import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallV
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.android.synthetic.main.view_control_call_video.view.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
 import org.webrtc.*
 import java.util.*
 import javax.inject.Inject
@@ -64,6 +62,10 @@ class InCallPeerToPeerActivity : BaseActivity(){
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     val callViewModel: CallViewModel by viewModels {
+        viewModelFactory
+    }
+
+    private val profileViewModel: ProfileViewModel by viewModels {
         viewModelFactory
     }
 
@@ -155,9 +157,10 @@ class InCallPeerToPeerActivity : BaseActivity(){
         //todo avatarInConversation hardcode test
         avatarInConversation =
             "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
-
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
+        callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()
+        initViewConnecting()
     }
 
     override fun onPermissionsAvailable() {
@@ -349,6 +352,18 @@ class InCallPeerToPeerActivity : BaseActivity(){
         }
     }
 
+    private fun initViewConnecting(){
+        if (isFromComingCall)
+            tvConnecting.visible()
+        else tvConnecting.gone()
+        Glide.with(this)
+            .load(avatarInConversation)
+            .placeholder(R.drawable.ic_bg_gradient)
+            .error(R.drawable.ic_bg_gradient)
+            .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
+            .into(imageConnecting)
+    }
+
     private fun startVideo(
         groupId: Int,
         stunUrl: String,
@@ -400,6 +415,11 @@ class InCallPeerToPeerActivity : BaseActivity(){
                     updateUIbyStateView(CallStateView.CALLED_AUDIO)
                 } else {
                     updateUIbyStateView(CallStateView.CALLED_VIDEO)
+                }
+                if (isFromComingCall) {
+                    Handler(mainLooper).postDelayed({
+                        viewConnecting.gone()
+                    }, 500)
                 }
             }
         }
@@ -478,6 +498,15 @@ class InCallPeerToPeerActivity : BaseActivity(){
         connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
         startTimeInterval()
         dispatchCallStatus(true)
+    }
+
+    private var listenerOnPublisherJoined = fun() {
+        runOnUiThread {
+            if (!isFromComingCall)
+                Handler(mainLooper).postDelayed({
+                    viewConnecting.gone()
+                }, 500)
+        }
     }
 
     private fun showAskPermissionDialog() {
