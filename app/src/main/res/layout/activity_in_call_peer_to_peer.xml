@@ -2,10 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/containerCall"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/appCallBackgroundColor"
-    android:id="@+id/containerCall"
     tools:background="@color/appCallBackground">
 
     <org.webrtc.SurfaceViewRenderer
@@ -33,7 +33,7 @@
         android:layout_height="0dp"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/controlCallVideoView"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/imageConnecting"
@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:text="Connecting"
             android:textColor="@android:color/white"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -119,10 +119,10 @@
         android:layout_centerHorizontal="true"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@android:color/white"
         android:textSize="20sp"
-        android:maxLines="1"
-        android:ellipsize="end"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/imgVideoCallBack"
         app:layout_constraintEnd_toEndOf="parent"
@@ -134,7 +134,7 @@
         android:id="@+id/viewVideoCalled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="tvUserName,tvVideoTimeCall,imgVideoCallBack"/>
+        app:constraint_referenced_ids="tvUserName,tvVideoTimeCall,imgVideoCallBack" />
 
     <include
         android:id="@+id/controlCallVideoView"
@@ -151,6 +151,7 @@
         android:layout_height="match_parent"
         android:visibility="visible"
         tools:visibility="gone">
+
         <ImageView
             android:id="@+id/imageBackground"
             android:layout_width="match_parent"
@@ -272,8 +273,7 @@
             android:id="@+id/viewAudioCalled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="imgWaitingBack,tvTimeCall"/>
-
+            app:constraint_referenced_ids="imgWaitingBack,tvTimeCall" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
