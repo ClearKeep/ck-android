@@ -12,6 +12,7 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -58,6 +59,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private val endCallReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
+            Log.e("antx","endCallReceiver")
             if (mGroupId == groupId) {
                 finishAndRemoveFromTask()
             }

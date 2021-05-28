@@ -37,7 +37,7 @@
             android:layout_height="match_parent"
             android:clickable="true"
             android:focusable="true"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/imageBackground"
@@ -69,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_marginTop="100dp"
-                android:text="Calling"
+                android:text="Calling Group"
                 android:textColor="@android:color/white"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -125,7 +125,34 @@
             layout="@layout/toolbar_call_default"
             android:visibility="visible"
             tools:visibility="visible" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/viewConnecting"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible">
 
+            <ImageView
+                android:id="@+id/imageConnecting"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_bg_gradient" />
+
+            <TextView
+                android:id="@+id/tvConnecting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connecting"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.23" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <include
             android:id="@+id/controlCallVideoView"
             layout="@layout/view_control_call_video"
@@ -134,7 +161,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:visibility="gone" />
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvUserName"
@@ -158,7 +185,6 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginTop="100dp"
-            android:text="Calling"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
