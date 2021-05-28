@@ -148,7 +148,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         GlobalScope.launch {
             val groupAsyncRes = async { groupRepository.getGroupByID(groupId.toLong()) }
             val group = groupAsyncRes.await()
-            if (group != null && !group.isGroup()) {
+            if (group != null ) {
                 NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
                 val endIntent = Intent(ACTION_CALL_CANCEL)
                 endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
