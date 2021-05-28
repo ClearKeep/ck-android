@@ -54,7 +54,7 @@ import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class InCallPeerToPeerActivity : BaseActivity(){
+class InCallPeerToPeerActivity : BaseActivity() {
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
 
@@ -85,6 +85,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
     // sound
     private var ringBackPlayer: MediaPlayer? = null
     private var busySignalPlayer: MediaPlayer? = null
@@ -134,10 +135,10 @@ class InCallPeerToPeerActivity : BaseActivity(){
         mIsSpeaker = isSpeaker
         mIsMuteVideo = isMuteVideo
         controlCallAudioView.apply {
-            toggleSpeaker?.isChecked=mIsSpeaker
+            toggleSpeaker?.isChecked = mIsSpeaker
         }
         controlCallVideoView.apply {
-            bottomToggleFaceTime?.isChecked=mIsMuteVideo
+            bottomToggleFaceTime?.isChecked = mIsMuteVideo
         }
         callViewModel.onFaceTimeChange(!isMuteVideo)
     }
@@ -146,11 +147,13 @@ class InCallPeerToPeerActivity : BaseActivity(){
         remoteRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setEnableHardwareScaler(true)
+            setMirror(true)
         }
         localRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
+            setMirror(true)
         }
 
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
@@ -222,91 +225,94 @@ class InCallPeerToPeerActivity : BaseActivity(){
         newConfig: Configuration
     ) {
         if (isInPictureInPictureMode) {
-            controlCallVideoView.visibility=View.GONE
-            localRender.visibility=View.GONE
+            controlCallVideoView.visibility = View.GONE
+            localRender.visibility = View.GONE
         } else {
-            controlCallVideoView.visibility=View.VISIBLE
-            localRender.visibility=View.VISIBLE
+            controlCallVideoView.visibility = View.VISIBLE
+            localRender.visibility = View.VISIBLE
 
         }
     }
 
-     private fun onClickControlCall() {
-         controlCallAudioView.apply {
-             this.toggleMute.setOnClickListener {
-                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
-                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value!= true)
-             }
-             this.toggleFaceTime.setOnClickListener {
-                 callViewModel.onFaceTimeChange((it as ToggleButton).isChecked)
-                 callViewModel.mIsAudioMode.postValue(it.isChecked)
-                 mIsMuteVideo = !mIsMuteVideo
-                 switchToVideoMode()
-                 controlCallVideoView.bottomToggleFaceTime.isChecked = false
-             }
-             this.toggleSpeaker.setOnClickListener {
-                 callViewModel.onSpeakChange((it as ToggleButton).isChecked)
-             }
-         }
-         controlCallVideoView.apply {
-             this.bottomToggleMute.setOnClickListener {
-                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
-                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value!= true)
-             }
-             this.bottomToggleFaceTime.setOnClickListener {
-                 callViewModel.onFaceTimeChange(mIsMuteVideo)
-                 mIsMuteVideo = !mIsMuteVideo
-                 switchToVideoMode()
-             }
-             this.bottomToggleSwitchCamera.setOnClickListener {
-                 callViewModel.onCameraChane((it as ToggleButton).isChecked)
-             }
-             this.bottomImgEndCall.setOnClickListener {
-                 hangup()
-                 finishAndReleaseResource()
-             }
-         }
+    private fun onClickControlCall() {
+        controlCallAudioView.apply {
+            this.toggleMute.setOnClickListener {
+                callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
+                callViewModel.mIsMute.postValue(callViewModel.mIsMute.value != true)
+            }
+            this.toggleFaceTime.setOnClickListener {
+                callViewModel.onFaceTimeChange((it as ToggleButton).isChecked)
+                callViewModel.mIsAudioMode.postValue(it.isChecked)
+                mIsMuteVideo = !mIsMuteVideo
+                switchToVideoMode()
+                controlCallVideoView.bottomToggleFaceTime.isChecked = false
+            }
+            this.toggleSpeaker.setOnClickListener {
+                callViewModel.onSpeakChange((it as ToggleButton).isChecked)
+            }
+        }
+        controlCallVideoView.apply {
+            this.bottomToggleMute.setOnClickListener {
+                callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
+                callViewModel.mIsMute.postValue(callViewModel.mIsMute.value != true)
+            }
+            this.bottomToggleFaceTime.setOnClickListener {
+                callViewModel.onFaceTimeChange(mIsMuteVideo)
+                mIsMuteVideo = !mIsMuteVideo
+                switchToVideoMode()
+            }
+            this.bottomToggleSwitchCamera.setOnClickListener {
+                callViewModel.onCameraChane((it as ToggleButton).isChecked)
+            }
+            this.bottomImgEndCall.setOnClickListener {
+                hangup()
+                finishAndReleaseResource()
+            }
+        }
 
-         imgEndWaiting.setOnClickListener {
-             hangup()
-             finishAndReleaseResource()
-         }
-         callViewModel.mIsAudioMode.observe(this,{
-             if (it==false && mIsAudioMode){
-                 updateUIbyStateView(CallStateView.CALLED_VIDEO)
-             }
-         })
+        imgEndWaiting.setOnClickListener {
+            hangup()
+            finishAndReleaseResource()
+        }
+        callViewModel.mIsAudioMode.observe(this, {
+            if (it == false && mIsAudioMode) {
+                updateUIbyStateView(CallStateView.CALLED_VIDEO)
+            }
+        })
 
-         callViewModel.mIsMute.observe(this,{
-             controlCallVideoView.bottomToggleMute.isChecked=it
-             controlCallAudioView.toggleMute.isChecked=it
-         })
+        callViewModel.mIsMute.observe(this, {
+            controlCallVideoView.bottomToggleMute.isChecked = it
+            controlCallAudioView.toggleMute.isChecked = it
+        })
 
-         imgWaitingBack.setOnClickListener {
-             if (hasSupportPIP()) {
-                 enterPIPMode()
-             } else {
-                 hangup()
-                 finishAndReleaseResource()
-             }
-         }
-         imgVideoCallBack.setOnClickListener {
-             if (hasSupportPIP()) {
-                 enterPIPMode()
-             } else {
-                 hangup()
-                 finishAndReleaseResource()
-             }
-         }
+        imgWaitingBack.setOnClickListener {
+            if (hasSupportPIP()) {
+                enterPIPMode()
+            } else {
+                hangup()
+                finishAndReleaseResource()
+            }
+        }
+        imgVideoCallBack.setOnClickListener {
+            if (hasSupportPIP()) {
+                enterPIPMode()
+            } else {
+                hangup()
+                finishAndReleaseResource()
+            }
+        }
 
-     }
+    }
 
     private fun initWaitingCallView() {
         tvUserName2.text = mGroupName
-        tvUserName.text=mGroupName
+        tvUserName.text = mGroupName
         tvNickName.visibility = View.VISIBLE
         val displayName =
-            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
+            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(
+                0,
+                1
+            ) else mGroupName
         tvNickName.text = displayName
 
         if (!mIsGroupCall) {
@@ -352,7 +358,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
         }
     }
 
-    private fun initViewConnecting(){
+    private fun initViewConnecting() {
         if (isFromComingCall)
             tvConnecting.visible()
         else tvConnecting.gone()
@@ -373,14 +379,25 @@ class InCallPeerToPeerActivity : BaseActivity(){
         token: String
     ) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
-        callViewModel.startVideo(context = this,localRender,ourClientId, groupId, stunUrl, turnUrl, turnUser, turnPass, token)
+        callViewModel.startVideo(
+            context = this,
+            localRender,
+            ourClientId,
+            groupId,
+            stunUrl,
+            turnUrl,
+            turnUser,
+            turnPass,
+            token
+        )
     }
 
     private fun updateCallStatus(newState: CallState) {
         printlnCK("update call state: $newState")
-        when ( callViewModel.mCurrentCallState.value) {
+        when (callViewModel.mCurrentCallState.value) {
             CallState.CALLING -> {
-                playRingBackTone()
+                if (!isFromComingCall)
+                    playRingBackTone()
                 if (isFromComingCall) {
                     if (mIsAudioMode)
                         updateUIbyStateView(CallStateView.CALLED_AUDIO)
@@ -411,51 +428,46 @@ class InCallPeerToPeerActivity : BaseActivity(){
             }
             CallState.ANSWERED -> {
                 stopRingBackTone()
-                if (callViewModel.mIsAudioMode.value==true) {
+                if (callViewModel.mIsAudioMode.value == true) {
                     updateUIbyStateView(CallStateView.CALLED_AUDIO)
                 } else {
                     updateUIbyStateView(CallStateView.CALLED_VIDEO)
-                }
-                if (isFromComingCall) {
-                    Handler(mainLooper).postDelayed({
-                        viewConnecting.gone()
-                    }, 500)
                 }
             }
         }
     }
 
-    private fun updateUIbyStateView(callStateView: CallStateView){
-        when(callStateView){
-            CallStateView.CALL_AUDIO_WAITING ->{
-                waitingCallView.visibility=View.VISIBLE
-                viewAudioCalled.visibility=View.GONE
-                viewVideoCalled.visibility=View.GONE
+    private fun updateUIbyStateView(callStateView: CallStateView) {
+        when (callStateView) {
+            CallStateView.CALL_AUDIO_WAITING -> {
+                waitingCallView.visibility = View.VISIBLE
+                viewAudioCalled.visibility = View.GONE
+                viewVideoCalled.visibility = View.GONE
             }
 
-            CallStateView.CALL_VIDEO_WAITING->{
+            CallStateView.CALL_VIDEO_WAITING -> {
                 waitingCallView.visibility = View.GONE
                 setLocalViewFullScreen()
-                tvStateVideoCall.visibility=View.VISIBLE
-                tvUserNameVideoCall.visibility=View.VISIBLE
-                tvUserNameVideoCall.text=mGroupName
-                viewVideoCalled.visibility=View.GONE
+                tvStateVideoCall.visibility = View.VISIBLE
+                tvUserNameVideoCall.visibility = View.VISIBLE
+                tvUserNameVideoCall.text = mGroupName
+                viewVideoCalled.visibility = View.GONE
 
 
             }
-            CallStateView.CALLED_AUDIO ->{
+            CallStateView.CALLED_AUDIO -> {
                 waitingCallView.visibility = View.VISIBLE
-                tvStateVideoCall.visibility=View.GONE
-                tvStateCall.visibility=View.GONE
-                viewAudioCalled.visibility=View.VISIBLE
+                tvStateVideoCall.visibility = View.GONE
+                tvStateCall.visibility = View.GONE
+                viewAudioCalled.visibility = View.VISIBLE
 
             }
-            CallStateView.CALLED_VIDEO->{
+            CallStateView.CALLED_VIDEO -> {
                 setLocalFixScreen()
-                waitingCallView.visibility=View.GONE
-                tvStateVideoCall.visibility=View.GONE
-                tvUserNameVideoCall.visibility=View.GONE
-                viewVideoCalled.visibility=View.VISIBLE
+                waitingCallView.visibility = View.GONE
+                tvStateVideoCall.visibility = View.GONE
+                tvUserNameVideoCall.visibility = View.GONE
+                viewVideoCalled.visibility = View.VISIBLE
             }
 
         }
@@ -505,7 +517,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
             if (!isFromComingCall)
                 Handler(mainLooper).postDelayed({
                     viewConnecting.gone()
-                }, 500)
+                }, 1000)
         }
     }
 
@@ -559,7 +571,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
                 if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
                     callViewModel.mIsAudioMode.postValue(false)
-                    configMedia(isSpeaker = true, isMuteVideo = false)
+                    configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
                 }
             }
         }
@@ -600,14 +612,20 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
     private fun startTimeInterval() {
-        mTimeStarted = SystemClock.elapsedRealtime()
-        callViewModel.totalTimeRunJob = startCoroutineTimer(delayMillis = 1000, repeatMillis = 1000) {
-            callViewModel.totalTimeRun+=1
-            runOnUiThread {
-                tvTimeCall.text= convertSecondsToHMmSs(callViewModel.totalTimeRun)
-                tvVideoTimeCall.text=convertSecondsToHMmSs(callViewModel.totalTimeRun)
-            }
+        if (isFromComingCall) {
+            Handler(mainLooper).postDelayed({
+                viewConnecting.gone()
+            }, 2000)
         }
+        mTimeStarted = SystemClock.elapsedRealtime()
+        callViewModel.totalTimeRunJob =
+            startCoroutineTimer(delayMillis = 1000, repeatMillis = 1000) {
+                callViewModel.totalTimeRun += 1
+                runOnUiThread {
+                    tvTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
+                    tvVideoTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
+                }
+            }
     }
 
     companion object {
@@ -615,8 +633,9 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
 
-    private fun setLocalViewFullScreen(){
-        localRender.layoutParams = fullView(localRender.layoutParams as ConstraintLayout.LayoutParams)
+    private fun setLocalViewFullScreen() {
+        localRender.layoutParams =
+            fullView(localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
     private fun setLocalFixScreen(){
         localRender.layoutParams = fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
@@ -631,7 +650,7 @@ class InCallPeerToPeerActivity : BaseActivity(){
             marginEnd = 0
             marginStart = 0
             topMargin = 0
-            bottomMargin=0
+            bottomMargin = 0
         }
         return localView
     }
@@ -650,7 +669,11 @@ class InCallPeerToPeerActivity : BaseActivity(){
         return paramsRemote
     }
 
-    private fun startCoroutineTimer(delayMillis: Long = 0, repeatMillis: Long = 0, action: () -> Unit) = GlobalScope.launch {
+    private fun startCoroutineTimer(
+        delayMillis: Long = 0,
+        repeatMillis: Long = 0,
+        action: () -> Unit
+    ) = GlobalScope.launch {
         delay(delayMillis)
         if (repeatMillis > 0) {
             while (true) {
@@ -663,6 +686,13 @@ class InCallPeerToPeerActivity : BaseActivity(){
     }
 
     private fun dispatchCallStatus(isStarted: Boolean) {
-        AppCall.listenerCallingState.postValue(CallingStateData(isStarted, mUserNameInConversation, true, mTimeStarted))
+        AppCall.listenerCallingState.postValue(
+            CallingStateData(
+                isStarted,
+                mUserNameInConversation,
+                true,
+                mTimeStarted
+            )
+        )
     }
 }
