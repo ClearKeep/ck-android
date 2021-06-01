@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -33,6 +41,7 @@ class RegisterActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,6 +49,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    @ExperimentalAnimationApi
     @Composable
     fun MyApp() {
         CKTheme {
@@ -47,8 +57,30 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    @ExperimentalAnimationApi
     @Composable
     fun AppContent() {
+        val navController = rememberNavController()
+        NavHost(navController, startDestination = "register"){
+            composable("register"){
+                MainContent(navController)
+            }
+            composable("advance_setting") {
+                CustomServerScreen(
+                    onBackPress = { isCustom, url, port ->
+                        registerViewModel.isCustomServer = isCustom
+                        registerViewModel.url = url
+                        registerViewModel.port = port
+                        onBackPressed()
+                    },
+                    registerViewModel.isCustomServer, registerViewModel.url, registerViewModel.port
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun MainContent(navController: NavHostController) {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
@@ -72,6 +104,9 @@ class RegisterActivity : AppCompatActivity() {
                 onBackPress = {
                     finish()
                 },
+                advanceSetting = {
+                    navigateToAdvanceSetting(navController)
+                },
                 isLoading = isLoadingState.value ?: false
             )
             ErrorDialog(showDialog, setShowDialog)
@@ -79,9 +114,9 @@ class RegisterActivity : AppCompatActivity() {
             isLoadingState.value?.let {
                 if (it) {
                     Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CKCircularProgressIndicator()
                     }
@@ -115,5 +150,9 @@ class RegisterActivity : AppCompatActivity() {
                 },
             )
         }
+    }
+
+    private fun navigateToAdvanceSetting(navController: NavController){
+        navController.navigate("advance_setting")
     }
 }

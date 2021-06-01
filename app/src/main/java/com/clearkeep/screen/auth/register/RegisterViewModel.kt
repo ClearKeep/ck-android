@@ -39,6 +39,10 @@ class RegisterViewModel @Inject constructor(
     val displayNameError: LiveData<String>
         get() = _displayNameError
 
+    var isCustomServer: Boolean = false
+    var port: String = ""
+    var url: String = ""
+
     suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String ): Resource<AuthOuterClass.RegisterRes>? {
         _isLoading.value = true
 

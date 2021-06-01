@@ -1,0 +1,26 @@
+syntax = "proto3";
+package server_info;
+
+// Update Stun/turn server message struct
+message UpdateNTSReq {
+    string stun = 1;
+    string turn = 2;
+}
+
+message BaseResponse {
+    bool success = 1;
+}
+
+
+// Request: get total thread
+message Empty {
+}
+// Response: GetNotifiesResponse
+message GetThreadResponse {
+  int64 total = 1;
+}
+
+service ServerInfo {
+    rpc update_nts(UpdateNTSReq) returns (BaseResponse) {};
+    rpc total_thread(Empty) returns (GetThreadResponse) {};
+}
