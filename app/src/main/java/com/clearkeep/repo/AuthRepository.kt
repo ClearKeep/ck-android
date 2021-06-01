@@ -1,6 +1,5 @@
 package com.clearkeep.repo
 
-import android.util.Log
 import auth.AuthGrpc
 import auth.AuthOuterClass
 import com.clearkeep.di.CallCredentialsImpl
@@ -19,22 +18,6 @@ class AuthRepository @Inject constructor(
     private val userManager: UserManager,
     private val authBlockingStub: AuthGrpc.AuthBlockingStub,
 ) {
-    /*suspend fun register(userName: String, password: String, email: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("register: $userName")
-        try {
-            val request = AuthOuterClass.RegisterReq.newBuilder()
-                    .setUsername(userName)
-                    .setPassword(password)
-                    .setEmail(email)
-                    .build()
-            val response = authBlockingStub.register(request)
-            return@withContext response?.success ?: false
-        } catch (e: Exception) {
-            printlnCK("register error: $e")
-            return@withContext false
-        }
-    }*/
-
     suspend fun register(displayName: String, password: String, email: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
         printlnCK("register: $displayName, password = $password")
         try {
@@ -56,25 +39,6 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
-
-    /*suspend fun login(userName: String, password: String) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("login: $userName")
-        try {
-            val request = AuthOuterClass.AuthReq.newBuilder()
-                    .setUsername(userName)
-                    .setPassword(password)
-                    .build()
-            val response = authBlockingStub.login(request)
-            userManager.saveAccessKey(response.accessToken)
-            userManager.saveHashKey(response.hashKey)
-            userManager.saveUserName(userName)
-
-            return@withContext true
-        } catch (e: Exception) {
-            printlnCK("login error: $e")
-            return@withContext false
-        }
-    }*/
 
     suspend fun login(userName: String, password: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         printlnCK("login: $userName, password = $password")
