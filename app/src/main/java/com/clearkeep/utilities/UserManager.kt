@@ -14,6 +14,7 @@ private const val HASH_KEY = "hash_key"
 private const val CLIENT_ID = "client_id"
 private const val DEVICE_ID = "device_id"
 private const val TIME_USER_LOGIN = "time_user_login"
+private const val SERVER_URL = "server_url"
 
 @Singleton
 class UserManager @Inject constructor(
@@ -68,6 +69,14 @@ class UserManager @Inject constructor(
 
     fun getLoginTime() : Long {
         return userStorage.getLong(TIME_USER_LOGIN)
+    }
+
+    fun saveServerUrl(url: String) {
+        userStorage.setString(SERVER_URL, userName)
+    }
+
+    fun getServerUrl() : String {
+        return userStorage.getString(SERVER_URL)
     }
 
     fun getUniqueDeviceID(): String {

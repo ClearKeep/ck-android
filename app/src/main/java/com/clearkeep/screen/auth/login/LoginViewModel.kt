@@ -31,6 +31,10 @@ class LoginViewModel @Inject constructor(
     var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
     var loginFacebookManager=LoginManager.getInstance()
 
+    var isCustomServer: Boolean = false
+    var port: String = ""
+    var url: String = ""
+
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 

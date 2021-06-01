@@ -34,6 +34,7 @@ fun RegisterScreen(
     registerViewModel: RegisterViewModel,
     onRegisterPressed: (email: String, userName: String, password: String, confirmPassword: String) -> Unit,
     onBackPress: () -> Unit,
+    advanceSetting: (()->Unit),
     isLoading: Boolean = false
 ) {
     val email = remember { mutableStateOf("") }
@@ -156,6 +157,18 @@ fun RegisterScreen(
                     )
                 }
             }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            CKTextButton(
+                modifier = Modifier.padding(0.dp),
+                stringResource(R.string.advance_server_settings),
+                onClick ={advanceSetting?.invoke()} ,
+                enabled = !isLoading,
+                textButtonType = TextButtonType.White
+            )
         }
     }
 }

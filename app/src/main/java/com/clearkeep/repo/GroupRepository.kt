@@ -71,7 +71,7 @@ class GroupRepository @Inject constructor(
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
                     .setGroupName(groupName)
                     .setCreatedByClientId(createClientId)
-                    .addAllLstClientId(participants)
+                    .addAllLstClient(participants)
                     .setGroupType(getGroupType(isGroup))
                     .build()
             val response = groupBlockingStub.createGroup(request)
