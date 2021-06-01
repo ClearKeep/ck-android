@@ -36,9 +36,15 @@ import com.clearkeep.screen.auth.login.LoginViewModel
 
 @ExperimentalAnimationApi
 @Composable
-fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) {
-    val useCustomServerChecked = remember { mutableStateOf(false) }
-    val rememberServerUrl = remember { mutableStateOf("") }
+fun CustomServerScreen(
+    onBackPress: (isCustom: Boolean, url: String, port: String) -> Unit,
+    isCustom: Boolean,
+    url: String,
+    port: String
+) {
+    val useCustomServerChecked = remember { mutableStateOf(isCustom) }
+    val rememberServerUrl = remember { mutableStateOf(url) }
+    val rememberPort = remember { mutableStateOf(port) }
 
     Box(
         modifier = Modifier
@@ -57,7 +63,10 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
             CKToolbarBack(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
-                onClick = { onBackPress() })
+                onClick = {
+                    onBackPress(useCustomServerChecked.value, rememberServerUrl.value, rememberPort.value)
+                }
+            )
             Spacer(Modifier.height(26.dp))
             Row(
                 modifier = Modifier
@@ -124,33 +133,11 @@ fun CustomServerScreen(onBackPress: () -> Unit, loginViewModel: LoginViewModel) 
                             }
                             CKTextInputField(
                                 "Port",
-                                rememberServerUrl,
+                                rememberPort,
                                 modifier = Modifier.width(76.dp),
                                 keyboardType = KeyboardType.Text,
                                 singleLine = true,
                             )
-                            /*Box(modifier = Modifier) {
-                                OutlinedButton(
-                                    onClick = {
-                                        if (rememberServerUrl.value.isNotEmpty()) {
-                                            loginViewModel.urlCustomServer.postValue(
-                                                rememberServerUrl.value
-                                            )
-                                            onBackPress.invoke()
-                                        }
-                                    },
-                                    modifier = Modifier.width(76.dp).height(52.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        backgroundColor = grayscale5,
-                                        contentColor = grayscale3,
-                                    ),shape  = RoundedCornerShape(16.dp)
-                                ) {
-                                    Text(text = "Port",style = MaterialTheme.typography.body1.copy(
-                                        color = grayscale3,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Normal))
-                                }
-                            }*/
                         }
 
                     }
