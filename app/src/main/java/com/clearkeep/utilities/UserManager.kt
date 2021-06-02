@@ -1,5 +1,6 @@
 package com.clearkeep.utilities
 
+import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.utilities.storage.PersistPreferencesStorage
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import java.util.*
@@ -14,7 +15,7 @@ private const val HASH_KEY = "hash_key"
 private const val CLIENT_ID = "client_id"
 private const val DEVICE_ID = "device_id"
 private const val TIME_USER_LOGIN = "time_user_login"
-private const val SERVER_URL = "server_url"
+private const val DOMAIN_URL = "server_url"
 
 @Singleton
 class UserManager @Inject constructor(
@@ -71,12 +72,12 @@ class UserManager @Inject constructor(
         return userStorage.getLong(TIME_USER_LOGIN)
     }
 
-    fun saveServerUrl(url: String) {
-        userStorage.setString(SERVER_URL, userName)
+    fun saveDomainUrl(url: String) {
+        userStorage.setString(DOMAIN_URL, url)
     }
 
-    fun getServerUrl() : String {
-        return userStorage.getString(SERVER_URL)
+    fun getWorkspaceDomain() : String {
+        return userStorage.getString(DOMAIN_URL)
     }
 
     fun getUniqueDeviceID(): String {
@@ -87,5 +88,13 @@ class UserManager @Inject constructor(
             persistStorage.setString(DEVICE_ID, deviceId)
         }
         return deviceId
+    }
+
+    fun getUser() : People {
+        return People(
+            getClientId(),
+            getUserName(),
+            getWorkspaceDomain()
+        )
     }
 }

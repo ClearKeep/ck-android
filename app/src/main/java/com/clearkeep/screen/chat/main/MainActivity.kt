@@ -38,6 +38,10 @@ import com.facebook.login.LoginManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.system.exitProcess
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 
 
 @AndroidEntryPoint
@@ -157,9 +161,14 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                             profileViewModel = profileViewModel,
                             homeViewModel = mainViewModel, onCloseView = {
                                 navController.popBackStack()
-                            }, onChangePassword = {
+                            },
+                            onChangePassword = {
                                 navigateToChangePassword(navController)
-                            })
+                            },
+                            onCopyToClipBoard = {
+                                copyProfileLinkToClipBoard()
+                            }
+                        )
                     }
                     composable("change_pass_word") {
                         ChangePassWordScreen(
@@ -173,6 +182,14 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 LogoutProgress()
             }
         }
+    }
+
+    private fun copyProfileLinkToClipBoard() {
+        val link = mainViewModel.getProfileLink()
+        val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("profile link", link)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(applicationContext, "You copied", Toast.LENGTH_SHORT).show()
     }
 
     @Composable

@@ -3,6 +3,7 @@ package com.clearkeep.screen.chat.group_invite
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
@@ -33,8 +34,10 @@ class InviteGroupViewModel @Inject constructor(
                 return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
         }
 
-        fun inviteFriends(friends: List<People>) {
-                //
+        fun insertFriend(people: People) {
+                viewModelScope.launch {
+                        peopleRepository.insertFriend(people)
+                }
         }
 
         fun search(text: String) {

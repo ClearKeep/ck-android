@@ -5,6 +5,8 @@ import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.repo.AuthRepository
+import com.clearkeep.utilities.BASE_URL
+import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import com.facebook.AccessToken
@@ -78,11 +80,11 @@ class LoginViewModel @Inject constructor(
     }
 
     suspend fun loginByGoogle(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByGoogle(token,userName)
+        return authRepo.loginByGoogle(token,userName, getDomain())
     }
 
     suspend fun loginByFacebook(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByFacebook(token,userName)
+        return authRepo.loginByFacebook(token,userName, getDomain())
     }
 
     fun getFacebookProfile(accessToken: AccessToken, getName: (String) -> Unit) {
@@ -101,7 +103,7 @@ class LoginViewModel @Inject constructor(
 
 
     suspend fun loginByMicrosoft(accessToken:String,userName: String?=""):Resource<AuthOuterClass.AuthRes>{
-        return authRepo.loginByMicrosoft(accessToken,userName)
+        return authRepo.loginByMicrosoft(accessToken,userName, getDomain())
     }
     suspend fun login(context: Context, email: String, password: String): Resource<AuthOuterClass.AuthRes>? {
         _emailError.value = ""
@@ -135,9 +137,13 @@ class LoginViewModel @Inject constructor(
             )
             null
         } else {
-            authRepo.login(email.trim(), password.trim())
+            authRepo.login(email.trim(), password.trim(), getDomain())
         }
         _isLoading.value = false
         return result
+    }
+
+    private fun getDomain(): String {
+        return if (isCustomServer) "$url:$port" else "$BASE_URL:$PORT"
     }
 }

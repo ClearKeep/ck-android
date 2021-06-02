@@ -1,14 +1,11 @@
 package com.clearkeep.repo
 
-import androidx.lifecycle.liveData
-import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.*
@@ -65,15 +62,25 @@ class GroupRepository @Inject constructor(
         return@withContext response.lstGroupList
     }
 
-    suspend fun createGroupFromAPI(createClientId: String, groupName: String, participants: List<String>, isGroup: Boolean): ChatGroup? = withContext(Dispatchers.IO) {
+    suspend fun createGroupFromAPI(
+        createClientId: String,
+        groupName: String,
+        participants: MutableList<People>,
+        isGroup: Boolean
+    ): ChatGroup? = withContext(Dispatchers.IO) {
         printlnCK("createGroup: $groupName, clients $participants")
         try {
+            val clients = participants.map { people ->
+                GroupOuterClass.ClientInGroupObject.newBuilder()
+                    .setId(people.id)
+                    .setWorkspaceDomain(people.workspace).build()
+            }
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
-                    .setGroupName(groupName)
-                    .setCreatedByClientId(createClientId)
-                    .addAllLstClient(participants)
-                    .setGroupType(getGroupType(isGroup))
-                    .build()
+                .setGroupName(groupName)
+                .setCreatedByClientId(createClientId)
+                .addAllLstClient(clients)
+                .setGroupType(getGroupType(isGroup))
+                .build()
             val response = groupBlockingStub.createGroup(request)
 
             val group = convertGroupFromResponse(response)
@@ -200,7 +207,8 @@ class GroupRepository @Inject constructor(
         val clientList = response.lstClientList.map {
             People(
                 id = it.id,
-                userName = it.displayName
+                userName = it.displayName,
+                workspace = it.workspaceDomain
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {

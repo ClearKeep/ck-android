@@ -8,14 +8,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import user.UserGrpc
 import user.UserOuterClass
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class PeopleRepository @Inject constructor(
-        private val peopleDao: PeopleDao,
-        private val userStub: UserGrpc.UserBlockingStub
+    private val peopleDao: PeopleDao,
+    private val userStub: UserGrpc.UserBlockingStub
 ) {
     fun getFriends() = peopleDao.getFriends().map { list ->
         list.sortedBy { it.userName.toLowerCase() }
@@ -53,13 +52,18 @@ class PeopleRepository @Inject constructor(
                     .map { userInfoResponseOrBuilder ->
                         People(
                             userInfoResponseOrBuilder.id,
-                            userInfoResponseOrBuilder.displayName
+                            userInfoResponseOrBuilder.displayName,
+                            userInfoResponseOrBuilder.domain
                         )
                     }
         } catch (e: Exception) {
             printlnCK("searchUser: $e")
             return@withContext emptyList()
         }
+    }
+
+    suspend fun insertFriend(friend: People) {
+        peopleDao.insert(friend)
     }
 
     private suspend fun insertFriends(friends: List<People>) {
@@ -77,7 +81,8 @@ class PeopleRepository @Inject constructor(
                 .map { userInfoResponseOrBuilder ->
                     People(
                         userInfoResponseOrBuilder.id,
-                        userInfoResponseOrBuilder.displayName
+                        userInfoResponseOrBuilder.displayName,
+                        userInfoResponseOrBuilder.domain
                     )
                 }
         } catch (e: Exception) {
@@ -93,7 +98,8 @@ class PeopleRepository @Inject constructor(
             val response = userStub.getUserInfo(request)
             return@withContext People(
                 response.id,
-                response.displayName
+                response.displayName,
+                response.domain
             )
         } catch (e: Exception) {
             printlnCK("getFriendFromAPI: $e")

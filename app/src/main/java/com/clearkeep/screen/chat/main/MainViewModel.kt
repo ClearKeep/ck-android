@@ -7,9 +7,11 @@ import com.clearkeep.R
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.repo.*
+import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
@@ -106,6 +108,10 @@ class MainViewModel @Inject constructor(
                 printlnCK("google sign out  = ${it.result.toString()} ")
                 onComplete.invoke()
             }
+    }
+
+    fun getProfileLink() : String {
+        return getLinkFromPeople(People(userManager.getClientId(), userManager.getUserName(), userManager.getWorkspaceDomain()))
     }
 
     private fun getSingleAccountMicrosoft(context: Context, onSuccess: (()->Unit)){
