@@ -29,6 +29,7 @@ fun InviteGroupScreen(
     onFriendSelected: (List<People>) -> Unit,
     onDirectFriendSelected: (People) -> Unit,
     onBackPressed: () -> Unit,
+    onInsertFriend: () -> Unit,
     isCreatePeerGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
@@ -82,6 +83,16 @@ fun InviteGroupScreen(
                     }
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            CKTextButton(
+                title = "Insert friend by link",
+                onClick = {
+                    onInsertFriend()
+                },
+                enabled = true,
+                fontSize = 16.sp,
+                textButtonType = TextButtonType.Blue
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Text("User in this Channel", style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground,

@@ -8,8 +8,9 @@ data class People(
     @NonNull
     @PrimaryKey val id: String,
     @ColumnInfo(name = "user_name") val userName: String,
+    @ColumnInfo(name = "workspace_domain") val workspace: String,
 ) {
     override fun toString(): String {
-        return "userName = $userName"
+        return "userName = $userName, workspace_domain = $workspace"
     }
 }

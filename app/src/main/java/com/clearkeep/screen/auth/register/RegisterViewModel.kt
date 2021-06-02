@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.repo.AuthRepository
+import com.clearkeep.utilities.BASE_URL
+import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
@@ -76,7 +78,8 @@ class RegisterViewModel @Inject constructor(
         }
 
         val result = if (isValid) {
-            authRepository.register(displayName.trim(), password.trim(), email.trim())
+            val domain = if (isCustomServer) "$url:$port" else "${BASE_URL}:${PORT}"
+            authRepository.register(displayName.trim(), password.trim(), email.trim(), domain)
         } else {
             null
         }

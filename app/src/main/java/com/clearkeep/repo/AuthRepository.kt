@@ -18,13 +18,14 @@ class AuthRepository @Inject constructor(
     private val userManager: UserManager,
     private val authBlockingStub: AuthGrpc.AuthBlockingStub,
 ) {
-    suspend fun register(displayName: String, password: String, email: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
-        printlnCK("register: $displayName, password = $password")
+    suspend fun register(displayName: String, password: String, email: String, domain: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
+        printlnCK("register: $displayName, password = $password, domain = $domain")
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
                     .setDisplayName(displayName)
                     .setPassword(password)
                     .setEmail(email)
+                .setWorkspaceDomain(domain)
                     .build()
             val response = authBlockingStub.register(request)
             printlnCK("register failed: ${response.baseResponse.success}")
@@ -40,12 +41,13 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun login(userName: String, password: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
-        printlnCK("login: $userName, password = $password")
+    suspend fun login(userName: String, password: String, domain: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+        printlnCK("login: $userName, password = $password, domain = $domain")
         try {
             val request = AuthOuterClass.AuthReq.newBuilder()
                     .setEmail(userName)
                     .setPassword(password)
+                .setWorkspaceDomain(domain)
                     .build()
             val response = authBlockingStub.login(request)
             if (response.baseResponse.success) {
@@ -55,6 +57,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
                 userManager.saveUserName(userName)
+                userManager.saveDomainUrl(response.workspaceDomain)
                 return@withContext Resource.success(response)
             } else {
                 printlnCK("login failed: ${response.baseResponse.errors.message}")
@@ -65,12 +68,14 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
-    suspend fun loginByGoogle(token:String, userName: String? = ""):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+    suspend fun loginByGoogle(token:String, userName: String? = "", domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+        printlnCK("loginByGoogle: $userName, token = $token, domain = $domain")
         try {
             val request=AuthOuterClass
                 .GoogleLoginReq
                 .newBuilder()
                 .setIdToken(token)
+                .setWorkspaceDomain(domain)
                 .build()
             val response=authBlockingStub.loginGoogle(request)
 
@@ -80,6 +85,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
+                userManager.saveDomainUrl(response.workspaceDomain)
                 if (userName != null) {
                     userManager.saveUserName(userName)
                 }
@@ -93,12 +99,13 @@ class AuthRepository @Inject constructor(
 
     }
 
-    suspend fun loginByFacebook(token:String, userName: String? = ""):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+    suspend fun loginByFacebook(token:String, userName: String? = "", domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
         try {
             val request=AuthOuterClass
                 .FacebookLoginReq
                 .newBuilder()
                 .setAccessToken(token)
+                .setWorkspaceDomain(domain)
                 .build()
             val response=authBlockingStub.loginFacebook(request)
 
@@ -108,6 +115,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
+                userManager.saveDomainUrl(response.workspaceDomain)
                 if (userName != null) {
                     userManager.saveUserName(userName)
                 }
@@ -123,13 +131,15 @@ class AuthRepository @Inject constructor(
 
     suspend fun loginByMicrosoft(
         accessToken: String,
-        userName: String? = ""
+        userName: String? = "",
+        domain: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass
                 .OfficeLoginReq
                 .newBuilder()
                 .setAccessToken(accessToken)
+                .setWorkspaceDomain(domain)
                 .build()
             val response = authBlockingStub.loginOffice(request)
             if (response.baseResponse.success) {
@@ -138,6 +148,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
+                userManager.saveDomainUrl(response.workspaceDomain)
                 if (userName != null) {
                     userManager.saveUserName(userName)
                 }

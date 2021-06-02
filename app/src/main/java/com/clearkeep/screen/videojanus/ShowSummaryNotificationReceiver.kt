@@ -32,7 +32,7 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
         GlobalScope.launch {
             val unreadMessages = messageRepository.getUnreadMessage(groupId, userManager.getClientId())
             val group = groupRepository.getGroupByID(groupId = groupId)!!
-            val me = People(userManager.getUserName(), userManager.getClientId())
+            val me = userManager.getUser()
             showMessageNotificationToSystemBar(context, me, group, unreadMessages)
         }
     }
