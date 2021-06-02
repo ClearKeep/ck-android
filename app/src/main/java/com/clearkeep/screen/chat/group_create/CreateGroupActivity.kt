@@ -18,6 +18,7 @@ import javax.inject.Inject
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
 
 @AndroidEntryPoint
 class CreateGroupActivity : AppCompatActivity() {
@@ -51,7 +52,11 @@ class CreateGroupActivity : AppCompatActivity() {
                                 createGroupViewModel.setFriendsList(friends)
                                 navController.navigate("enter_group_name")
                             },
+
                             onDirectFriendSelected = { handleDirectChat(it) },
+                            onInsertFriend = {
+                                navController.navigate("insert_friend")
+                            },
                             onBackPressed = {
                                 finish()
                             },
@@ -62,6 +67,16 @@ class CreateGroupActivity : AppCompatActivity() {
                         EnterGroupNameScreen(
                                 navController,
                                 createGroupViewModel,
+                        )
+                    }
+                    composable("insert_friend") {
+                        InsertFriendScreen(
+                            navController,
+                            onInsertFriend = { people ->
+                                inviteGroupViewModel.insertFriend(people)
+                                selectedItem.add(people)
+                                onBackPressed()
+                            },
                         )
                     }
                 }

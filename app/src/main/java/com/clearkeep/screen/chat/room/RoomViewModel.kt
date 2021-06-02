@@ -7,14 +7,10 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.screen.chat.utils.initSessionUserPeer
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
-import org.whispersystems.libsignal.SignalProtocolAddress
-import signal.SignalKeyDistributionGrpc
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
@@ -88,12 +84,12 @@ class RoomViewModel @Inject constructor(
     private fun updateGroupWithFriendId(friendId: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
         viewModelScope.launch {
-            val friend = peopleRepository.getFriend(friendId) ?: People(friendId, "")
+            val friend = peopleRepository.getFriend(friendId) ?: People(friendId, "", "")
             var existingGroup = roomRepository.getGroupPeerByClientId(friend)
             if (existingGroup == null) {
                 existingGroup = roomRepository.getTemporaryGroupWithAFriend(
-                    People(getClientId(), getUserName()),
-                    People(friendId, friend.userName)
+                    People(getClientId(), getUserName(), ""),
+                    People(friendId, friend.userName, "")
                 )
             } else {
                 updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageSyncTimestamp)
@@ -110,10 +106,11 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
+                val user = userManager.getUser()
                 val group = roomRepository.createGroupFromAPI(
                         getClientId(),
                         "${getUserName()},${receiverPeople.userName}",
-                        listOf(getClientId(), receiverPeople.id),
+                        mutableListOf(user, receiverPeople),
                         false
                 )
                 if (group != null) {
@@ -162,10 +159,12 @@ class RoomViewModel @Inject constructor(
 
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
+                val user = userManager.getUser()
+                val friend = peopleRepository.getFriend(friendId!!)!!
                 val group = roomRepository.createGroupFromAPI(
                         getClientId(),
                         "",
-                        listOf(getClientId(), friendId!!),
+                    mutableListOf(user, friend),
                         false
                 )
                 if (group != null) {

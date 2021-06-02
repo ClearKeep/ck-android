@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.repo.*
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
@@ -26,6 +27,7 @@ class MainPreparingViewModel @Inject constructor(
                 return@launch
             }
 
+            printlnCK("client id = ${profile.id}")
             val isRegisterKeySuccess = if (signalKeyRepository.isPeerKeyRegistered()) {
                 true
             } else {
