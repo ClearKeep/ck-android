@@ -3,6 +3,8 @@ package com.clearkeep.screen.chat.main.profile
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
@@ -10,7 +12,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +30,8 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     homeViewModel: MainViewModel,
     onCloseView: () -> Unit,
-    onChangePassword: () -> Unit
+    onChangePassword: () -> Unit,
+    onCopyToClipBoard: () -> Unit
 ) {
     val versionName = BuildConfig.VERSION_NAME
     val env = BuildConfig.FLAVOR
@@ -89,6 +91,12 @@ fun ProfileScreen(
                         ItemInformationView("Email", email, enable = false)
                         Spacer(Modifier.height(16.dp))
                         ItemInformationView("Phone Number", phoneNumber)
+                        Spacer(Modifier.height(8.dp))
+                        CopyLink(
+                            onCopied = {
+                                onCopyToClipBoard()
+                            }
+                        )
                         Spacer(Modifier.height(8.dp))
                         ChangePassword(onChangePassword)
                         Spacer(Modifier.height(24.dp))
@@ -187,6 +195,31 @@ fun ItemInformationView(header: String, textValue: MutableState<String>, enable:
                     fontWeight = FontWeight.Normal
                 ), enabled = enable
             )
+        }
+    }
+}
+
+@Composable
+fun CopyLink(onCopied: () -> Unit) {
+    Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+        SideBarLabel(
+            text = "Copy profile link", modifier = Modifier
+                .weight(0.66f), fontSize = 14.sp, color = MaterialTheme.colors.primary
+        )
+        Column(
+            modifier = Modifier.clickable { },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            IconButton(
+                onClick = { onCopied.invoke() }
+            ) {
+                Icon(
+                    Icons.Filled.ContentCopy,
+                    contentDescription = "",
+                    tint = primaryDefault
+                )
+            }
         }
     }
 }
