@@ -56,7 +56,6 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
-                userManager.saveUserName(userName)
                 userManager.saveDomainUrl(response.workspaceDomain)
                 return@withContext Resource.success(response)
             } else {
@@ -68,8 +67,8 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
-    suspend fun loginByGoogle(token:String, userName: String? = "", domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
-        printlnCK("loginByGoogle: $userName, token = $token, domain = $domain")
+    suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+        printlnCK("loginByGoogle: token = $token, domain = $domain")
         try {
             val request=AuthOuterClass
                 .GoogleLoginReq
@@ -86,9 +85,6 @@ class AuthRepository @Inject constructor(
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
                 userManager.saveDomainUrl(response.workspaceDomain)
-                if (userName != null) {
-                    userManager.saveUserName(userName)
-                }
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -99,7 +95,7 @@ class AuthRepository @Inject constructor(
 
     }
 
-    suspend fun loginByFacebook(token:String, userName: String? = "", domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+    suspend fun loginByFacebook(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
         try {
             val request=AuthOuterClass
                 .FacebookLoginReq
@@ -116,9 +112,6 @@ class AuthRepository @Inject constructor(
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
                 userManager.saveDomainUrl(response.workspaceDomain)
-                if (userName != null) {
-                    userManager.saveUserName(userName)
-                }
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -131,7 +124,6 @@ class AuthRepository @Inject constructor(
 
     suspend fun loginByMicrosoft(
         accessToken: String,
-        userName: String? = "",
         domain: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
@@ -149,9 +141,6 @@ class AuthRepository @Inject constructor(
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
                 userManager.saveDomainUrl(response.workspaceDomain)
-                if (userName != null) {
-                    userManager.saveUserName(userName)
-                }
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
