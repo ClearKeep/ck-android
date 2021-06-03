@@ -241,7 +241,7 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 account?.serverAuthCode
                 val res = account?.idToken?.let {
-                    loginViewModel.loginByGoogle(it, account.account?.name)
+                    loginViewModel.loginByGoogle(it)
                 }
                 onSignInResult(res)
             }
@@ -262,7 +262,6 @@ class LoginActivity : AppCompatActivity() {
                 lifecycleScope.launch{
                     val res = loginViewModel.loginByMicrosoft(
                         authenticationResult.accessToken,
-                        authenticationResult.account.username
                     )
                     onSignInResult(res)
                 }
@@ -300,7 +299,6 @@ class LoginActivity : AppCompatActivity() {
                         lifecycleScope.launch {
                             val res = loginViewModel.loginByFacebook(
                                 token = AccessToken.getCurrentAccessToken().token,
-                                userName = name
                             )
                             onSignInResult(res)
                         }

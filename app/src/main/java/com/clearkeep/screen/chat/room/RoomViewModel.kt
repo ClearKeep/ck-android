@@ -68,8 +68,6 @@ class RoomViewModel @Inject constructor(
 
     fun getClientId() = chatRepository.getClientId()
 
-    private fun getUserName() = userManager.getUserName()
-
     private fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
         viewModelScope.launch {
@@ -88,7 +86,7 @@ class RoomViewModel @Inject constructor(
             var existingGroup = roomRepository.getGroupPeerByClientId(friend)
             if (existingGroup == null) {
                 existingGroup = roomRepository.getTemporaryGroupWithAFriend(
-                    People(getClientId(), getUserName(), ""),
+                    userManager.getUser(),
                     People(friendId, friend.userName, "")
                 )
             } else {
@@ -109,7 +107,7 @@ class RoomViewModel @Inject constructor(
                 val user = userManager.getUser()
                 val group = roomRepository.createGroupFromAPI(
                         getClientId(),
-                        "${getUserName()},${receiverPeople.userName}",
+                        "${userManager.getDisplayName()},${receiverPeople.userName}",
                         mutableListOf(user, receiverPeople),
                         false
                 )

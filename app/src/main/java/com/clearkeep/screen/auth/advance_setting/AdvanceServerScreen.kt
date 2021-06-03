@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKToolbarBack
 import com.clearkeep.screen.auth.login.LoginViewModel
@@ -45,7 +46,7 @@ fun CustomServerScreen(
     val useCustomServerChecked = remember { mutableStateOf(isCustom) }
     val rememberServerUrl = remember { mutableStateOf(url) }
     val rememberPort = remember { mutableStateOf(port) }
-
+    val (showDialog, setShowDialog) = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
             .background(
@@ -64,7 +65,16 @@ fun CustomServerScreen(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
                 onClick = {
-                    onBackPress(useCustomServerChecked.value, rememberServerUrl.value, rememberPort.value)
+                    if (useCustomServerChecked.value
+                        && (rememberServerUrl.value.isBlank() || rememberPort.value.isBlank())) {
+                        setShowDialog("Please enter server url and port")
+                    } else {
+                        onBackPress(
+                            useCustomServerChecked.value,
+                            rememberServerUrl.value,
+                            rememberPort.value
+                        )
+                    }
                 }
             )
             Spacer(Modifier.height(26.dp))
@@ -144,5 +154,20 @@ fun CustomServerScreen(
                 }
             }
         }
+        ErrorDialog(showDialog, setShowDialog)
+    }
+}
+
+@Composable
+fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
+    if (showDialog.isNotEmpty()) {
+        CKAlertDialog(
+            title = "Error",
+            text = showDialog,
+            onDismissButtonClick = {
+                // Change the state to close the dialog
+                setShowDialog("")
+            },
+        )
     }
 }

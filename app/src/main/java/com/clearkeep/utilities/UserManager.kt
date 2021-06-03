@@ -13,6 +13,7 @@ private const val ACCESS_TOKEN = "access_token"
 private const val REFRESH_TOKEN = "refresh_token"
 private const val HASH_KEY = "hash_key"
 private const val CLIENT_ID = "client_id"
+private const val DISPLAY_NAME = "display_id"
 private const val DEVICE_ID = "device_id"
 private const val TIME_USER_LOGIN = "time_user_login"
 private const val DOMAIN_URL = "server_url"
@@ -40,20 +41,20 @@ class UserManager @Inject constructor(
         return userStorage.getString(HASH_KEY)
     }
 
-    fun saveUserName(userName: String) {
-        userStorage.setString(USER_NAME, userName)
-    }
-
-    fun getUserName() : String {
-        return userStorage.getString(USER_NAME)
-    }
-
     fun saveClientId(clientId: String) {
         userStorage.setString(CLIENT_ID, clientId)
     }
 
     fun getClientId() : String {
         return userStorage.getString(CLIENT_ID)
+    }
+
+    fun saveDisplayName(displayName: String) {
+        userStorage.setString(DISPLAY_NAME, displayName)
+    }
+
+    fun getDisplayName() : String {
+        return userStorage.getString(DISPLAY_NAME)
     }
 
     fun saveRefreshToken(refreshToken: String) {
@@ -93,7 +94,7 @@ class UserManager @Inject constructor(
     fun getUser() : People {
         return People(
             getClientId(),
-            getUserName(),
+            getDisplayName(),
             getWorkspaceDomain()
         )
     }
