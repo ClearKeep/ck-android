@@ -33,6 +33,7 @@ class ProfileRepository @Inject constructor(
             val user = User(response.id, response.displayName, response.email, response.firstName, response.lastName)
             userDao.save(user)
             userManager.saveClientId(user.id)
+            userManager.saveDisplayName(user.getDisplayName())
 
             return@withContext user
         } catch (e: Exception) {

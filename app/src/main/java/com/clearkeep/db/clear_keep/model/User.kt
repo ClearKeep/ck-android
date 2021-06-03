@@ -11,4 +11,8 @@ data class User(
     @ColumnInfo(name = "email") val email: String?,
     @ColumnInfo(name = "first_name") val firstName: String?,
     @ColumnInfo(name = "last_name") val lastName: String?,
-)
+) {
+    fun getDisplayName() : String {
+        return userName ?: (firstName ?: "" + (lastName ?: ""))
+    }
+}
