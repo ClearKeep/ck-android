@@ -7,7 +7,6 @@ import com.clearkeep.R
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.repo.*
@@ -111,7 +110,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun getProfileLink() : String {
-        return getLinkFromPeople(People(userManager.getClientId(), userManager.getUserName(), userManager.getWorkspaceDomain()))
+        return getLinkFromPeople(userManager.getUser())
     }
 
     private fun getSingleAccountMicrosoft(context: Context, onSuccess: (()->Unit)){

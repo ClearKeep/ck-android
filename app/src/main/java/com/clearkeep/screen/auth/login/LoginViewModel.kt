@@ -79,12 +79,12 @@ class LoginViewModel @Inject constructor(
             })
     }
 
-    suspend fun loginByGoogle(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByGoogle(token,userName, getDomain())
+    suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.AuthRes> {
+        return authRepo.loginByGoogle(token, getDomain())
     }
 
-    suspend fun loginByFacebook(token: String, userName: String? = ""): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByFacebook(token,userName, getDomain())
+    suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.AuthRes> {
+        return authRepo.loginByFacebook(token, getDomain())
     }
 
     fun getFacebookProfile(accessToken: AccessToken, getName: (String) -> Unit) {
@@ -102,8 +102,8 @@ class LoginViewModel @Inject constructor(
     }
 
 
-    suspend fun loginByMicrosoft(accessToken:String,userName: String?=""):Resource<AuthOuterClass.AuthRes>{
-        return authRepo.loginByMicrosoft(accessToken,userName, getDomain())
+    suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.AuthRes>{
+        return authRepo.loginByMicrosoft(accessToken, getDomain())
     }
     suspend fun login(context: Context, email: String, password: String): Resource<AuthOuterClass.AuthRes>? {
         _emailError.value = ""

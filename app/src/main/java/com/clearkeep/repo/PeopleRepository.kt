@@ -24,6 +24,7 @@ class PeopleRepository @Inject constructor(
         try {
             val friends = getFriendsFromAPI()
             if (friends.isNotEmpty()) {
+                printlnCK("updatePeople: $friends")
                 insertFriends(friends)
             }
         } catch(exception: Exception) {
@@ -76,7 +77,6 @@ class PeopleRepository @Inject constructor(
             val request = UserOuterClass.Empty.newBuilder()
                 .build()
             val response = userStub.getUsers(request)
-            printlnCK("getFriendsFromAPI: $response")
             return@withContext response.lstUserOrBuilderList
                 .map { userInfoResponseOrBuilder ->
                     People(
