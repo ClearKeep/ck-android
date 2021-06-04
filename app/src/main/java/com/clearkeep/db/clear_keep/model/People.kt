@@ -11,6 +11,6 @@ data class People(
     @ColumnInfo(name = "workspace_domain") val workspace: String,
 ) {
     override fun toString(): String {
-        return "userName = $userName, workspace_domain = $workspace"
+        return "id = $id, userName = $userName, workspace_domain = $workspace"
     }
 }

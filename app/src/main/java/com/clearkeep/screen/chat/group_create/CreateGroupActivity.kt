@@ -19,6 +19,7 @@ import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.db.clear_keep.model.People
 import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
+import com.clearkeep.utilities.printlnCK
 
 @AndroidEntryPoint
 class CreateGroupActivity : AppCompatActivity() {
@@ -33,10 +34,12 @@ class CreateGroupActivity : AppCompatActivity() {
         viewModelFactory
     }
 
+    private var isDirectChat: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, false)
+        isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, false)
 
         setContent {
             val navController = rememberNavController()
@@ -73,8 +76,11 @@ class CreateGroupActivity : AppCompatActivity() {
                         InsertFriendScreen(
                             navController,
                             onInsertFriend = { people ->
+                                printlnCK("people insert = $people")
                                 inviteGroupViewModel.insertFriend(people)
-                                selectedItem.add(people)
+                                if (!isDirectChat) {
+                                    selectedItem.add(people)
+                                }
                                 onBackPressed()
                             },
                         )

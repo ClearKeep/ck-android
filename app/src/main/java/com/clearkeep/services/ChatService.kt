@@ -247,6 +247,9 @@ class ChatService : Service() {
                         "new-group" -> {
                             groupRepository.fetchRoomsFromAPI()
                         }
+                        "new-peer" -> {
+                            groupRepository.fetchRoomsFromAPI()
+                        }
                         "peer-update-key" -> {
                             chatRepository.processPeerKey(value.refClientId)
                         }
