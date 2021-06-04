@@ -8,5 +8,5 @@ class SplashViewModel @ViewModelInject constructor(
     userManager: UserManager
 ): ViewModel() {
 
-    val isUserRegistered = userManager.isUserRegistered()
+    val isUserRegistered = userManager.isUserLoginAlready()
 }
