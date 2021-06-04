@@ -54,7 +54,7 @@ class PeopleRepository @Inject constructor(
                         People(
                             userInfoResponseOrBuilder.id,
                             userInfoResponseOrBuilder.displayName,
-                            userInfoResponseOrBuilder.domain
+                            userInfoResponseOrBuilder.workspaceDomain
                         )
                     }
         } catch (e: Exception) {
@@ -82,7 +82,7 @@ class PeopleRepository @Inject constructor(
                     People(
                         userInfoResponseOrBuilder.id,
                         userInfoResponseOrBuilder.displayName,
-                        userInfoResponseOrBuilder.domain
+                        userInfoResponseOrBuilder.workspaceDomain
                     )
                 }
         } catch (e: Exception) {
@@ -99,7 +99,7 @@ class PeopleRepository @Inject constructor(
             return@withContext People(
                 response.id,
                 response.displayName,
-                response.domain
+                response.workspaceDomain
             )
         } catch (e: Exception) {
             printlnCK("getFriendFromAPI: $e")

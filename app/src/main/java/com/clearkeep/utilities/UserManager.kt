@@ -23,7 +23,7 @@ class UserManager @Inject constructor(
         private val userStorage: UserPreferencesStorage,
         private val persistStorage: PersistPreferencesStorage,
 ) {
-    fun isUserRegistered() = !userStorage.getString(USER_NAME).isNullOrEmpty()
+    fun isUserLoginAlready() = !userStorage.getString(ACCESS_TOKEN).isNullOrEmpty()
 
     fun saveAccessKey(accessKey: String) {
         userStorage.setString(ACCESS_TOKEN, accessKey)

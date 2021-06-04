@@ -87,7 +87,7 @@ class RoomViewModel @Inject constructor(
             if (existingGroup == null) {
                 existingGroup = roomRepository.getTemporaryGroupWithAFriend(
                     userManager.getUser(),
-                    People(friendId, friend.userName, "")
+                    friend
                 )
             } else {
                 updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageSyncTimestamp)

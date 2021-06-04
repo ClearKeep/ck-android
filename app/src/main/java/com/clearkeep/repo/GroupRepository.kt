@@ -73,6 +73,7 @@ class GroupRepository @Inject constructor(
             val clients = participants.map { people ->
                 GroupOuterClass.ClientInGroupObject.newBuilder()
                     .setId(people.id)
+                    .setDisplayName(people.userName)
                     .setWorkspaceDomain(people.workspace).build()
             }
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
