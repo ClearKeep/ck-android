@@ -30,7 +30,11 @@ class CreateGroupViewModel @Inject constructor(
         fun createGroup(groupName: String) {
                 viewModelScope.launch {
                         _createGroupState.value = CreateGroupProcessing
-                        val res = groupRepository.createGroupFromAPI(getClientId(), groupName, invitedFriends, true)
+                        // clone invited list and add me to list
+                        val list = mutableListOf<People>()
+                        list.addAll(invitedFriends)
+                        list.add(userManager.getUser())
+                        val res = groupRepository.createGroupFromAPI(getClientId(), groupName, list, true)
                         if (res != null) {
                                 groupId = res.id
                                 _createGroupState.value = CreateGroupSuccess

@@ -56,7 +56,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
-                userManager.saveDomainUrl(response.workspaceDomain)
+                userManager.saveDomainUrl(domain)
                 return@withContext Resource.success(response)
             } else {
                 printlnCK("login failed: ${response.baseResponse.errors.message}")
@@ -84,7 +84,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
-                userManager.saveDomainUrl(response.workspaceDomain)
+                userManager.saveDomainUrl(domain)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
