@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 
 
@@ -35,6 +36,9 @@ class ChatService : Service() {
 
     @Inject
     lateinit var chatRepository: ChatRepository
+
+    @Inject
+    lateinit var peopleRepository: PeopleRepository
 
     @Inject
     lateinit var messageRepository: MessageRepository
@@ -251,7 +255,12 @@ class ChatService : Service() {
                             groupRepository.fetchRoomsFromAPI()
                         }
                         "peer-update-key" -> {
-                            chatRepository.processPeerKey(value.refClientId)
+                            val remoteUser = peopleRepository.getFriend(value.refClientId)
+                            if (remoteUser != null) {
+                                chatRepository.processPeerKey(remoteUser.id, remoteUser.workspace)
+                            } else {
+                                printlnCK("Warning, can not get user to peer update key")
+                            }
                         }
                         CALL_TYPE_VIDEO -> {
                             val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
@@ -287,7 +296,7 @@ class ChatService : Service() {
                     client.id != userManager.getClientId()
                 }
                 if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.id)
+                    chatRepository.processPeerKey(receiver.id, receiver.workspace)
                 }
             }
         }

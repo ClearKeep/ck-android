@@ -74,18 +74,20 @@ suspend fun decryptGroupMessage(
 }
 
 suspend fun initSessionUserPeer(
+    workspaceDomain: String,
         signalProtocolAddress: SignalProtocolAddress,
         clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
         signalProtocolStore: InMemorySignalProtocolStore,
 ) : Boolean = withContext(Dispatchers.IO) {
     val receiver = signalProtocolAddress.name
-    printlnCK("initSessionUserPeer with $receiver")
+    printlnCK("initSessionUserPeer with $receiver, domain = $workspaceDomain")
     if (TextUtils.isEmpty(receiver)) {
         return@withContext false
     }
     try {
         val requestUser = Signal.PeerGetClientKeyRequest.newBuilder()
                 .setClientId(receiver)
+            .setWorkspaceDomain(workspaceDomain)
                 .build()
         val remoteKeyBundle = clientBlocking.peerGetClientKey(requestUser)
 
