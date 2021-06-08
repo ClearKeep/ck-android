@@ -120,10 +120,10 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(receiverPeople.id, receiverPeople.workspace, lastGroupId, message, isForceProcessKey = true)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(receiverPeople.id, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(receiverPeople.id, receiverPeople.workspace, lastGroupId, message)
                 }
             }
         }

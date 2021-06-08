@@ -48,12 +48,9 @@ message GetMessagesInGroupResponse {
 // Request: publish a message
 message PublishRequest {
   string fromClientId = 1;
-  string fromClientWorkspaceDomain = 2;
-  string clientId = 3;
-  string clientWorkspaceDomain = 4;
-  int64 groupId = 5;
-  string groupType = 6;
-  bytes message = 7;
+  string clientId = 2;
+  int64 groupId = 3;
+  bytes message = 4;
 }
 //response: BaseResponse
 
