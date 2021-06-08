@@ -49,14 +49,14 @@ class ChatRepository @Inject constructor(
 
     fun getClientId() = userManager.getClientId()
 
-    suspend fun sendMessageInPeer(receiverId: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(receiverId: String, workspaceDomain: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false) : Boolean = withContext(Dispatchers.IO) {
         val senderId = getClientId()
         printlnCK("sendMessageInPeer: sender=$senderId, receiver= $receiverId, groupId= $groupId")
         try {
             val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val processSuccess = processPeerKey(receiverId)
+                val processSuccess = processPeerKey(receiverId, workspaceDomain)
                 if (!processSuccess) {
                     printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                     return@withContext false
@@ -86,9 +86,9 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun processPeerKey(receiverId: String): Boolean {
+    suspend fun processPeerKey(receiverId: String, workspaceDomain: String,): Boolean {
         val signalProtocolAddress = SignalProtocolAddress(receiverId, 111)
-        return initSessionUserPeer(signalProtocolAddress, clientBlocking, signalProtocolStore)
+        return initSessionUserPeer(workspaceDomain, signalProtocolAddress, clientBlocking, signalProtocolStore)
     }
 
     suspend fun sendMessageToGroup(groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
