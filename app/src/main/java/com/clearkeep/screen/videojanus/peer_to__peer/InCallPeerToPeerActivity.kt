@@ -17,7 +17,6 @@ import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -168,16 +167,21 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     override fun onPermissionsAvailable() {
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
-        val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
+
         callScope.launch {
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
+
+                val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID)!!.toInt()
+                val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
+
                 val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
-                startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
             } else {
+                val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
                 val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode)
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -185,7 +189,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
                     val turnUrl = turnConfig.server
                     val stunUrl = stunConfig.server
                     val token = result.groupRtcToken
-                    startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+
+                    val webRtcGroupId = result.groupRtcId
+                    val webRtcUrl = result.groupRtcUrl
+                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
                 } else {
                     runOnUiThread {
 
@@ -371,7 +378,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun startVideo(
-        groupId: Int,
+        webRtcGroupId: Int, webRtcUrl: String,
         stunUrl: String,
         turnUrl: String,
         turnUser: String,
@@ -383,7 +390,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             context = this,
             localRender,
             ourClientId,
-            groupId,
+            webRtcGroupId, webRtcUrl,
             stunUrl,
             turnUrl,
             turnUser,

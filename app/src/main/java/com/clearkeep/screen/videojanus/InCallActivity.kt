@@ -217,7 +217,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     override fun onPermissionsAvailable() {
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
-        val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
         callScope.launch {
             group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong())
             if (isFromComingCall) {
@@ -226,16 +225,24 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
                 val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
-                startVideo(groupId, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID)!!.toInt()
+                val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
+
+                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
             } else {
+                val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
                 val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode)
+
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
                     val turnUrl = turnConfig.server
                     val stunUrl = stunConfig.server
                     val token = result.groupRtcToken
-                    startVideo(groupId, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+
+                    val webRtcGroupId = result.groupRtcId
+                    val webRtcUrl = result.groupRtcUrl
+                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
                 } else {
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
@@ -369,7 +376,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun startVideo(
-        groupId: Int,
+        janusGroupId: Int, janusUrl: String,
         stunUrl: String,
         turnUrl: String,
         turnUser: String,
@@ -377,12 +384,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         token: String
     ) {
         val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
-        printlnCK("Janus URL: $JANUS_URI")
+        printlnCK("Janus URL: $janusUrl")
         printlnCK(
-            "startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
-                    ", group = $groupId, token = $token"
+            "startVideo: janusUrl = $janusUrl, janusGroupId = $janusGroupId , stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
+                    ", token = $token"
         )
-        mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
+        mWebSocketChannel = WebSocketChannel(janusGroupId, ourClientId, token, janusUrl)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
         val peerConnectionParameters = PeerConnectionClient.PeerConnectionParameters(
