@@ -196,9 +196,12 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
+                val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID) ?: ""
+                val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
                 finishAndRemoveFromTask()
                 AppCall.call(this, mIsAudioMode, mToken, mGroupId, mGroupType, mGroupName, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
                         turnUrl = turnUrl, turnUser = turnUserName, turnPass = turnPassword,
+                    webRtcGroupId = webRtcGroupId, webRtcUrl = webRtcUrl,
                         stunUrl = stunUrl
                 )
             }

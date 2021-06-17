@@ -31,6 +31,7 @@ object AppCall {
              ourClientId: String?, userName: String?, avatar: String?,
              isIncomingCall: Boolean,
              turnUrl: String = "", turnUser: String = "", turnPass: String = "",
+             webRtcGroupId: String = "", webRtcUrl: String = "",
              stunUrl: String = ""
     ) {
         val intent: Intent = if (isGroup(groupType)) {
@@ -47,6 +48,8 @@ object AppCall {
         intent.putExtra(EXTRA_USER_NAME, userName)
         intent.putExtra(EXTRA_FROM_IN_COMING_CALL, isIncomingCall)
         intent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, avatar)
+        intent.putExtra(EXTRA_WEB_RTC_GROUP_ID, webRtcGroupId)
+        intent.putExtra(EXTRA_WEB_RTC_URL, webRtcUrl)
         if (turnUrl.isNotEmpty()) {
             intent.putExtra(EXTRA_TURN_URL, turnUrl)
             intent.putExtra(EXTRA_TURN_USER_NAME, turnUser)
@@ -65,6 +68,7 @@ object AppCall {
                      groupId: String, groupType: String, groupName: String,
                      ourClientId: String?, userName: String?, avatar: String?,
                      turnUrl: String, turnUser: String, turnPass: String,
+                     webRtcGroupId: String, webRtcUrl: String,
                      stunUrl: String) {
         printlnCK("token = $token, groupID = $groupId, turnURL= $turnUrl, turnUser=$turnUser, turnPass= $turnPass, stunUrl = $stunUrl")
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -79,12 +83,12 @@ object AppCall {
         val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
-            ourClientId, userName, avatar, turnUrl, turnUser, turnPass, stunUrl, true)
+            ourClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true)
         val pendingWaitIntent = PendingIntent.getActivity(context, 0, waitIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
         val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName, ourClientId,
-            userName, avatar, turnUrl, turnUser, turnPass, stunUrl, false)
+            userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false)
         val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -151,6 +155,7 @@ object AppCall {
                                          ourClientId: String?,
                                          userName: String?, avatar: String?,
                                          turnUrl: String, turnUser: String, turnPass: String,
+                                         webRtcGroupId: String, webRtcUrl: String,
                                          stunUrl: String, isWaitingScreen: Boolean): Intent {
         val intent = if (isWaitingScreen) {
             Intent(context, InComingCallActivity::class.java)
@@ -173,6 +178,8 @@ object AppCall {
         intent.putExtra(EXTRA_TURN_URL, turnUrl)
         intent.putExtra(EXTRA_TURN_USER_NAME, turnUser)
         intent.putExtra(EXTRA_TURN_PASS, turnPass)
+        intent.putExtra(EXTRA_WEB_RTC_GROUP_ID, webRtcGroupId)
+        intent.putExtra(EXTRA_WEB_RTC_URL, webRtcUrl)
         intent.putExtra(EXTRA_STUN_URL, stunUrl)
         return intent
     }
