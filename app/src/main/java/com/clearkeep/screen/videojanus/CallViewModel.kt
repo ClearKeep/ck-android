@@ -9,14 +9,12 @@ import androidx.lifecycle.ViewModel
 import com.clearkeep.januswrapper.*
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
-import com.clearkeep.utilities.JANUS_URI
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Job
 import org.json.JSONObject
 import org.webrtc.*
 import java.lang.ref.WeakReference
 import java.math.BigInteger
-import java.util.logging.Handler
 import javax.inject.Inject
 
 class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
@@ -35,12 +33,17 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     var totalTimeRunJob: Job?=null
     var mIsMute = MutableLiveData<Boolean>(false)
 
-    fun startVideo(context: Context,mLocalSurfaceRenderer: SurfaceViewRenderer,ourClientId:String,groupId: Int, stunUrl: String, turnUrl: String, turnUser: String, turnPass: String, token: String) {
+    fun startVideo(context: Context, mLocalSurfaceRenderer: SurfaceViewRenderer,
+                   ourClientId:String,
+                   janusGroupId: Int, janusUrl: String,
+                   stunUrl: String, turnUrl: String,
+                   turnUser: String, turnPass: String,
+                   token: String) {
         printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
-                ", group = $groupId, token = $token Janus URL: $JANUS_URI")
+                ", group = $janusGroupId, token = $token Janus URL: $janusUrl")
         this.mContext = WeakReference(context)
         this.mLocalSurfaceRenderer=WeakReference(mLocalSurfaceRenderer)
-        mWebSocketChannel = WebSocketChannel(groupId, ourClientId, token, JANUS_URI)
+        mWebSocketChannel = WebSocketChannel(janusGroupId, ourClientId, token, janusUrl)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
         val peerConnectionParameters = PeerConnectionClient.PeerConnectionParameters(

@@ -81,6 +81,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val avatar = remoteMessage.data["from_client_avatar"] ?: ""
             val fromClientName = remoteMessage.data["from_client_name"]
             val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+            val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
+            val webRtcUrl = remoteMessage.data["group_rtc_url"] ?: ""
 
             val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
             val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
@@ -94,8 +96,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val isAudioMode = groupCallType == CALL_TYPE_AUDIO
 
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"", userManager.getClientId(), fromClientName, avatar,
-                turnUrl, turnUser, turnPass, stunUrl)
+            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
+                userManager.getClientId(), fromClientName, avatar,
+                turnUrl, turnUser, turnPass,
+                webRtcGroupId, webRtcUrl,
+                stunUrl)
         }
     }
 
