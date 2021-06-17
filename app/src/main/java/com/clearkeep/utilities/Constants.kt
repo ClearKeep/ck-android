@@ -9,9 +9,11 @@ const val FIREBASE_TOKEN = "ck_firebase_token"
 //const val BASE_URL = "10.0.255.71"
 const val BASE_URL = BuildConfig.BASE_URL
 const val PORT = BuildConfig.PORT
+//192.168.1.5
+//172.18.1.57:35000
+//172.18.1.57:45000
 
 // janus
-const val JANUS_URI = "ws://${BuildConfig.BASE_JANUS_URL}:${BuildConfig.JANUS_PORT}/janus"
 const val EXTRA_OUR_CLIENT_ID = "to"
 const val EXTRA_GROUP_ID = "call_id"
 const val EXTRA_GROUP_NAME = "group_name"
@@ -25,6 +27,8 @@ const val EXTRA_TURN_USER_NAME = "turn_user_name"
 const val EXTRA_TURN_PASS = "turn_pass"
 const val EXTRA_TURN_URL = "turn_url"
 const val EXTRA_STUN_URL = "stun_url"
+const val EXTRA_WEB_RTC_GROUP_ID = "webrtc_group"
+const val EXTRA_WEB_RTC_URL = "webrtc_url"
 
 const val ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED = "ck.action.end.service.call"
 const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
