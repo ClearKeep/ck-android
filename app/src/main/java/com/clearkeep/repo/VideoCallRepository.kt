@@ -1,9 +1,7 @@
 package com.clearkeep.repo
 
-import com.clearkeep.utilities.CALL_TYPE_AUDIO
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.CALL_TYPE_VIDEO
-import com.clearkeep.utilities.UserManager
-import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video_call.VideoCallGrpc
@@ -34,11 +32,11 @@ class VideoCallRepository @Inject constructor(
     suspend fun cancelCall(groupId: Int) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("cancelCall: groupId = $groupId")
         try {
-            val request = VideoCallOuterClass.VideoCallRequest.newBuilder()
+            val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
                 .setGroupId(groupId.toLong())
-                .setClientId(userManager.getClientId())
+                .setUpdateType(CALL_UPDATE_TYPE_CANCEL)
                 .build()
-            val success = videoCallBlockingStub.cancelRequestCall(request).success
+            val success = videoCallBlockingStub.updateCall(request).success
             printlnCK("cancelCall, success = $success")
             return@withContext success
         } catch (e: Exception) {
