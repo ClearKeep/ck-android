@@ -59,3 +59,4 @@ const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 
 const val CALL_TYPE_AUDIO = "audio"
 const val CALL_TYPE_VIDEO = "video"
+const val CALL_UPDATE_TYPE_CANCEL = "cancel_request_call"
