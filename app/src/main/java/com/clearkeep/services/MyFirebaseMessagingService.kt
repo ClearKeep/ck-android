@@ -53,7 +53,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.w(TAG, "onMessageReceived" + remoteMessage.data.toString())
+        printlnCK("onMessageReceived: ${remoteMessage.data}")
 
         when (remoteMessage.data["notify_type"]) {
             "request_call" -> {
@@ -164,6 +164,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         Log.w(TAG, "onNewToken: $token")
+        printlnCK("onNewToken: $token")
         super.onNewToken(token)
     }
 

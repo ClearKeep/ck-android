@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.*
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.repo.ChatRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.MessageRepository
@@ -266,6 +267,16 @@ class ChatService : Service() {
                             val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
                             switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
                             sendBroadcast(switchIntent)
+                        }
+                        CALL_UPDATE_TYPE_CANCEL -> {
+                            val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId) }
+                            val group = groupAsyncRes.await()
+                            if (group != null ) {
+                                NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+                                val endIntent = Intent(ACTION_CALL_CANCEL)
+                                endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, value.refGroupId.toString())
+                                sendBroadcast(endIntent)
+                            }
                         }
                     }
                 }
