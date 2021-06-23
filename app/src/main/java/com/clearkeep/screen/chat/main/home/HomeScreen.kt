@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -28,9 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.clearkeep.R
 import com.clearkeep.components.*
-import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CKSearchBox
-import com.clearkeep.components.base.HeaderTextType
+import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.main.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.main.home.composes.CircleAvatarWorkSpace
@@ -49,6 +48,7 @@ fun HomeScreen(
     onlogout: (() -> Unit),
 ) {
     val rooms = homeViewModel.groups.observeAsState()
+    val showJoinServer = homeViewModel.showJoinServer.observeAsState()
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
 
     Row(
@@ -64,15 +64,24 @@ fun HomeScreen(
         Column(
             Modifier.fillMaxSize()
         ) {
-            WorkSpaceView(
-                homeViewModel,
-                gotoSearch,
-                createGroupChat,
-                gotoProfile = {
-                    rememberStateSiteMenu.value = true
-                },
-                onItemClickListener = gotoRoomById
-            )
+            if (showJoinServer.value == false) {
+                WorkSpaceView(
+                    homeViewModel,
+                    gotoSearch,
+                    createGroupChat,
+                    gotoProfile = {
+                        rememberStateSiteMenu.value = true
+                    },
+                    onItemClickListener = gotoRoomById
+                )
+            } else {
+                JoinServerComposable(
+                    onJoinServer = { /*TODO*/ },
+                    gotoProfile = {
+                        rememberStateSiteMenu.value = true
+                    },
+                )
+            }
         }
 
     }
@@ -108,11 +117,12 @@ fun HomeScreen(
 @Composable
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
+    val workSpaceId = mainViewModel.channelIdLive.observeAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .weight(0.66f)
+                .weight(1.0f, true)
                 .padding(top = 20.dp)
                 .background(
                     shape = RoundedCornerShape(topEnd = 30.dp),
@@ -126,40 +136,47 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                 ), horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Column(
-                Modifier.background(
-                    color = grayscaleOverlay, shape = RoundedCornerShape(topEnd = 30.dp),
-                ), horizontalAlignment = Alignment.CenterHorizontally
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = grayscaleOverlay,
+                        shape = RoundedCornerShape(topEnd = 30.dp),
+                    ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 workSpaces.value?.let { item ->
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         contentPadding = PaddingValues(
                             top = 20.dp,
                             end = 10.dp,
                             start = 10.dp,
-                            bottom = 20.dp
                         ),
                     ) {
                         itemsIndexed(item) { _, workSpace ->
                             Column(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(color = Color.Transparent)
-                                    .border(
-                                        BorderStroke(1.5.dp, primaryDefault),
-                                        shape = CircleShape
-                                    ),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
 
                             ) {
-                                CircleAvatarWorkSpace(workSpace, mainViewModel.channelIdLive)
+                                Column(
+                                    modifier = Modifier
+                                        .clickable { mainViewModel.selectChannel(workSpace) },
+                                ) {
+                                    CircleAvatarWorkSpace(workSpace, workSpaceId.value == workSpace.id)
+                                }
+                                Spacer(modifier = Modifier.height(36.dp))
                             }
                         }
-
                     }
                 }
+                Image(
+                    painter = painterResource(R.drawable.ic_add_server),
+                    contentDescription = "",
+                    alignment = Alignment.Center,
+                    modifier = Modifier.clickable(
+                        onClick = { mainViewModel.showJoinServer() }
+                    )
+                )
             }
         }
 
@@ -413,6 +430,60 @@ fun DirectMessagesView(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun JoinServerComposable(
+    onJoinServer: (serverUrl: String) -> Unit,
+    gotoProfile: () -> Unit
+) {
+    val rememberServerUrl = remember { mutableStateOf("") }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+    ) {
+        Spacer(modifier = Modifier.size(24.dp))
+        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            CKHeaderText(
+                text = stringResource(R.string.join_server), modifier = Modifier
+                    .weight(0.66f), headerTextType = HeaderTextType.Large
+            )
+            Column(
+                modifier = Modifier.clickable { gotoProfile.invoke() },
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_hamburger),
+                    null, alignment = Alignment.Center
+                )
+            }
+        }
+
+        Spacer(Modifier.height(25.dp))
+        Text(stringResource(R.string.join_server_caption), style = MaterialTheme.typography.body2)
+        Spacer(modifier = Modifier.size(21.dp))
+        CKTextInputField(
+            "Server URL",
+            rememberServerUrl,
+            keyboardType = KeyboardType.Text,
+            singleLine = true,
+        )
+        Spacer(modifier = Modifier.size(14.dp))
+        CKButton(
+            stringResource(R.string.btn_join),
+            onClick = {
+                      if (rememberServerUrl.value.isNotBlank()) {
+                          onJoinServer(rememberServerUrl.value)
+                      }
+            },
+        )
+        Spacer(modifier = Modifier.size(9.dp))
+        Text(stringResource(R.string.join_server_tips), style = MaterialTheme.typography.caption.copy(
+            color = MaterialTheme.colors.onSecondary
+        ))
     }
 }
 
