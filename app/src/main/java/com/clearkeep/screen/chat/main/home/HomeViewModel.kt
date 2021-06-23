@@ -11,18 +11,22 @@ class HomeViewModel @Inject constructor(
     private val roomRepository: GroupRepository,
     private val userManager: UserManager,
     ): ViewModel() {
-    var channelIdLive : Long?=null
+    var channelIdLive = MutableLiveData<Long>(0L)
     var myClintId: String =""
 
     init {
         // TODO: load channel and select first channel as default
-        selectChannel(1)
         myClintId = userManager.getClientId()
     }
 
+    val showJoinServer = MutableLiveData(false)
 
     val servers: LiveData<List<Server>> = liveData {
-        emit(listOf(Server(1, "CK Development", "")))
+        emit(listOf(
+            Server(1, "CK Development", ""),
+            Server(2, "PVN", ""),
+            Server(3, "VMO", "")
+        ))
     }
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
@@ -37,7 +41,12 @@ class HomeViewModel @Inject constructor(
 
     fun searchGroup(text: String) {}
 
-    fun selectChannel(channelId: Long) {
-        this.channelIdLive=channelId
+    fun selectChannel(server: Server) {
+        this.channelIdLive.value = server.id
+        showJoinServer.value = false
+    }
+
+    fun showJoinServer() {
+        showJoinServer.value = true
     }
 }
