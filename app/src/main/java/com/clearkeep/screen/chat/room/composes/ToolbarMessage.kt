@@ -1,4 +1,4 @@
-package com.clearkeep.components.base
+package com.clearkeep.screen.chat.room.composes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,7 +18,7 @@ import com.clearkeep.screen.chat.composes.CircleAvatar
 
 
 @Composable
-fun CKToolbarMessage(
+fun ToolbarMessage(
     modifier: Modifier = Modifier,
     title: String = "",
     isGroup: Boolean = false,

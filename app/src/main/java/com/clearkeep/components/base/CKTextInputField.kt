@@ -1,16 +1,12 @@
 package com.clearkeep.components.base
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
 import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
@@ -29,7 +25,7 @@ import com.clearkeep.components.*
 @Composable
 fun CKTextInputField(
     placeholder: String,
-    textValue: MutableState<String>,
+    textValue: MutableState<String>?,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
     error: String? = null,
@@ -38,6 +34,7 @@ fun CKTextInputField(
     imeAction: ImeAction = ImeAction.Done,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    readOnly: Boolean = false,
 ) {
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
@@ -51,7 +48,7 @@ fun CKTextInputField(
         Surface(
             modifier = modifier,
             shape = shape,
-            border = if (rememberBorderShow.value) {
+            border = if (rememberBorderShow.value && !readOnly) {
                 if (isError) {
                     BorderStroke(1.dp, errorDefault)
                 } else {
@@ -63,8 +60,8 @@ fun CKTextInputField(
             
         ) {
             TextField(
-                value = textValue.value,
-                onValueChange = { textValue.value = it },
+                value = textValue?.value ?: "",
+                onValueChange = { textValue?.value = it },
                 /*label = {
                     if (label.isNotBlank()) {
                         Text(
@@ -131,6 +128,7 @@ fun CKTextInputField(
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
+                readOnly = readOnly
             )
         }
         if (isError) {

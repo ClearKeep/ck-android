@@ -15,7 +15,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import androidx.navigation.compose.*
-import com.clearkeep.components.base.CKToolbarMessage
+import com.clearkeep.screen.chat.room.composes.ToolbarMessage
 import com.clearkeep.components.base.TopBoxCallingStatus
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.videojanus.AppCall
@@ -54,7 +54,7 @@ fun RoomScreen(
                     if (it.isCalling)
                         TopBoxCallingStatus(callingStateData = it, onClick = { isCallPeer -> onCallingClick(isCallPeer)})
                 }
-                CKToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
+                ToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
                     onFinishActivity()
                 }, onUserClick = {
                     if (group.isGroup()) {

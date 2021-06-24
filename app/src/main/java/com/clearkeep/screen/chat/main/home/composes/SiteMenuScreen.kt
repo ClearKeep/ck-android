@@ -147,7 +147,9 @@ fun SettingServer(
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
         CKHeaderText(text = serverName, headerTextType = HeaderTextType.Normal, color = grayscale2)
-        ItemSiteSetting("Server Settings", R.drawable.ic_adjustment)
+        ItemSiteSetting("Server Settings", R.drawable.ic_adjustment, {
+            navController.navigate("server_setting")
+        })
         ItemSiteSetting("Invite other", R.drawable.ic_user_plus)
         ItemSiteSetting("Banned users", R.drawable.ic_user_off)
         ItemSiteSetting("Leave $serverName", R.drawable.ic_logout, textColor = errorDefault)

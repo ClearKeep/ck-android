@@ -42,6 +42,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import com.clearkeep.screen.chat.main.settings.ServerSettingScreen
 
 
 @AndroidEntryPoint
@@ -166,7 +167,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 navigateToChangePassword(navController)
                             },
                             onCopyToClipBoard = {
-                                copyProfileLinkToClipBoard()
+                                copyProfileLinkToClipBoard("profile link", mainViewModel.getProfileLink())
                             }
                         )
                     }
@@ -178,16 +179,27 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 navController.popBackStack()
                             })
                     }
+                    composable("server_setting") {
+                        val server = homeViewModel.selectedServer
+                        server?.value?.let {
+                            ServerSettingScreen(
+                                server = it,
+                                navController = navController,
+                                onCopiedServerDomain = {
+                                    copyProfileLinkToClipBoard("server domain", it)
+                                }
+                            )
+                        }
+                    }
                 }
                 LogoutProgress()
             }
         }
     }
 
-    private fun copyProfileLinkToClipBoard() {
-        val link = mainViewModel.getProfileLink()
+    private fun copyProfileLinkToClipBoard(label: String, text: String) {
         val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("profile link", link)
+        val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(applicationContext, "You copied", Toast.LENGTH_SHORT).show()
     }
