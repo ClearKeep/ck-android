@@ -31,7 +31,7 @@ fun ProfileScreen(
     homeViewModel: MainViewModel,
     onCloseView: () -> Unit,
     onChangePassword: () -> Unit,
-    onCopyToClipBoard: () -> Unit
+    onCopyToClipBoard: () -> Unit,
 ) {
     val versionName = BuildConfig.VERSION_NAME
     val env = BuildConfig.FLAVOR
