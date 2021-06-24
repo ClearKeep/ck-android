@@ -22,7 +22,7 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKToolbarBack
+import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.screen.chat.main.MainViewModel
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 
@@ -50,8 +50,8 @@ fun ChangePassWordScreen(
         val confirmPassWord = remember { mutableStateOf("") }
 
         Spacer(Modifier.height(58.dp))
-        CKToolbarBack(modifier = Modifier.padding(start = 6.dp),
-            title = stringResource(R.string.enter_new_password), onClick = {
+        CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
+            title = stringResource(R.string.enter_new_password), onBackPressed = {
             onBackPress.invoke()
         })
         Spacer(Modifier.height(26.dp))

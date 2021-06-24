@@ -7,7 +7,6 @@ import com.clearkeep.R
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.repo.*
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
@@ -22,7 +21,6 @@ import com.microsoft.identity.client.IPublicClientApplication
 import com.microsoft.identity.client.ISingleAccountPublicClientApplication
 import com.microsoft.identity.client.PublicClientApplication
 import com.microsoft.identity.client.exception.MsalException
-import io.grpc.ManagedChannel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
@@ -37,13 +35,7 @@ class MainViewModel @Inject constructor(
     private val userManager: UserManager,
     private val clearKeepDatabase: ClearKeepDatabase,
     private val signalKeyDatabase: SignalKeyDatabase,
-
-    private val managedChannel: ManagedChannel,
 ): ViewModel() {
-    init {
-        // TODO: load channel and select first channel as default
-        selectChannel(1)
-    }
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
 
     val isLogOutProcessing: LiveData<Boolean>
@@ -54,20 +46,7 @@ class MainViewModel @Inject constructor(
     val isLogOutCompleted: LiveData<Boolean>
         get() = _isLogOutCompleted
 
-    val servers: LiveData<List<Server>> = liveData {
-        emit(listOf(Server(1, "CK Development", "")))
-    }
-
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
-
-    val chatGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
-
-    val directGroups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
-
-    fun searchGroup(text: String) {}
-
-    fun selectChannel(channelId: Long) {}
-
 
     var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
 

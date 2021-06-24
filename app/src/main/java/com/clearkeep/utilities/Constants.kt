@@ -9,9 +9,8 @@ const val FIREBASE_TOKEN = "ck_firebase_token"
 //const val BASE_URL = "10.0.255.71"
 const val BASE_URL = BuildConfig.BASE_URL
 const val PORT = BuildConfig.PORT
-//192.168.1.5
-//172.18.1.57:35000
-//172.18.1.57:45000
+//54.235.68.160:15000
+//54.235.68.160:25000
 
 // janus
 const val EXTRA_OUR_CLIENT_ID = "to"

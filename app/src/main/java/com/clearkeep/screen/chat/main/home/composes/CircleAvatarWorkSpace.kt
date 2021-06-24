@@ -12,21 +12,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.Server
 
 
 @Composable
-fun CircleAvatarWorkSpace(item: Server, isHighlight: Boolean) {
-    if (isHighlight) Highlight(item) else Content(item)
+fun CircleAvatarWorkSpace(
+    item: Server,
+    isHighlight: Boolean,
+    contentSize: Dp = 32.dp
+) {
+    if (isHighlight) Highlight(item, contentSize) else Content(item, contentSize)
 }
 
 @Composable
-fun Highlight(item: Server) {
+fun Highlight(item: Server, contentSize: Dp) {
     Column(
         modifier = Modifier
-            .size(48.dp)
+            .size(contentSize.plus(12.dp))
             .background(color = Color.Transparent)
             .border(
                 BorderStroke(1.5.dp, primaryDefault),
@@ -36,17 +41,17 @@ fun Highlight(item: Server) {
         verticalArrangement = Arrangement.Center
 
     ) {
-        Content(item)
+        Content(item, contentSize)
     }
 }
 
 @Composable
-fun Content(item: Server) {
+fun Content(item: Server, contentSize: Dp) {
     val displayName =
         if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
     Surface(
         shape = CircleShape,
-        modifier = Modifier.size(32.dp)
+        modifier = Modifier.size(contentSize)
     ) {
         Column(
             modifier = Modifier.background(
