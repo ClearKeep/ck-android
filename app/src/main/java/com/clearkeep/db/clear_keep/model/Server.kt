@@ -8,5 +8,6 @@ data class Server(
         @NonNull
         @PrimaryKey val id: Long,
         @ColumnInfo(name = "server_name") val serverName: String,
+        @ColumnInfo(name = "server_domain") val serverDomain: String,
         @ColumnInfo(name = "server_avatar") val serverAvatar: String?,
 )

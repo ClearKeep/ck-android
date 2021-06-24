@@ -32,7 +32,7 @@ fun ForgotScreen(
     val email = remember { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(80.dp))
-        CKToolbarBack(title = stringResource(R.string.forgot_password), onClick = { onBackPress() })
+        CKTopAppBarSample(title = stringResource(R.string.forgot_password), onBackPressed = { onBackPress() })
         Spacer(Modifier.height(26.dp))
 
         Column(

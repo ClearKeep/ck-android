@@ -6,7 +6,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -16,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -117,33 +115,34 @@ fun HomeScreen(
 @Composable
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
-    val workSpaceId = mainViewModel.channelIdLive.observeAsState()
+    val selectedServer = mainViewModel.selectedServer.observeAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .weight(1.0f, true)
-                .padding(top = 20.dp)
-                .background(
-                    shape = RoundedCornerShape(topEnd = 30.dp),
-                    brush = Brush.horizontalGradient(
-                        //todo disable dark mode
-                        colors = listOf(
-                            if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                            if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                        )
-                    )
-                ), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    workSpaces?.value?.let { serverList ->
+        val selectedServerId = selectedServer?.value?.id ?: serverList[0].id
+        Column(modifier = Modifier.fillMaxSize()) {
             Column(
-                Modifier
-                    .fillMaxSize()
+                modifier = Modifier
+                    .weight(1.0f, true)
+                    .padding(top = 20.dp)
                     .background(
-                        color = grayscaleOverlay,
                         shape = RoundedCornerShape(topEnd = 30.dp),
+                        brush = Brush.horizontalGradient(
+                            //todo disable dark mode
+                            colors = listOf(
+                                if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
+                                if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
+                            )
+                        )
                     ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                workSpaces.value?.let { item ->
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            color = grayscaleOverlay,
+                            shape = RoundedCornerShape(topEnd = 30.dp),
+                        ), horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         contentPadding = PaddingValues(
@@ -152,7 +151,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                             start = 10.dp,
                         ),
                     ) {
-                        itemsIndexed(item) { _, workSpace ->
+                        itemsIndexed(serverList) { _, workSpace ->
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
@@ -162,59 +161,60 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .clickable { mainViewModel.selectChannel(workSpace) },
                                 ) {
-                                    CircleAvatarWorkSpace(workSpace, workSpaceId.value == workSpace.id)
+                                    CircleAvatarWorkSpace(workSpace, selectedServerId == workSpace.id)
                                 }
                                 Spacer(modifier = Modifier.height(36.dp))
                             }
                         }
                     }
-                }
-                Image(
-                    painter = painterResource(R.drawable.ic_add_server),
-                    contentDescription = "",
-                    alignment = Alignment.Center,
-                    modifier = Modifier.clickable(
-                        onClick = { mainViewModel.showJoinServer() }
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.size(1.dp))
-
-        Column(
-            modifier = Modifier
-                .height(98.dp)
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        //todo disable dark mode
-                        colors = listOf(
-                            if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                            if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                    Image(
+                        painter = painterResource(R.drawable.ic_add_server),
+                        contentDescription = "",
+                        alignment = Alignment.Center,
+                        modifier = Modifier.clickable(
+                            onClick = { mainViewModel.showJoinServer() }
                         )
                     )
-                ),
+                }
+            }
 
-            ) {
+            Spacer(modifier = Modifier.size(1.dp))
+
             Column(
-                Modifier
+                modifier = Modifier
                     .height(98.dp)
                     .fillMaxWidth()
                     .background(
-                        color = grayscaleOverlay,
-                    ), horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_button_profile),
-                    null,
-                    Modifier.size(50.dp),
-                    alignment = Alignment.Center
-                )
+                        brush = Brush.horizontalGradient(
+                            //todo disable dark mode
+                            colors = listOf(
+                                if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
+                                if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
+                            )
+                        )
+                    ),
+
+                ) {
+                Column(
+                    Modifier
+                        .height(98.dp)
+                        .fillMaxWidth()
+                        .background(
+                            color = grayscaleOverlay,
+                        ), horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_button_profile),
+                        null,
+                        Modifier.size(50.dp),
+                        alignment = Alignment.Center
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable

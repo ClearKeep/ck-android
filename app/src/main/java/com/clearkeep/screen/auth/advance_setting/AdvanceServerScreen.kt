@@ -12,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +30,7 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKToolbarBack
-import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.components.base.CKTopAppBarSample
 
 
 @ExperimentalAnimationApi
@@ -61,10 +59,10 @@ fun CustomServerScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Spacer(Modifier.height(58.dp))
-            CKToolbarBack(
+            CKTopAppBarSample(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
-                onClick = {
+                onBackPressed = {
                     if (useCustomServerChecked.value
                         && (rememberServerUrl.value.isBlank() || rememberPort.value.isBlank())) {
                         setShowDialog("Please enter server url and port")
