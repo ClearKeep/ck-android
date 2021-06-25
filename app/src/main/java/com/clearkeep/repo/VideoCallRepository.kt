@@ -1,5 +1,6 @@
 package com.clearkeep.repo
 
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.CALL_TYPE_VIDEO
 import kotlinx.coroutines.Dispatchers
@@ -11,8 +12,9 @@ import javax.inject.Singleton
 
 @Singleton
 class VideoCallRepository @Inject constructor(
-        // network calls
-    private val videoCallBlockingStub: VideoCallGrpc.VideoCallBlockingStub,
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
+
     private val userManager: UserManager,
 ) {
     suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
@@ -22,7 +24,7 @@ class VideoCallRepository @Inject constructor(
                 .setGroupId(groupId.toLong())
                 .setCallType(if (isAudioMode) CALL_TYPE_AUDIO else CALL_TYPE_VIDEO)
                 .build()
-            return@withContext videoCallBlockingStub.videoCall(request)
+            return@withContext dynamicAPIProvider.provideVideoCallBlockingStub().videoCall(request)
         } catch (e: Exception) {
             printlnCK("requestVideoCall: $e")
             return@withContext null
@@ -36,7 +38,7 @@ class VideoCallRepository @Inject constructor(
                 .setGroupId(groupId.toLong())
                 .setUpdateType(CALL_UPDATE_TYPE_CANCEL)
                 .build()
-            val success = videoCallBlockingStub.updateCall(request).success
+            val success = dynamicAPIProvider.provideVideoCallBlockingStub().updateCall(request).success
             printlnCK("cancelCall, success = $success")
             return@withContext success
         } catch (e: Exception) {
@@ -52,7 +54,7 @@ class VideoCallRepository @Inject constructor(
                 .setGroupId(groupId.toLong())
                 .setUpdateType(CALL_TYPE_VIDEO)
                 .build()
-            val success = videoCallBlockingStub.updateCall(request).success
+            val success = dynamicAPIProvider.provideVideoCallBlockingStub().updateCall(request).success
             printlnCK("switchAudioToCall, success = $success")
             return@withContext success
         } catch (e: Exception) {
