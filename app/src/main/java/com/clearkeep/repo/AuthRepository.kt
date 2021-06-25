@@ -1,13 +1,11 @@
 package com.clearkeep.repo
 
-import auth.AuthGrpc
 import auth.AuthOuterClass
-import com.clearkeep.di.CallCredentialsImpl
+import com.clearkeep.dynamicapi.CallCredentialsImpl
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
-import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -16,10 +14,11 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepository @Inject constructor(
     private val userManager: UserManager,
-    private val authBlockingStub: AuthGrpc.AuthBlockingStub,
+    private val dynamicAPIProvider: DynamicAPIProvider,
 ) {
     suspend fun register(displayName: String, password: String, email: String, domain: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
         printlnCK("register: $displayName, password = $password, domain = $domain")
+        dynamicAPIProvider.setUpDomain(domain)
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
                     .setDisplayName(displayName)
@@ -27,7 +26,7 @@ class AuthRepository @Inject constructor(
                     .setEmail(email)
                 .setWorkspaceDomain(domain)
                     .build()
-            val response = authBlockingStub.register(request)
+            val response = dynamicAPIProvider.provideAuthBlockingStub().register(request)
             printlnCK("register failed: ${response.baseResponse.success}")
             if (response.baseResponse.success) {
                 return@withContext Resource.success(response)
@@ -43,13 +42,14 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(userName: String, password: String, domain: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         printlnCK("login: $userName, password = $password, domain = $domain")
+        dynamicAPIProvider.setUpDomain(domain)
         try {
             val request = AuthOuterClass.AuthReq.newBuilder()
                     .setEmail(userName)
                     .setPassword(password)
                 .setWorkspaceDomain(domain)
                     .build()
-            val response = authBlockingStub.login(request)
+            val response = dynamicAPIProvider.provideAuthBlockingStub().login(request)
             if (response.baseResponse.success) {
                 printlnCK("login successfully")
                 userManager.saveLoginTime(getCurrentDateTime().time)
@@ -69,6 +69,7 @@ class AuthRepository @Inject constructor(
     }
     suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
         printlnCK("loginByGoogle: token = $token, domain = $domain")
+        dynamicAPIProvider.setUpDomain(domain)
         try {
             val request=AuthOuterClass
                 .GoogleLoginReq
@@ -76,7 +77,7 @@ class AuthRepository @Inject constructor(
                 .setIdToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response=authBlockingStub.loginGoogle(request)
+            val response=dynamicAPIProvider.provideAuthBlockingStub().loginGoogle(request)
 
             if (response.baseResponse.success) {
                 printlnCK("login by google successfully")
@@ -96,6 +97,7 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun loginByFacebook(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
+        dynamicAPIProvider.setUpDomain(domain)
         try {
             val request=AuthOuterClass
                 .FacebookLoginReq
@@ -103,7 +105,7 @@ class AuthRepository @Inject constructor(
                 .setAccessToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response=authBlockingStub.loginFacebook(request)
+            val response=dynamicAPIProvider.provideAuthBlockingStub().loginFacebook(request)
 
             if (response.baseResponse.success) {
                 printlnCK("login by facebook successfully: $response")
@@ -111,7 +113,7 @@ class AuthRepository @Inject constructor(
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
-                userManager.saveDomainUrl(response.workspaceDomain)
+                userManager.saveDomainUrl(domain)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -126,6 +128,7 @@ class AuthRepository @Inject constructor(
         accessToken: String,
         domain: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+        dynamicAPIProvider.setUpDomain(domain)
         try {
             val request = AuthOuterClass
                 .OfficeLoginReq
@@ -133,14 +136,14 @@ class AuthRepository @Inject constructor(
                 .setAccessToken(accessToken)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response = authBlockingStub.loginOffice(request)
+            val response = dynamicAPIProvider.provideAuthBlockingStub().loginOffice(request)
             if (response.baseResponse.success) {
                 printlnCK("login by microsoft successfully")
                 userManager.saveLoginTime(getCurrentDateTime().time)
                 userManager.saveAccessKey(response.accessToken)
                 userManager.saveHashKey(response.hashKey)
                 userManager.saveRefreshToken(response.refreshToken)
-                userManager.saveDomainUrl(response.workspaceDomain)
+                userManager.saveDomainUrl(domain)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -155,7 +158,7 @@ class AuthRepository @Inject constructor(
             val request = AuthOuterClass.FogotPassWord.newBuilder()
                     .setEmail(email)
                     .build()
-            val response = authBlockingStub.fogotPassword(request)
+            val response = dynamicAPIProvider.provideAuthBlockingStub().fogotPassword(request)
             if (response.success) {
                 return@withContext Resource.success(response)
             } else {
@@ -174,12 +177,8 @@ class AuthRepository @Inject constructor(
                     .setDeviceId(userManager.getUniqueDeviceID())
                     .setRefreshToken(userManager.getRefreshToken())
                     .build()
-            val channel = ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-                    .usePlaintext()
-                    .executor(Dispatchers.Default.asExecutor())
-                    .build()
 
-            val  authBlockingWithHeader = AuthGrpc.newBlockingStub(channel)
+            val  authBlockingWithHeader = dynamicAPIProvider.provideAuthBlockingStub()
                     .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
                     .withCallCredentials(CallCredentialsImpl(userManager.getAccessKey(), userManager.getHashKey()))
             val response = authBlockingWithHeader

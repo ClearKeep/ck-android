@@ -13,25 +13,22 @@ import com.clearkeep.repo.MessageRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
-import io.grpc.ManagedChannel
-import io.grpc.ManagedChannelBuilder
-import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
-import message.MessageGrpc
 import message.MessageOuterClass
-import notification.NotifyGrpc
 import notification.NotifyOuterClass
-import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
+import com.clearkeep.services.utils.MessageChannelSubscriber
+import com.clearkeep.services.utils.NotificationChannelSubscriber
 
 
 @AndroidEntryPoint
-class ChatService : Service() {
+class ChatService : Service(),
+    MessageChannelSubscriber.MessageSubscriberListener,
+    NotificationChannelSubscriber.NotificationSubscriberListener {
     @Inject
     lateinit var userManager: UserManager
 
@@ -47,9 +44,10 @@ class ChatService : Service() {
     @Inject
     lateinit var groupRepository: GroupRepository
 
-    val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
+    @Inject
+    lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
 
-    private lateinit var networkChannel: ManagedChannel
+    private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var isShouldRecreateChannel = false
 
@@ -58,7 +56,6 @@ class ChatService : Service() {
             printlnCK("network available again")
             if (isShouldRecreateChannel) {
                 isShouldRecreateChannel = false
-                networkChannel = createNetworkChannel()
                 subscribeAndUpdateMessageData()
             }
         }
@@ -66,7 +63,6 @@ class ChatService : Service() {
         override fun onLost(network: Network) {
             printlnCK("network lost")
             isShouldRecreateChannel = true
-            networkChannel.shutdownNow()
             printlnCK("ChatService, shut down channel")
         }
     }
@@ -74,9 +70,9 @@ class ChatService : Service() {
     override fun onCreate() {
         printlnCK("ChatService, onCreate")
         super.onCreate()
-        networkChannel = createNetworkChannel()
 
         if (isOnline(applicationContext)) {
+            isShouldRecreateChannel = false
             subscribeAndUpdateMessageData()
         } else {
             isShouldRecreateChannel = true
@@ -105,19 +101,123 @@ class ChatService : Service() {
     override fun onDestroy() {
         printlnCK("ChatService, onDestroy")
         scope.cancel()
-        if (!networkChannel.isShutdown) {
-            networkChannel.shutdownNow()
-        }
+        dynamicAPIProvider.shutDownAll()
         unregisterNetworkChange()
     }
 
-    private fun createNetworkChannel(): ManagedChannel {
-        return ManagedChannelBuilder.forAddress(BASE_URL, PORT)
-            .usePlaintext()
-            .executor(Dispatchers.Default.asExecutor())
-            .keepAliveTimeout(20, TimeUnit.SECONDS)
-            .disableRetry()
-            .build()
+    private suspend fun subscribe() {
+        val domain = userManager.getWorkspaceDomain()
+        val messageSubscriber = MessageChannelSubscriber(
+            domain = userManager.getWorkspaceDomain(),
+            clientId = userManager.getClientId(),
+            messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
+            messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
+            onMessageSubscriberListener = this
+        )
+        val notificationSubscriber = NotificationChannelSubscriber(
+            domain = userManager.getWorkspaceDomain(),
+            clientId = userManager.getClientId(),
+            notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
+            notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
+            notificationChannelListener = this
+        )
+        messageSubscriber.subscribeAndListen()
+        notificationSubscriber.subscribeAndListen()
+    }
+
+    override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
+        scope.launch {
+            if (!isGroup(value.groupType)) {
+                val res = chatRepository.decryptMessageFromPeer(value)
+                if (res != null) {
+                    val roomId = chatRepository.getJoiningRoomId()
+                    val groupId = value.groupId
+                    handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
+                }
+            } else {
+                val res = chatRepository.decryptMessageFromGroup(value)
+                if (res != null) {
+                    val roomId = chatRepository.getJoiningRoomId()
+                    val groupId = value.groupId
+                    handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
+                }
+            }
+        }
+    }
+
+    override fun onNotificationReceived(
+        value: NotifyOuterClass.NotifyObjectResponse,
+        domain: String
+    ) {
+        scope.launch {
+            when (value.notifyType) {
+                "new-group" -> {
+                    groupRepository.fetchRoomsFromAPI()
+                }
+                "new-peer" -> {
+                    groupRepository.fetchRoomsFromAPI()
+                }
+                "peer-update-key" -> {
+                    val remoteUser = peopleRepository.getFriend(value.refClientId)
+                    if (remoteUser != null) {
+                        chatRepository.processPeerKey(remoteUser.id, remoteUser.workspace)
+                    } else {
+                        printlnCK("Warning, can not get user to peer update key")
+                    }
+                }
+                CALL_TYPE_VIDEO -> {
+                    val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
+                    switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
+                    sendBroadcast(switchIntent)
+                }
+                CALL_UPDATE_TYPE_CANCEL -> {
+                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId) }
+                    val group = groupAsyncRes.await()
+                    if (group != null ) {
+                        NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+                        val endIntent = Intent(ACTION_CALL_CANCEL)
+                        endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, value.refGroupId.toString())
+                        sendBroadcast(endIntent)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message) {
+        scope.launch {
+            val group = groupRepository.getGroupByID(groupId = groupId)
+            group?.let {
+                if (joiningRoomId != groupId) {
+                    showMessagingStyleNotification(
+                        context = applicationContext,
+                        chatGroup = it,
+                        message,
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun updateMessageHistory() {
+        groupRepository.fetchRoomsFromAPI()
+    }
+
+    private suspend fun updateMessageAndKeyInOnlineRoom() {
+        val roomId = chatRepository.getJoiningRoomId()
+        if (roomId > 0) {
+            val group = groupRepository.getGroupByID(roomId)!!
+            messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+
+            if (!group.isGroup()) {
+                val receiver = group.clientList.firstOrNull { client ->
+                    client.id != userManager.getClientId()
+                }
+                if (receiver != null) {
+                    chatRepository.processPeerKey(receiver.id, receiver.workspace)
+                }
+            }
+        }
     }
 
     private fun registerNetworkChange() {
@@ -139,177 +239,6 @@ class ChatService : Service() {
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (connectivityManager != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback)
-        }
-    }
-
-    private suspend fun subscribe() {
-        subscribeNotificationChannel()
-        subscribeMessageChannel()
-    }
-
-    private suspend fun subscribeMessageChannel(): Boolean = withContext(Dispatchers.IO) {
-        val request = MessageOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(userManager.getClientId())
-            .build()
-
-        try {
-            val res = MessageGrpc.newBlockingStub(networkChannel).subscribe(request)
-            if (res.success) {
-                printlnCK("subscribeMessageChannel, success")
-                listenMessageChannel()
-            } else {
-                printlnCK("subscribeMessageChannel, ${res.errors}")
-            }
-            return@withContext res.success
-        } catch (e: Exception) {
-            printlnCK("subscribeMessageChannel, $e")
-            return@withContext false
-        }
-    }
-
-    private suspend fun subscribeNotificationChannel(): Boolean = withContext(Dispatchers.IO) {
-        val request = NotifyOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(userManager.getClientId())
-            .build()
-        try {
-            val res = NotifyGrpc.newBlockingStub(networkChannel).subscribe(request)
-            if (res.success) {
-                printlnCK("subscribeNotificationChannel, success")
-                listenNotificationChannel()
-            } else {
-                printlnCK("subscribeNotificationChannel, ${res.errors}")
-            }
-            return@withContext res.success
-        } catch (e: Exception) {
-            printlnCK("subscribeNotificationChannel, $e")
-            return@withContext false
-        }
-    }
-
-    private fun listenMessageChannel() {
-        val request = MessageOuterClass.ListenRequest.newBuilder()
-            .setClientId(userManager.getClientId())
-            .build()
-
-        MessageGrpc.newStub(networkChannel)
-            .listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
-                override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
-                    scope.launch {
-                        if (!isGroup(value.groupType)) {
-                            val res = chatRepository.decryptMessageFromPeer(value)
-                            if (res != null) {
-                                val roomId = chatRepository.getJoiningRoomId()
-                                val groupId = value.groupId
-                                handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
-                            }
-                        } else {
-                            val res = chatRepository.decryptMessageFromGroup(value)
-                            if (res != null) {
-                                val roomId = chatRepository.getJoiningRoomId()
-                                val groupId = value.groupId
-                                handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
-                            }
-                        }
-                    }
-                }
-
-            override fun onError(t: Throwable?) {
-                printlnCK("Listen message error: ${t.toString()}")
-            }
-
-            override fun onCompleted() {
-                printlnCK("listenMessageChannel, listen success")
-            }
-        })
-    }
-
-    fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message) {
-        scope.launch {
-            val group = groupRepository.getGroupByID(groupId = groupId)
-            group?.let {
-                if (joiningRoomId != groupId) {
-                    showMessagingStyleNotification(
-                        context = applicationContext,
-                        chatGroup = it,
-                        message,
-                    )
-                }
-            }
-        }
-    }
-
-    private fun listenNotificationChannel() {
-        val request = NotifyOuterClass.ListenRequest.newBuilder()
-            .setClientId(userManager.getClientId())
-            .build()
-
-        NotifyGrpc.newStub(networkChannel).listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
-            override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
-                printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
-                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
-                scope.launch {
-                    when (value.notifyType) {
-                        "new-group" -> {
-                            groupRepository.fetchRoomsFromAPI()
-                        }
-                        "new-peer" -> {
-                            groupRepository.fetchRoomsFromAPI()
-                        }
-                        "peer-update-key" -> {
-                            val remoteUser = peopleRepository.getFriend(value.refClientId)
-                            if (remoteUser != null) {
-                                chatRepository.processPeerKey(remoteUser.id, remoteUser.workspace)
-                            } else {
-                                printlnCK("Warning, can not get user to peer update key")
-                            }
-                        }
-                        CALL_TYPE_VIDEO -> {
-                            val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
-                            switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
-                            sendBroadcast(switchIntent)
-                        }
-                        CALL_UPDATE_TYPE_CANCEL -> {
-                            val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId) }
-                            val group = groupAsyncRes.await()
-                            if (group != null ) {
-                                NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
-                                val endIntent = Intent(ACTION_CALL_CANCEL)
-                                endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, value.refGroupId.toString())
-                                sendBroadcast(endIntent)
-                            }
-                        }
-                    }
-                }
-            }
-
-            override fun onError(t: Throwable?) {
-                printlnCK("Listen notification error: ${t.toString()}")
-            }
-
-            override fun onCompleted() {
-                printlnCK("listenNotificationChannel, listen success")
-            }
-        })
-    }
-
-    private suspend fun updateMessageHistory() {
-        groupRepository.fetchRoomsFromAPI()
-    }
-
-    private suspend fun updateMessageAndKeyInOnlineRoom() {
-        val roomId = chatRepository.getJoiningRoomId()
-        if (roomId > 0) {
-            val group = groupRepository.getGroupByID(roomId)!!
-            messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
-
-            if (!group.isGroup()) {
-                val receiver = group.clientList.firstOrNull { client ->
-                    client.id != userManager.getClientId()
-                }
-                if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.id, receiver.workspace)
-                }
-            }
         }
     }
 }
