@@ -3,18 +3,21 @@ package com.clearkeep.repo
 import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.PeopleDao
 import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import user.UserGrpc
 import user.UserOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class PeopleRepository @Inject constructor(
+    // dao
     private val peopleDao: PeopleDao,
-    private val userStub: UserGrpc.UserBlockingStub
+
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
 ) {
     fun getFriends() = peopleDao.getFriends().map { list ->
         list.sortedBy { it.userName.toLowerCase() }
@@ -48,7 +51,7 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.SearchUserRequest.newBuilder()
                     .setKeyword(userName).build()
-            val response = userStub.searchUser(request)
+            val response = dynamicAPIProvider.provideUserBlockingStub().searchUser(request)
             return@withContext response.lstUserOrBuilderList
                     .map { userInfoResponseOrBuilder ->
                         People(
@@ -76,7 +79,7 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.Empty.newBuilder()
                 .build()
-            val response = userStub.getUsers(request)
+            val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
             return@withContext response.lstUserOrBuilderList
                 .map { userInfoResponseOrBuilder ->
                     People(
@@ -95,7 +98,7 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.GetUserRequest.newBuilder().setClientId(friendId)
                 .build()
-            val response = userStub.getUserInfo(request)
+            val response = dynamicAPIProvider.provideUserBlockingStub().getUserInfo(request)
             return@withContext People(
                 response.id,
                 response.displayName,
