@@ -4,13 +4,9 @@ import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.repo.ChatRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.MessageRepository
-import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.screen.chat.utils.decryptGroupMessage
-import com.clearkeep.screen.chat.utils.decryptPeerMessage
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -25,7 +21,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import signal.SignalKeyDistributionGrpc
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
@@ -37,13 +32,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var userManager: UserManager
 
     @Inject
-    lateinit var signalProtocolStore: InMemorySignalProtocolStore
-
-    @Inject
-    lateinit var senderKeyStore: InMemorySenderKeyStore
-
-    @Inject
-    lateinit var clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub
+    lateinit var chatRepository: ChatRepository
 
     @Inject
     lateinit var groupRepository: GroupRepository
@@ -121,17 +110,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val messageContent: ByteString = ByteString.copyFrom(messageBase64)
             GlobalScope.launch {
                 try {
-                    val plainMessage = if (!isGroup(groupType)) {
-                        decryptPeerMessage(fromClientID, messageContent, signalProtocolStore)
-                    } else {
-                        decryptGroupMessage(fromClientID, groupId, messageContent, senderKeyStore, clientBlocking)
-                    }
-                    Log.i(TAG, "onMessageReceived: decrypted -> $plainMessage")
-                    val message = Message(
+                    val decryptedMessage = chatRepository.decryptMessage(
                         id, groupId, groupType, fromClientID,
-                        clientId, plainMessage, createdAt, createdAt
+                        clientId, createdAt, createdAt,
+                        messageContent
                     )
-                    messageRepository.insert(message)
+
+                    Log.i(TAG, "onMessageReceived: decrypted -> ${decryptedMessage.message}")
 
                     val groupAsyncRes = async { groupRepository.getGroupByID(groupId) }
                     val group = groupAsyncRes.await()
@@ -139,7 +124,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         showMessagingStyleNotification(
                             context = applicationContext,
                             chatGroup = it,
-                            message
+                            decryptedMessage
                         )
                     }
                 } catch (e: Exception) {
