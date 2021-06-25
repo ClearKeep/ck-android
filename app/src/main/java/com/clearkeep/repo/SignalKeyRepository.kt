@@ -1,5 +1,6 @@
 package com.clearkeep.repo
 
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.printlnCK
@@ -14,7 +15,6 @@ import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.util.KeyHelper
 import signal.Signal
-import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,10 +22,13 @@ private const val IS_PEER_SIGNAL_KEY_REGISTERED = "is_peer_signal_key_registered
 
 @Singleton
 class SignalKeyRepository @Inject constructor(
-        private val storage: UserPreferencesStorage,
-        private val client: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
-        private val myStore: InMemorySignalProtocolStore,
-        private val senderKeyStore: InMemorySenderKeyStore,
+    private val storage: UserPreferencesStorage,
+
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
+
+    private val myStore: InMemorySignalProtocolStore,
+    private val senderKeyStore: InMemorySenderKeyStore,
 ) {
     fun isPeerKeyRegistered() = storage.getBoolean(IS_PEER_SIGNAL_KEY_REGISTERED)
 
@@ -54,7 +57,7 @@ class SignalKeyRepository @Inject constructor(
                     .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                     .build()
 
-            val response = client.peerRegisterClientKey(request)
+            val response = dynamicAPIProvider.provideSignalKeyDistributionBlockingStub().peerRegisterClientKey(request)
             if (response?.success != false) {
                 myStore.storePreKey(preKey.id, preKey)
                 myStore.storeSignedPreKey(signedPreKey.id, signedPreKey)
@@ -85,7 +88,7 @@ class SignalKeyRepository @Inject constructor(
 
         try {
             val response = withContext(Dispatchers.IO) {
-                client.groupRegisterClientKey(request)
+                dynamicAPIProvider.provideSignalKeyDistributionBlockingStub().groupRegisterClientKey(request)
             }
             if (response?.success != false) {
                 printlnCK("registerSenderKeyToGroup: $groupID: success")
@@ -106,7 +109,7 @@ class SignalKeyRepository @Inject constructor(
                     .setGroupId(groupID)
                     .setClientId(clientId)
                     .build()
-            val response = client.groupGetClientKey(request)
+            val response = dynamicAPIProvider.provideSignalKeyDistributionBlockingStub().groupGetClientKey(request)
             val ret = response != null && response.clientKey != null
             printlnCK("isRegisteredGroupKey: $ret")
             return@withContext ret
