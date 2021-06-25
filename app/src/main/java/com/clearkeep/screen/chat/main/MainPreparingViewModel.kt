@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.repo.*
+import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -12,6 +14,9 @@ import javax.inject.Inject
 class MainPreparingViewModel @Inject constructor(
     private val signalKeyRepository: SignalKeyRepository,
     private val profileRepository: ProfileRepository,
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
+    private val userManager: UserManager
 ): ViewModel() {
     private val _prepareState = MutableLiveData<PrepareViewState>()
 
@@ -20,6 +25,8 @@ class MainPreparingViewModel @Inject constructor(
 
     fun prepareChat() {
         viewModelScope.launch {
+            dynamicAPIProvider.setUpDomain(userManager.getWorkspaceDomain())
+
             _prepareState.value = PrepareProcessing
             val profile = profileRepository.getProfile()
             if (profile == null) {

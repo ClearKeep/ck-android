@@ -4,6 +4,7 @@ import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.decryptGroupMessage
@@ -14,10 +15,8 @@ import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import message.MessageGrpc
 import message.MessageOuterClass
 import org.whispersystems.libsignal.DuplicateMessageException
-import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,8 +26,8 @@ class MessageRepository @Inject constructor(
     private val groupDAO: GroupDAO,
     private val messageDAO: MessageDAO,
 
-    private val messageGrpc: MessageGrpc.MessageBlockingStub,
-    private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
 
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
@@ -53,7 +52,7 @@ class MessageRepository @Inject constructor(
                     .setOffSet(offSet)
                     .setLastMessageAt(lastMessageAt)
                     .build()
-            val responses = messageGrpc.getMessagesInGroup(request)
+            val responses = dynamicAPIProvider.provideMessageBlockingStub().getMessagesInGroup(request)
             val messages = responses.lstMessageList.map { parseMessageResponse(it) }
             if (messages.isNotEmpty()) {
                 messageDAO.insertMessages(messages)
@@ -100,7 +99,7 @@ class MessageRepository @Inject constructor(
                 decryptPeerMessage(messageResponse.fromClientId, messageResponse.message, signalProtocolStore)
             } else {
                 decryptGroupMessage(messageResponse.fromClientId, messageResponse.groupId,
-                        messageResponse.message, senderKeyStore, clientBlocking)
+                        messageResponse.message, senderKeyStore, dynamicAPIProvider.provideSignalKeyDistributionBlockingStub())
             }
             printlnCK("parseMessageResponse, success: $result")
             result

@@ -6,12 +6,12 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.UserManager
 import com.clearkeep.utilities.printlnCK
-import group.GroupGrpc
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,19 +21,17 @@ import javax.inject.Singleton
 
 @Singleton
 class GroupRepository @Inject constructor(
-        // dao
-        private val groupDAO: GroupDAO,
+    // dao
+    private val groupDAO: GroupDAO,
 
-        // network call
-        private val groupBlockingStub: GroupGrpc.GroupBlockingStub,
-        private val groupGrpc: GroupGrpc.GroupBlockingStub,
-        private val clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+    // network calls
+    private val dynamicAPIProvider: DynamicAPIProvider,
 
-        // data
-        private val messageDAO: MessageDAO,
-        private val userManager: UserManager,
-        private val senderKeyStore: InMemorySenderKeyStore,
-        private val signalProtocolStore: InMemorySignalProtocolStore,
+    // data
+    private val messageDAO: MessageDAO,
+    private val userManager: UserManager,
+    private val senderKeyStore: InMemorySenderKeyStore,
+    private val signalProtocolStore: InMemorySignalProtocolStore,
 ) {
     fun getAllRooms() = groupDAO.getRoomsAsState()
 
@@ -57,7 +55,7 @@ class GroupRepository @Inject constructor(
         val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
                 .setClientId(clientId)
                 .build()
-        val response = groupGrpc.getJoinedGroups(request)
+        val response = dynamicAPIProvider.provideGroupBlockingStub().getJoinedGroups(request)
         printlnCK("getRoomsFromAPI, ${response.lstGroupList}")
         return@withContext response.lstGroupList
     }
@@ -82,7 +80,7 @@ class GroupRepository @Inject constructor(
                 .addAllLstClient(clients)
                 .setGroupType(getGroupType(isGroup))
                 .build()
-            val response = groupBlockingStub.createGroup(request)
+            val response = dynamicAPIProvider.provideGroupBlockingStub().createGroup(request)
 
             val group = convertGroupFromResponse(response)
 
@@ -104,7 +102,7 @@ class GroupRepository @Inject constructor(
                     .setClientId(invitedFriendId)
                     .setGroupId(groupId)
                     .build()
-            val response = groupBlockingStub.inviteToGroup(request)
+            val response = dynamicAPIProvider.provideGroupBlockingStub().inviteToGroup(request)
 
             return@withContext response.success
         } catch (e: Exception) {
@@ -119,7 +117,7 @@ class GroupRepository @Inject constructor(
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
                     .setGroupId(groupId)
                     .build()
-            val response = groupBlockingStub.getGroup(request)
+            val response = dynamicAPIProvider.provideGroupBlockingStub().getGroup(request)
 
             return@withContext convertGroupFromResponse(response)
         } catch (e: Exception) {
@@ -231,7 +229,7 @@ class GroupRepository @Inject constructor(
                 clientList = clientList,
                 isJoined = isRegisteredKey,
                 lastMessage = convertAndInsertLastMessageResponseFromGroup(
-                        response.lastMessage, clientBlocking,
+                        response.lastMessage, dynamicAPIProvider.provideSignalKeyDistributionBlockingStub(),
                         senderKeyStore, signalProtocolStore
                 ),
                 lastMessageAt = response.lastMessageAt,
