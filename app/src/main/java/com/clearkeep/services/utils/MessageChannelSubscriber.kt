@@ -54,6 +54,8 @@ class MessageChannelSubscriber(
 
         messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
                 override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
+                    printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
+                            ", from workspace = ${value.fromClientWorkspaceDomain}, groupId = ${value.groupId} to client id = ${value.clientId}, workspace = $domain")
                     onMessageSubscriberListener.onMessageReceived(value, domain)
                 }
 

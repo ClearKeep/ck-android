@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.repo.AuthRepository
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.BASE_URL
 import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.isValidEmail
@@ -17,9 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest
-import com.facebook.appevents.AppEventsLogger;
 
 
 class LoginViewModel @Inject constructor(
@@ -34,8 +32,7 @@ class LoginViewModel @Inject constructor(
     var loginFacebookManager=LoginManager.getInstance()
 
     var isCustomServer: Boolean = false
-    var port: String = ""
-    var url: String = ""
+    var customDomain: String = ""
 
     val isLoading: LiveData<Boolean>
         get() = _isLoading
@@ -62,6 +59,7 @@ class LoginViewModel @Inject constructor(
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(context, googleSignIn)
+        googleSignInClient.signOut()
     }
 
     fun initMicrosoftSignIn(context: Context,onSuccess: (()->Unit),onError: ((String?)->Unit)){
@@ -70,6 +68,7 @@ class LoginViewModel @Inject constructor(
                 IPublicClientApplication.ISingleAccountApplicationCreatedListener {
                 override fun onCreated(application: ISingleAccountPublicClientApplication?) {
                     mSingleAccountApp = application
+                    mSingleAccountApp?.signOut()
                     onSuccess.invoke()
                 }
 
@@ -143,7 +142,7 @@ class LoginViewModel @Inject constructor(
         return result
     }
 
-    private fun getDomain(): String {
-        return if (isCustomServer) "$url:$port" else "$BASE_URL:$PORT"
+    fun getDomain(): String {
+        return if (isCustomServer) "$customDomain" else "$BASE_URL:$PORT"
     }
 }

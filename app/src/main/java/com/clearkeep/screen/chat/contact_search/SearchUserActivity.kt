@@ -7,7 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.components.CKTheme
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class SearchUserActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToRoomScreen(friend: People) {
+    private fun navigateToRoomScreen(friend: User) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friend.id)
         startActivity(intent)

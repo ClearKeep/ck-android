@@ -31,7 +31,8 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.main.MainPreparingActivity
+import com.clearkeep.screen.chat.home.MainActivity
+import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -62,11 +63,23 @@ class LoginActivity : AppCompatActivity() {
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
     val callbackManager = CallbackManager.Factory.create()
 
+    private var isJoinServer: Boolean = false
+
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp()
+        }
+
+        isJoinServer = intent.getBooleanExtra(IS_JOIN_SERVER, false)
+        if (isJoinServer) {
+            val domain = intent.getStringExtra(SERVER_DOMAIN)
+            if(domain.isNullOrBlank()) {
+                throw IllegalArgumentException("join server with domain must be not null")
+            }
+            loginViewModel.isCustomServer = true
+            loginViewModel.customDomain = domain
         }
         subscriberError()
     }
@@ -128,8 +141,11 @@ class LoginActivity : AppCompatActivity() {
                         onLoginFacebook={
                             loginFacebook()
                         },
-                        advanceSetting={
-                            navigateToAdvanceSetting(navController)
+                        advanceSetting= {
+                            if (isJoinServer) null
+                            else {
+                                navigateToAdvanceSetting(navController)
+                            }
                         },
                         isLoading = isLoadingState.value ?: false,
                         )
@@ -163,13 +179,13 @@ class LoginActivity : AppCompatActivity() {
                 }
                 composable("advance_setting") {
                     CustomServerScreen(
-                        onBackPress = { isCustom, url, port ->
+                        onBackPress = { isCustom, url ->
                             loginViewModel.isCustomServer = isCustom
-                            loginViewModel.url = url
-                            loginViewModel.port = port
+                            loginViewModel.customDomain = url
                             onBackPressed()
                         },
-                        loginViewModel.isCustomServer, loginViewModel.url, loginViewModel.port
+                        loginViewModel.isCustomServer,
+                        loginViewModel.customDomain
                     )
                 }
             }
@@ -198,13 +214,16 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, MainPreparingActivity::class.java))
+        val intent = Intent(this, SplashActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
         finish()
     }
 
     private fun navigateToRegisterActivity() {
-        startActivity(Intent(this, RegisterActivity::class.java))
-        /*AppCall.call(this, "", 1234, "dai", "", "", false)*/
+        val intent = Intent(this, RegisterActivity::class.java)
+        intent.putExtra(RegisterActivity.DOMAIN, loginViewModel.getDomain())
+        startActivity(intent)
     }
 
     private fun navigateToForgotActivity() {
@@ -315,6 +334,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     data class ErrorMessage(val title:String, val message: String)
+
+    companion object {
+        const val IS_JOIN_SERVER = "is_join_server"
+        const val SERVER_DOMAIN = "server_url_join"
+    }
 }
 
 

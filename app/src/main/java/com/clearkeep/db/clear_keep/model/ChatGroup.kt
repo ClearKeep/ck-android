@@ -24,9 +24,12 @@ data class ChatGroup(
         @ColumnInfo(name = "updated_at") val updateAt: Long,
         @ColumnInfo(name = "group_rtc_token") val rtcToken: String,
 
-        @ColumnInfo(name = "lst_client") val clientList: List<People>,
+        @ColumnInfo(name = "lst_client") val clientList: List<User>,
 
         @ColumnInfo(name = "is_registered_to_group") val isJoined: Boolean = false,
+
+        @ColumnInfo(name = "owner_domain") val ownerDomain: String,
+        @ColumnInfo(name = "owner_client_id") val ownerClientId: String,
 
         @Nullable
         @ColumnInfo(name = "last_message") val lastMessage: Message?,
@@ -42,4 +45,7 @@ data class ChatGroup(
         override fun toString(): String {
                 return "groupName = $groupName, groupType = $groupType, isJoined = $isJoined, clientList = $clientList"
         }
+
+        val owner: Owner
+                get() = Owner(ownerDomain, ownerClientId)
 }

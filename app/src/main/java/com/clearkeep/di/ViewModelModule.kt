@@ -3,18 +3,16 @@ package com.clearkeep.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.screen.auth.forgot.ForgotViewModel
-import com.clearkeep.screen.chat.main.chat_history.ChatViewModel
-import com.clearkeep.screen.chat.main.contact_list.PeopleViewModel
+import com.clearkeep.screen.chat.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
-import com.clearkeep.screen.chat.main.MainViewModel
-import com.clearkeep.screen.chat.main.profile.ProfileViewModel
+import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
-import com.clearkeep.screen.chat.main.MainPreparingViewModel
-import com.clearkeep.screen.chat.main.home.HomeViewModel
+import com.clearkeep.screen.chat.home.HomeViewModel
+import com.clearkeep.screen.chat.settings.ServerSettingViewModel
 import com.clearkeep.screen.videojanus.CallViewModel
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
@@ -44,11 +42,6 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(ChatViewModel::class)
-    abstract fun bindGroupChatViewModel(chatViewModel: ChatViewModel): ViewModel
-
-    @Binds
-    @IntoMap
     @ViewModelKey(PeopleViewModel::class)
     abstract fun bindPeopleViewModel(peopleViewModel: PeopleViewModel): ViewModel
 
@@ -69,18 +62,13 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(MainViewModel::class)
-    abstract fun bindMainViewModel(mainViewModel: MainViewModel): ViewModel
-
-    @Binds
-    @IntoMap
     @ViewModelKey(HomeViewModel::class)
     abstract fun bindHomeViewModel(homeViewModel: HomeViewModel): ViewModel
 
     @Binds
     @IntoMap
-    @ViewModelKey(MainPreparingViewModel::class)
-    abstract fun bindHomePreparingViewModel(homePreparingViewModel: MainPreparingViewModel): ViewModel
+    @ViewModelKey(ServerSettingViewModel::class)
+    abstract fun bindServerSettingViewModel(serverSettingViewModel: ServerSettingViewModel): ViewModel
 
     @Binds
     @IntoMap

@@ -2,7 +2,6 @@ package com.clearkeep.screen.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -16,25 +15,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextButton
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.TextButtonType
 import com.clearkeep.components.grayscaleBlack
-import com.clearkeep.components.primaryDefault
 
 @Composable
 fun RegisterScreen(
     registerViewModel: RegisterViewModel,
     onRegisterPressed: (email: String, userName: String, password: String, confirmPassword: String) -> Unit,
     onBackPress: () -> Unit,
-    advanceSetting: (()->Unit),
     isLoading: Boolean = false
 ) {
     val email = remember { mutableStateOf("") }
@@ -157,18 +151,6 @@ fun RegisterScreen(
                     )
                 }
             }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            CKTextButton(
-                modifier = Modifier.padding(0.dp),
-                stringResource(R.string.advance_server_settings),
-                onClick ={advanceSetting?.invoke()} ,
-                enabled = !isLoading,
-                textButtonType = TextButtonType.White
-            )
         }
     }
 }
