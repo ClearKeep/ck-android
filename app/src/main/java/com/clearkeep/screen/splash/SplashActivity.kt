@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.auth.login.LoginActivity
-import com.clearkeep.screen.chat.main.MainPreparingActivity
+import com.clearkeep.screen.chat.home.MainActivity
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -48,12 +48,17 @@ class SplashActivity : AppCompatActivity() {
     private fun nextNavigation() {
         GlobalScope.launch(context = Dispatchers.Main) {
             delay(1000)
-            if (splashViewModel.isUserRegistered) navigateToHomeActivity() else navigateToLoginActivity()
+            if (splashViewModel.isUserRegistered()) {
+                splashViewModel.setupEnvironment()
+                navigateToHomeActivity()
+            } else navigateToLoginActivity()
         }
     }
 
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, MainPreparingActivity::class.java))
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
         finish()
     }
 

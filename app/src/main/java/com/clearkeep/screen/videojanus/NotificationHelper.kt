@@ -22,8 +22,8 @@ import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.main.MainActivity
+import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.screen.chat.home.MainActivity
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 
@@ -32,13 +32,13 @@ fun showMessagingStyleNotification(
     chatGroup: ChatGroup,
     message: Message,
 ) {
-    val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown", "")
+    val sender = chatGroup.clientList.find { it.id == message.senderId } ?: User("", "unknown", "")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
-    sender: People,
+    sender: User,
     message: Message
 ) {
     val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
@@ -123,7 +123,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
 fun showMessageNotificationToSystemBar(
     context: Context,
-    me: People,
+    me: User,
     chatGroup: ChatGroup,
     messages: List<Message>,
 ) {

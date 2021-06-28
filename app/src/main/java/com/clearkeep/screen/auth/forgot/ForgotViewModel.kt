@@ -2,7 +2,7 @@ package com.clearkeep.screen.auth.forgot
 
 import androidx.lifecycle.*
 import auth.AuthOuterClass
-import com.clearkeep.repo.AuthRepository
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
 
@@ -16,7 +16,7 @@ class ForgotViewModel @Inject constructor(
 
     suspend fun recoverPassword(email: String): Resource<AuthOuterClass.BaseResponse> {
         _isLoading.value = true
-        val res = loginRepository.recoverPassword(email.trim())
+        val res = loginRepository.recoverPassword(email.trim(), "")
         _isLoading.value = false
         return res
     }

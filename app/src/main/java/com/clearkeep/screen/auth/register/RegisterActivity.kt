@@ -17,16 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
-import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
-import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -44,6 +37,13 @@ class RegisterActivity : AppCompatActivity() {
     @ExperimentalAnimationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val domain = intent.getStringExtra(DOMAIN)
+        if (domain.isNullOrBlank()) {
+            throw IllegalArgumentException("domain must be not null for register account")
+        }
+        registerViewModel.domain = domain
+
         setContent {
             MyApp()
         }
@@ -60,27 +60,11 @@ class RegisterActivity : AppCompatActivity() {
     @ExperimentalAnimationApi
     @Composable
     fun AppContent() {
-        val navController = rememberNavController()
-        NavHost(navController, startDestination = "register"){
-            composable("register"){
-                MainContent(navController)
-            }
-            composable("advance_setting") {
-                CustomServerScreen(
-                    onBackPress = { isCustom, url, port ->
-                        registerViewModel.isCustomServer = isCustom
-                        registerViewModel.url = url
-                        registerViewModel.port = port
-                        onBackPressed()
-                    },
-                    registerViewModel.isCustomServer, registerViewModel.url, registerViewModel.port
-                )
-            }
-        }
+        MainContent()
     }
 
     @Composable
-    fun MainContent(navController: NavHostController) {
+    fun MainContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
@@ -92,7 +76,6 @@ class RegisterActivity : AppCompatActivity() {
                     setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
-                    /*showLoginError(res.message ?: "unknown")*/
                 }
             }
         }
@@ -103,9 +86,6 @@ class RegisterActivity : AppCompatActivity() {
                 onRegisterPressed = onRegisterPressed,
                 onBackPress = {
                     finish()
-                },
-                advanceSetting = {
-                    navigateToAdvanceSetting(navController)
                 },
                 isLoading = isLoadingState.value ?: false
             )
@@ -152,7 +132,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToAdvanceSetting(navController: NavController){
-        navController.navigate("advance_setting")
+    companion object {
+        const val DOMAIN = "domain"
     }
 }
