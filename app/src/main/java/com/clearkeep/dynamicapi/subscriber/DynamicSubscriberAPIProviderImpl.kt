@@ -17,7 +17,6 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
         }
 
         val managedChannel = createNewChannel(domain)
-        mChannelMap[domain] = managedChannel
 
         return NotifyGrpc.newStub(managedChannel)
     }
@@ -27,7 +26,6 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
             throw IllegalArgumentException("domain must be not blank")
         }
         val managedChannel = createNewChannel(domain)
-        mChannelMap[domain] = managedChannel
         return NotifyGrpc.newBlockingStub(managedChannel)
     }
 
@@ -37,7 +35,6 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
         }
 
         val managedChannel = createNewChannel(domain)
-        mChannelMap[domain] = managedChannel
         return MessageGrpc.newBlockingStub(managedChannel)
     }
 
@@ -47,7 +44,6 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
         }
 
         val managedChannel = createNewChannel(domain)
-        mChannelMap[domain] = managedChannel
         return MessageGrpc.newStub(managedChannel)
     }
 
@@ -57,6 +53,12 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
     }
 
     private fun createNewChannel(domain: String) : ManagedChannel {
-        return ManagedChannelImpl().createManagedChannel(domain);
+        return if (mChannelMap[domain] != null)
+            mChannelMap[domain]!!
+        else {
+            val newChannel = ManagedChannelImpl().createManagedChannel(domain)
+            mChannelMap[domain] = newChannel
+            newChannel
+        }
     }
 }

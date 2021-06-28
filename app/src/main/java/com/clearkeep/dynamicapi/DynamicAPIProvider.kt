@@ -1,6 +1,7 @@
 package com.clearkeep.dynamicapi
 
 import auth.AuthGrpc
+import com.clearkeep.db.clear_keep.model.Server
 import group.GroupGrpc
 import message.MessageGrpc
 import notification.NotifyGrpc
@@ -10,7 +11,7 @@ import user.UserGrpc
 import video_call.VideoCallGrpc
 
 interface DynamicAPIProvider {
-    fun setUpDomain(domain: String)
+    fun setUpDomain(server: Server)
 
     fun provideSignalKeyDistributionGrpc(): SignalKeyDistributionGrpc.SignalKeyDistributionStub
 

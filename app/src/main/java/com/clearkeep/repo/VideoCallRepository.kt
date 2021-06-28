@@ -5,7 +5,6 @@ import com.clearkeep.utilities.*
 import com.clearkeep.utilities.CALL_TYPE_VIDEO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import video_call.VideoCallGrpc
 import video_call.VideoCallOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,8 +13,6 @@ import javax.inject.Singleton
 class VideoCallRepository @Inject constructor(
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
-
-    private val userManager: UserManager,
 ) {
     suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
         printlnCK("requestVideoCall: groupId = $groupId")

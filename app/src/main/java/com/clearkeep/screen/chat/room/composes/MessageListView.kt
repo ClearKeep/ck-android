@@ -5,7 +5,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
@@ -19,14 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
-import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.screen.chat.room.message_display_generator.convertMessageList
-import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.getTimeAsString
-import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 
 var mIsNewMessage = true
@@ -36,7 +32,7 @@ var mIsNewMessage = true
 @Composable
 fun MessageListView(
     messageList: List<Message>,
-    clients: List<People>,
+    clients: List<User>,
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true
@@ -55,7 +51,7 @@ fun MessageListView(
 @Composable
 private fun MessageListView(
     messageList: List<Message>,
-    clients: List<People>,
+    clients: List<User>,
     myClientId: String,
     isGroup: Boolean,
 ) {

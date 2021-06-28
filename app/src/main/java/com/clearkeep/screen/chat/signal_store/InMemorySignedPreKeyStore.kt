@@ -30,7 +30,7 @@ class InMemorySignedPreKeyStore(
             }
 
             if (record == null) {
-                throw InvalidKeyIdException("InMemorySignedPreKeyStore, No such prekeyrecord!")
+                throw InvalidKeyIdException("CKLog_InMemorySignedPreKeyStore, No such prekeyrecord! for $signedPreKeyId")
             }
             SignedPreKeyRecord(record)
         } catch (e: IOException) {

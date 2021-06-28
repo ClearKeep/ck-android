@@ -10,13 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKRadioButton
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 
 @Composable
 fun FriendListItemSelectable(
-    friend: People,
+    friend: User,
     isSelected: Boolean,
-    onFriendSelected: (people: People, isAdd: Boolean) -> Unit,
+    onFriendSelected: (people: User, isAdd: Boolean) -> Unit,
 ) {
     Column(modifier = Modifier
         .selectable(

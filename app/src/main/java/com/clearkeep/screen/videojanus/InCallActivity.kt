@@ -25,8 +25,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
-import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MultiServerRepository
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.CallState
@@ -34,7 +35,6 @@ import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePositionFactory
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.UserManager
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call.*
@@ -85,10 +85,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     lateinit var videoCallRepository: VideoCallRepository
 
     @Inject
-    lateinit var groupRepository: GroupRepository
+    lateinit var groupRepository: MultiServerRepository
 
     @Inject
-    lateinit var userManager: UserManager
+    lateinit var environment: Environment
 
     // surface and render
     private lateinit var rootEglBase: EglBase
@@ -218,7 +218,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     override fun onPermissionsAvailable() {
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
-            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong())
+            // TODO
+            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(), "", "")
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -683,7 +684,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val renders = remoteRenders.values
 
-        val me = group?.clientList?.find { it.id == userManager.getClientId() }
+        val me = group?.clientList?.find { it.id == environment.getServer().profile.id }
         val surfaceGenerator =
             SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
 

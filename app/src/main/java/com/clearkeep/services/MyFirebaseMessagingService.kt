@@ -1,12 +1,11 @@
 package com.clearkeep.services
 
-import android.content.Intent
 import android.util.Base64
 import android.util.Log
-import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.repo.ChatRepository
-import com.clearkeep.repo.GroupRepository
-import com.clearkeep.repo.MessageRepository
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.screen.chat.repo.ChatRepository
+import com.clearkeep.repo.MultiServerRepository
+import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -29,13 +28,10 @@ import java.util.HashMap
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
-    lateinit var userManager: UserManager
-
-    @Inject
     lateinit var chatRepository: ChatRepository
 
     @Inject
-    lateinit var groupRepository: GroupRepository
+    lateinit var groupRepository: MultiServerRepository
 
     @Inject
     lateinit var messageRepository: MessageRepository
@@ -62,7 +58,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private fun handleRequestCall(remoteMessage: RemoteMessage) {
         val toClientId = remoteMessage.data["client_id"]
-        if (toClientId == userManager.getClientId()) {
+        /*if (toClientId == userManager.getClientId()) {*/
             val groupId = remoteMessage.data["group_id"]
             val groupType = remoteMessage.data["group_type"]?: ""
             val groupName = remoteMessage.data["group_name"]?: ""
@@ -86,11 +82,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
             AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
-                userManager.getClientId(), fromClientName, avatar,
+                toClientId, fromClientName, avatar,
                 turnUrl, turnUser, turnPass,
                 webRtcGroupId, webRtcUrl,
                 stunUrl)
-        }
+        /*}*/
     }
 
     private fun handleNewMessage(remoteMessage: RemoteMessage) {
@@ -98,11 +94,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val data: Map<String, String> = Gson().fromJson(
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
-        if (toClientId == userManager.getClientId()) {
-            val id = data["id"] ?: ""
+        /*if (toClientId == userManager.getClientId()) {*/
+            /*val id = data["id"] ?: ""
             val clientId = data["client_id"] ?: ""
+        val domain = data["domain"] ?: ""
             val createdAt = data["created_at"]?.toLong() ?: 0
             val fromClientID = data["from_client_id"] ?: ""
+        val fromDomain = data["from_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val groupType = data["group_type"] ?: ""
             val messageUTF8AsBytes = (data["message"] ?: "").toByteArray(StandardCharsets.UTF_8)
@@ -110,10 +108,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val messageContent: ByteString = ByteString.copyFrom(messageBase64)
             GlobalScope.launch {
                 try {
-                    val decryptedMessage = chatRepository.decryptMessage(
-                        id, groupId, groupType, fromClientID,
+                    val decryptedMessage = messageRepository.decryptMessage(
+                        id, groupId, groupType,
+                        fromClientID, fromDomain,
                         clientId, createdAt, createdAt,
-                        messageContent
+                        messageContent,
+                        Owner(domain, clientId)
                     )
 
                     Log.i(TAG, "onMessageReceived: decrypted -> ${decryptedMessage.message}")
@@ -130,12 +130,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 } catch (e: Exception) {
                     Log.w(TAG, "onMessageReceived: error -> $e")
                 }
-            }
-        }
+            }*/
+        /*}*/
     }
 
     private fun handleCancelCall(groupId: String) {
-        GlobalScope.launch {
+        /*GlobalScope.launch {
             val groupAsyncRes = async { groupRepository.getGroupByID(groupId.toLong()) }
             val group = groupAsyncRes.await()
             if (group != null ) {
@@ -144,7 +144,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
                 sendBroadcast(endIntent)
             }
-        }
+        }*/
     }
 
     override fun onNewToken(token: String) {
