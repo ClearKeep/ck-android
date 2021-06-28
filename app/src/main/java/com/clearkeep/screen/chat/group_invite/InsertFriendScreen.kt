@@ -13,13 +13,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.clearkeep.components.base.*
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
 
 @Composable
 fun InsertFriendScreen(
     navController: NavHostController,
-    onInsertFriend: (people: People) -> Unit,
+    onInsertFriend: (people: User) -> Unit,
 ) {
     val link = remember {mutableStateOf("")}
 

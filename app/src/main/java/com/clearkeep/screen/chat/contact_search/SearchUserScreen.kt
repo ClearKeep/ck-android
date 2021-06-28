@@ -15,13 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
 
 @Composable
 fun SearchUserScreen(
     searchViewModel: SearchViewModel,
-    onFinish: (people: People?) -> Unit
+    onFinish: (people: User?) -> Unit
 ) {
     val friends = searchViewModel.friends.observeAsState()
     Column(
@@ -72,8 +72,8 @@ fun SearchUserScreen(
 
 @Composable
 fun FriendItem(
-    friend: People,
-    onFriendSelected: (People) -> Unit,
+    friend: User,
+    onFriendSelected: (User) -> Unit,
 ) {
     Column(modifier = Modifier
         .clickable(onClick = { onFriendSelected(friend) }, enabled = true)
