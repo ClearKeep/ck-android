@@ -23,8 +23,8 @@ class InviteGroupViewModel @Inject constructor(
 
         val filterFriends = liveData<List<User>> {
                 val result = MediatorLiveData<List<User>>()
-                result.addSource(friends) { friendList ->
-                        result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
+                result.addSource(friends) { _ ->
+                   //     result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
                 }
                 result.addSource(textSearch) { text ->
                         result.value = getFilterFriends(friends.value ?: emptyList(), text)
@@ -38,7 +38,9 @@ class InviteGroupViewModel @Inject constructor(
 
         fun insertFriend(people: User) {
                 viewModelScope.launch {
-                        peopleRepository.insertFriend(people, owner = getOwner())
+                        val hasPeople = peopleRepository.getFriends().value?.find { it == people }
+                        if (hasPeople == null)
+                                peopleRepository.insertFriend(people, owner = getOwner())
                 }
         }
 

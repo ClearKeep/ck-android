@@ -5,16 +5,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.User
 
 @Composable
 fun FriendListItem(
     friend: User,
-    onFriendSelected: ((people: User) -> Unit)?= null,
+    onFriendSelected: ((people: User) -> Unit)? = null,
 ) {
     Column(modifier = Modifier
         .clickable {
@@ -23,7 +26,10 @@ fun FriendListItem(
             }
         }
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
@@ -31,16 +37,46 @@ fun FriendListItem(
                 friend.userName,
                 size = 64.dp
             )
-            Column(modifier = Modifier
-                .padding(start = 16.dp)
-                .weight(1.0f, true)) {
-                Text(text = friend.userName,
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(1.0f, true)
+            ) {
+                Text(
+                    text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colors.onBackground
                     ),
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun FriendListItemInfo(
+    friend: User,
+    onFriendSelected: ((people: User) -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .clickable {
+                if (onFriendSelected != null) {
+                    onFriendSelected(friend)
+                }
+            }
+    ) {
+        Row(
+            modifier = Modifier
+                .wrapContentSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircleAvatar(
+                emptyList(),
+                friend.userName,
+                size = 36.dp
+            )
         }
     }
 }
