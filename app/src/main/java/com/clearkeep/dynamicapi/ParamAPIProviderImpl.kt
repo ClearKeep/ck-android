@@ -10,7 +10,9 @@ import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
 import javax.inject.Inject
-
+/*
+* runtime server
+* */
 class ParamAPIProviderImpl @Inject constructor(
     private val channelSelector: ChannelSelector,
 ) : ParamAPIProvider {
