@@ -7,6 +7,7 @@ package com.clearkeep.screen.chat.signal_store
 
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.db.signal_key.model.SignalPreKey
+import com.clearkeep.utilities.printlnCK
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.PreKeyStore
@@ -20,6 +21,7 @@ class InMemoryPreKeyStore(
 
     @Throws(InvalidKeyIdException::class)
     override fun loadPreKey(preKeyId: Int): PreKeyRecord {
+        printlnCK("loadPreKey: $preKeyId")
         return try {
             var record = store[preKeyId]
             if (record == null) {
@@ -30,7 +32,7 @@ class InMemoryPreKeyStore(
             }
 
             if (record == null) {
-                throw InvalidKeyIdException("InMemoryPreKeyStore, No such prekeyrecord!")
+                throw InvalidKeyIdException("CKLog_InMemoryPreKeyStore, No such prekeyrecord for $preKeyId")
             }
             PreKeyRecord(record)
         } catch (e: IOException) {

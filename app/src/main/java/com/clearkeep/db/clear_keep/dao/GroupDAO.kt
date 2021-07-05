@@ -19,8 +19,9 @@ interface GroupDAO {
     @Update
     suspend fun update(vararg group: ChatGroup)
 
-    @Query("SELECT * FROM chatgroup WHERE id = :groupId LIMIT 1")
-    suspend fun getGroupById(groupId: Long): ChatGroup?
+    //@Query("SELECT * FROM chatgroup WHERE id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
+    @Query("SELECT * FROM chatgroup WHERE id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
+    suspend fun getGroupById(groupId: Long, domain: String, ownerId: String): ChatGroup?
 
     @Query("SELECT * FROM chatgroup WHERE group_type = \"peer\"")
     suspend fun getPeerGroups(): List<ChatGroup>

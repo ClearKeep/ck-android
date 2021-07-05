@@ -1,6 +1,5 @@
 package com.clearkeep.screen.auth.login
 
-import android.widget.Advanceable
 import androidx.compose.foundation.Image
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -115,17 +114,19 @@ fun LoginScreen(
                             textButtonType = TextButtonType.White
                         )
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        CKTextButton(
-                            modifier = Modifier.padding(0.dp),
-                            stringResource(R.string.advance_server_settings),
-                            onClick ={advanceSetting?.invoke()} ,
-                            enabled = !isLoading,
-                            textButtonType = TextButtonType.White
-                        )
+                    advanceSetting?.let {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            CKTextButton(
+                                modifier = Modifier.padding(0.dp),
+                                stringResource(R.string.advance_server_settings),
+                                onClick ={it.invoke()} ,
+                                enabled = !isLoading,
+                                textButtonType = TextButtonType.White
+                            )
+                        }
                     }
                 }
 

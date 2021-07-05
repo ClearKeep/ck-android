@@ -3,13 +3,10 @@ package com.clearkeep.di
 import android.app.Application
 import androidx.room.Room
 import com.clearkeep.db.*
-import com.clearkeep.db.clear_keep.dao.GroupDAO
-import com.clearkeep.db.clear_keep.dao.MessageDAO
-import com.clearkeep.db.clear_keep.dao.PeopleDao
-import com.clearkeep.db.clear_keep.dao.UserDao
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.SignalKeyDatabase
+import com.clearkeep.db.clear_keep.dao.*
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -33,7 +30,7 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideUserDao(db: ClearKeepDatabase): UserDao {
+    fun provideUserDao(db: ClearKeepDatabase): ProfileDao {
         return db.userDao()
     }
 
@@ -51,8 +48,14 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun providePeopleDAO(db: ClearKeepDatabase): PeopleDao {
+    fun providePeopleDAO(db: ClearKeepDatabase): UserDao {
         return db.peopleDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideServerDao(db: ClearKeepDatabase): ServerDAO {
+        return db.serverDao()
     }
 
     @Singleton

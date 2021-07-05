@@ -3,7 +3,7 @@ package com.clearkeep.screen.chat.room.message_display_generator
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import kotlin.collections.ArrayList
 
 
@@ -12,7 +12,7 @@ val roundSizeSmall = 4.dp
 
 fun convertMessageList(
     messages: List<Message>,
-    clients: List<People>,
+    clients: List<User>,
     myClientId: String,
     isGroup: Boolean,
 ): List<MessageDisplayInfo> {
