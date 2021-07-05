@@ -16,4 +16,9 @@ data class Message(
     @ColumnInfo(name = "message") val message: String,
     @ColumnInfo(name = "created_time") val createdTime: Long,
     @ColumnInfo(name = "updated_time") val updatedTime: Long,
-)
+    @ColumnInfo(name = "owner_domain") val ownerDomain: String,
+    @ColumnInfo(name = "owner_client_id") val ownerClientId: String,
+) {
+    val owner: Owner
+        get() = Owner(ownerDomain, ownerClientId)
+}

@@ -36,14 +36,12 @@ import com.clearkeep.components.base.CKTopAppBarSample
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
-    onBackPress: (isCustom: Boolean, url: String, port: String) -> Unit,
+    onBackPress: (isCustom: Boolean, url: String) -> Unit,
     isCustom: Boolean,
     url: String,
-    port: String
 ) {
     val useCustomServerChecked = remember { mutableStateOf(isCustom) }
     val rememberServerUrl = remember { mutableStateOf(url) }
-    val rememberPort = remember { mutableStateOf(port) }
     val (showDialog, setShowDialog) = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
@@ -64,13 +62,12 @@ fun CustomServerScreen(
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
                     if (useCustomServerChecked.value
-                        && (rememberServerUrl.value.isBlank() || rememberPort.value.isBlank())) {
+                        && (rememberServerUrl.value.isBlank())) {
                         setShowDialog("Please enter server url and port")
                     } else {
                         onBackPress(
                             useCustomServerChecked.value,
                             rememberServerUrl.value,
-                            rememberPort.value
                         )
                     }
                 }
@@ -139,13 +136,6 @@ fun CustomServerScreen(
                                     singleLine = true,
                                 )
                             }
-                            CKTextInputField(
-                                "Port",
-                                rememberPort,
-                                modifier = Modifier.width(76.dp),
-                                keyboardType = KeyboardType.Text,
-                                singleLine = true,
-                            )
                         }
 
                     }
