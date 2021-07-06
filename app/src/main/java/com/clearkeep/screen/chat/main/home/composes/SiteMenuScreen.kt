@@ -1,5 +1,9 @@
 package com.clearkeep.screen.chat.main.home.composes
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -7,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -15,18 +20,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.navigation.NavController
 import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
+import com.clearkeep.screen.chat.main.MainViewModel
 import com.clearkeep.screen.chat.main.home.HomeViewModel
 import com.clearkeep.screen.chat.main.profile.LogoutConfirmDialog
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
@@ -96,7 +107,7 @@ fun SiteMenuScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.size(16.dp))
-                            HeaderSite(profileViewModel)
+                            HeaderSite(profileViewModel, homeViewModel)
                             Spacer(modifier = Modifier.size(24.dp))
                             Divider(color = grayscale3)
                             SettingGeneral(navController) {
@@ -112,7 +123,7 @@ fun SiteMenuScreen(
                     Row(modifier = Modifier
                         .padding(top = 38.dp, bottom = 38.dp)
                         .align(Alignment.BottomCenter)
-                        .clickable { },
+                        .clickable { onLogout() },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -138,7 +149,8 @@ fun SiteMenuScreen(
 }
 
 @Composable
-fun HeaderSite(profileViewModel: ProfileViewModel) {
+fun HeaderSite(profileViewModel: ProfileViewModel, homeViewModel: HomeViewModel) {
+    val context = LocalContext.current
     val profile = profileViewModel.profile.observeAsState()
     var expanded by remember { mutableStateOf(false) }
 
@@ -163,7 +175,28 @@ fun HeaderSite(profileViewModel: ProfileViewModel) {
                     )
                 }
             }
+
             StatusDropdown(expanded, onDismiss = { expanded = false })
+
+            ConstraintLayout(Modifier.fillMaxWidth()) {
+                val text = createRef()
+                val image = createRef()
+                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
+                    linkTo(parent.start, image.start, endMargin = 4.dp)
+                    width = Dimension.fillToConstraints
+                })
+                IconButton(
+                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) }, Modifier.size(18.dp).constrainAs(image) {
+                        end.linkTo(parent.end)
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.ContentCopy,
+                        contentDescription = "",
+                        tint = primaryDefault
+                    )
+                }
+            }
         }
     }
 }
@@ -254,4 +287,11 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
 @Composable
 fun StatusItemPreview() {
     StatusItem({}, Color.Red, "Busy")
+}
+
+private fun copyProfileLinkToClipBoard(context: Context, label: String, text: String) {
+    val clipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText(label, text)
+    clipboard.setPrimaryClip(clip)
+    Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
 }

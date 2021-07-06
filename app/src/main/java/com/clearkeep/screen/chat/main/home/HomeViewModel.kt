@@ -4,6 +4,7 @@ import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.repo.*
+import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.UserManager
 import javax.inject.Inject
 
@@ -54,5 +55,9 @@ class HomeViewModel @Inject constructor(
 
     private fun getServerDomain(): String {
         return userManager.getWorkspaceDomain()
+    }
+
+    fun getProfileLink() : String {
+        return getLinkFromPeople(userManager.getUser())
     }
 }
