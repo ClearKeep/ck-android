@@ -9,6 +9,7 @@ import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
+import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.FIREBASE_TOKEN
@@ -21,7 +22,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
-    private val roomRepository: MultiServerRepository,
+    private val roomRepository: GroupRepository,
     private val serverRepository: ServerRepository,
     private val profileRepository: ProfileRepository,
 

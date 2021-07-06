@@ -31,11 +31,11 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.home.MainActivity
 import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.restartToRoot
 import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,9 +46,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
-
 import com.facebook.login.LoginResult
-
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -108,7 +106,7 @@ class LoginActivity : AppCompatActivity() {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
                     ?: return@launch
                 if (res.status == Status.SUCCESS) {
-                    navigateToHomeActivity()
+                    onLoginSuccess()
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(ErrorMessage(title = "Error",message = res.message.toString()))
                 }
@@ -213,6 +211,14 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+    private fun onLoginSuccess() {
+        if (isJoinServer) {
+            restartToRoot(this)
+        } else {
+            navigateToHomeActivity()
+        }
+    }
+
     private fun navigateToHomeActivity() {
         val intent = Intent(this, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -298,7 +304,7 @@ class LoginActivity : AppCompatActivity() {
     fun onSignInResult(res: Resource<AuthOuterClass.AuthRes>?) {
         when (res?.status) {
             Status.SUCCESS -> {
-                navigateToHomeActivity()
+                onLoginSuccess()
             }
             Status.ERROR -> {
                 showErrorDiaLog?.invoke(ErrorMessage("Error",res.message ?: "unknown"))
