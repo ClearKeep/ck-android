@@ -60,6 +60,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val showSummaryIntent = Intent(context, ShowSummaryNotificationReceiver::class.java)
     showSummaryIntent.putExtra(EXTRA_GROUP_ID, message.groupId)
+    showSummaryIntent.putExtra(EXTRA_OWNER_CLIENT, message.ownerClientId)
+    showSummaryIntent.putExtra(EXTRA_OWNER_DOMAIN, message.ownerDomain)
     val pendingShowSummaryIntent = PendingIntent.getBroadcast(context, 0, showSummaryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)

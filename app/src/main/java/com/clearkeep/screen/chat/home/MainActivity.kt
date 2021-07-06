@@ -33,6 +33,7 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
+import com.clearkeep.utilities.restartToRoot
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
@@ -170,7 +171,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     private fun subscriberLogout() {
         homeViewModel.isLogOutCompleted.observe(this, { completed ->
             if (completed) {
-                restartActivityToRoot()
+                restartToRoot(this)
             }
         })
     }
@@ -248,13 +249,5 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         intent.putExtra(LoginActivity.IS_JOIN_SERVER, true)
         intent.putExtra(LoginActivity.SERVER_DOMAIN, domain)
         startActivity(intent)
-    }
-
-    private fun restartActivityToRoot() {
-        printlnCK("restartActivityToRoot")
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        exitProcess(2)
     }
 }
