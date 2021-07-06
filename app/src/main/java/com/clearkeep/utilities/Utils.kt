@@ -2,19 +2,27 @@ package com.clearkeep.utilities
 
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
 import android.util.Patterns
 import com.clearkeep.BuildConfig
 import java.text.SimpleDateFormat
 import java.util.*
 import android.net.NetworkCapabilities
-
 import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
-import android.text.format.DateUtils
 import android.view.View
+import com.clearkeep.screen.splash.SplashActivity
+import kotlin.system.exitProcess
 
+fun restartToRoot(context: Context) {
+    printlnCK("restartActivityToRoot")
+    val intent = Intent(context, SplashActivity::class.java)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    context.startActivity(intent)
+    exitProcess(2)
+}
 
 fun getCurrentDateTime(): Date {
     return Calendar.getInstance().time

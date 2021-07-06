@@ -9,7 +9,6 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.MultiServerRepository
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -52,8 +51,8 @@ class MessageRepository @Inject constructor(
 
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val multiServerRepository: MultiServerRepository,
-    private val serverRepository: ServerRepository
+    private val serverRepository: ServerRepository,
+    private val groupRepository: GroupRepository,
 ) {
     fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
 
@@ -171,6 +170,7 @@ class MessageRepository @Inject constructor(
             getUnableErrorMessage(e.message)
         }
 
+        printlnCK("decryptMessage success: $messageText")
         return saveNewMessage(
             Message(
                 messageId, groupId, groupType,
@@ -185,7 +185,7 @@ class MessageRepository @Inject constructor(
         messageDAO.insert(message)
 
         val groupId = message.groupId
-        var room: ChatGroup? = multiServerRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
+        var room: ChatGroup? = groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
 
         if (room != null) {
             // update last message in room

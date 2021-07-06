@@ -19,6 +19,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
 import com.clearkeep.screen.chat.repo.ChatRepository
+import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -45,7 +46,7 @@ class ChatService : Service(),
     lateinit var messageRepository: MessageRepository
 
     @Inject
-    lateinit var multiServerRepository: MultiServerRepository
+    lateinit var groupRepository: GroupRepository
 
     @Inject
     lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
@@ -153,10 +154,10 @@ class ChatService : Service(),
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
-                    multiServerRepository.fetchGroups()
+                    groupRepository.fetchGroups()
                 }
                 "new-peer" -> {
-                    multiServerRepository.fetchGroups()
+                    groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
                     val remoteUser = peopleRepository.getFriend(value.refClientId)
@@ -172,7 +173,7 @@ class ChatService : Service(),
                     sendBroadcast(switchIntent)
                 }
                 CALL_UPDATE_TYPE_CANCEL -> {
-                    val groupAsyncRes = async { multiServerRepository.getGroupByID(value.refGroupId, domain, value.clientId) }
+                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId, domain, value.clientId) }
                     val group = groupAsyncRes.await()
                     if (group != null ) {
                         NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -187,7 +188,7 @@ class ChatService : Service(),
 
     private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message, domain: String, ownerClientId: String) {
         scope.launch {
-            val group = multiServerRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
+            val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.let {
                 if (joiningRoomId != groupId) {
                     showMessagingStyleNotification(
@@ -201,7 +202,7 @@ class ChatService : Service(),
     }
 
     private suspend fun updateMessageHistory() {
-        multiServerRepository.fetchGroups()
+        groupRepository.fetchGroups()
     }
 
     private suspend fun updateMessageAndKeyInOnlineRoom() {
@@ -209,7 +210,7 @@ class ChatService : Service(),
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = multiServerRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.id)!!
+            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.id)!!
             messageRepository.updateMessageFromAPI(group.id, Owner(currentServer.serverDomain, currentServer.profile.id), group.lastMessageSyncTimestamp)
 
             if (!group.isGroup()) {
