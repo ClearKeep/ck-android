@@ -32,7 +32,6 @@ import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.splash.SplashActivity
-import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.restartToRoot
@@ -100,7 +99,6 @@ class LoginActivity : AppCompatActivity() {
         showErrorDiaLog = {
             setShowDialog.invoke(it)
         }
-        val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
@@ -114,13 +112,13 @@ class LoginActivity : AppCompatActivity() {
         }
 
         val isLoadingState = loginViewModel.isLoading.observeAsState()
-        Box() {
+        Box {
             Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
             ) {
-                Row(/*modifier = Modifier.weight(1.0f, true)*/) {
+                Row {
                     LoginScreen(
                         loginViewModel,
                         onLoginPressed = onLoginPressed,
@@ -136,17 +134,15 @@ class LoginActivity : AppCompatActivity() {
                         onLoginMicrosoft = {
                             signInMicrosoft()
                         },
-                        onLoginFacebook={
+                        onLoginFacebook = {
                             loginFacebook()
                         },
-                        advanceSetting= {
-                            if (isJoinServer) null
-                            else {
-                                navigateToAdvanceSetting(navController)
-                            }
+                        advanceSetting = {
+                            navigateToAdvanceSetting(navController)
                         },
                         isLoading = isLoadingState.value ?: false,
-                        )
+                        isShowAdvanceSetting = !isJoinServer
+                    )
                 }
             }
 
