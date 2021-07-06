@@ -102,7 +102,7 @@ class GroupRepository @Inject constructor(
 
     suspend fun inviteToGroupFromAPI(ourClientId: String, invitedFriendId: String, groupId: Long): Boolean = withContext(Dispatchers.IO) {
         printlnCK("inviteToGroup: $invitedFriendId")
-        try {
+        /*try {
             val request = GroupOuterClass.InviteToGroupRequest.newBuilder()
                     .setFromClientId(ourClientId)
                     .setClientId(invitedFriendId)
@@ -114,7 +114,8 @@ class GroupRepository @Inject constructor(
         } catch (e: Exception) {
             printlnCK("inviteToGroup error: $e")
             return@withContext false
-        }
+        }*/
+        return@withContext true
     }
 
     private suspend fun getGroupFromAPI(groupId: Long, groupGrpc: GroupGrpc.GroupBlockingStub): ChatGroup? = withContext(Dispatchers.IO) {
@@ -219,7 +220,7 @@ class GroupRepository @Inject constructor(
 
     suspend fun updateRoom(room: ChatGroup) = groupDAO.update(room)
 
-    suspend fun convertGroupFromResponse(
+    private suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
         serverDomain: String,
         ownerId: String

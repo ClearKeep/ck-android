@@ -37,6 +37,8 @@ class HomeViewModel @Inject constructor(
 
     var profile: Profile = environment.getServer().profile
 
+    var currentServer: Server = environment.getServer()
+
     val selectingJoinServer = MutableLiveData(false)
 
     private val _prepareState = MutableLiveData<PrepareViewState>()
