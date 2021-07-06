@@ -15,6 +15,8 @@ const val PORT = BuildConfig.PORT
 // janus
 const val EXTRA_OUR_CLIENT_ID = "to"
 const val EXTRA_GROUP_ID = "call_id"
+const val EXTRA_OWNER_CLIENT = "owner_client_id"
+const val EXTRA_OWNER_DOMAIN = "owner_domain"
 const val EXTRA_GROUP_NAME = "group_name"
 const val EXTRA_GROUP_TYPE = "group_type"
 const val EXTRA_IS_AUDIO_MODE = "is_audio_mode"
