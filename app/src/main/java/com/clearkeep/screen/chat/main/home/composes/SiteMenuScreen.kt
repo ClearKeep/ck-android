@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -60,56 +61,65 @@ fun SiteMenuScreen(
                     .width(108.dp)
             ) {
             }
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(top = 20.dp, bottom = 20.dp)
-                    .background(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) Color.White else Color.White,
-                        shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
-                    ),
+                Card(Modifier.fillMaxSize().padding(top = 20.dp, bottom = 20.dp), backgroundColor = Color.White, shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp), elevation = 8.dp
+                ) {
+                    Box {
 
-                ) {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 20.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        IconButton(
-                            onClick = { closeSiteMenu.invoke() }
+                    Column {
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 20.dp)
+                                .verticalScroll(rememberScrollState())
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "",
-                                tint = MaterialTheme.colors.primaryVariant
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                            ) {
+                                IconButton(
+                                    onClick = { closeSiteMenu.invoke() }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "",
+                                        tint = MaterialTheme.colors.primaryVariant
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.size(16.dp))
+                            HeaderSite(profileViewModel)
+                            Spacer(modifier = Modifier.size(24.dp))
+                            Divider(color = grayscale3)
+                            SettingGeneral(navController) {
+                                setShowReminderDialog.invoke(true)
+                            }
+                            Divider(color = grayscale3)
+                            SettingServer(
+                                "CK Development", navController
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.size(16.dp))
-                    HeaderSite(profileViewModel)
-                    Spacer(modifier = Modifier.size(24.dp))
-                    Divider(color = grayscale3)
-                    SettingServer(
-                        "CK Development", navController
-                    )
-                    Divider(color = grayscale3)
-                    SettingGeneral(navController) {
-                        setShowReminderDialog.invoke(true)
+
+                    Row(modifier = Modifier
+                        .padding(top = 38.dp, bottom = 38.dp)
+                        .align(Alignment.BottomCenter)
+                        .clickable { },verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
+                        Icon(painter = painterResource(R.drawable.ic_logout), contentDescription = null)
+                        Text(
+                            text = "Logout", modifier = Modifier
+                                .padding(start = 16.dp), style = TextStyle(
+                                color = errorDefault ?: MaterialTheme.colors.onBackground,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
                     }
                 }
             }
         }
         LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
     }
-
-
 }
 
 @Composable
@@ -146,13 +156,14 @@ fun SettingServer(
     serverName: String, navController: NavController,
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        CKHeaderText(text = serverName, headerTextType = HeaderTextType.Normal, color = grayscale2)
-        ItemSiteSetting("Server Settings", R.drawable.ic_adjustment, {
+        CKHeaderText(text = "Server Setting", headerTextType = HeaderTextType.Normal, color = grayscale2)
+        ItemSiteSetting("Server", R.drawable.ic_adjustment, {
             navController.navigate("server_setting")
         })
-        ItemSiteSetting("Invite other", R.drawable.ic_user_plus)
-        ItemSiteSetting("Banned users", R.drawable.ic_user_off)
-        ItemSiteSetting("Leave $serverName", R.drawable.ic_logout, textColor = errorDefault)
+        ItemSiteSetting("Notification", R.drawable.ic_server_notification)
+        ItemSiteSetting("Invite", R.drawable.ic_user_plus)
+        ItemSiteSetting("Banned", R.drawable.ic_user_off)
+        ItemSiteSetting("Leave $serverName", R.drawable.ic_logout)
     }
 }
 
@@ -162,13 +173,9 @@ fun SettingGeneral(
     onClickAction: () -> Unit
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        CKHeaderText(text = "General", headerTextType = HeaderTextType.Normal, color = grayscale2)
-        ItemSiteSetting("Account Settings", R.drawable.ic_user,{
+        ItemSiteSetting("Profile", R.drawable.ic_user,{
             navController.navigate("profile")
         })
-        ItemSiteSetting("Application Settings", R.drawable.ic_gear)
-        ItemSiteSetting("Logout", R.drawable.ic_logout, textColor = errorDefault,onClickAction = onClickAction)
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
@@ -180,7 +187,7 @@ fun ItemSiteSetting(
     textColor: Color? = null
 ) {
     Row(modifier = Modifier
-        .padding(top = 16.dp)
+        .padding(top = 16.dp, bottom = 18.dp)
         .clickable { onClickAction?.invoke() },verticalAlignment = Alignment.CenterVertically) {
         Icon(painter = painterResource(icon), contentDescription = null)
         SideBarLabel(
