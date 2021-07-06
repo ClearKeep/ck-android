@@ -2,21 +2,23 @@ package com.clearkeep.screen.chat.main.home.composes
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -33,11 +35,12 @@ import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
     profileViewModel: ProfileViewModel,
-    navController:NavController,
+    navController: NavController,
     closeSiteMenu: (() -> Unit),
-    onLogout: (()->Unit)
+    onLogout: (() -> Unit)
 ) {
     val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .background(grayscaleOverlay)
@@ -61,10 +64,15 @@ fun SiteMenuScreen(
                     .width(108.dp)
             ) {
             }
-                Card(Modifier.fillMaxSize().padding(top = 20.dp, bottom = 20.dp), backgroundColor = Color.White, shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp), elevation = 8.dp
-                ) {
-                    Box {
-
+            Card(
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 20.dp, bottom = 20.dp),
+                backgroundColor = Color.White,
+                shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
+                elevation = 8.dp
+            ) {
+                Box {
                     Column {
                         Column(
                             Modifier
@@ -104,8 +112,15 @@ fun SiteMenuScreen(
                     Row(modifier = Modifier
                         .padding(top = 38.dp, bottom = 38.dp)
                         .align(Alignment.BottomCenter)
-                        .clickable { },verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center){
-                        Icon(painter = painterResource(R.drawable.ic_logout), contentDescription = null)
+                        .clickable { },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_logout),
+                            contentDescription = null,
+                            tint = errorDefault
+                        )
                         Text(
                             text = "Logout", modifier = Modifier
                                 .padding(start = 16.dp), style = TextStyle(
@@ -125,6 +140,7 @@ fun SiteMenuScreen(
 @Composable
 fun HeaderSite(profileViewModel: ProfileViewModel) {
     val profile = profileViewModel.profile.observeAsState()
+    var expanded by remember { mutableStateOf(false) }
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatarSite(url = "", name = profile.value?.userName ?: "", status = "")
@@ -134,7 +150,7 @@ fun HeaderSite(profileViewModel: ProfileViewModel) {
                 headerTextType = HeaderTextType.Normal,
                 color = primaryDefault
             )
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.clickable { expanded = true }, verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Online",
                     style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
@@ -147,6 +163,7 @@ fun HeaderSite(profileViewModel: ProfileViewModel) {
                     )
                 }
             }
+            StatusDropdown(expanded, onDismiss = { expanded = false })
         }
     }
 }
@@ -156,7 +173,11 @@ fun SettingServer(
     serverName: String, navController: NavController,
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        CKHeaderText(text = "Server Setting", headerTextType = HeaderTextType.Normal, color = grayscale2)
+        CKHeaderText(
+            text = "Server Setting",
+            headerTextType = HeaderTextType.Normal,
+            color = grayscale2
+        )
         ItemSiteSetting("Server", R.drawable.ic_adjustment, {
             navController.navigate("server_setting")
         })
@@ -173,7 +194,7 @@ fun SettingGeneral(
     onClickAction: () -> Unit
 ) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        ItemSiteSetting("Profile", R.drawable.ic_user,{
+        ItemSiteSetting("Profile", R.drawable.ic_user, {
             navController.navigate("profile")
         })
     }
@@ -188,7 +209,8 @@ fun ItemSiteSetting(
 ) {
     Row(modifier = Modifier
         .padding(top = 16.dp, bottom = 18.dp)
-        .clickable { onClickAction?.invoke() },verticalAlignment = Alignment.CenterVertically) {
+        .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
+    ) {
         Icon(painter = painterResource(icon), contentDescription = null)
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
@@ -196,4 +218,40 @@ fun ItemSiteSetting(
                 .padding(start = 16.dp)
         )
     }
+}
+
+@Composable
+fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        modifier = Modifier
+            .width(165.dp)
+            .background(Color.White, RoundedCornerShape(8.dp))
+    ) {
+        StatusItem(onClick = {}, colorSuccessDefault, "Online")
+        StatusItem(onClick = {}, grayscale3, "Offline")
+        StatusItem(onClick = {}, errorDefault, "Busy")
+    }
+}
+
+@Composable
+fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
+    DropdownMenuItem(onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(color))
+            Spacer(Modifier.width(7.dp))
+            Text(text, color = Color.Black)
+        }
+    }
+}
+
+@Preview
+@Composable
+fun StatusItemPreview() {
+    StatusItem({}, Color.Red, "Busy")
 }
