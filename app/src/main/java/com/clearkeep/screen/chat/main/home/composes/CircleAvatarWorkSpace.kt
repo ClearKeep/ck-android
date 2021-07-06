@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -35,7 +36,7 @@ fun Highlight(item: Server, contentSize: Dp) {
             .background(color = Color.Transparent)
             .border(
                 BorderStroke(1.5.dp, primaryDefault),
-                shape = CircleShape
+                shape = RoundedCornerShape(4.dp)
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -50,12 +51,12 @@ fun Content(item: Server, contentSize: Dp) {
     val displayName =
         if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
     Surface(
-        shape = CircleShape,
+        shape = RoundedCornerShape(4.dp),
         modifier = Modifier.size(contentSize)
     ) {
         Column(
             modifier = Modifier.background(
-                shape = CircleShape,
+                shape = RoundedCornerShape(4.dp),
                 color = primaryDefault
             ),
             verticalArrangement = Arrangement.Center,

@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -31,6 +33,7 @@ import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.main.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.main.home.composes.CircleAvatarWorkSpace
+import com.clearkeep.screen.chat.main.home.composes.Content
 import com.clearkeep.screen.chat.main.profile.ProfileViewModel
 import com.clearkeep.screen.chat.main.home.composes.SiteMenuScreen
 
@@ -116,6 +119,7 @@ fun HomeScreen(
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     val selectedServer = mainViewModel.selectedServer.observeAsState()
+    val showJoinServer = mainViewModel.showJoinServer.observeAsState()
 
     workSpaces?.value?.let { serverList ->
         val selectedServerId = selectedServer?.value?.id ?: serverList[0].id
@@ -161,24 +165,15 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .clickable { mainViewModel.selectChannel(workSpace) },
                                 ) {
-                                    CircleAvatarWorkSpace(workSpace, selectedServerId == workSpace.id)
+                                    CircleAvatarWorkSpace(workSpace, selectedServerId == workSpace.id && showJoinServer.value == false)
                                 }
                                 Spacer(modifier = Modifier.height(36.dp))
                             }
                         }
                     }
-                    Image(
-                        painter = painterResource(R.drawable.ic_add_server),
-                        contentDescription = "",
-                        alignment = Alignment.Center,
-                        modifier = Modifier.clickable(
-                            onClick = { mainViewModel.showJoinServer() }
-                        )
-                    )
+                    AddWorkspace(mainViewModel)
                 }
             }
-
-            Spacer(modifier = Modifier.size(1.dp))
 
             Column(
                 modifier = Modifier
@@ -205,9 +200,9 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_button_profile),
+                        painter = painterResource(id = R.drawable.ic_button_settings),
                         null,
-                        Modifier.size(50.dp),
+                        Modifier.size(42.dp),
                         alignment = Alignment.Center
                     )
                 }
@@ -558,5 +553,42 @@ fun NoteView() {
             color = grayscale2,
         )
     }
+}
+
+@Composable
+fun AddWorkspace(mainViewModel: HomeViewModel) {
+    val showJoinServer = mainViewModel.showJoinServer.observeAsState()
+
+    if (showJoinServer.value == true) {
+        Column(
+            modifier = Modifier
+                .size(42.dp)
+                .background(color = Color.Transparent)
+                .border(
+                    BorderStroke(1.5.dp, primaryDefault),
+                    shape = RoundedCornerShape(4.dp)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+
+        ) {
+            AddWorkspaceButton(mainViewModel)
+        }
+    } else {
+        AddWorkspaceButton(mainViewModel)
+    }
+}
+
+@Composable
+fun AddWorkspaceButton(mainViewModel: HomeViewModel) {
+    Image(
+        painter = painterResource(R.drawable.ic_add_server),
+        contentDescription = "",
+        alignment = Alignment.Center,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier.clickable(
+            onClick = { mainViewModel.showJoinServer() }
+        )
+    )
 }
 
