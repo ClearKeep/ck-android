@@ -507,7 +507,7 @@ fun WorkSpaceView(
         Spacer(modifier = Modifier.size(24.dp))
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
-                text = "CK Development", modifier = Modifier
+                text = homeViewModel.currentServer.serverName, modifier = Modifier
                     .weight(0.66f), headerTextType = HeaderTextType.Large
             )
             Column(

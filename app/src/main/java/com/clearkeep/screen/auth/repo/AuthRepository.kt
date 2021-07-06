@@ -84,7 +84,7 @@ class AuthRepository @Inject constructor(
 
                 serverRepository.insertServer(
                     Server(
-                        serverName = domain,
+                        serverName = response.workspaceName,
                         serverDomain = domain,
                         ownerClientId = profile.id,
                         serverAvatar = "",
@@ -132,7 +132,7 @@ class AuthRepository @Inject constructor(
 
                 serverRepository.insertServer(
                     Server(
-                        serverName = domain,
+                        serverName = response.workspaceName,
                         serverDomain = domain,
                         ownerClientId = profile.id,
                         serverAvatar = "",
@@ -179,7 +179,7 @@ class AuthRepository @Inject constructor(
 
                 serverRepository.insertServer(
                     Server(
-                        serverName = domain,
+                        serverName = response.workspaceName,
                         serverDomain = domain,
                         ownerClientId = profile.id,
                         serverAvatar = "",
@@ -229,7 +229,7 @@ class AuthRepository @Inject constructor(
 
                 serverRepository.insertServer(
                     Server(
-                        serverName = domain,
+                        serverName = response.workspaceName,
                         serverDomain = domain,
                         ownerClientId = profile.id,
                         serverAvatar = "",
