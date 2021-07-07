@@ -22,5 +22,6 @@ class SplashViewModel @ViewModelInject constructor(
             throw IllegalArgumentException("default server must be not NULL")
         }
         environment.setUpDomain(selectedServer)
+        serverRepository.setActiveServer(selectedServer)
     }
 }

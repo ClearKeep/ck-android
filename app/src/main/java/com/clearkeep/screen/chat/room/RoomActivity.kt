@@ -44,6 +44,8 @@ class RoomActivity : AppCompatActivity() {
     }
 
     private var roomId: Long = 0
+    private lateinit var domain: String
+    private lateinit var clientId: String
 
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
@@ -55,6 +57,8 @@ class RoomActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         roomId = intent.getLongExtra(GROUP_ID, 0)
+        domain = intent.getStringExtra(DOMAIN) ?: ""
+        clientId = intent.getStringExtra(CLIENT_ID) ?: ""
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
         if (roomId > 0) {
@@ -62,7 +66,7 @@ class RoomActivity : AppCompatActivity() {
             notificationManagerCompat.cancel(roomId.toInt())
         }
 
-        roomViewModel.joinRoom(roomId, friendId)
+        roomViewModel.joinRoom(domain, clientId, roomId, friendId)
 
         setContent {
             CKTheme {
@@ -140,14 +144,16 @@ class RoomActivity : AppCompatActivity() {
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
         val roomName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
-                client.id != roomViewModel.getClientId()
+                client.id != clientId
             }?.userName ?: ""
         }
-        AppCall.call(this, isAudioMode, null, group.groupId.toString(), group.groupType, roomName,  roomViewModel.getClientId(), roomName, "", false)
+        AppCall.call(this, isAudioMode, null, group.groupId.toString(), group.groupType, roomName,  clientId, roomName, "", false)
     }
 
     companion object {
         const val GROUP_ID = "room_id"
+        const val DOMAIN = "domain"
+        const val CLIENT_ID = "client_id"
         const val FRIEND_ID = "remote_id"
     }
 }
