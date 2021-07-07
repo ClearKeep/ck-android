@@ -160,7 +160,6 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String) : ChatGroup? {
-        printlnCK("getGroupByID: groupId = $groupId, $domain, owner = $ownerId")
         var room: ChatGroup? = groupDAO.getGroupById(groupId, domain, ownerId)
         if (room == null) {
             val server = serverRepository.getServer(domain, ownerId)
