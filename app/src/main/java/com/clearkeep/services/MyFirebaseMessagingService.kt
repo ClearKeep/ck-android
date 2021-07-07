@@ -106,7 +106,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         )
         val clientId = data["client_id"] ?: ""
         val clientDomain = data["client_workspace_domain"] ?: ""
-        val fromClientID = remoteMessage.data["from_client_id"] ?: ""
+        val fromClientID = data["from_client_id"] ?: ""
         val fromDomain = data["from_client_workspace_domain"] ?: ""
 
         val messageId = data["id"] ?: ""
