@@ -28,22 +28,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKTopAppBarSample
+import com.clearkeep.components.base.*
 
 
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
-    onBackPress: (isCustom: Boolean, url: String, port: String) -> Unit,
+    onBackPress: (isCustom: Boolean, url: String) -> Unit,
     isCustom: Boolean,
     url: String,
     port: String
 ) {
     val useCustomServerChecked = remember { mutableStateOf(isCustom) }
     val rememberServerUrl = remember { mutableStateOf(url) }
-    val rememberPort = remember { mutableStateOf(port) }
     val (showDialog, setShowDialog) = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
@@ -64,13 +61,13 @@ fun CustomServerScreen(
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
                     if (useCustomServerChecked.value
-                        && (rememberServerUrl.value.isBlank() || rememberPort.value.isBlank())) {
+                        && (rememberServerUrl.value.isBlank())
+                    ) {
                         setShowDialog("Please enter server url and port")
                     } else {
                         onBackPress(
                             useCustomServerChecked.value,
                             rememberServerUrl.value,
-                            rememberPort.value
                         )
                     }
                 }
@@ -78,7 +75,7 @@ fun CustomServerScreen(
             Spacer(Modifier.height(26.dp))
             Row(
                 modifier = Modifier
-                    .padding( 16.dp)
+                    .padding(16.dp)
                     .clickable {
                         useCustomServerChecked.value = !useCustomServerChecked.value
                     }, verticalAlignment = Alignment.CenterVertically
@@ -97,7 +94,7 @@ fun CustomServerScreen(
                     )
                 )
             }
-            Column(Modifier.padding(start = 16.dp,end = 16.dp)) {
+            Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
                 AnimatedVisibility(
                     visible = useCustomServerChecked.value,
                     enter = expandIn(
@@ -130,7 +127,9 @@ fun CustomServerScreen(
                         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                             Row(
                                 modifier = Modifier
-                                    .weight(0.66f).padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
+                                    .weight(0.66f)
+                                    .padding(end = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     "Server URL",
@@ -139,15 +138,23 @@ fun CustomServerScreen(
                                     singleLine = true,
                                 )
                             }
-                            CKTextInputField(
-                                "Port",
-                                rememberPort,
-                                modifier = Modifier.width(76.dp),
-                                keyboardType = KeyboardType.Text,
-                                singleLine = true,
-                            )
                         }
 
+                        Spacer(modifier = Modifier.height(58.dp))
+
+                        CKButton(
+                            "Submit",
+                            { if (rememberServerUrl.value.isBlank()) {
+                                setShowDialog("Please enter server url and port")
+                            } else {
+                                onBackPress(
+                                    useCustomServerChecked.value,
+                                    rememberServerUrl.value,
+                                )
+                            }},
+                            modifier = Modifier.padding(start = 60.dp, end = 66.dp),
+                            buttonType = if (rememberServerUrl.value.isNotBlank()) ButtonType.White else ButtonType.BorderWhite
+                        )
                     }
                 }
             }

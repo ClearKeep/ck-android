@@ -163,10 +163,9 @@ class LoginActivity : AppCompatActivity() {
                 }
                 composable("advance_setting") {
                     CustomServerScreen(
-                        onBackPress = { isCustom, url, port ->
+                        onBackPress = { isCustom, url ->
                             loginViewModel.isCustomServer = isCustom
                             loginViewModel.url = url
-                            loginViewModel.port = port
                             onBackPressed()
                         },
                         loginViewModel.isCustomServer, loginViewModel.url, loginViewModel.port

@@ -78,7 +78,7 @@ class RegisterViewModel @Inject constructor(
         }
 
         val result = if (isValid) {
-            val domain = if (isCustomServer) "$url:$port" else "${BASE_URL}:${PORT}"
+            val domain = if (isCustomServer) url else "${BASE_URL}:${PORT}"
             authRepository.register(displayName.trim(), password.trim(), email.trim(), domain)
         } else {
             null

@@ -67,10 +67,9 @@ class RegisterActivity : AppCompatActivity() {
             }
             composable("advance_setting") {
                 CustomServerScreen(
-                    onBackPress = { isCustom, url, port ->
+                    onBackPress = { isCustom, url ->
                         registerViewModel.isCustomServer = isCustom
                         registerViewModel.url = url
-                        registerViewModel.port = port
                         onBackPressed()
                     },
                     registerViewModel.isCustomServer, registerViewModel.url, registerViewModel.port
