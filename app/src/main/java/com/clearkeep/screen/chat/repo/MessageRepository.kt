@@ -155,7 +155,7 @@ class MessageRepository @Inject constructor(
                 )
             }
         } catch (e: DuplicateMessageException) {
-            printlnCK("decryptMessage, error: $e")
+            printlnCK("decryptMessage, maybe this message decrypted, waiting 1,5s and check again")
             /**
              * To fix case: both load message and receive message from socket at the same time
              * Need wait 1.5s to load old message before save unableDecryptMessage
@@ -163,7 +163,7 @@ class MessageRepository @Inject constructor(
             delay(1500)
             val oldMessage = messageDAO.getMessage(messageId)
             if (oldMessage != null) {
-                printlnCK("decryptMessage, success: ${oldMessage.message}")
+                printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
             }
             oldMessage?.message ?: getUnableErrorMessage(e.message)
         } catch (e: Exception) {
@@ -273,7 +273,9 @@ class MessageRepository @Inject constructor(
         )
         var plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
-        } catch (ex: java.lang.Exception) {
+        } catch (messageEx: DuplicateMessageException) {
+            throw messageEx
+        } catch (ex: Exception) {
             printlnCK("decryptGroupMessage, $ex")
             val initSessionAgain = initSessionUserInGroup(
                 groupId, sender.clientId, groupSender, senderKeyStore, true, owner

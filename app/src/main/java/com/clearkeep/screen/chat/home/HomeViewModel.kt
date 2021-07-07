@@ -5,7 +5,6 @@ import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
@@ -35,7 +34,7 @@ class HomeViewModel @Inject constructor(
     private val signalKeyDatabase: SignalKeyDatabase,
     ): ViewModel() {
 
-    var profile: Profile = environment.getServer().profile
+    var profile = MutableLiveData(environment.getServer().profile)
 
     var currentServer: Server = environment.getServer()
 
@@ -107,6 +106,7 @@ class HomeViewModel @Inject constructor(
             environment.setUpDomain(server)
             serverRepository.setDefaultServer(server)
             selectingJoinServer.value = false
+            profile.postValue(server.profile)
         }
     }
 

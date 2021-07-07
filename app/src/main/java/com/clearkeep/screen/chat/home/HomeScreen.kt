@@ -47,7 +47,7 @@ fun HomeScreen(
 ) {
     val showJoinServer = homeViewModel.selectingJoinServer.observeAsState()
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
-
+    val profile = homeViewModel.profile.observeAsState()
     Row(
         Modifier
             .fillMaxSize()
@@ -102,7 +102,7 @@ fun HomeScreen(
                 .focusable(true)
 
         ) {
-            homeViewModel.profile?.let {
+            profile?.value?.let {
                 printlnCK("profile = ${it.getDisplayName()}")
                 SiteMenuScreen(
                     it,
