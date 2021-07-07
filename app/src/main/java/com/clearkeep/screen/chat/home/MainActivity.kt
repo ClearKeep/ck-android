@@ -222,12 +222,16 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     private fun navigateToRoomScreen(groupId: Long) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.GROUP_ID, groupId)
+        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 
     private fun navigateToRoomScreenWithFriendId(friendId: String) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friendId)
+        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 

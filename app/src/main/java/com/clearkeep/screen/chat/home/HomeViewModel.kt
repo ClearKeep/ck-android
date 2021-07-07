@@ -34,9 +34,9 @@ class HomeViewModel @Inject constructor(
     private val signalKeyDatabase: SignalKeyDatabase,
     ): ViewModel() {
 
-    var profile = MutableLiveData(environment.getServer().profile)
+    var profile = serverRepository.profile
 
-    var currentServer: Server = environment.getServer()
+    var currentServer = serverRepository.activeServer
 
     val selectingJoinServer = MutableLiveData(false)
 
@@ -103,10 +103,8 @@ class HomeViewModel @Inject constructor(
 
     fun selectChannel(server: Server) {
         viewModelScope.launch {
-            environment.setUpDomain(server)
-            serverRepository.setDefaultServer(server)
+            serverRepository.setActiveServer(server)
             selectingJoinServer.value = false
-            profile.postValue(server.profile)
         }
     }
 
@@ -114,7 +112,9 @@ class HomeViewModel @Inject constructor(
         selectingJoinServer.value = true
     }
 
-    fun getClientId() = environment.getServer().profile.id
+    fun getClientIdOfActiveServer() = environment.getServer().profile.id
+
+    fun getDomainOfActiveServer() = environment.getServer().serverDomain
 
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
 
