@@ -1,6 +1,5 @@
 package com.clearkeep.db.clear_keep.model
 
-import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import androidx.room.*
 import com.clearkeep.db.clear_keep.converter.MessageConverter
@@ -13,8 +12,8 @@ const val GROUP_ID_TEMPO = (-1).toLong()
 @Entity
 @TypeConverters(SortedStringListConverter::class, MessageConverter::class, PeopleListConverter::class)
 data class ChatGroup(
-        @NonNull
-        @PrimaryKey val id: Long,
+        @PrimaryKey(autoGenerate = true) val generateId: Int? = null,
+        @ColumnInfo(name = "group_id") val groupId: Long,
         @ColumnInfo(name = "group_name") val groupName: String,
         @ColumnInfo(name = "group_avatar") val groupAvatar: String?,
         @ColumnInfo(name = "group_type") val groupType: String,
@@ -40,7 +39,7 @@ data class ChatGroup(
 ) {
         fun isGroup() = isGroup(groupType)
 
-        fun isGroupTempo() = GROUP_ID_TEMPO != id
+        fun isGroupTempo() = GROUP_ID_TEMPO != groupId
 
         override fun toString(): String {
                 return "groupName = $groupName, groupType = $groupType, isJoined = $isJoined, clientList = $clientList"

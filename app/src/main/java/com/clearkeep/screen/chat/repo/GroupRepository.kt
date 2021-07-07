@@ -13,7 +13,6 @@ import group.GroupGrpc
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import signal.SignalKeyDistributionGrpc
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,7 +46,7 @@ class GroupRepository @Inject constructor(
                 for (group in groups) {
                     printlnCK("fetchGroups: $group")
                     val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.id)
-                    groupDAO.insert(decryptedGroup)
+                    insertGroup(decryptedGroup)
                 }
             } catch(exception: Exception) {
                 printlnCK("fetchGroups: $exception")
@@ -118,7 +117,7 @@ class GroupRepository @Inject constructor(
         return@withContext true
     }
 
-    private suspend fun getGroupFromAPI(groupId: Long, groupGrpc: GroupGrpc.GroupBlockingStub): ChatGroup? = withContext(Dispatchers.IO) {
+    private suspend fun getGroupFromAPI(groupId: Long, groupGrpc: GroupGrpc.GroupBlockingStub, owner: Owner): ChatGroup? = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
         try {
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
@@ -126,7 +125,7 @@ class GroupRepository @Inject constructor(
                     .build()
             val response = groupGrpc.getGroup(request)
 
-            return@withContext convertGroupFromResponse(response, getDomain(), getClientId())
+            return@withContext convertGroupFromResponse(response, owner.domain, owner.clientId)
         } catch (e: Exception) {
             printlnCK("getGroupFromAPI error: $e")
             return@withContext null
@@ -135,7 +134,7 @@ class GroupRepository @Inject constructor(
 
     fun getTemporaryGroupWithAFriend(createPeople: User, receiverPeople: User): ChatGroup {
         return ChatGroup(
-            id = GROUP_ID_TEMPO,
+            groupId = GROUP_ID_TEMPO,
             groupName = receiverPeople.userName,
             groupAvatar = "",
             groupType = "peer",
@@ -170,7 +169,7 @@ class GroupRepository @Inject constructor(
                 return null
             }
             val groupGrpc = apiProvider.provideGroupBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
-            room = getGroupFromAPI(groupId, groupGrpc)
+            room = getGroupFromAPI(groupId, groupGrpc, Owner(domain, ownerId))
             if (room != null) {
                 insertGroup(room)
             }
@@ -194,7 +193,8 @@ class GroupRepository @Inject constructor(
             throw IllegalArgumentException("can not find group with id = $groupId")
         }
         val updateGroup = ChatGroup(
-            id = group.id,
+            generateId = group.generateId,
+            groupId = group.groupId,
             groupName = group.groupName,
             groupAvatar = group.groupAvatar,
             groupType = group.groupType,
@@ -217,8 +217,6 @@ class GroupRepository @Inject constructor(
         groupDAO.update(updateGroup)
         return updateGroup
     }
-
-    suspend fun updateRoom(room: ChatGroup) = groupDAO.update(room)
 
     private suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
@@ -243,7 +241,8 @@ class GroupRepository @Inject constructor(
         }
 
         return ChatGroup(
-            id = response.groupId,
+            generateId = oldGroup?.generateId,
+            groupId = response.groupId,
             groupName = groupName,
             groupAvatar = response.groupAvatar,
             groupType = response.groupType,

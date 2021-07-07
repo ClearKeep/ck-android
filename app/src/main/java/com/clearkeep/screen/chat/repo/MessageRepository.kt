@@ -65,7 +65,7 @@ class MessageRepository @Inject constructor(
         return messageDAO.getMessagesAfterTime(groupId, group.lastMessageSyncTimestamp, domain, ourClientId).dropWhile { it.senderId ==  ourClientId}
     }
 
-    suspend fun insert(message: Message) = messageDAO.insert(message)
+    private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
 
     suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
         try {
@@ -94,7 +94,8 @@ class MessageRepository @Inject constructor(
         printlnCK("updateLastSyncMessageTime, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId, owner.domain, owner.clientId)!!
         val updateGroup = ChatGroup(
-            id = group.id,
+            generateId = group.generateId,
+            groupId = group.groupId,
             groupName = group.groupName,
             groupAvatar = group.groupAvatar,
             groupType = group.groupType,
@@ -173,16 +174,17 @@ class MessageRepository @Inject constructor(
         printlnCK("decryptMessage success: $messageText")
         return saveNewMessage(
             Message(
-                messageId, groupId, groupType,
-                fromClientId, owner.clientId, messageText,
-                createdTime, updatedTime,
-                owner.domain, owner.clientId
+                messageId = messageId, groupId = groupId, groupType = groupType,
+                senderId = fromClientId, receiverId = owner.clientId, message = messageText,
+                createdTime = createdTime, updatedTime = updatedTime,
+                ownerDomain = owner.domain, ownerClientId = owner.clientId
             ),
         )
     }
 
     suspend fun saveNewMessage(message: Message) : Message {
-        messageDAO.insert(message)
+        printlnCK("saveNewMessage: ${message.messageId}, ${message.message}")
+        insertMessage(message)
 
         val groupId = message.groupId
         var room: ChatGroup? = groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
@@ -190,7 +192,8 @@ class MessageRepository @Inject constructor(
         if (room != null) {
             // update last message in room
             val updateRoom = ChatGroup(
-                id = room.id,
+                generateId = room.generateId,
+                groupId = room.groupId,
                 groupName = room.groupName,
                 groupAvatar = room.groupAvatar,
                 groupType = room.groupType,
@@ -220,16 +223,16 @@ class MessageRepository @Inject constructor(
 
     fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String, owner: Owner): Message {
         return Message(
-            value.id,
-            value.groupId,
-            value.groupType,
-            value.fromClientId,
-            value.clientId,
-            decryptedMessage,
-            value.createdAt,
-            value.updatedAt,
-            owner.domain,
-            owner.clientId
+            messageId = value.id,
+            groupId = value.groupId,
+            groupType = value.groupType,
+            senderId = value.fromClientId,
+            receiverId = value.clientId,
+            message = decryptedMessage,
+            createdTime = value.createdAt,
+            updatedTime = value.updatedAt,
+            ownerDomain = owner.domain,
+            ownerClientId = owner.clientId
         )
     }
 
