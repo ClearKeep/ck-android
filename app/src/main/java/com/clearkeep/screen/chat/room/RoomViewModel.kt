@@ -4,6 +4,7 @@ import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
@@ -18,6 +19,7 @@ class RoomViewModel @Inject constructor(
 
     private val peopleRepository: PeopleRepository,
     private val messageRepository: MessageRepository,
+    private val serverRepository: ServerRepository,
 
     private val environment: Environment
 ): ViewModel() {
@@ -37,20 +39,36 @@ class RoomViewModel @Inject constructor(
     val group: LiveData<ChatGroup>
         get() = _group
 
-    fun getClientId() = environment.getServer().profile.id
+    var clientId: String = ""
 
-    private fun getDomain() = environment.getServer().serverDomain
+    var domain: String = ""
 
-    fun joinRoom(roomId: Long?, friendId: String?) {
+    fun joinRoom(domain: String, clientId: String, roomId: Long?, friendId: String?) {
+        if (domain.isNullOrBlank() || clientId.isNullOrBlank()) {
+            throw IllegalArgumentException("domain and clientId must be not NULL")
+        }
         if (roomId == null && TextUtils.isEmpty(friendId)) {
             throw IllegalArgumentException("Can not load room with both groupId and friendId is empty")
         }
+        this.domain = domain
+        this.clientId = clientId
         this.roomId = roomId
         this.friendId = friendId
-        if (roomId != null && roomId != 0L) {
-            updateGroupWithId(roomId)
-        } else if (!friendId.isNullOrEmpty()) {
-            updateGroupWithFriendId(friendId)
+
+        viewModelScope.launch {
+            val selectedServer = serverRepository.getServerByOwner(Owner(domain, clientId))
+            if (selectedServer == null) {
+                printlnCK("default server must be not NULL")
+                return@launch
+            }
+            environment.setUpDomain(selectedServer)
+            serverRepository.setActiveServer(selectedServer)
+
+            if (roomId != null && roomId != 0L) {
+                updateGroupWithId(roomId)
+            } else if (!friendId.isNullOrEmpty()) {
+                updateGroupWithFriendId(friendId)
+            }
         }
     }
 
@@ -62,33 +80,31 @@ class RoomViewModel @Inject constructor(
         chatRepository.setJoiningRoomId(roomId)
     }
 
-    fun getMessages(groupId: Long): LiveData<List<Message>> {
-        return messageRepository.getMessagesAsState(groupId, getOwner())
+    fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
+        printlnCK("getMessages: groupId $groupId")
+        return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
     }
 
-    private fun updateGroupWithId(groupId: Long) {
+    private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
-        viewModelScope.launch {
-            val ret = groupRepository.getGroupByID(groupId, getDomain(), getClientId())
-            if (ret != null) {
-                _group.value = ret
-                updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
-            }
+        val ret = groupRepository.getGroupByID(groupId, domain, clientId)
+        if (ret != null) {
+            setJoiningGroup(ret)
+            updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
         }
     }
 
-    private fun updateGroupWithFriendId(friendId: String) {
+    private suspend fun updateGroupWithFriendId(friendId: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
-        viewModelScope.launch {
-            val friend = peopleRepository.getFriend(friendId) ?: User(friendId, "", "",)
-            var existingGroup = groupRepository.getGroupPeerByClientId(friend)
-            if (existingGroup == null) {
-                existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
-            } else {
-                updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
-            }
-            _group.value = existingGroup
+        val friend = peopleRepository.getFriend(friendId) ?: User(friendId, "", "",)
+        var existingGroup = groupRepository.getGroupPeerByClientId(friend)
+        if (existingGroup == null) {
+            existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
+        } else {
+            chatRepository.setJoiningRoomId(existingGroup.groupId)
+            updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
         }
+        setJoiningGroup(existingGroup)
     }
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
@@ -108,7 +124,7 @@ class RoomViewModel @Inject constructor(
                         false
                 )
                 if (group != null) {
-                    _group.value = group
+                    setJoiningGroup(group)
                     lastGroupId = group.groupId
                 }
             }
@@ -116,10 +132,10 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(getClientId(), getDomain(), receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message, isForceProcessKey = true)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(getClientId(), getDomain(), receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message)
                 }
             }
         }
@@ -129,13 +145,13 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (!isRegisteredGroup) {
-                    val result = signalKeyRepository.registerSenderKeyToGroup(groupId, getClientId(), getDomain())
+                    val result = signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
                     if (result) {
                         _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                        chatRepository.sendMessageToGroup(getClientId(), getDomain(), groupId, message)
+                        chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
                     }
                 } else {
-                    chatRepository.sendMessageToGroup(getClientId(), getDomain(), groupId, message)
+                    chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
                 }
             } catch (e : Exception) {}
         }
@@ -143,7 +159,7 @@ class RoomViewModel @Inject constructor(
 
     fun inviteToGroup(invitedFriendId: String, groupId: Long) {
         viewModelScope.launch {
-            groupRepository.inviteToGroupFromAPI(getClientId(), invitedFriendId, groupId)
+            groupRepository.inviteToGroupFromAPI(clientId, invitedFriendId, groupId)
         }
     }
 
@@ -162,7 +178,7 @@ class RoomViewModel @Inject constructor(
                         false
                 )
                 if (group != null) {
-                    _group.value = group
+                    setJoiningGroup(group)
                     lastGroupId = group.groupId
                 }
             }
@@ -176,14 +192,14 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    private fun setJoiningGroup(group: ChatGroup) {
+        _group.value = group
+        chatRepository.setJoiningRoomId(group.groupId)
+    }
+
     private fun getUser(): User {
         val server = environment.getServer()
         return User(server.profile.id, server.profile.getDisplayName(), server.serverDomain)
-    }
-
-    private fun getOwner(): Owner {
-        val server = environment.getServer()
-        return Owner(server.serverDomain, server.profile.id)
     }
 }
 

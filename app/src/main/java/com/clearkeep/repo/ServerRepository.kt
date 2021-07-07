@@ -1,8 +1,11 @@
 package com.clearkeep.repo
 
+import androidx.lifecycle.MutableLiveData
 import com.clearkeep.db.clear_keep.dao.ServerDAO
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
+import com.clearkeep.dynamicapi.Environment
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -10,7 +13,12 @@ import javax.inject.Singleton
 class ServerRepository @Inject constructor(
     // dao
     private val serverDAO: ServerDAO,
+    private val environment: Environment,
 ) {
+    var profile = MutableLiveData<Profile>()
+
+    var activeServer = MutableLiveData<Server>()
+
     fun getServersAsState() = serverDAO.getServersAsState()
 
     suspend fun getServers() = serverDAO.getServers()
@@ -26,7 +34,10 @@ class ServerRepository @Inject constructor(
 
     suspend fun getDefaultServer() = serverDAO.getDefaultServer()
 
-    suspend fun setDefaultServer(server: Server) {
+    suspend fun setActiveServer(server: Server) {
+        environment.setUpDomain(server)
+        profile.postValue(server.profile)
+        activeServer.postValue(server)
         serverDAO.setDefaultServerByDomain(server.serverDomain)
     }
 
