@@ -1,14 +1,13 @@
 package com.clearkeep.db.clear_keep.model
 
-import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
 data class Message(
-    @NonNull
-    @PrimaryKey val id: String,
+    @PrimaryKey(autoGenerate = true) val generateId: Int? = null,
+    @ColumnInfo(name = "message_id") val messageId: String,
     @ColumnInfo(name = "group_id") val groupId: Long,
     @ColumnInfo(name = "group_type") val groupType: String,
     @ColumnInfo(name = "sender_id") val senderId: String,

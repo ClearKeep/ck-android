@@ -31,6 +31,7 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
+import com.clearkeep.utilities.printlnCK
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -102,6 +103,7 @@ fun HomeScreen(
 
         ) {
             homeViewModel.profile?.let {
+                printlnCK("profile = ${it.getDisplayName()}")
                 SiteMenuScreen(
                     it,
                     closeSiteMenu = {
@@ -230,7 +232,7 @@ fun ItemListDirectMessage(
     Row(
         modifier = modifier
             .clickable {
-                onItemClickListener?.invoke(chatGroup.id)
+                onItemClickListener?.invoke(chatGroup.groupId)
             }
     ) {
         val roomName = if (chatGroup.isGroup()) chatGroup.groupName else {
@@ -268,7 +270,7 @@ fun ChatGroupItemView(
     Row(
         modifier = modifier
             .clickable {
-                onItemClickListener?.invoke(chatGroup.id)
+                onItemClickListener?.invoke(chatGroup.groupId)
             },
     ) {
         Row(modifier = Modifier.padding(top = 16.dp)) {
