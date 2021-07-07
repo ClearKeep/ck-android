@@ -33,10 +33,10 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     group.value?.let { group ->
-        if (group.id != GROUP_ID_TEMPO) {
-            roomViewModel.setJoiningRoomId(group.id)
+        if (group.groupId != GROUP_ID_TEMPO) {
+            roomViewModel.setJoiningRoomId(group.groupId)
         }
-        val messageList = roomViewModel.getMessages(group.id).observeAsState()
+        val messageList = roomViewModel.getMessages(group.groupId).observeAsState()
         val groupName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
                 client.id != roomViewModel.getClientId()
@@ -61,10 +61,10 @@ fun RoomScreen(
                         navHostController.navigate("room_info_screen")
                     }
                 }, onAudioClick = {
-                    roomViewModel.requestCall(group.id, true)
+                    roomViewModel.requestCall(group.groupId, true)
 
                 },onVideoClick = {
-                    roomViewModel.requestCall(group.id, false)
+                    roomViewModel.requestCall(group.groupId, false)
 
                 })
                 Column(modifier = Modifier
@@ -89,13 +89,13 @@ fun RoomScreen(
                             val groupResult = group
                             val isGroup = groupResult.isGroup()
                             if (isGroup) {
-                                roomViewModel.sendMessageToGroup(groupResult.id, validMessage, groupResult.isJoined)
+                                roomViewModel.sendMessageToGroup(groupResult.groupId, validMessage, groupResult.isJoined)
                             } else {
                                 val friend = groupResult.clientList.firstOrNull { client ->
                                     client.id != roomViewModel.getClientId()
                                 }
                                 if (friend != null) {
-                                    roomViewModel.sendMessageToUser(friend, groupResult.id, validMessage)
+                                    roomViewModel.sendMessageToUser(friend, groupResult.groupId, validMessage)
                                 } else {
                                     printlnCK("can not found friend")
                                 }

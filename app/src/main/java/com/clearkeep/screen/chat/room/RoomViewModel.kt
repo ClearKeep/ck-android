@@ -85,7 +85,7 @@ class RoomViewModel @Inject constructor(
             if (existingGroup == null) {
                 existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
             } else {
-                updateMessagesFromRemote(existingGroup.id, existingGroup.lastMessageSyncTimestamp)
+                updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
             }
             _group.value = existingGroup
         }
@@ -109,7 +109,7 @@ class RoomViewModel @Inject constructor(
                 )
                 if (group != null) {
                     _group.value = group
-                    lastGroupId = group.id
+                    lastGroupId = group.groupId
                 }
             }
 
@@ -163,7 +163,7 @@ class RoomViewModel @Inject constructor(
                 )
                 if (group != null) {
                     _group.value = group
-                    lastGroupId = group.id
+                    lastGroupId = group.groupId
                 }
             }
 
