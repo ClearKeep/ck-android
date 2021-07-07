@@ -143,7 +143,7 @@ class RoomActivity : AppCompatActivity() {
                 client.id != roomViewModel.getClientId()
             }?.userName ?: ""
         }
-        AppCall.call(this, isAudioMode, null, group.id.toString(), group.groupType, roomName,  roomViewModel.getClientId(), roomName, "", false)
+        AppCall.call(this, isAudioMode, null, group.groupId.toString(), group.groupType, roomName,  roomViewModel.getClientId(), roomName, "", false)
     }
 
     companion object {

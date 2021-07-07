@@ -190,7 +190,8 @@ class ChatService : Service(),
         scope.launch {
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.let {
-                if (joiningRoomId != groupId) {
+                val currentServer = environment.getServer()
+                if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.id != ownerClientId) {
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
@@ -211,7 +212,7 @@ class ChatService : Service(),
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
             val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.id)!!
-            messageRepository.updateMessageFromAPI(group.id, Owner(currentServer.serverDomain, currentServer.profile.id), group.lastMessageSyncTimestamp)
+            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.id), group.lastMessageSyncTimestamp)
 
             if (!group.isGroup()) {
                 val receiver = group.clientList.firstOrNull { client ->

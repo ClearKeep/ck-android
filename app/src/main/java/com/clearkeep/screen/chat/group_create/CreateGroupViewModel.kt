@@ -36,7 +36,7 @@ class CreateGroupViewModel @Inject constructor(
                         list.add(User(server.profile.id, server.profile.getDisplayName(), server.serverDomain))
                         val res = groupRepository.createGroupFromAPI(server.profile.id, groupName, list, true)
                         if (res != null) {
-                                groupId = res.id
+                                groupId = res.groupId
                                 _createGroupState.value = CreateGroupSuccess
                         } else {
                                 _createGroupState.value = CreateGroupError

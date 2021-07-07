@@ -131,7 +131,7 @@ fun showMessageNotificationToSystemBar(
 ) {
     val channelId = MESSAGE_CHANNEL_ID
     val channelName = MESSAGE_CHANNEL_NAME
-    val notificationId = chatGroup.id.toInt()
+    val notificationId = chatGroup.groupId.toInt()
 
     val contentTitle = chatGroup.groupName
     val participants = chatGroup.clientList
@@ -159,7 +159,7 @@ fun showMessageNotificationToSystemBar(
     // 3. Set up main Intent for notification.
     val notifyIntent = Intent(context, RoomActivity::class.java)
     notifyIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-    notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.id)
+    notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
 
     val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
     // Adds the back stack
@@ -205,7 +205,7 @@ fun showMessageNotificationToSystemBar(
             )
         )
         .setGroupSummary(chatGroup.isGroup())
-        .setGroup(chatGroup.id.toString())
+        .setGroup(chatGroup.groupId.toString())
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setCategory(Notification.CATEGORY_MESSAGE)
 
