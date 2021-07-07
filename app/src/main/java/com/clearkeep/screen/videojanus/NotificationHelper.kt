@@ -47,6 +47,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val intent = Intent(context, RoomActivity::class.java)
     intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
+    intent.putExtra(RoomActivity.DOMAIN, message.ownerDomain)
+    intent.putExtra(RoomActivity.CLIENT_ID, message.ownerClientId)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
     val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -160,6 +162,8 @@ fun showMessageNotificationToSystemBar(
     val notifyIntent = Intent(context, RoomActivity::class.java)
     notifyIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
     notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
+    notifyIntent.putExtra(RoomActivity.DOMAIN, chatGroup.ownerDomain)
+    notifyIntent.putExtra(RoomActivity.CLIENT_ID, chatGroup.ownerClientId)
 
     val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
     // Adds the back stack

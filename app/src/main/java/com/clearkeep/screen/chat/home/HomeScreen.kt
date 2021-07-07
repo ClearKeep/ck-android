@@ -427,7 +427,7 @@ fun DirectMessagesView(
                             ItemListDirectMessage(
                                 modifier = Modifier.padding(start = 16.dp),
                                 chatGroup,
-                                viewModel.getClientId(),
+                                viewModel.getClientIdOfActiveServer(),
                                 onItemClickListener
                             )
                         }
@@ -501,6 +501,7 @@ fun WorkSpaceView(
     gotoProfile: () -> Unit
 ) {
     val searchKey = remember { mutableStateOf("") }
+    val activeServer = homeViewModel.currentServer.observeAsState()
     Column(
         Modifier
             .fillMaxWidth()
@@ -509,7 +510,7 @@ fun WorkSpaceView(
         Spacer(modifier = Modifier.size(24.dp))
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
-                text = homeViewModel.currentServer.serverName, modifier = Modifier
+                text = activeServer?.value?.serverName ?: "", modifier = Modifier
                     .weight(0.66f), headerTextType = HeaderTextType.Large
             )
             Column(
