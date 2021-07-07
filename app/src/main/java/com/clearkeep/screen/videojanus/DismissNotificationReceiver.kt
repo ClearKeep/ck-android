@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
