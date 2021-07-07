@@ -26,7 +26,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall

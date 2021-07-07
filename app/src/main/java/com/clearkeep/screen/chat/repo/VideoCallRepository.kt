@@ -1,4 +1,4 @@
-package com.clearkeep.repo
+package com.clearkeep.screen.chat.repo
 
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.utilities.*

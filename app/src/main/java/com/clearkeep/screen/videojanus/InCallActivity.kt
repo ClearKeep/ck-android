@@ -27,7 +27,7 @@ import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.CallState
