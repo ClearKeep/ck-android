@@ -15,9 +15,9 @@ interface UserDao {
     @Insert(onConflict = REPLACE)
     suspend fun insertPeopleList(people: List<User>)
 
-    @Query("SELECT * FROM user WHERE user_id =:friendId AND owner_domain = :domain LIMIT 1")
-    suspend fun getFriend(friendId: String, domain: String): User?
+    @Query("SELECT * FROM user WHERE user_id =:userId AND owner_domain = :domain LIMIT 1")
+    suspend fun getFriend(userId: String, domain: String): User?
 
-    @Query("SELECT * FROM user")
-    fun getFriends(): LiveData<List<User>>
+    @Query("SELECT * FROM user WHERE owner_domain = :ownerDomain")
+    fun getFriends(ownerDomain: String): LiveData<List<User>>
 }
