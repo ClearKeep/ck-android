@@ -31,14 +31,14 @@ import com.clearkeep.components.pickledBlueWood
 import com.clearkeep.components.primaryDefault
 
 @Composable
-fun InviteScreen() {
+fun InviteScreen(onCloseView: () -> Unit) {
     val email = remember { mutableStateOf("") }
 
     Column(
         Modifier
             .padding(horizontal = 16.dp)
             .fillMaxSize()) {
-        HeaderInvite {}
+        HeaderInvite(onCloseView)
         Spacer(modifier = Modifier.height(24.dp))
         CKTextInputField(
             "Invite by email",
@@ -104,5 +104,5 @@ fun InviteOption(text: String) {
 @Preview
 @Composable
 fun InviteScreenPreview() {
-    InviteScreen()
+    InviteScreen({})
 }

@@ -111,6 +111,7 @@ fun HomeScreen(
             profile?.value?.let {
                 printlnCK("profile = ${it.getDisplayName()}")
                 SiteMenuScreen(
+                    homeViewModel,
                     it,
                     closeSiteMenu = {
                         rememberStateSiteMenu.value = false
@@ -131,6 +132,7 @@ fun HomeScreen(
 @Composable
 fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
+    val selectingJoinServer = mainViewModel.selectingJoinServer.observeAsState()
 
     workSpaces?.value?.let { serverList ->
         Column(modifier = Modifier.fillMaxSize()) {
@@ -175,7 +177,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .clickable { mainViewModel.selectChannel(server) },
                                 ) {
-                                    CircleAvatarWorkSpace(server, server.isActive)
+                                    CircleAvatarWorkSpace(server, server.isActive && selectingJoinServer.value != true)
                                 }
                                 Spacer(modifier = Modifier.height(36.dp))
                             }
