@@ -72,7 +72,6 @@ class DynamicAPIProviderImpl @Inject constructor(
         if (server == null) {
             throw IllegalArgumentException("server must be not null")
         }
-        printlnCK("provideUserBlockingStub: ${server!!.serverDomain}, ${server!!.accessKey}, ${server!!.hashKey}")
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return UserGrpc.newBlockingStub(managedChannel)
             .withCallCredentials(CallCredentials(
