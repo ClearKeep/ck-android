@@ -32,7 +32,7 @@ class ProfileRepository @Inject constructor(
 
     private suspend fun registerTokenByOwner(token: String, server: Server) : Boolean  = withContext(Dispatchers.IO) {
         val deviceId = userManager.getUniqueDeviceID()
-        printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.id}, token = $token, deviceId = $deviceId")
+        printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, token = $token, deviceId = $deviceId")
         try {
             val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
                 .setDeviceId(deviceId)
@@ -41,10 +41,10 @@ class ProfileRepository @Inject constructor(
                 .build()
             val notifyPushGrpc = apiProvider.provideNotifyPushBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = notifyPushGrpc.registerToken(request)
-            printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.id}")
+            printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
             return@withContext response.success
         } catch (e: Exception) {
-            printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.id}, $e")
+            printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
             return@withContext false
         }
     }

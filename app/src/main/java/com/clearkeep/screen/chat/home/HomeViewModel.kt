@@ -55,7 +55,7 @@ class HomeViewModel @Inject constructor(
             val server = environment.getServer()
             result.value = groupList.filter {
                 it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.id
+                        && it.ownerClientId == server.profile.userId
                         && it.isGroup()
             }
         }
@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
             val server = environment.getServer()
             result.value = groups.value?.filter {
                 it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.id
+                        && it.ownerClientId == server.profile.userId
                         && it.isGroup()
             }
         }
@@ -76,7 +76,7 @@ class HomeViewModel @Inject constructor(
             val server = environment.getServer()
             result.value = groupList.filter {
                 it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.id
+                        && it.ownerClientId == server.profile.userId
                         && !it.isGroup()
             }
         }
@@ -84,7 +84,7 @@ class HomeViewModel @Inject constructor(
             val server = environment.getServer()
             result.value = groups.value?.filter {
                 it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.id
+                        && it.ownerClientId == server.profile.userId
                         && !it.isGroup()
             }
         }
@@ -112,7 +112,7 @@ class HomeViewModel @Inject constructor(
         selectingJoinServer.value = true
     }
 
-    fun getClientIdOfActiveServer() = environment.getServer().profile.id
+    fun getClientIdOfActiveServer() = environment.getServer().profile.userId
 
     fun getDomainOfActiveServer() = environment.getServer().serverDomain
 

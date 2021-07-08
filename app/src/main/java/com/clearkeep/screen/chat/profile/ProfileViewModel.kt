@@ -21,6 +21,6 @@ class ProfileViewModel @Inject constructor(
 
     fun getProfileLink() : String {
         val server = environment.getServer()
-        return getLinkFromPeople(User(server.profile.id, server.profile.getDisplayName(), server.serverDomain))
+        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.getDisplayName(), ownerDomain = server.serverDomain))
     }
 }

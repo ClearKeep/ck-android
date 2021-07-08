@@ -33,8 +33,8 @@ class CreateGroupViewModel @Inject constructor(
                         // clone invited list and add me to list
                         val list = mutableListOf<User>()
                         list.addAll(invitedFriends)
-                        list.add(User(server.profile.id, server.profile.getDisplayName(), server.serverDomain))
-                        val res = groupRepository.createGroupFromAPI(server.profile.id, groupName, list, true)
+                        list.add(User(userId = server.profile.userId, userName = server.profile.getDisplayName(), ownerDomain = server.serverDomain))
+                        val res = groupRepository.createGroupFromAPI(server.profile.userId, groupName, list, true)
                         if (res != null) {
                                 groupId = res.groupId
                                 _createGroupState.value = CreateGroupSuccess

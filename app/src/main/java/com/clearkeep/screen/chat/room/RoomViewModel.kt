@@ -96,12 +96,11 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateGroupWithFriendId(friendId: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
-        val friend = peopleRepository.getFriend(friendId) ?: User(friendId, "", "",)
+        val friend = peopleRepository.getFriend(friendId, domain) ?: User(userId = friendId, userName = "", ownerDomain = domain)
         var existingGroup = groupRepository.getGroupPeerByClientId(friend)
         if (existingGroup == null) {
             existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
         } else {
-            chatRepository.setJoiningRoomId(existingGroup.groupId)
             updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
         }
         setJoiningGroup(existingGroup)
@@ -109,7 +108,7 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
-        messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.id), lastMessageAt, 0)
+        messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 
     fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String) {
@@ -118,7 +117,7 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
                 val group = groupRepository.createGroupFromAPI(
-                        user.id,
+                        user.userId,
                         "${user.getDisplayName()},${receiverPeople.userName}",
                         mutableListOf(getUser(), receiverPeople),
                         false
@@ -132,10 +131,10 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.ownerDomain, lastGroupId, message, isForceProcessKey = true)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.id, receiverPeople.ownerDomain, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.ownerDomain, lastGroupId, message)
                 }
             }
         }
@@ -170,9 +169,9 @@ class RoomViewModel @Inject constructor(
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
-                val friend = peopleRepository.getFriend(friendId!!)!!
+                val friend = peopleRepository.getFriend(friendId!!, domain)!!
                 val group = groupRepository.createGroupFromAPI(
-                    user.id,
+                    user.userId,
                     "",
                     mutableListOf(user, friend),
                         false
@@ -199,7 +198,7 @@ class RoomViewModel @Inject constructor(
 
     private fun getUser(): User {
         val server = environment.getServer()
-        return User(server.profile.id, server.profile.getDisplayName(), server.serverDomain)
+        return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), ownerDomain = server.serverDomain)
     }
 }
 
