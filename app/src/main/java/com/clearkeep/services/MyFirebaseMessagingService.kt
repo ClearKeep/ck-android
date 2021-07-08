@@ -94,7 +94,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
         AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
-            clientId, fromClientName, avatar,
+            clientDomain, clientId,
+            fromClientName, avatar,
             turnUrl, turnUser, turnPass,
             webRtcGroupId, webRtcUrl,
             stunUrl)

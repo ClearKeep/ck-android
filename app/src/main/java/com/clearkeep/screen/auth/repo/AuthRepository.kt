@@ -16,8 +16,6 @@ import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.SignalProtocolAddress
-import org.whispersystems.libsignal.util.KeyHelper
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
@@ -75,7 +73,7 @@ class AuthRepository @Inject constructor(
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                     ?: return@withContext Resource.error("Can not get profile", null)
                 val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.id),
+                    Owner(domain, profile.userId),
                     paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
                 )
                 if (!isRegisterKeySuccess) {
@@ -86,7 +84,7 @@ class AuthRepository @Inject constructor(
                     Server(
                         serverName = response.workspaceName,
                         serverDomain = domain,
-                        ownerClientId = profile.id,
+                        ownerClientId = profile.userId,
                         serverAvatar = "",
                         loginTime = getCurrentDateTime().time,
                         accessKey = accessToken,
@@ -123,7 +121,7 @@ class AuthRepository @Inject constructor(
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                     ?: return@withContext Resource.error("Can not get profile", null)
                 val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.id),
+                    Owner(domain, profile.userId),
                     paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
                 )
                 if (!isRegisterKeySuccess) {
@@ -134,7 +132,7 @@ class AuthRepository @Inject constructor(
                     Server(
                         serverName = response.workspaceName,
                         serverDomain = domain,
-                        ownerClientId = profile.id,
+                        ownerClientId = profile.userId,
                         serverAvatar = "",
                         loginTime = getCurrentDateTime().time,
                         accessKey = accessToken,
@@ -170,7 +168,7 @@ class AuthRepository @Inject constructor(
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                     ?: return@withContext Resource.error("Can not get profile", null)
                 val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.id),
+                    Owner(domain, profile.userId),
                     paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
                 )
                 if (!isRegisterKeySuccess) {
@@ -181,7 +179,7 @@ class AuthRepository @Inject constructor(
                     Server(
                         serverName = response.workspaceName,
                         serverDomain = domain,
-                        ownerClientId = profile.id,
+                        ownerClientId = profile.userId,
                         serverAvatar = "",
                         loginTime = getCurrentDateTime().time,
                         accessKey = accessToken,
@@ -220,7 +218,7 @@ class AuthRepository @Inject constructor(
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                     ?: return@withContext Resource.error("Can not get profile", null)
                 val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.id),
+                    Owner(domain, profile.userId),
                     paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
                 )
                 if (!isRegisterKeySuccess) {
@@ -231,7 +229,7 @@ class AuthRepository @Inject constructor(
                     Server(
                         serverName = response.workspaceName,
                         serverDomain = domain,
-                        ownerClientId = profile.id,
+                        ownerClientId = profile.userId,
                         serverAvatar = "",
                         loginTime = getCurrentDateTime().time,
                         accessKey = accessToken,
@@ -298,11 +296,11 @@ class AuthRepository @Inject constructor(
             val response = userGrpc.getProfile(request)
             printlnCK("getProfileWithGrpc: $response")
             return@withContext Profile(
-                response.id,
-                response.displayName,
-                response.email,
-                response.firstName,
-                response.lastName
+                userId = response.id,
+                userName = response.displayName,
+                email = response.email,
+                firstName = response.firstName,
+                lastName = response.lastName
             )
         } catch (e: Exception) {
             printlnCK("getProfileWithGrpc: $e")

@@ -41,7 +41,7 @@ class SearchUserActivity : AppCompatActivity() {
 
     private fun navigateToRoomScreen(friend: User) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.FRIEND_ID, friend.id)
+        intent.putExtra(RoomActivity.FRIEND_ID, friend.userId)
         startActivity(intent)
     }
 }

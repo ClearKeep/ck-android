@@ -13,7 +13,7 @@ class PeopleViewModel @Inject constructor(
 
     private val environment: Environment
 ): ViewModel() {
-    fun getClientId() = environment.getServer().profile.id
+    fun getClientId() = environment.getServer().profile.userId
 
     val friends: LiveData<List<User>> = peopleRepository.getFriends()
 

@@ -25,7 +25,7 @@ fun convertMessageList(
             val showAvatarAndName = (index == groupedSize - 1) && isGroup && !isOwner
             val showSpacerTop = index == groupedSize - 1
             val userName = clients.firstOrNull {
-                it.id == message.senderId
+                it.userId == message.senderId
             }?.userName ?: message.senderId
             MessageDisplayInfo(
                 message, isOwner, showAvatarAndName, showSpacerTop, userName,
