@@ -26,9 +26,9 @@ import com.clearkeep.components.primaryDefault
 
 
 @Composable
-fun NotificationSettingScreen() {
+fun NotificationSettingScreen(onCloseView: () -> Unit) {
     Column(Modifier.padding(horizontal = 16.dp).fillMaxSize()) {
-        HeaderNotificationSetting {}
+        HeaderNotificationSetting(onCloseView)
         Spacer(modifier = Modifier.height(26.dp))
         CKSetting(modifier = Modifier, name = "Show previews", description = "Tips: Show message previews in alerts and banners when you are not using app", checked = mutableStateOf(false))
         Spacer(modifier = Modifier.height(40.dp))
@@ -102,5 +102,5 @@ private fun CKSetting(modifier: Modifier, name: String, description: String = ""
 @Preview
 @Composable
 fun NotificationSettingPreview() {
-    NotificationSettingScreen()
+    NotificationSettingScreen{}
 }

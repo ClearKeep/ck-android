@@ -30,7 +30,10 @@ import javax.inject.Inject
 import kotlin.system.exitProcess
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.screen.chat.banned_users.BannedUserActivity
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
+import com.clearkeep.screen.chat.invite.InviteActivity
+import com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
@@ -263,14 +266,17 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun navigateToNotificationSettingScreen() {
-
+        val intent = Intent(this, NotificationSettingActivity::class.java)
+        startActivity(intent)
     }
 
     private fun navigateToInviteScreen() {
-
+        val intent = Intent(this, InviteActivity::class.java)
+        startActivity(intent)
     }
 
     private fun navigateToBannedUserScreen() {
-
+        val intent = Intent(this, BannedUserActivity::class.java)
+        startActivity(intent)
     }
 }

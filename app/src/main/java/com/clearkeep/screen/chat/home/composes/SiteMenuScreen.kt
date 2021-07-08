@@ -41,11 +41,12 @@ import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.db.clear_keep.model.Profile
-import com.clearkeep.screen.chat.home.composes.CircleAvatarSite
+import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.profile.LogoutConfirmDialog
 
 @Composable
 fun SiteMenuScreen(
+    homeViewModel: HomeViewModel,
     profile: Profile,
     closeSiteMenu: (() -> Unit),
     onLogout: (()->Unit),
@@ -112,7 +113,7 @@ fun SiteMenuScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.size(16.dp))
-                            HeaderSite(profile)
+                            HeaderSite(profile, homeViewModel)
                             Spacer(modifier = Modifier.size(24.dp))
                             Divider(color = grayscale3)
                             SettingServer(
@@ -156,7 +157,8 @@ fun SiteMenuScreen(
 }
 
 @Composable
-fun HeaderSite(profile: Profile) {
+fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
+    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -186,21 +188,21 @@ fun HeaderSite(profile: Profile) {
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
                 val image = createRef()
-//                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
-//                    linkTo(parent.start, image.start, endMargin = 4.dp)
-//                    width = Dimension.fillToConstraints
-//                })
-//                IconButton(
-//                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) }, Modifier.size(18.dp).constrainAs(image) {
-//                        end.linkTo(parent.end)
-//                    }
-//                ) {
-//                    Icon(
-//                        Icons.Filled.ContentCopy,
-//                        contentDescription = "",
-//                        tint = primaryDefault
-//                    )
-//                }
+                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
+                    linkTo(parent.start, image.start, endMargin = 4.dp)
+                    width = Dimension.fillToConstraints
+                })
+                IconButton(
+                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) }, Modifier.size(18.dp).constrainAs(image) {
+                        end.linkTo(parent.end)
+                    }
+                ) {
+                    Icon(
+                        Icons.Filled.ContentCopy,
+                        contentDescription = "",
+                        tint = primaryDefault
+                    )
+                }
             }
         }
     }
