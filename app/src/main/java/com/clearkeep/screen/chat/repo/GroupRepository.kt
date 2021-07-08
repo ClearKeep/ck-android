@@ -178,8 +178,8 @@ class GroupRepository @Inject constructor(
 
     suspend fun getGroupPeerByClientId(friend: User): ChatGroup? {
         return friend.let {
-            groupDAO.getPeerGroups().firstOrNull {
-                it.clientList.contains(friend)
+            groupDAO.getPeerGroups().firstOrNull { group ->
+                group.clientList.firstOrNull { it.userId == friend.userId && it.ownerDomain == friend.ownerDomain } != null
             }
         }
     }
