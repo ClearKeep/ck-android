@@ -4,9 +4,11 @@ import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.repo.ChatRepository
-import com.clearkeep.repo.GroupRepository
-import com.clearkeep.repo.MessageRepository
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.repo.ChatRepository
+import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -18,7 +20,6 @@ import com.google.gson.Gson
 import com.google.protobuf.ByteString
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -29,13 +30,13 @@ import java.util.HashMap
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
-    lateinit var userManager: UserManager
-
-    @Inject
     lateinit var chatRepository: ChatRepository
 
     @Inject
     lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var serverRepository: ServerRepository
 
     @Inject
     lateinit var messageRepository: MessageRepository
@@ -43,107 +44,114 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         printlnCK("onMessageReceived: ${remoteMessage.data}")
+        handleNotification(remoteMessage)
+    }
 
-        when (remoteMessage.data["notify_type"]) {
-            "request_call" -> {
-                handleRequestCall(remoteMessage)
-            }
-            "cancel_request_call" -> {
-                val groupId = remoteMessage.data["group_id"]
-                if (!groupId.isNullOrBlank()) {
-                    handleCancelCall(groupId)
+    private fun handleNotification(remoteMessage: RemoteMessage) {
+        val clientId = remoteMessage.data["client_id"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        GlobalScope.launch {
+            val server = serverRepository.getServer(clientDomain, clientId)
+            if (server != null) {
+                when (remoteMessage.data["notify_type"]) {
+                    "request_call" -> {
+                        handleRequestCall(remoteMessage)
+                    }
+                    "cancel_request_call" -> {
+                        handleCancelCall(remoteMessage)
+                    }
+                    "new_message" -> {
+                        handleNewMessage(remoteMessage)
+                    }
                 }
-            }
-            "new_message" -> {
-                handleNewMessage(remoteMessage)
             }
         }
     }
 
     private fun handleRequestCall(remoteMessage: RemoteMessage) {
-        val toClientId = remoteMessage.data["client_id"]
-        if (toClientId == userManager.getClientId()) {
-            val groupId = remoteMessage.data["group_id"]
-            val groupType = remoteMessage.data["group_type"]?: ""
-            val groupName = remoteMessage.data["group_name"]?: ""
-            val groupCallType = remoteMessage.data["call_type"]
-            val avatar = remoteMessage.data["from_client_avatar"] ?: ""
-            val fromClientName = remoteMessage.data["from_client_name"]
-            val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
-            val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
-            val webRtcUrl = remoteMessage.data["group_rtc_url"] ?: ""
+        val clientId = remoteMessage.data["client_id"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        val groupId = remoteMessage.data["group_id"]
+        val groupType = remoteMessage.data["group_type"]?: ""
+        val groupName = remoteMessage.data["group_name"]?: ""
+        val groupCallType = remoteMessage.data["call_type"]
+        val avatar = remoteMessage.data["from_client_avatar"] ?: ""
+        val fromClientName = remoteMessage.data["from_client_name"]
+        val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
+        val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
+        val webRtcUrl = remoteMessage.data["group_rtc_url"] ?: ""
 
-            val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
-            val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
+        val turnConfigJson = remoteMessage.data["turn_server"] ?: ""
+        val stunConfigJson = remoteMessage.data["stun_server"] ?: ""
 
-            val turnConfigJsonObject = JSONObject(turnConfigJson)
-            val stunConfigJsonObject = JSONObject(stunConfigJson)
-            val turnUrl = turnConfigJsonObject.getString("server")
-            val stunUrl = stunConfigJsonObject.getString("server")
-            val turnUser = turnConfigJsonObject.getString("user")
-            val turnPass = turnConfigJsonObject.getString("pwd")
-            val isAudioMode = groupCallType == CALL_TYPE_AUDIO
+        val turnConfigJsonObject = JSONObject(turnConfigJson)
+        val stunConfigJsonObject = JSONObject(stunConfigJson)
+        val turnUrl = turnConfigJsonObject.getString("server")
+        val stunUrl = stunConfigJsonObject.getString("server")
+        val turnUser = turnConfigJsonObject.getString("user")
+        val turnPass = turnConfigJsonObject.getString("pwd")
+        val isAudioMode = groupCallType == CALL_TYPE_AUDIO
 
-            val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
-                userManager.getClientId(), fromClientName, avatar,
-                turnUrl, turnUser, turnPass,
-                webRtcGroupId, webRtcUrl,
-                stunUrl)
-        }
+        val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
+        AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
+            clientDomain, clientId,
+            fromClientName, avatar,
+            turnUrl, turnUser, turnPass,
+            webRtcGroupId, webRtcUrl,
+            stunUrl)
     }
 
-    private fun handleNewMessage(remoteMessage: RemoteMessage) {
-        val toClientId = remoteMessage.data["client_id"]
+    private suspend fun handleNewMessage(remoteMessage: RemoteMessage) {
         val data: Map<String, String> = Gson().fromJson(
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
-        if (toClientId == userManager.getClientId()) {
-            val id = data["id"] ?: ""
-            val clientId = data["client_id"] ?: ""
-            val createdAt = data["created_at"]?.toLong() ?: 0
-            val fromClientID = data["from_client_id"] ?: ""
-            val groupId = data["group_id"]?.toLong() ?: 0
-            val groupType = data["group_type"] ?: ""
-            val messageUTF8AsBytes = (data["message"] ?: "").toByteArray(StandardCharsets.UTF_8)
-            val messageBase64 = Base64.decode(messageUTF8AsBytes, Base64.DEFAULT)
-            val messageContent: ByteString = ByteString.copyFrom(messageBase64)
-            GlobalScope.launch {
-                try {
-                    val decryptedMessage = chatRepository.decryptMessage(
-                        id, groupId, groupType, fromClientID,
-                        clientId, createdAt, createdAt,
-                        messageContent
-                    )
+        val clientId = data["client_id"] ?: ""
+        val clientDomain = data["client_workspace_domain"] ?: ""
+        val fromClientID = data["from_client_id"] ?: ""
+        val fromDomain = data["from_client_workspace_domain"] ?: ""
 
-                    Log.i(TAG, "onMessageReceived: decrypted -> ${decryptedMessage.message}")
+        val messageId = data["id"] ?: ""
+        val createdAt = data["created_at"]?.toLong() ?: 0
+        val groupId = data["group_id"]?.toLong() ?: 0
+        val groupType = data["group_type"] ?: ""
+        val messageUTF8AsBytes = (data["message"] ?: "").toByteArray(StandardCharsets.UTF_8)
+        val messageBase64 = Base64.decode(messageUTF8AsBytes, Base64.DEFAULT)
+        val messageContent: ByteString = ByteString.copyFrom(messageBase64)
+        try {
+            val decryptedMessage = messageRepository.decryptMessage(
+                messageId, groupId, groupType,
+                fromClientID, fromDomain,
+                createdAt, createdAt,
+                messageContent,
+                Owner(clientDomain, clientId)
+            )
 
-                    val groupAsyncRes = async { groupRepository.getGroupByID(groupId) }
-                    val group = groupAsyncRes.await()
-                    group?.let {
-                        showMessagingStyleNotification(
-                            context = applicationContext,
-                            chatGroup = it,
-                            decryptedMessage
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "onMessageReceived: error -> $e")
-                }
+            val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
+            if (group != null) {
+                showMessagingStyleNotification(
+                    context = applicationContext,
+                    chatGroup = group,
+                    decryptedMessage
+                )
             }
+        } catch (e: Exception) {
+            printlnCK("onMessageReceived: error -> $e")
         }
     }
 
-    private fun handleCancelCall(groupId: String) {
-        GlobalScope.launch {
-            val groupAsyncRes = async { groupRepository.getGroupByID(groupId.toLong()) }
-            val group = groupAsyncRes.await()
-            if (group != null ) {
-                NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
-                val endIntent = Intent(ACTION_CALL_CANCEL)
-                endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
-                sendBroadcast(endIntent)
-            }
+    private suspend fun handleCancelCall(remoteMessage: RemoteMessage) {
+        val groupId = remoteMessage.data["group_id"]
+        val clientId = remoteMessage.data["client_id"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        if (groupId.isNullOrBlank()) {
+            return
+        }
+        val group = groupRepository.getGroupByID(groupId.toLong(), clientDomain, clientId)
+        if (group != null) {
+            NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+            val endIntent = Intent(ACTION_CALL_CANCEL)
+            endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
+            sendBroadcast(endIntent)
         }
     }
 

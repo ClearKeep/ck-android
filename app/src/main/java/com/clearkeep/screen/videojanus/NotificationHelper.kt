@@ -22,8 +22,8 @@ import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.People
-import com.clearkeep.screen.chat.main.MainActivity
+import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.screen.chat.home.MainActivity
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 
@@ -32,13 +32,13 @@ fun showMessagingStyleNotification(
     chatGroup: ChatGroup,
     message: Message,
 ) {
-    val sender = chatGroup.clientList.find { it.id == message.senderId } ?: People("", "unknown", "")
+    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", ownerDomain = "")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
-    sender: People,
+    sender: User,
     message: Message
 ) {
     val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
@@ -47,6 +47,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val intent = Intent(context, RoomActivity::class.java)
     intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
+    intent.putExtra(RoomActivity.DOMAIN, message.ownerDomain)
+    intent.putExtra(RoomActivity.CLIENT_ID, message.ownerClientId)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
     val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -60,6 +62,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
     val showSummaryIntent = Intent(context, ShowSummaryNotificationReceiver::class.java)
     showSummaryIntent.putExtra(EXTRA_GROUP_ID, message.groupId)
+    showSummaryIntent.putExtra(EXTRA_OWNER_CLIENT, message.ownerClientId)
+    showSummaryIntent.putExtra(EXTRA_OWNER_DOMAIN, message.ownerDomain)
     val pendingShowSummaryIntent = PendingIntent.getBroadcast(context, 0, showSummaryIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
@@ -123,13 +127,13 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
 fun showMessageNotificationToSystemBar(
     context: Context,
-    me: People,
+    me: User,
     chatGroup: ChatGroup,
     messages: List<Message>,
 ) {
     val channelId = MESSAGE_CHANNEL_ID
     val channelName = MESSAGE_CHANNEL_NAME
-    val notificationId = chatGroup.id.toInt()
+    val notificationId = chatGroup.groupId.toInt()
 
     val contentTitle = chatGroup.groupName
     val participants = chatGroup.clientList
@@ -137,14 +141,14 @@ fun showMessageNotificationToSystemBar(
     val messagingStyle: NotificationCompat.MessagingStyle = NotificationCompat.MessagingStyle(
         Person.Builder()
             .setName(me.userName)
-            .setKey(me.id)
+            .setKey(me.userId)
             .build()
     )
         .setConversationTitle(contentTitle)
         .setGroupConversation(chatGroup.isGroup())
 
     for (message in messages) {
-        val people = participants.find { it.id == message.senderId }
+        val people = participants.find { it.userId == message.senderId }
         messagingStyle.addMessage(
             NotificationCompat.MessagingStyle.Message(
                 message.message,
@@ -157,7 +161,9 @@ fun showMessageNotificationToSystemBar(
     // 3. Set up main Intent for notification.
     val notifyIntent = Intent(context, RoomActivity::class.java)
     notifyIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-    notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.id)
+    notifyIntent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
+    notifyIntent.putExtra(RoomActivity.DOMAIN, chatGroup.ownerDomain)
+    notifyIntent.putExtra(RoomActivity.CLIENT_ID, chatGroup.ownerClientId)
 
     val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
     // Adds the back stack
@@ -203,7 +209,7 @@ fun showMessageNotificationToSystemBar(
             )
         )
         .setGroupSummary(chatGroup.isGroup())
-        .setGroup(chatGroup.id.toString())
+        .setGroup(chatGroup.groupId.toString())
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setCategory(Notification.CATEGORY_MESSAGE)
 

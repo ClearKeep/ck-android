@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
 import com.clearkeep.utilities.printlnCK
 
@@ -43,7 +43,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val selectedItem = remember { mutableStateListOf<People>() }
+            val selectedItem = remember { mutableStateListOf<User>() }
             CKSimpleTheme {
                 NavHost(navController, startDestination = "invite_group") {
                     composable("invite_group") {
@@ -92,9 +92,9 @@ class CreateGroupActivity : AppCompatActivity() {
         subscribe()
     }
 
-    private fun handleDirectChat(people: People) {
+    private fun handleDirectChat(people: User) {
         val intent = Intent()
-        intent.putExtra(EXTRA_PEOPLE_ID, people.id)
+        intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
         intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
         setResult(RESULT_OK, intent)
         finish()

@@ -20,7 +20,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.AvatarImageTask
 import com.clearkeep.utilities.*
@@ -33,13 +33,16 @@ import javax.inject.Inject
 import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
 import com.clearkeep.R
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.repo.ServerRepository
 import jp.wasabeef.glide.transformations.BlurTransformation
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private var mUserNameInConversation: String? = null
     private var mAvatarInConversation: String? = null
-    private var mReceiverId: String? = null
+    private lateinit var mOwnerId: String
+    private lateinit var mDomain: String
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private var mIsGroupCall: Boolean = false
@@ -55,6 +58,9 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
+
+    @Inject
+    lateinit var serverRepository: ServerRepository
 
     private val endCallReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -87,7 +93,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
         mIsGroupCall = isGroup(mGroupType)
-        mReceiverId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID)
+        mOwnerId = intent.getStringExtra(EXTRA_OWNER_CLIENT) ?: ""
+        mDomain = intent.getStringExtra(EXTRA_OWNER_DOMAIN) ?: ""
         mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         initViews()
@@ -199,7 +206,10 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID) ?: ""
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
                 finishAndRemoveFromTask()
-                AppCall.call(this, mIsAudioMode, mToken, mGroupId, mGroupType, mGroupName, mReceiverId, mUserNameInConversation, mAvatarInConversation, true,
+                AppCall.call(this, mIsAudioMode, mToken,
+                    mGroupId, mGroupType, mGroupName,
+                    mDomain, mOwnerId,
+                    mUserNameInConversation, mAvatarInConversation, true,
                         turnUrl = turnUrl, turnUser = turnUserName, turnPass = turnPassword,
                     webRtcGroupId = webRtcGroupId, webRtcUrl = webRtcUrl,
                         stunUrl = stunUrl
@@ -220,7 +230,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun cancelCallAPI(groupId: Int) {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(groupId)
+            videoCallRepository.cancelCall(groupId, Owner(mDomain, mOwnerId))
         }
     }
 }

@@ -37,7 +37,6 @@ fun CustomServerScreen(
     onBackPress: (isCustom: Boolean, url: String) -> Unit,
     isCustom: Boolean,
     url: String,
-    port: String
 ) {
     val useCustomServerChecked = remember { mutableStateOf(isCustom) }
     val rememberServerUrl = remember { mutableStateOf(url) }
@@ -61,8 +60,7 @@ fun CustomServerScreen(
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
                     if (useCustomServerChecked.value
-                        && (rememberServerUrl.value.isBlank())
-                    ) {
+                        && (rememberServerUrl.value.isBlank())) {
                         setShowDialog("Please enter server url and port")
                     } else {
                         onBackPress(
@@ -127,9 +125,7 @@ fun CustomServerScreen(
                         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                             Row(
                                 modifier = Modifier
-                                    .weight(0.66f)
-                                    .padding(end = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .weight(0.66f).padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     "Server URL",

@@ -7,10 +7,6 @@ import android.net.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.repo.ChatRepository
-import com.clearkeep.repo.GroupRepository
-import com.clearkeep.repo.MessageRepository
-import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -18,19 +14,27 @@ import message.MessageOuterClass
 import notification.NotifyOuterClass
 import javax.inject.Inject
 import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
-import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.*
+import com.clearkeep.screen.chat.repo.ChatRepository
+import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.screen.chat.repo.MessageRepository
+import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.services.utils.MessageChannelSubscriber
 import com.clearkeep.services.utils.NotificationChannelSubscriber
-
 
 @AndroidEntryPoint
 class ChatService : Service(),
     MessageChannelSubscriber.MessageSubscriberListener,
     NotificationChannelSubscriber.NotificationSubscriberListener {
     @Inject
-    lateinit var userManager: UserManager
+    lateinit var environment: Environment
+
+    @Inject
+    lateinit var serverRepository: ServerRepository
 
     @Inject
     lateinit var chatRepository: ChatRepository
@@ -106,42 +110,40 @@ class ChatService : Service(),
     }
 
     private suspend fun subscribe() {
-        val domain = userManager.getWorkspaceDomain()
-        val messageSubscriber = MessageChannelSubscriber(
-            domain = userManager.getWorkspaceDomain(),
-            clientId = userManager.getClientId(),
-            messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
-            messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
-            onMessageSubscriberListener = this
-        )
-        val notificationSubscriber = NotificationChannelSubscriber(
-            domain = userManager.getWorkspaceDomain(),
-            clientId = userManager.getClientId(),
-            notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
-            notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
-            notificationChannelListener = this
-        )
-        messageSubscriber.subscribeAndListen()
-        notificationSubscriber.subscribeAndListen()
+        val servers = serverRepository.getServers()
+        servers.forEach { server ->
+            val domain = server.serverDomain
+            val messageSubscriber = MessageChannelSubscriber(
+                domain = domain,
+                clientId = server.profile.userId,
+                messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
+                messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
+                onMessageSubscriberListener = this
+            )
+            val notificationSubscriber = NotificationChannelSubscriber(
+                domain = domain,
+                clientId = server.profile.userId,
+                notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
+                notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
+                notificationChannelListener = this
+            )
+            messageSubscriber.subscribeAndListen()
+            notificationSubscriber.subscribeAndListen()
+        }
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         scope.launch {
-            if (!isGroup(value.groupType)) {
-                val res = chatRepository.decryptMessageFromPeer(value)
-                if (res != null) {
-                    val roomId = chatRepository.getJoiningRoomId()
-                    val groupId = value.groupId
-                    handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
-                }
-            } else {
-                val res = chatRepository.decryptMessageFromGroup(value)
-                if (res != null) {
-                    val roomId = chatRepository.getJoiningRoomId()
-                    val groupId = value.groupId
-                    handleShowNotification(joiningRoomId = roomId, groupId = groupId, res)
-                }
-            }
+            val res = messageRepository.decryptMessage(
+                value.id, value.groupId, value.groupType,
+                value.fromClientId, value.fromClientWorkspaceDomain,
+                value.createdAt, value.updatedAt,
+                value.message,
+                Owner(domain, value.clientId)
+            )
+            val roomId = chatRepository.getJoiningRoomId()
+            val groupId = value.groupId
+            handleShowNotification(joiningRoomId = roomId, groupId = groupId, res, domain, value.clientId)
         }
     }
 
@@ -152,15 +154,15 @@ class ChatService : Service(),
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
-                    groupRepository.fetchRoomsFromAPI()
+                    groupRepository.fetchGroups()
                 }
                 "new-peer" -> {
-                    groupRepository.fetchRoomsFromAPI()
+                    groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    val remoteUser = peopleRepository.getFriend(value.refClientId)
+                    val remoteUser = peopleRepository.getFriend(value.refClientId, value.refWorkspaceDomain)
                     if (remoteUser != null) {
-                        chatRepository.processPeerKey(remoteUser.id, remoteUser.workspace)
+                        chatRepository.processPeerKey(remoteUser.userId, remoteUser.ownerDomain)
                     } else {
                         printlnCK("Warning, can not get user to peer update key")
                     }
@@ -171,7 +173,7 @@ class ChatService : Service(),
                     sendBroadcast(switchIntent)
                 }
                 CALL_UPDATE_TYPE_CANCEL -> {
-                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId) }
+                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId, domain, value.clientId) }
                     val group = groupAsyncRes.await()
                     if (group != null ) {
                         NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -184,11 +186,12 @@ class ChatService : Service(),
         }
     }
 
-    private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message) {
+    private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message, domain: String, ownerClientId: String) {
         scope.launch {
-            val group = groupRepository.getGroupByID(groupId = groupId)
+            val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.let {
-                if (joiningRoomId != groupId) {
+                val currentServer = environment.getServer()
+                if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
@@ -200,21 +203,23 @@ class ChatService : Service(),
     }
 
     private suspend fun updateMessageHistory() {
-        groupRepository.fetchRoomsFromAPI()
+        groupRepository.fetchGroups()
     }
 
     private suspend fun updateMessageAndKeyInOnlineRoom() {
+        printlnCK("updateMessageAndKeyInOnlineRoom")
         val roomId = chatRepository.getJoiningRoomId()
-        if (roomId > 0) {
-            val group = groupRepository.getGroupByID(roomId)!!
-            messageRepository.updateMessageFromAPI(group.id, group.lastMessageSyncTimestamp)
+        val currentServer = environment.getServer()
+        if (roomId > 0 && currentServer != null) {
+            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)!!
+            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), group.lastMessageSyncTimestamp)
 
             if (!group.isGroup()) {
                 val receiver = group.clientList.firstOrNull { client ->
-                    client.id != userManager.getClientId()
+                    client.userId != currentServer.profile.userId
                 }
                 if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.id, receiver.workspace)
+                    chatRepository.processPeerKey(receiver.userId, receiver.ownerDomain)
                 }
             }
         }

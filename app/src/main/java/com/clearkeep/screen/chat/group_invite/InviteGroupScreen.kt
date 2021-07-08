@@ -14,9 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import kotlinx.coroutines.flow.collect
@@ -25,9 +24,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun InviteGroupScreen(
     inviteGroupViewModel: InviteGroupViewModel,
-    selectedItem: SnapshotStateList<People>,
-    onFriendSelected: (List<People>) -> Unit,
-    onDirectFriendSelected: (People) -> Unit,
+    selectedItem: SnapshotStateList<User>,
+    onFriendSelected: (List<User>) -> Unit,
+    onDirectFriendSelected: (User) -> Unit,
     onBackPressed: () -> Unit,
     onInsertFriend: () -> Unit,
     isCreatePeerGroup: Boolean = true
@@ -132,7 +131,7 @@ fun InviteGroupScreen(
 }
 
 @Composable
-fun SelectedHorizontalBox(selectedItem: List<People>, unSelectItem: (people: People) -> Unit) {
+fun SelectedHorizontalBox(selectedItem: List<User>, unSelectItem: (people: User) -> Unit) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
