@@ -141,9 +141,10 @@ class MessageRepository @Inject constructor(
         encryptedMessage: ByteString,
         owner: Owner,
     ): Message {
-        val messageText = try {
+        var messageText: String
+        try {
             val sender = Owner(fromDomain, fromClientId)
-            if (!isGroup(groupType)) {
+            messageText = if (!isGroup(groupType)) {
                 decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
             } else {
                 decryptGroupMessage(
@@ -164,14 +165,16 @@ class MessageRepository @Inject constructor(
             val oldMessage = messageDAO.getMessage(messageId)
             if (oldMessage != null) {
                 printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
+                return oldMessage
+            } else {
+                messageText = getUnableErrorMessage(e.message)
             }
-            oldMessage?.message ?: getUnableErrorMessage(e.message)
         } catch (e: Exception) {
             printlnCK("decryptMessage error : $e")
-            getUnableErrorMessage(e.message)
+            messageText = getUnableErrorMessage(e.message)
         }
 
-        printlnCK("decryptMessage success: $messageText")
+        printlnCK("decryptMessage done: $messageText")
         return saveNewMessage(
             Message(
                 messageId = messageId, groupId = groupId, groupType = groupType,
