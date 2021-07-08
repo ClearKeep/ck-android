@@ -12,7 +12,7 @@ fun getGroupType(isGroup: Boolean) : String {
 }
 
 fun getLinkFromPeople(people: User) : String {
-    return "${people.ownerDomain}/${people.userName}/${people.id}"
+    return "${people.ownerDomain}/${people.userName}/${people.userId}"
 }
 
 fun getPeopleFromLink(link: String) : User? {
@@ -21,5 +21,5 @@ fun getPeopleFromLink(link: String) : User? {
         return null
     }
     printlnCK("${args[2]}, ${args[1]}, ${args[0]}")
-    return User(args[2], args[1], args[0])
+    return User(userId = args[2], userName = args[1], ownerDomain = args[0])
 }

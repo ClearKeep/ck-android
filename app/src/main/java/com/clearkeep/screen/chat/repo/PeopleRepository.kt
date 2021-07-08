@@ -4,7 +4,6 @@ import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.UserDao
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.DynamicAPIProvider
-import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,8 +18,6 @@ class PeopleRepository @Inject constructor(
 
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
-
-    private val environment: Environment
 ) {
     fun getFriends() = peopleDao.getFriends().map { list ->
         list.sortedBy { it.userName.toLowerCase() }
@@ -38,15 +35,9 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    suspend fun getFriend(friendId: String) : User? = withContext(Dispatchers.IO) {
-        val friend = peopleDao.getFriend(friendId)
-        return@withContext friend ?: getFriendFromAPI(friendId)
-    }
-
-    suspend fun getFriends(idList: List<String>): List<User> = withContext(Dispatchers.IO) {
-        return@withContext idList.mapNotNull { id ->
-            peopleDao.getFriend(id)
-        }
+    suspend fun getFriend(friendId: String, domain: String) : User? = withContext(Dispatchers.IO) {
+        printlnCK("getFriend: $friendId + $domain")
+        return@withContext peopleDao.getFriend(friendId, domain)
     }
 
     suspend fun searchUser(userName: String) : List<User>  = withContext(Dispatchers.IO) {
@@ -58,9 +49,9 @@ class PeopleRepository @Inject constructor(
             return@withContext response.lstUserOrBuilderList
                     .map { userInfoResponseOrBuilder ->
                         User(
-                            userInfoResponseOrBuilder.id,
-                            userInfoResponseOrBuilder.displayName,
-                            userInfoResponseOrBuilder.workspaceDomain,
+                            userId = userInfoResponseOrBuilder.id,
+                            userName = userInfoResponseOrBuilder.displayName,
+                            ownerDomain = userInfoResponseOrBuilder.workspaceDomain,
                         )
                     }
         } catch (e: Exception) {
@@ -70,7 +61,19 @@ class PeopleRepository @Inject constructor(
     }
 
     suspend fun insertFriend(friend: User) {
-        peopleDao.insert(friend)
+        val oldGroup = peopleDao.getFriend(friend.userId, friend.ownerDomain)
+        if (oldGroup != null) {
+            peopleDao.insert(
+                User(
+                    generateId = oldGroup.generateId,
+                    userId = friend.userId,
+                    userName = friend.userName,
+                    ownerDomain = friend.ownerDomain
+                )
+            )
+        } else {
+            peopleDao.insert(friend)
+        }
     }
 
     private suspend fun insertFriends(friends: List<User>) {
@@ -80,17 +83,12 @@ class PeopleRepository @Inject constructor(
     private suspend fun getFriendsFromAPI() : List<User>  = withContext(Dispatchers.IO) {
         printlnCK("getFriendsFromAPI")
         try {
-            val server = environment.getServer()
             val request = UserOuterClass.Empty.newBuilder()
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
             return@withContext response.lstUserOrBuilderList
-                .map { userInfoResponseOrBuilder ->
-                    User(
-                        userInfoResponseOrBuilder.id,
-                        userInfoResponseOrBuilder.displayName,
-                        userInfoResponseOrBuilder.workspaceDomain,
-                    )
+                .map { userInfoResponse ->
+                    convertUserResponse(userInfoResponse)
                 }
         } catch (e: Exception) {
             printlnCK("getFriendsFromAPI: $e")
@@ -98,20 +96,13 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    private suspend fun getFriendFromAPI(friendId: String) : User?  = withContext(Dispatchers.IO) {
-        try {
-            val server = environment.getServer()
-            val request = UserOuterClass.GetUserRequest.newBuilder().setClientId(friendId)
-                .build()
-            val response = dynamicAPIProvider.provideUserBlockingStub().getUserInfo(request)
-            return@withContext User(
-                response.id,
-                response.displayName,
-                response.workspaceDomain,
-            )
-        } catch (e: Exception) {
-            printlnCK("getFriendFromAPI: $e")
-            return@withContext null
-        }
+    private suspend fun convertUserResponse(userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder) : User {
+        val oldGroup = peopleDao.getFriend(userInfoResponse.id, userInfoResponse.workspaceDomain)
+        return User(
+            generateId = oldGroup?.generateId ?: null,
+            userId = userInfoResponse.id,
+            userName = userInfoResponse.displayName,
+            ownerDomain = userInfoResponse.workspaceDomain,
+        )
     }
 }

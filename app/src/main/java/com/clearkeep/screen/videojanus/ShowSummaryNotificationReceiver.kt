@@ -35,7 +35,7 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
             val unreadMessages = messageRepository.getUnreadMessage(groupId, ownerDomain, ownerClientId)
             val group = groupRepository.getGroupByID(groupId, ownerDomain, ownerClientId)
             if (group != null && unreadMessages.isNotEmpty()) {
-                val me = group.clientList.find { it.id == ownerClientId } ?: User(ownerClientId, "me", ownerDomain)
+                val me = group.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", ownerDomain = ownerDomain)
                 showMessageNotificationToSystemBar(context, me, group, unreadMessages)
             }
         }

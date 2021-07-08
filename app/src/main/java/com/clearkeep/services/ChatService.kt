@@ -115,14 +115,14 @@ class ChatService : Service(),
             val domain = server.serverDomain
             val messageSubscriber = MessageChannelSubscriber(
                 domain = domain,
-                clientId = server.profile.id,
+                clientId = server.profile.userId,
                 messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
                 messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
                 onMessageSubscriberListener = this
             )
             val notificationSubscriber = NotificationChannelSubscriber(
                 domain = domain,
-                clientId = server.profile.id,
+                clientId = server.profile.userId,
                 notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
                 notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
                 notificationChannelListener = this
@@ -160,9 +160,9 @@ class ChatService : Service(),
                     groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    val remoteUser = peopleRepository.getFriend(value.refClientId)
+                    val remoteUser = peopleRepository.getFriend(value.refClientId, value.refWorkspaceDomain)
                     if (remoteUser != null) {
-                        chatRepository.processPeerKey(remoteUser.id, remoteUser.ownerDomain)
+                        chatRepository.processPeerKey(remoteUser.userId, remoteUser.ownerDomain)
                     } else {
                         printlnCK("Warning, can not get user to peer update key")
                     }
@@ -191,7 +191,7 @@ class ChatService : Service(),
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.let {
                 val currentServer = environment.getServer()
-                if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.id != ownerClientId) {
+                if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
@@ -211,15 +211,15 @@ class ChatService : Service(),
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.id)!!
-            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.id), group.lastMessageSyncTimestamp)
+            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)!!
+            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), group.lastMessageSyncTimestamp)
 
             if (!group.isGroup()) {
                 val receiver = group.clientList.firstOrNull { client ->
-                    client.id != currentServer.profile.id
+                    client.userId != currentServer.profile.userId
                 }
                 if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.id, receiver.ownerDomain)
+                    chatRepository.processPeerKey(receiver.userId, receiver.ownerDomain)
                 }
             }
         }

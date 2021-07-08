@@ -2,6 +2,7 @@ package com.clearkeep.db.clear_keep.model
 
 import androidx.room.*
 import com.clearkeep.db.clear_keep.converter.UserConverter
+import java.util.*
 
 @Entity
 @TypeConverters(UserConverter::class)
@@ -21,4 +22,16 @@ data class Server(
         override fun toString(): String {
                 return "${serverName}, $serverDomain, $accessKey, $hashKey"
         }
+
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is Server) {
+            return false
+        }
+        return serverDomain == other.serverDomain && ownerClientId == other.ownerClientId
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(serverDomain, ownerClientId)
+    }
 }

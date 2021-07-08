@@ -144,10 +144,14 @@ class RoomActivity : AppCompatActivity() {
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
         val roomName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
-                client.id != clientId
+                client.userId != clientId
             }?.userName ?: ""
         }
-        AppCall.call(this, isAudioMode, null, group.groupId.toString(), group.groupType, roomName,  clientId, roomName, "", false)
+        AppCall.call(
+            this, isAudioMode, null,
+            group.groupId.toString(), group.groupType, roomName,
+            domain, clientId, roomName, "", false
+        )
     }
 
     companion object {

@@ -25,8 +25,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.R
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.utils.isGroup
@@ -77,6 +79,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
+    private lateinit var mOwnerClientId: String
+    private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
     private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
@@ -86,6 +90,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     @Inject
     lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var serverRepository: ServerRepository
 
     @Inject
     lateinit var environment: Environment
@@ -124,6 +131,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
+        mOwnerDomain = intent.getStringExtra(EXTRA_OWNER_DOMAIN)!!
+        mOwnerClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
@@ -219,7 +228,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
             // TODO
-            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(), "", "")
+            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(), mOwnerDomain, mOwnerClientId)
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -232,7 +241,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode)
+                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
 
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -261,6 +270,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             }
 
         }
+    }
+
+    private fun getOwnerServer(): Owner {
+        return Owner(mOwnerDomain, mOwnerClientId)
     }
 
     override fun onPermissionsDenied() {
@@ -384,7 +397,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         turnPass: String,
         token: String
     ) {
-        val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
+        val ourClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT) ?: ""
         printlnCK("Janus URL: $janusUrl")
         printlnCK(
             "startVideo: janusUrl = $janusUrl, janusGroupId = $janusGroupId , stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
@@ -464,7 +477,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         configMedia(isSpeaker = true, isMuteVideo = false)
         updateUIByStateAndMode()
         callScope.launch {
-            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt())
+            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 
@@ -557,7 +570,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private fun cancelCallAPI() {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(mGroupId.toInt())
+            videoCallRepository.cancelCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 
@@ -684,7 +697,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val renders = remoteRenders.values
 
-        val me = group?.clientList?.find { it.id == environment.getServer().profile.id }
+        val me = group?.clientList?.find { it.userId == environment.getServer().profile.userId }
         val surfaceGenerator =
             SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
 
@@ -697,7 +710,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
             val remoteInfo = renders.elementAt(index)
-            val user = group?.clientList?.find { it.id == remoteInfo.clientId }
+            val user = group?.clientList?.find { it.userId == remoteInfo.clientId }
             val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
                 , remoteSurfacePosition)
             binding.surfaceRootContainer.addView(view)
@@ -846,5 +859,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     companion object {
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
+        const val DOMAIN = "domain"
+        const val CLIENT_ID = "client_id"
     }
 }
