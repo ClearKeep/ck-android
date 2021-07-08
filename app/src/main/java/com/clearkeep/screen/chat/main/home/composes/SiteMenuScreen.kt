@@ -214,9 +214,15 @@ fun SettingServer(
         ItemSiteSetting("Server", R.drawable.ic_adjustment, {
             navController.navigate("server_setting")
         })
-        ItemSiteSetting("Notification", R.drawable.ic_server_notification)
-        ItemSiteSetting("Invite", R.drawable.ic_user_plus)
-        ItemSiteSetting("Banned", R.drawable.ic_user_off)
+        ItemSiteSetting("Notification", R.drawable.ic_server_notification, {
+            navController.navigate("notification_setting")
+        })
+        ItemSiteSetting("Invite", R.drawable.ic_user_plus, {
+            navController.navigate("invite")
+        })
+        ItemSiteSetting("Banned", R.drawable.ic_user_off, {
+            navController.navigate("banned_user")
+        })
         ItemSiteSetting("Leave $serverName", R.drawable.ic_logout)
     }
 }

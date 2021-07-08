@@ -42,6 +42,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import com.clearkeep.screen.chat.main.banned_users.BannedUserScreen
+import com.clearkeep.screen.chat.main.invite.InviteScreen
+import com.clearkeep.screen.chat.main.notification_setting.NotificationSettingScreen
 import com.clearkeep.screen.chat.main.settings.ServerSettingScreen
 
 
@@ -190,6 +193,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 }
                             )
                         }
+                    }
+                    composable("invite") {
+                        InviteScreen()
+                    }
+                    composable("notification_setting") {
+                        NotificationSettingScreen()
+                    }
+                    composable("banned_user") {
+                        BannedUserScreen()
                     }
                 }
                 LogoutProgress()
