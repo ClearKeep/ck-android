@@ -8,6 +8,7 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
@@ -222,9 +223,10 @@ class GroupRepository @Inject constructor(
         serverDomain: String,
         ownerId: String
     ): ChatGroup {
+        val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         val isRegisteredKey = oldGroup?.isJoined ?: false
-        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: environment.getServer().loginTime
+        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
         val clientList = response.lstClientList.map {
             User(

@@ -16,7 +16,7 @@ class InviteGroupViewModel @Inject constructor(
 
         private var textSearch = MutableLiveData<String>()
 
-        val friends: LiveData<List<User>> = peopleRepository.getFriends()
+        val friends: LiveData<List<User>> = peopleRepository.getFriends(environment.getServer().serverDomain)
 
         val filterFriends = liveData<List<User>> {
                 val result = MediatorLiveData<List<User>>()

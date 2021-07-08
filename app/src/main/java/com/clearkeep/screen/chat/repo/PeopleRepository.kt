@@ -19,7 +19,7 @@ class PeopleRepository @Inject constructor(
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
 ) {
-    fun getFriends() = peopleDao.getFriends().map { list ->
+    fun getFriends(domain: String) = peopleDao.getFriends(domain).map { list ->
         list.sortedBy { it.userName.toLowerCase() }
     }
 
@@ -61,11 +61,11 @@ class PeopleRepository @Inject constructor(
     }
 
     suspend fun insertFriend(friend: User) {
-        val oldGroup = peopleDao.getFriend(friend.userId, friend.ownerDomain)
-        if (oldGroup != null) {
+        val oldUser = peopleDao.getFriend(friend.userId, friend.ownerDomain)
+        if (oldUser != null) {
             peopleDao.insert(
                 User(
-                    generateId = oldGroup.generateId,
+                    generateId = oldUser.generateId,
                     userId = friend.userId,
                     userName = friend.userName,
                     ownerDomain = friend.ownerDomain
