@@ -237,7 +237,7 @@ fun ItemListDirectMessage(
     ) {
         val roomName = if (chatGroup.isGroup()) chatGroup.groupName else {
             chatGroup.clientList.firstOrNull { client ->
-                client.id != clintId
+                client.userId != clintId
             }?.userName ?: ""
         }
 

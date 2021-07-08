@@ -12,7 +12,7 @@ class InviteGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val environment: Environment
 ): ViewModel() {
-        fun getClientId() = environment.getServer().profile.id
+        fun getClientId() = environment.getServer().profile.userId
 
         private var textSearch = MutableLiveData<String>()
 

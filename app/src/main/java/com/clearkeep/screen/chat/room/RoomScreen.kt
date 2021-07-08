@@ -39,7 +39,7 @@ fun RoomScreen(
         val messageList = roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId).observeAsState()
         val groupName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
-                client.id != roomViewModel.clientId
+                client.userId != roomViewModel.clientId
             }?.userName ?: ""
         }
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
@@ -92,7 +92,7 @@ fun RoomScreen(
                                 roomViewModel.sendMessageToGroup(groupResult.groupId, validMessage, groupResult.isJoined)
                             } else {
                                 val friend = groupResult.clientList.firstOrNull { client ->
-                                    client.id != roomViewModel.clientId
+                                    client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
                                     roomViewModel.sendMessageToUser(friend, groupResult.groupId, validMessage)

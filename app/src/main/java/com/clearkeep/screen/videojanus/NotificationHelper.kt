@@ -32,7 +32,7 @@ fun showMessagingStyleNotification(
     chatGroup: ChatGroup,
     message: Message,
 ) {
-    val sender = chatGroup.clientList.find { it.id == message.senderId } ?: User("", "unknown", "")
+    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", ownerDomain = "")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
 }
 
@@ -141,14 +141,14 @@ fun showMessageNotificationToSystemBar(
     val messagingStyle: NotificationCompat.MessagingStyle = NotificationCompat.MessagingStyle(
         Person.Builder()
             .setName(me.userName)
-            .setKey(me.id)
+            .setKey(me.userId)
             .build()
     )
         .setConversationTitle(contentTitle)
         .setGroupConversation(chatGroup.isGroup())
 
     for (message in messages) {
-        val people = participants.find { it.id == message.senderId }
+        val people = participants.find { it.userId == message.senderId }
         messagingStyle.addMessage(
             NotificationCompat.MessagingStyle.Message(
                 message.message,

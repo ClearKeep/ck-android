@@ -28,7 +28,8 @@ object AppCall {
              isAudioMode: Boolean,
              token: String?,
              groupId: String?, groupType: String, groupName: String,
-             ourClientId: String?, userName: String?, avatar: String?,
+             domain: String, ownerClientId: String,
+             userName: String?, avatar: String?,
              isIncomingCall: Boolean,
              turnUrl: String = "", turnUser: String = "", turnPass: String = "",
              webRtcGroupId: String = "", webRtcUrl: String = "",
@@ -44,7 +45,8 @@ object AppCall {
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
         intent.putExtra(EXTRA_IS_AUDIO_MODE, isAudioMode)
-        intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
+        intent.putExtra(EXTRA_OWNER_DOMAIN, domain)
+        intent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
         intent.putExtra(EXTRA_FROM_IN_COMING_CALL, isIncomingCall)
         intent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, avatar)
@@ -66,7 +68,8 @@ object AppCall {
                      isAudioMode: Boolean,
                      token: String,
                      groupId: String, groupType: String, groupName: String,
-                     ourClientId: String?, userName: String?, avatar: String?,
+                     ownerDomain: String, ownerClientId: String,
+                     userName: String?, avatar: String?,
                      turnUrl: String, turnUser: String, turnPass: String,
                      webRtcGroupId: String, webRtcUrl: String,
                      stunUrl: String) {
@@ -80,14 +83,17 @@ object AppCall {
         dismissIntent.action=ACTION_CALL_CANCEL
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
+        dismissIntent.putExtra(EXTRA_OWNER_DOMAIN, ownerDomain)
+        dismissIntent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
         val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
-            ourClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true)
+            ownerDomain, ownerClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true)
         val pendingWaitIntent = PendingIntent.getActivity(context, 0, waitIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName, ourClientId,
+        val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
+            ownerDomain, ownerClientId,
             userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false)
         val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
@@ -152,7 +158,7 @@ object AppCall {
 
     private fun createIncomingCallIntent(context: Context, isAudioMode: Boolean, token: String,
                                          groupId: String?, groupType: String, groupName: String,
-                                         ourClientId: String?,
+                                         domain: String, ownerClientId: String,
                                          userName: String?, avatar: String?,
                                          turnUrl: String, turnUser: String, turnPass: String,
                                          webRtcGroupId: String, webRtcUrl: String,
@@ -171,7 +177,8 @@ object AppCall {
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
         intent.putExtra(EXTRA_GROUP_TOKEN, token)
         intent.putExtra(EXTRA_IS_AUDIO_MODE, isAudioMode)
-        intent.putExtra(EXTRA_OUR_CLIENT_ID, ourClientId)
+        intent.putExtra(EXTRA_OWNER_DOMAIN, domain)
+        intent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
         intent.putExtra(EXTRA_FROM_IN_COMING_CALL, true)
         intent.putExtra(EXTRA_AVATAR_USER_IN_CONVERSATION, avatar)

@@ -94,7 +94,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
     private fun handleDirectChat(people: User) {
         val intent = Intent()
-        intent.putExtra(EXTRA_PEOPLE_ID, people.id)
+        intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
         intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
         setResult(RESULT_OK, intent)
         finish()

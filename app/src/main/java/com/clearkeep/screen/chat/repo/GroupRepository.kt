@@ -31,7 +31,7 @@ class GroupRepository @Inject constructor(
 ) {
     fun getAllRooms() = groupDAO.getRoomsAsState()
 
-    fun getClientId() = environment.getServer().profile.id
+    fun getClientId() = environment.getServer().profile.userId
 
     private fun getDomain() = environment.getServer().serverDomain
 
@@ -42,10 +42,10 @@ class GroupRepository @Inject constructor(
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             try {
-                val groups = getRoomsFromAPI(groupGrpc, server.profile.id)
+                val groups = getRoomsFromAPI(groupGrpc, server.profile.userId)
                 for (group in groups) {
                     printlnCK("fetchGroups: $group")
-                    val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.id)
+                    val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
                 }
             } catch(exception: Exception) {
@@ -75,7 +75,7 @@ class GroupRepository @Inject constructor(
         try {
             val clients = participants.map { people ->
                 GroupOuterClass.ClientInGroupObject.newBuilder()
-                    .setId(people.id)
+                    .setId(people.userId)
                     .setDisplayName(people.userName)
                     .setWorkspaceDomain(people.ownerDomain).build()
             }
@@ -138,16 +138,16 @@ class GroupRepository @Inject constructor(
             groupName = receiverPeople.userName,
             groupAvatar = "",
             groupType = "peer",
-            createBy = createPeople.id,
+            createBy = createPeople.userId,
             createdAt = 0,
-            updateBy = createPeople.id,
+            updateBy = createPeople.userId,
             updateAt = 0,
             rtcToken = "",
             clientList = listOf(createPeople, receiverPeople),
 
             isJoined = false,
             ownerDomain = createPeople.ownerDomain,
-            ownerClientId = createPeople.id,
+            ownerClientId = createPeople.userId,
 
             lastMessage = null,
             lastMessageAt = 0,
@@ -228,14 +228,14 @@ class GroupRepository @Inject constructor(
 
         val clientList = response.lstClientList.map {
             User(
-                id = it.id,
+                userId = it.id,
                 userName = it.displayName,
                 ownerDomain = it.workspaceDomain,
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {
             clientList?.firstOrNull { client ->
-                client.id != ownerId
+                client.userId != ownerId
             }?.userName ?: ""
         }
 
