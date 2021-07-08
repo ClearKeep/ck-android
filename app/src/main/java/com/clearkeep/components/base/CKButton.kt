@@ -116,5 +116,5 @@ enum class ButtonType {
 @Preview
 @Composable
 fun CKButtonPreview() {
-    CKButton("test", {}, buttonType = ButtonType.BorderGradient)
+    CKButton("test", {}, enabled = false, buttonType = ButtonType.Blue)
 }
