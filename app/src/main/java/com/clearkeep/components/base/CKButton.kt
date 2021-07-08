@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.components.*
@@ -34,11 +35,21 @@ fun CKButton(
         },
         enabled = enabled,
         shape = RoundedCornerShape(radius),
-        border = if (buttonType != ButtonType.BorderWhite) null
-        else BorderStroke(
+        border = if (buttonType == ButtonType.BorderWhite) {
+            BorderStroke(
             2.dp,
             grayscaleOffWhite
-        ),
+        )
+        } else if (buttonType == ButtonType.BorderGradient) {
+            BorderStroke(
+                2.dp, Brush.horizontalGradient(
+                    colors = listOf(
+                        backgroundGradientStart,
+                        backgroundGradientEnd
+                    )
+                )
+                )
+        } else null,
         modifier = modifier.height(height),
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.outlinedButtonColors(
@@ -80,6 +91,7 @@ private fun getButtonTextColor(buttonType: ButtonType): Color {
         ButtonType.Blue -> grayscaleBackground
         ButtonType.Red -> primaryDefault
         ButtonType.BorderWhite -> grayscaleOffWhite
+        ButtonType.BorderGradient -> backgroundGradientStart
     }
 }
 
@@ -89,6 +101,7 @@ private fun getButtonBackgroundColor(buttonType: ButtonType): Color {
         ButtonType.Blue -> Color.Transparent
         ButtonType.Red -> grayscaleOffWhite
         ButtonType.BorderWhite -> Color.Transparent
+        ButtonType.BorderGradient -> Color.Transparent
     }
 }
 
@@ -97,4 +110,11 @@ enum class ButtonType {
     Blue,
     Red,
     BorderWhite,
+    BorderGradient,
+}
+
+@Preview
+@Composable
+fun CKButtonPreview() {
+    CKButton("test", {}, buttonType = ButtonType.BorderGradient)
 }
