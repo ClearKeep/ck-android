@@ -19,7 +19,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
@@ -44,6 +44,8 @@ class RoomActivity : AppCompatActivity() {
     }
 
     private var roomId: Long = 0
+    private lateinit var domain: String
+    private lateinit var clientId: String
 
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
@@ -55,6 +57,8 @@ class RoomActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
         roomId = intent.getLongExtra(GROUP_ID, 0)
+        domain = intent.getStringExtra(DOMAIN) ?: ""
+        clientId = intent.getStringExtra(CLIENT_ID) ?: ""
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
 
         if (roomId > 0) {
@@ -62,12 +66,12 @@ class RoomActivity : AppCompatActivity() {
             notificationManagerCompat.cancel(roomId.toInt())
         }
 
-        roomViewModel.joinRoom(roomId, friendId)
+        roomViewModel.joinRoom(domain, clientId, roomId, friendId)
 
         setContent {
             CKTheme {
                 val navController = rememberNavController()
-                val selectedItem = remember { mutableStateListOf<People>() }
+                val selectedItem = remember { mutableStateListOf<User>() }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         RoomScreen(
@@ -140,14 +144,20 @@ class RoomActivity : AppCompatActivity() {
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
         val roomName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
-                client.id != roomViewModel.getClientId()
+                client.userId != clientId
             }?.userName ?: ""
         }
-        AppCall.call(this, isAudioMode, null, group.id.toString(), group.groupType, roomName,  roomViewModel.getClientId(), roomName, "", false)
+        AppCall.call(
+            this, isAudioMode, null,
+            group.groupId.toString(), group.groupType, roomName,
+            domain, clientId, roomName, "", false
+        )
     }
 
     companion object {
         const val GROUP_ID = "room_id"
+        const val DOMAIN = "domain"
+        const val CLIENT_ID = "client_id"
         const val FRIEND_ID = "remote_id"
     }
 }

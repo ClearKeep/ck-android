@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,16 +19,21 @@ class DismissNotificationReceiver : BroadcastReceiver() {
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
 
+    @Inject
+    lateinit var serverRepository: ServerRepository
+
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_CALL_CANCEL -> {
                 val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)!!
+                val domain = intent.getStringExtra(EXTRA_OWNER_DOMAIN)!!
+                val clientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
                 val groupType = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_TYPE)!!
                 NotificationManagerCompat.from(context).cancel(null, INCOMING_NOTIFICATION_ID)
                 printlnCK("onReceive dismiss call notification, group id = $groupId")
-                if (!isGroup(groupType)) {
+                if (!isGroup(groupType) && domain.isNotBlank() && clientId.isNotBlank()) {
                     GlobalScope.launch {
-                        videoCallRepository.cancelCall(groupId.toInt())
+                        videoCallRepository.cancelCall(groupId.toInt(), Owner(domain, clientId))
                     }
                 }
 

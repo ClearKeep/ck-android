@@ -15,12 +15,12 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale5
 import com.clearkeep.components.grayscaleBlack
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 
 @Composable
 fun SelectedFriendBox(
-    people: People,
-    onRemove: (People) -> Unit,
+    people: User,
+    onRemove: (User) -> Unit,
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,

@@ -14,13 +14,13 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.colorSuccessDefault
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 
 @Composable
 fun FriendListItemAction(
     actionLabel: String,
-    friend: People,
-    onAction: (people: People) -> Unit,
+    friend: User,
+    onAction: (profile: User) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -34,7 +34,7 @@ fun FriendListItemAction(
         ) {
             CircleAvatar(
                 emptyList(),
-                friend.userName,
+                friend.userName ?: "",
                 size = 64.dp
             )
             Column(Modifier
@@ -42,7 +42,7 @@ fun FriendListItemAction(
                 .weight(1.0f, true)
             ) {
                 Text(
-                    text = friend.userName,
+                    text = friend.userName ?: "",
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colors.onBackground
@@ -66,7 +66,6 @@ fun FriendListItemAction(
 fun FriendListItemActionPreview() {
     FriendListItemAction(
         "Unbanned",
-        People("", "test", "test"),
-    ) { people: People ->
-    }
+        User(null, "" , "", "test")
+    ) {}
 }

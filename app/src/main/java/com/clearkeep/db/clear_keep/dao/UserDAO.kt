@@ -1,15 +1,23 @@
 package com.clearkeep.db.clear_keep.dao
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.Query
 import com.clearkeep.db.clear_keep.model.User
 
 @Dao
 interface UserDao {
     @Insert(onConflict = REPLACE)
-    suspend fun save(user: User)
+    suspend fun insert(people: User)
 
-    @Query("SELECT * FROM user LIMIT 1")
-    suspend fun getUser(): User?
+    @Insert(onConflict = REPLACE)
+    suspend fun insertPeopleList(people: List<User>)
+
+    @Query("SELECT * FROM user WHERE user_id =:friendId AND owner_domain = :domain LIMIT 1")
+    suspend fun getFriend(friendId: String, domain: String): User?
+
+    @Query("SELECT * FROM user")
+    fun getFriends(): LiveData<List<User>>
 }

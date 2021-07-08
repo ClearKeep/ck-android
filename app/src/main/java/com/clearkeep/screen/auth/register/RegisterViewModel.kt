@@ -6,9 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.repo.AuthRepository
-import com.clearkeep.utilities.BASE_URL
-import com.clearkeep.utilities.PORT
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import javax.inject.Inject
@@ -41,9 +39,7 @@ class RegisterViewModel @Inject constructor(
     val displayNameError: LiveData<String>
         get() = _displayNameError
 
-    var isCustomServer: Boolean = false
-    var port: String = ""
-    var url: String = ""
+    var domain: String = ""
 
     suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String ): Resource<AuthOuterClass.RegisterRes>? {
         _isLoading.value = true
@@ -78,7 +74,6 @@ class RegisterViewModel @Inject constructor(
         }
 
         val result = if (isValid) {
-            val domain = if (isCustomServer) url else "${BASE_URL}:${PORT}"
             authRepository.register(displayName.trim(), password.trim(), email.trim(), domain)
         } else {
             null

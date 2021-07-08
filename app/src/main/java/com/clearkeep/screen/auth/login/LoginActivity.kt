@@ -31,10 +31,10 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
-import com.clearkeep.screen.chat.main.MainPreparingActivity
-import com.clearkeep.screen.videojanus.common.InCallServiceLiveData
+import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.restartToRoot
 import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,9 +45,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
-
 import com.facebook.login.LoginResult
-
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -62,11 +60,23 @@ class LoginActivity : AppCompatActivity() {
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
     val callbackManager = CallbackManager.Factory.create()
 
+    private var isJoinServer: Boolean = false
+
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp()
+        }
+
+        isJoinServer = intent.getBooleanExtra(IS_JOIN_SERVER, false)
+        if (isJoinServer) {
+            val domain = intent.getStringExtra(SERVER_DOMAIN)
+            if(domain.isNullOrBlank()) {
+                throw IllegalArgumentException("join server with domain must be not null")
+            }
+            loginViewModel.isCustomServer = true
+            loginViewModel.customDomain = domain
         }
         subscriberError()
     }
@@ -89,13 +99,12 @@ class LoginActivity : AppCompatActivity() {
         showErrorDiaLog = {
             setShowDialog.invoke(it)
         }
-        val inCallServiceLiveData = InCallServiceLiveData(this).observeAsState()
         val onLoginPressed: (String, String) -> Unit = { email, password ->
             lifecycleScope.launch {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
                     ?: return@launch
                 if (res.status == Status.SUCCESS) {
-                    navigateToHomeActivity()
+                    onLoginSuccess()
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(ErrorMessage(title = "Error",message = res.message.toString()))
                 }
@@ -103,13 +112,13 @@ class LoginActivity : AppCompatActivity() {
         }
 
         val isLoadingState = loginViewModel.isLoading.observeAsState()
-        Box() {
+        Box {
             Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
             ) {
-                Row(/*modifier = Modifier.weight(1.0f, true)*/) {
+                Row {
                     LoginScreen(
                         loginViewModel,
                         onLoginPressed = onLoginPressed,
@@ -125,14 +134,15 @@ class LoginActivity : AppCompatActivity() {
                         onLoginMicrosoft = {
                             signInMicrosoft()
                         },
-                        onLoginFacebook={
+                        onLoginFacebook = {
                             loginFacebook()
                         },
-                        advanceSetting={
+                        advanceSetting = {
                             navigateToAdvanceSetting(navController)
                         },
                         isLoading = isLoadingState.value ?: false,
-                        )
+                        isShowAdvanceSetting = !isJoinServer
+                    )
                 }
             }
 
@@ -165,10 +175,11 @@ class LoginActivity : AppCompatActivity() {
                     CustomServerScreen(
                         onBackPress = { isCustom, url ->
                             loginViewModel.isCustomServer = isCustom
-                            loginViewModel.url = url
+                            loginViewModel.customDomain = url
                             onBackPressed()
                         },
-                        loginViewModel.isCustomServer, loginViewModel.url, loginViewModel.port
+                        loginViewModel.isCustomServer,
+                        loginViewModel.customDomain
                     )
                 }
             }
@@ -196,14 +207,25 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+    private fun onLoginSuccess() {
+        if (isJoinServer) {
+            restartToRoot(this)
+        } else {
+            navigateToHomeActivity()
+        }
+    }
+
     private fun navigateToHomeActivity() {
-        startActivity(Intent(this, MainPreparingActivity::class.java))
+        val intent = Intent(this, SplashActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
         finish()
     }
 
     private fun navigateToRegisterActivity() {
-        startActivity(Intent(this, RegisterActivity::class.java))
-        /*AppCall.call(this, "", 1234, "dai", "", "", false)*/
+        val intent = Intent(this, RegisterActivity::class.java)
+        intent.putExtra(RegisterActivity.DOMAIN, loginViewModel.getDomain())
+        startActivity(intent)
     }
 
     private fun navigateToForgotActivity() {
@@ -278,7 +300,7 @@ class LoginActivity : AppCompatActivity() {
     fun onSignInResult(res: Resource<AuthOuterClass.AuthRes>?) {
         when (res?.status) {
             Status.SUCCESS -> {
-                navigateToHomeActivity()
+                onLoginSuccess()
             }
             Status.ERROR -> {
                 showErrorDiaLog?.invoke(ErrorMessage("Error",res.message ?: "unknown"))
@@ -314,6 +336,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     data class ErrorMessage(val title:String, val message: String)
+
+    companion object {
+        const val IS_JOIN_SERVER = "is_join_server"
+        const val SERVER_DOMAIN = "server_url_join"
+    }
 }
 
 

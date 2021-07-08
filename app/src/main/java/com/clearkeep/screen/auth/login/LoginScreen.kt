@@ -1,6 +1,5 @@
 package com.clearkeep.screen.auth.login
 
-import android.widget.Advanceable
 import androidx.compose.foundation.Image
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
@@ -35,7 +34,8 @@ fun LoginScreen(
     onLoginGoogle: (() -> Unit)? = null,
     onLoginMicrosoft: (() -> Unit)? = null,
     onLoginFacebook: (()->Unit)?=null,
-    advanceSetting: (()->Unit)?=null
+    advanceSetting: (()->Unit)?=null,
+    isShowAdvanceSetting: Boolean = true,
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -115,17 +115,19 @@ fun LoginScreen(
                             textButtonType = TextButtonType.White
                         )
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        CKTextButton(
-                            modifier = Modifier.padding(0.dp),
-                            stringResource(R.string.advance_server_settings),
-                            onClick ={advanceSetting?.invoke()} ,
-                            enabled = !isLoading,
-                            textButtonType = TextButtonType.White
-                        )
+                    if (isShowAdvanceSetting) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            CKTextButton(
+                                modifier = Modifier.padding(0.dp),
+                                stringResource(R.string.advance_server_settings),
+                                onClick ={advanceSetting?.invoke()} ,
+                                enabled = !isLoading,
+                                textButtonType = TextButtonType.White
+                            )
+                        }
                     }
                 }
 

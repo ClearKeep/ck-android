@@ -25,9 +25,12 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.repo.VideoCallRepository
-import com.clearkeep.screen.chat.main.profile.ProfileViewModel
+import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.repo.VideoCallRepository
+import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.BaseActivity
@@ -64,21 +67,22 @@ class InCallPeerToPeerActivity : BaseActivity() {
         viewModelFactory
     }
 
-    private val profileViewModel: ProfileViewModel by viewModels {
-        viewModelFactory
-    }
-
     private var mIsMuteVideo = false
     private var mIsSpeaker = false
     private var mIsAudioMode: Boolean = false
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
+    private lateinit var mOwnerClientId: String
+    private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
     private var mIsGroupCall: Boolean = false
 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
+
+    @Inject
+    lateinit var serverRepository: ServerRepository
 
     // surface and render
     private var endCallReceiver: BroadcastReceiver? = null
@@ -94,7 +98,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private var mTimeStarted: Long = 0
 
-
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         System.setProperty("java.net.preferIPv6Addresses", "false")
@@ -106,6 +109,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
+        mOwnerDomain = intent.getStringExtra(EXTRA_OWNER_DOMAIN)!!
+        mOwnerClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
@@ -182,7 +187,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode)
+                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
@@ -239,6 +244,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
             localRender.visibility = View.VISIBLE
 
         }
+    }
+
+    private fun getOwnerServer(): Owner {
+        return Owner(mOwnerDomain, mOwnerClientId)
     }
 
     private fun onClickControlCall() {
@@ -385,7 +394,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         turnPass: String,
         token: String
     ) {
-        val ourClientId = intent.getStringExtra(EXTRA_OUR_CLIENT_ID) ?: ""
+        val ourClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT) ?: ""
         callViewModel.startVideo(
             context = this,
             localRender,
@@ -487,7 +496,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun switchToVideoMode() {
         callViewModel.mIsAudioMode.postValue(false)
         callScope.launch {
-            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt())
+            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 
@@ -509,7 +518,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private fun cancelCallAPI() {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(mGroupId.toInt())
+            videoCallRepository.cancelCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 

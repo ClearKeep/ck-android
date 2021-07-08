@@ -9,12 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.clearkeep.db.clear_keep.model.People
+import com.clearkeep.db.clear_keep.model.User
 
 @Composable
 fun FriendListItem(
-    friend: People,
-    onFriendSelected: ((people: People) -> Unit)?= null,
+    friend: User,
+    onFriendSelected: ((people: User) -> Unit)?= null,
 ) {
     Column(modifier = Modifier
         .clickable {
