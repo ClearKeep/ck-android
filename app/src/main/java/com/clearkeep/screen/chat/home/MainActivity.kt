@@ -29,7 +29,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.screen.chat.banned_users.BannedUserActivity
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
+import com.clearkeep.screen.chat.invite.InviteActivity
+import com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
@@ -95,6 +98,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 },
                                 onNavigateAccountSetting = {
                                     navigateToProfileScreen()
+                                },
+                                onNavigateNotificationSetting = {
+                                    navigateToNotificationSettingScreen()
+                                },
+                                onNavigateInvite = {
+                                    navigateToInviteScreen()
+                                },
+                                onNavigateBannedUser = {
+                                    navigateToBannedUserScreen()
                                 }
                             )
                         }
@@ -251,6 +263,21 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         val intent = Intent(this, LoginActivity::class.java)
         intent.putExtra(LoginActivity.IS_JOIN_SERVER, true)
         intent.putExtra(LoginActivity.SERVER_DOMAIN, domain)
+        startActivity(intent)
+    }
+
+    private fun navigateToNotificationSettingScreen() {
+        val intent = Intent(this, NotificationSettingActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToInviteScreen() {
+        val intent = Intent(this, InviteActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToBannedUserScreen() {
+        val intent = Intent(this, BannedUserActivity::class.java)
         startActivity(intent)
     }
 }
