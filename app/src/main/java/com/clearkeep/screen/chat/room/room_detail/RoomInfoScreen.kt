@@ -103,8 +103,11 @@ fun RoomInfoScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(Modifier.fillMaxWidth()) {
                     Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.weight(1f).clickable {
+                            roomViewModel.requestCall(group.groupId, true)
+                        },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+
                     ) {
                         Image(
                             painter = painterResource(R.drawable.ic_button_call_audio),
@@ -115,7 +118,9 @@ fun RoomInfoScreen(
                         SideBarLabel(text = "Audio", color = primaryDefault)
                     }
                     Column(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).clickable {
+                            roomViewModel.requestCall(group.groupId, false)
+                        },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Image(
@@ -209,31 +214,5 @@ fun ItemSiteSetting(
                 .weight(0.66f)
                 .padding(start = 16.dp)
         )
-    }
-}
-
-@Preview
-@Composable
-fun MembersListPreview() {
-    val clientList = listOf(
-        User(null, "", "Dai pham van", ""),
-        User(null, "", "Phan van dai", ""),
-        User(null, "", "sv251", ""),
-        User(null, "", "Linh", ""),
-        User(null, "", "Linh", ""),
-        User(null, "", "Linh", ""),
-        User(null, "", "Linh", ""),
-    )
-    val maxItems = 4
-
-    Box(modifier = Modifier.wrapContentWidth()) {
-        for (i in clientList.indices) {
-            if (i < maxItems) {
-                FriendListItemInfo(clientList[i], null, 28 * i)
-            } else {
-                FriendListMoreItem(clientList.size - maxItems, 28 * i)
-                break
-            }
-        }
     }
 }

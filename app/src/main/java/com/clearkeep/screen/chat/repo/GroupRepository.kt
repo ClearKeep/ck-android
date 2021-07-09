@@ -117,15 +117,22 @@ class GroupRepository @Inject constructor(
                     .setAddedMemberInfo(memberInfo)
                     .build()
             val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
-            val group = groupDAO.getGroupById(groupId, getDomain(), getClientId())
             /*
             * update to databas
             * */
-            val newListClientId= group?.clientList?.toMutableList()
-            newListClientId?.add(User(userId = memberInfo.id,userName = memberInfo.displayName,ownerDomain = memberInfo.workspaceDomain))
-            group?.clientList= newListClientId?.toList()!!
-            insertGroup(group)
-
+            if (response.success) {
+                val group = groupDAO.getGroupById(groupId, getDomain(), getClientId())
+                val newListClientId = group?.clientList?.toMutableList()
+                newListClientId?.add(
+                    User(
+                        userId = memberInfo.id,
+                        userName = memberInfo.displayName,
+                        ownerDomain = memberInfo.workspaceDomain
+                    )
+                )
+                group?.clientList = newListClientId?.toList()!!
+                insertGroup(group)
+            }
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("inviteToGroupFromAPI error: $e")

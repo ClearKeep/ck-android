@@ -33,6 +33,7 @@ class InviteGroupViewModel @Inject constructor(
         }
 
         private fun getFilterFriends(list: List<User>, search: String): List<User> {
+                if (search.isEmpty()) return emptyList()
                 return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
         }
 
