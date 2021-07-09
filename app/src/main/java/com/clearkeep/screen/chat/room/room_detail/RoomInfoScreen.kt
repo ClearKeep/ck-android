@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.navigate
@@ -23,7 +24,9 @@ import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.errorDefault
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
+import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.RoomViewModel
 
@@ -85,13 +88,15 @@ fun RoomInfoScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LazyRow(
-                        modifier = Modifier.wrapContentWidth(),
-
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        itemsIndexed(group.clientList) { index, friend ->
-                            FriendListItemInfo(friend)
+                    val maxItems = 4
+                    Box(modifier = Modifier.wrapContentWidth()) {
+                        for (i in group.clientList.indices) {
+                            if (i < maxItems) {
+                                FriendListItemInfo(group.clientList[i], null, 28 * i)
+                            } else {
+                                FriendListMoreItem(group.clientList.size - maxItems, 28 * i)
+                                break
+                            }
                         }
                     }
                 }
@@ -204,5 +209,31 @@ fun ItemSiteSetting(
                 .weight(0.66f)
                 .padding(start = 16.dp)
         )
+    }
+}
+
+@Preview
+@Composable
+fun MembersListPreview() {
+    val clientList = listOf(
+        User(null, "", "Dai pham van", ""),
+        User(null, "", "Phan van dai", ""),
+        User(null, "", "sv251", ""),
+        User(null, "", "Linh", ""),
+        User(null, "", "Linh", ""),
+        User(null, "", "Linh", ""),
+        User(null, "", "Linh", ""),
+    )
+    val maxItems = 4
+
+    Box(modifier = Modifier.wrapContentWidth()) {
+        for (i in clientList.indices) {
+            if (i < maxItems) {
+                FriendListItemInfo(clientList[i], null, 28 * i)
+            } else {
+                FriendListMoreItem(clientList.size - maxItems, 28 * i)
+                break
+            }
+        }
     }
 }
