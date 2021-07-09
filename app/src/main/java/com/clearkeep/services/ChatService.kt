@@ -154,10 +154,10 @@ class ChatService : Service(),
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
-                    groupRepository.fetchGroups()
+                    groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
                 }
                 "new-peer" -> {
-                    groupRepository.fetchGroups()
+                    groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
                 }
                 "peer-update-key" -> {
                     chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain)

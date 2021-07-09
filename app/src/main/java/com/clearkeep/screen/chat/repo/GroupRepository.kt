@@ -43,9 +43,8 @@ class GroupRepository @Inject constructor(
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             try {
-                val groups = getRoomsFromAPI(groupGrpc, server.profile.userId)
+                val groups = getGroupListFromAPI(groupGrpc, server.profile.userId)
                 for (group in groups) {
-                    printlnCK("fetchGroups: $group")
                     val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
                 }
@@ -55,15 +54,23 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    @Throws(Exception::class)
-    suspend fun getRoomsFromAPI(groupGrpc: GroupGrpc.GroupBlockingStub, clientId: String) : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
-        printlnCK("getRoomsFromAPI: $clientId")
-        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
-                .setClientId(clientId)
-                .build()
-        val response = groupGrpc.getJoinedGroups(request)
-        printlnCK("getRoomsFromAPI, ${response.lstGroupList}")
-        return@withContext response.lstGroupList
+    suspend fun fetchNewGroup(groupId: Long, owner: Owner) = withContext(Dispatchers.IO) {
+        printlnCK("fetchNewGroup: $groupId for owner -> ${owner.domain} + ${owner.clientId}")
+        val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
+        if (server == null) {
+            printlnCK("fetchNewGroup: can not find server")
+            return@withContext
+        }
+        val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+        val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
+        try {
+            val group = getGroupFromAPI(groupId, groupGrpc, Owner(owner.domain, owner.clientId))
+            if (group != null) {
+                insertGroup(group)
+            }
+        } catch(exception: Exception) {
+            printlnCK("fetchNewGroup: $exception")
+        }
     }
 
     suspend fun createGroupFromAPI(
@@ -126,11 +133,23 @@ class GroupRepository @Inject constructor(
                     .build()
             val response = groupGrpc.getGroup(request)
 
-            return@withContext convertGroupFromResponse(response, owner.domain, owner.clientId)
+            val group = convertGroupFromResponse(response, owner.domain, owner.clientId)
+            printlnCK("getGroupFromAPI: ${group.clientList}")
+            return@withContext group
         } catch (e: Exception) {
             printlnCK("getGroupFromAPI error: $e")
             return@withContext null
         }
+    }
+
+    @Throws(Exception::class)
+    private suspend fun getGroupListFromAPI(groupGrpc: GroupGrpc.GroupBlockingStub, clientId: String) : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
+        printlnCK("getGroupListFromAPI: $clientId")
+        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
+            .setClientId(clientId)
+            .build()
+        val response = groupGrpc.getJoinedGroups(request)
+        return@withContext response.lstGroupList
     }
 
     fun getTemporaryGroupWithAFriend(createPeople: User, receiverPeople: User): ChatGroup {
