@@ -41,9 +41,9 @@ fun InviteFacebookScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 item {
-                    FriendListItemSelectable(friend = User(null, "", "test", ""), isSelected = false) { people: User, isAdd: Boolean -> }
-                    FriendListItemSelectable(friend = User(null, "", "Alex Mendes", ""), isSelected = false) { people: User, isAdd: Boolean -> }
-                    FriendListItemSelectable(friend = User(null, "", "Barbara Johnson", ""), isSelected = false) { people: User, isAdd: Boolean -> }
+                    FriendListItemSelectable(friend = User("", "test", ""), isSelected = false) { people: User, isAdd: Boolean -> }
+                    FriendListItemSelectable(friend = User("", "Alex Mendes", ""), isSelected = false) { people: User, isAdd: Boolean -> }
+                    FriendListItemSelectable(friend = User("", "Barbara Johnson", ""), isSelected = false) { people: User, isAdd: Boolean -> }
                 }
             }
         }

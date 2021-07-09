@@ -23,8 +23,8 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
     suspend fun getGroupById(groupId: Long, domain: String, ownerId: String): ChatGroup?
 
-    @Query("SELECT * FROM chatgroup WHERE group_type = \"peer\"")
-    suspend fun getPeerGroups(): List<ChatGroup>
+    @Query("SELECT * FROM chatgroup WHERE group_type = \"peer\" AND owner_domain = :domain AND owner_client_id = :ownerId")
+    suspend fun getPeerGroups(domain: String, ownerId: String): List<ChatGroup>
 
     @Query("SELECT * FROM chatgroup")
     suspend fun getRooms(): List<ChatGroup>

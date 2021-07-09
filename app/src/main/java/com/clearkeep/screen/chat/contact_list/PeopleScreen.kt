@@ -82,5 +82,5 @@ fun FriendItem(
 @Preview
 @Composable
 fun FriendItemPreview() {
-    FriendItem(User(null, "", "test", "")) {}
+    FriendItem(User( "", "test", "")) {}
 }
