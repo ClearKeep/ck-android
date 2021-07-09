@@ -91,6 +91,18 @@
             android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
+        <activity
+            android:name="com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+
+        <activity
+            android:name="com.clearkeep.screen.chat.invite.InviteActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+
+        <activity
+            android:name="com.clearkeep.screen.chat.banned_users.BannedUserActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+
         <service
             android:name=".services.MyFirebaseMessagingService"
             android:exported="false">
