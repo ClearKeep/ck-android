@@ -24,7 +24,7 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_create.EnterGroupNameScreen
-import com.clearkeep.screen.chat.group_invite.AddMember
+import com.clearkeep.screen.chat.group_invite.AddMemberUIType
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
@@ -103,23 +103,14 @@ class RoomActivity : AppCompatActivity() {
                         )
                     }
                     composable("invite_group_screen") {
+                        selectedItem.clear()
                         InviteGroupScreen(
-                                AddMember,
+                                AddMemberUIType,
                                 inviteGroupViewModel,
                             listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
                             onFriendSelected = { friends ->
-                                    friends.forEach { user ->
-                                        if (!friends.isNullOrEmpty()) {
-                                            roomViewModel.inviteToGroup(
-                                                GroupOuterClass.MemberInfo.newBuilder()
-                                                    .setId(user.userId)
-                                                    .setWorkspaceDomain(user.ownerDomain)
-                                                    .setDisplayName(user.userName)
-                                                    .build(), groupId = roomId
-                                            )
-                                        }
-                                        navController.navigate("room_screen")
-                                    }
+                                    roomViewModel.inviteToGroup(friends, groupId = roomId)
+                                    navController.navigate("room_screen")
                                 },
                                 onBackPressed = {
                                     navController.popBackStack()

@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.group_invite
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -29,7 +28,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
@@ -43,7 +41,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun InviteGroupScreen(
-    managerMember: ManagerMember? = InviteMember,
+    managerMember: MemberUIType? = InviteMemberUIType,
     inviteGroupViewModel: InviteGroupViewModel,
     selectedItem: SnapshotStateList<User>,
     listMemberInGroup: List<User>,
@@ -89,8 +87,8 @@ fun InviteGroupScreen(
                         }
                         CKHeaderText(
                             text = when (managerMember) {
-                                InviteMember -> "Create group"
-                                AddMember -> "Add member"
+                                InviteMemberUIType -> "Create group"
+                                AddMemberUIType -> "Add member"
                                 else -> "Create group"
                             }, headerTextType = HeaderTextType.Medium
                         )
@@ -220,7 +218,6 @@ fun InviteGroupScreen(
                         } else {
                             if (selectedItem.size > 0) {
                                 onFriendSelected(selectedItem)
-                                selectedItem.clear()
                             }
                         }
                     },
@@ -251,7 +248,7 @@ fun SelectedHorizontalBox(selectedItem: List<User>, unSelectItem: (people: User)
     }
 }
 
-sealed class ManagerMember
-object InviteMember : ManagerMember()
-object AddMember : ManagerMember()
-object RemoveMember : ManagerMember()
+sealed class MemberUIType
+object InviteMemberUIType : MemberUIType()
+object AddMemberUIType : MemberUIType()
+object RemoveMemberUIType : MemberUIType()

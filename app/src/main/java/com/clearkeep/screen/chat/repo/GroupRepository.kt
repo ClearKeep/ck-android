@@ -108,31 +108,32 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun inviteToGroupFromAPI(memberInfo: GroupOuterClass.MemberInfo, groupId: Long): Boolean = withContext(Dispatchers.IO) {
+    suspend fun inviteToGroupFromAPIs(invitedUsers:List<User>, groupId: Long,owner: Owner): ChatGroup? = withContext(Dispatchers.IO) {
+        invitedUsers.forEach {
+            printlnCK("inviteToGroupFromAPIs: ${it.userName}")
+            inviteToGroupFromAPI(it, groupId)
+        }
+        val grbc = dynamicAPIProvider.provideGroupBlockingStub()
+        val group=getGroupFromAPI(groupId, grbc, owner)
+        group?.let { insertGroup(it) }
+        return@withContext group
+    }
+
+  private suspend fun inviteToGroupFromAPI(invitedUser:User, groupId: Long): Boolean? = withContext(Dispatchers.IO) {
         printlnCK("inviteToGroup: $groupId")
         try {
+            val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                .setId(invitedUser.userId)
+                .setWorkspaceDomain(invitedUser.domain)
+                .setDisplayName(invitedUser.userName)
+                .build()
+
             val request = GroupOuterClass.AddMemberRequest.newBuilder()
                     .setGroupId(groupId)
                     .setAddingMemberId(getClientId())
                     .setAddedMemberInfo(memberInfo)
                     .build()
             val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
-            /*
-            * update to databas
-            * */
-            if (response.success) {
-                val group = groupDAO.getGroupById(groupId, getDomain(), getClientId())
-                val newListClientId = group?.clientList?.toMutableList()
-                newListClientId?.add(
-                    User(
-                        userId = memberInfo.id,
-                        userName = memberInfo.displayName,
-                        ownerDomain = memberInfo.workspaceDomain
-                    )
-                )
-                group?.clientList = newListClientId?.toList()!!
-                insertGroup(group)
-            }
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("inviteToGroupFromAPI error: $e")
@@ -206,7 +207,6 @@ class GroupRepository @Inject constructor(
             val groupGrpc = apiProvider.provideGroupBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             room = getGroupFromAPI(groupId, groupGrpc, Owner(domain, ownerId))
             if (room != null) {
-                Log.e("antx","room: ${room.clientList.size}")
                 insertGroup(room)
             }
         }

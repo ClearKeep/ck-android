@@ -8,7 +8,6 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
-import group.GroupOuterClass
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
@@ -171,11 +170,11 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun inviteToGroup(memberInfo: GroupOuterClass.MemberInfo, groupId: Long) {
+    fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-           val inviteSuccess = groupRepository.inviteToGroupFromAPI(memberInfo, groupId)
-            if (inviteSuccess){
-                refreshRoom()
+            val inviteGroupSuccess = groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId,getOwner())
+            inviteGroupSuccess?.let {
+                setJoiningGroup(inviteGroupSuccess)
             }
         }
     }
