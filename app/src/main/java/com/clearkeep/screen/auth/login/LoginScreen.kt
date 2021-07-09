@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -23,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
+import com.clearkeep.components.grayscaleOffWhite
 
 @Composable
 fun LoginScreen(
@@ -33,9 +38,11 @@ fun LoginScreen(
     isLoading: Boolean = false,
     onLoginGoogle: (() -> Unit)? = null,
     onLoginMicrosoft: (() -> Unit)? = null,
-    onLoginFacebook: (()->Unit)?=null,
-    advanceSetting: (()->Unit)?=null,
+    onLoginFacebook: (() -> Unit)? = null,
+    advanceSetting: (() -> Unit)? = null,
     isShowAdvanceSetting: Boolean = true,
+    isJoinServer: Boolean = false,
+    onNavigateBack: (() -> Unit) = {}
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -53,6 +60,17 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            if (isJoinServer) {
+                Row(Modifier.fillMaxWidth().padding(start = 8.dp)) {
+                    IconButton(onClick = { onNavigateBack() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "",
+                            tint = grayscaleOffWhite,
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(32.dp))
 
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
