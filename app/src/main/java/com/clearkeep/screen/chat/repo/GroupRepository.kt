@@ -8,6 +8,7 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
@@ -42,9 +43,8 @@ class GroupRepository @Inject constructor(
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             try {
-                val groups = getRoomsFromAPI(groupGrpc, server.profile.userId)
+                val groups = getGroupListFromAPI(groupGrpc, server.profile.userId)
                 for (group in groups) {
-                    printlnCK("fetchGroups: $group")
                     val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
                 }
@@ -54,15 +54,23 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    @Throws(Exception::class)
-    suspend fun getRoomsFromAPI(groupGrpc: GroupGrpc.GroupBlockingStub, clientId: String) : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
-        printlnCK("getRoomsFromAPI: $clientId")
-        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
-                .setClientId(clientId)
-                .build()
-        val response = groupGrpc.getJoinedGroups(request)
-        printlnCK("getRoomsFromAPI, ${response.lstGroupList}")
-        return@withContext response.lstGroupList
+    suspend fun fetchNewGroup(groupId: Long, owner: Owner) = withContext(Dispatchers.IO) {
+        printlnCK("fetchNewGroup: $groupId for owner -> ${owner.domain} + ${owner.clientId}")
+        val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
+        if (server == null) {
+            printlnCK("fetchNewGroup: can not find server")
+            return@withContext
+        }
+        val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+        val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
+        try {
+            val group = getGroupFromAPI(groupId, groupGrpc, Owner(owner.domain, owner.clientId))
+            if (group != null) {
+                insertGroup(group)
+            }
+        } catch(exception: Exception) {
+            printlnCK("fetchNewGroup: $exception")
+        }
     }
 
     suspend fun createGroupFromAPI(
@@ -77,7 +85,7 @@ class GroupRepository @Inject constructor(
                 GroupOuterClass.ClientInGroupObject.newBuilder()
                     .setId(people.userId)
                     .setDisplayName(people.userName)
-                    .setWorkspaceDomain(people.ownerDomain).build()
+                    .setWorkspaceDomain(people.domain).build()
             }
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
                 .setGroupName(groupName)
@@ -125,11 +133,23 @@ class GroupRepository @Inject constructor(
                     .build()
             val response = groupGrpc.getGroup(request)
 
-            return@withContext convertGroupFromResponse(response, owner.domain, owner.clientId)
+            val group = convertGroupFromResponse(response, owner.domain, owner.clientId)
+            printlnCK("getGroupFromAPI: ${group.clientList}")
+            return@withContext group
         } catch (e: Exception) {
             printlnCK("getGroupFromAPI error: $e")
             return@withContext null
         }
+    }
+
+    @Throws(Exception::class)
+    private suspend fun getGroupListFromAPI(groupGrpc: GroupGrpc.GroupBlockingStub, clientId: String) : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
+        printlnCK("getGroupListFromAPI: $clientId")
+        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
+            .setClientId(clientId)
+            .build()
+        val response = groupGrpc.getJoinedGroups(request)
+        return@withContext response.lstGroupList
     }
 
     fun getTemporaryGroupWithAFriend(createPeople: User, receiverPeople: User): ChatGroup {
@@ -146,7 +166,7 @@ class GroupRepository @Inject constructor(
             clientList = listOf(createPeople, receiverPeople),
 
             isJoined = false,
-            ownerDomain = createPeople.ownerDomain,
+            ownerDomain = createPeople.domain,
             ownerClientId = createPeople.userId,
 
             lastMessage = null,
@@ -176,10 +196,10 @@ class GroupRepository @Inject constructor(
         return room
     }
 
-    suspend fun getGroupPeerByClientId(friend: User): ChatGroup? {
+    suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup? {
         return friend.let {
-            groupDAO.getPeerGroups().firstOrNull { group ->
-                group.clientList.firstOrNull { it.userId == friend.userId && it.ownerDomain == friend.ownerDomain } != null
+            groupDAO.getPeerGroups(domain = owner.domain, ownerId = owner.clientId).firstOrNull { group ->
+                group.clientList.firstOrNull { it.userId == friend.userId && it.domain == friend.domain } != null
             }
         }
     }
@@ -222,15 +242,16 @@ class GroupRepository @Inject constructor(
         serverDomain: String,
         ownerId: String
     ): ChatGroup {
+        val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         val isRegisteredKey = oldGroup?.isJoined ?: false
-        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: environment.getServer().loginTime
+        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
         val clientList = response.lstClientList.map {
             User(
                 userId = it.id,
                 userName = it.displayName,
-                ownerDomain = it.workspaceDomain,
+                domain = it.workspaceDomain,
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {

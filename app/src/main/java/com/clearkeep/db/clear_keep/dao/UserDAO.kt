@@ -6,18 +6,19 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserEntity
 
 @Dao
 interface UserDao {
     @Insert(onConflict = REPLACE)
-    suspend fun insert(people: User)
+    suspend fun insert(people: UserEntity)
 
     @Insert(onConflict = REPLACE)
-    suspend fun insertPeopleList(people: List<User>)
+    suspend fun insertPeopleList(people: List<UserEntity>)
 
-    @Query("SELECT * FROM user WHERE user_id =:friendId AND owner_domain = :domain LIMIT 1")
-    suspend fun getFriend(friendId: String, domain: String): User?
+    @Query("SELECT * FROM userentity WHERE user_id =:userId AND domain = :domain AND owner_domain = :ownerDomain AND owner_client_id = :ownerClientId LIMIT 1")
+    suspend fun getFriend(userId: String, domain: String, ownerDomain: String, ownerClientId: String): UserEntity?
 
-    @Query("SELECT * FROM user")
-    fun getFriends(): LiveData<List<User>>
+    @Query("SELECT * FROM userentity WHERE owner_domain = :ownerDomain AND owner_client_id = :ownerClientId")
+    fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<UserEntity>>
 }

@@ -60,13 +60,14 @@ class RoomActivity : AppCompatActivity() {
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
+        val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
 
         if (roomId > 0) {
             val notificationManagerCompat = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
 
-        roomViewModel.joinRoom(domain, clientId, roomId, friendId)
+        roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
 
         setContent {
             CKTheme {
@@ -159,5 +160,6 @@ class RoomActivity : AppCompatActivity() {
         const val DOMAIN = "domain"
         const val CLIENT_ID = "client_id"
         const val FRIEND_ID = "remote_id"
+        const val FRIEND_DOMAIN = "remote_domain"
     }
 }
