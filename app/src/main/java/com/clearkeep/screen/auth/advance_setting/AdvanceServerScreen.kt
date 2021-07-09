@@ -28,9 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKTopAppBarSample
+import com.clearkeep.components.base.*
 
 
 @ExperimentalAnimationApi
@@ -75,7 +73,7 @@ fun CustomServerScreen(
             Spacer(Modifier.height(26.dp))
             Row(
                 modifier = Modifier
-                    .padding( 16.dp)
+                    .padding(16.dp)
                     .clickable {
                         useCustomServerChecked.value = !useCustomServerChecked.value
                     }, verticalAlignment = Alignment.CenterVertically
@@ -94,7 +92,7 @@ fun CustomServerScreen(
                     )
                 )
             }
-            Column(Modifier.padding(start = 16.dp,end = 16.dp)) {
+            Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
                 AnimatedVisibility(
                     visible = useCustomServerChecked.value,
                     enter = expandIn(
@@ -138,6 +136,21 @@ fun CustomServerScreen(
                             }
                         }
 
+                        Spacer(modifier = Modifier.height(58.dp))
+
+                        CKButton(
+                            "Submit",
+                            { if (rememberServerUrl.value.isBlank()) {
+                                setShowDialog("Please enter server url and port")
+                            } else {
+                                onBackPress(
+                                    useCustomServerChecked.value,
+                                    rememberServerUrl.value,
+                                )
+                            }},
+                            modifier = Modifier.padding(start = 60.dp, end = 66.dp),
+                            buttonType = if (rememberServerUrl.value.isNotBlank()) ButtonType.White else ButtonType.BorderWhite
+                        )
                     }
                 }
             }
