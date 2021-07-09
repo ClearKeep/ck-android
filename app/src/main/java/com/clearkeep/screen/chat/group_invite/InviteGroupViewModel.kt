@@ -23,8 +23,8 @@ class InviteGroupViewModel @Inject constructor(
 
         val filterFriends = liveData<List<User>> {
                 val result = MediatorLiveData<List<User>>()
-                result.addSource(friends) { friendList ->
-                        result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
+                result.addSource(friends) { _ ->
+                   //     result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
                 }
                 result.addSource(textSearch) { text ->
                         result.value = getFilterFriends(friends.value ?: emptyList(), text)
@@ -33,6 +33,7 @@ class InviteGroupViewModel @Inject constructor(
         }
 
         private fun getFilterFriends(list: List<User>, search: String): List<User> {
+                if (search.isEmpty()) return emptyList()
                 return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
         }
 

@@ -64,5 +64,7 @@
     <string name="join_server">Join Server</string>
     <string name="btn_join">Join</string>
     <string name="join_server_caption">To join a server, please type in the link of the server</string>
-    <string name="join_server_tips">Tips: Ask your server admin to get the url to the server</string>
+    <string name="join_server_tips">Tip: Ask your server admin to get the url to the server</string>
+    <string name="btn_next">Next</string>
+    <string name="btn_add">Add</string>
 </resources>

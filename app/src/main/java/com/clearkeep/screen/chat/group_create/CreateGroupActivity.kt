@@ -19,6 +19,7 @@ import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
+import com.clearkeep.screen.chat.group_invite.InviteMemberUIType
 import com.clearkeep.utilities.printlnCK
 
 @AndroidEntryPoint
@@ -49,7 +50,9 @@ class CreateGroupActivity : AppCompatActivity() {
                     composable("invite_group") {
                         inviteGroupViewModel.updateContactList()
                         InviteGroupScreen(
+                            InviteMemberUIType,
                             inviteGroupViewModel,
+                            listMemberInGroup = listOf(),
                             selectedItem = selectedItem,
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)

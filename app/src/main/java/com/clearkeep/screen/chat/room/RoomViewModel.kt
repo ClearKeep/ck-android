@@ -76,6 +76,12 @@ class RoomViewModel @Inject constructor(
         setJoiningRoomId(-1)
     }
 
+    fun refreshRoom(){
+        viewModelScope.launch {
+            roomId?.let { updateGroupWithId(it) }
+        }
+    }
+
     fun setJoiningRoomId(roomId: Long) {
         chatRepository.setJoiningRoomId(roomId)
     }
@@ -164,9 +170,12 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun inviteToGroup(invitedFriendId: String, groupId: Long) {
+    fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-            groupRepository.inviteToGroupFromAPI(clientId, invitedFriendId, groupId)
+            val inviteGroupSuccess = groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId,getOwner())
+            inviteGroupSuccess?.let {
+                setJoiningGroup(inviteGroupSuccess)
+            }
         }
     }
 
