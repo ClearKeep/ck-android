@@ -39,9 +39,7 @@ class InviteGroupViewModel @Inject constructor(
 
         fun insertFriend(people: User) {
                 viewModelScope.launch {
-                        val hasPeople = peopleRepository.getFriends().value?.find { it == people }
-                        if (hasPeople == null)
-                                peopleRepository.insertFriend(people, owner = getOwner())
+                        peopleRepository.insertFriend(people, owner = getOwner())
                 }
         }
 
