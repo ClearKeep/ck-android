@@ -32,7 +32,7 @@ fun showMessagingStyleNotification(
     chatGroup: ChatGroup,
     message: Message,
 ) {
-    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", ownerDomain = "")
+    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", domain = "")
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message)
 }
 

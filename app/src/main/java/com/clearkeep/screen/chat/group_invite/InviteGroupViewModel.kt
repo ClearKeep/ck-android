@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.group_invite
 
 import androidx.lifecycle.*
+import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.repo.PeopleRepository
@@ -14,9 +15,11 @@ class InviteGroupViewModel @Inject constructor(
 ): ViewModel() {
         fun getClientId() = environment.getServer().profile.userId
 
+        fun getDomain() = environment.getServer().serverDomain
+
         private var textSearch = MutableLiveData<String>()
 
-        val friends: LiveData<List<User>> = peopleRepository.getFriends(environment.getServer().serverDomain)
+        val friends: LiveData<List<User>> = peopleRepository.getFriends(getDomain(), getClientId())
 
         val filterFriends = liveData<List<User>> {
                 val result = MediatorLiveData<List<User>>()
@@ -35,8 +38,12 @@ class InviteGroupViewModel @Inject constructor(
 
         fun insertFriend(people: User) {
                 viewModelScope.launch {
-                        peopleRepository.insertFriend(people)
+                        peopleRepository.insertFriend(people, owner = getOwner())
                 }
+        }
+
+        private fun getOwner(): Owner {
+                return Owner(getDomain(), getClientId())
         }
 
         fun search(text: String) {

@@ -27,7 +27,6 @@ import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlin.system.exitProcess
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
@@ -51,8 +50,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                     val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
                     if (isDirectChat) {
                         val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
-                        if (!friendId.isNullOrBlank()) {
-                            navigateToRoomScreenWithFriendId(friendId)
+                        val friendDomain = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_DOMAIN)
+                        if (!friendId.isNullOrBlank() && !friendDomain.isNullOrBlank()) {
+                            navigateToRoomScreenWithFriendId(friendId, friendDomain)
                         }
                     } else {
                         val groupId = intent.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1)
@@ -227,9 +227,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
-    private fun navigateToRoomScreenWithFriendId(friendId: String) {
+    private fun navigateToRoomScreenWithFriendId(friendId: String, friendDomain: String) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friendId)
+        intent.putExtra(RoomActivity.FRIEND_DOMAIN, friendDomain)
         intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
         intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)

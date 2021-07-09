@@ -95,6 +95,7 @@ class CreateGroupActivity : AppCompatActivity() {
     private fun handleDirectChat(people: User) {
         val intent = Intent()
         intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
+        intent.putExtra(EXTRA_PEOPLE_DOMAIN, people.domain)
         intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
         setResult(RESULT_OK, intent)
         finish()
@@ -115,6 +116,7 @@ class CreateGroupActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_GROUP_ID = "extra_group_id"
         const val EXTRA_PEOPLE_ID = "extra_people_id"
+        const val EXTRA_PEOPLE_DOMAIN = "extra_people_domain"
         const val EXTRA_IS_DIRECT_CHAT = "extra_is_direct"
     }
 }
