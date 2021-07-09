@@ -49,7 +49,7 @@ fun InviteGroupScreen(
     onDirectFriendSelected: (User) -> Unit,
     onBackPressed: () -> Unit,
     onInsertFriend: () -> Unit,
-    isCreatePeerGroup: Boolean = true
+    isCreateDirectGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
     val textSearch = remember { mutableStateOf("") }
@@ -87,7 +87,9 @@ fun InviteGroupScreen(
                         }
                         CKHeaderText(
                             text = when (managerMember) {
-                                InviteMemberUIType -> "Create group"
+                                InviteMemberUIType -> {
+                                    if (isCreateDirectGroup) "Create direct message" else "Create group"
+                                }
                                 AddMemberUIType -> "Add member"
                                 else -> "Create group"
                             }, headerTextType = HeaderTextType.Medium
@@ -178,7 +180,7 @@ fun InviteGroupScreen(
                         contentPadding = PaddingValues(end = 16.dp, start = 16.dp),
                     ) {
                         itemsIndexed(listShow) { _, friend ->
-                            if (isCreatePeerGroup) {
+                            if (isCreateDirectGroup) {
                                 FriendListItem(friend, onFriendSelected = {
                                     onDirectFriendSelected(it)
                                 })
@@ -202,15 +204,19 @@ fun InviteGroupScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CKButton(
-                    if (useCustomServerChecked.value) stringResource(id = R.string.btn_add)
-                    else stringResource(R.string.btn_next),
+                    if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
+                    else  stringResource(R.string.btn_next),
                     onClick = {
                         if (useCustomServerChecked.value) {
                             val people = getPeopleFromLink(urlOtherServer.value)
-                            if (people != null) {
-                                inviteGroupViewModel.insertFriend(people)
-                                if (selectedItem.find { people == it } == null)
-                                    selectedItem.add(people)
+                            if (isCreateDirectGroup) {
+                                people?.let { onDirectFriendSelected(it) }
+                            } else {
+                                if (people != null) {
+                                    inviteGroupViewModel.insertFriend(people)
+                                    if (selectedItem.find { people == it } == null)
+                                        selectedItem.add(people)
+                                }
                             }
                             urlOtherServer.value = ""
                             useCustomServerChecked.value = false

@@ -66,7 +66,7 @@ class CreateGroupActivity : AppCompatActivity() {
                             onBackPressed = {
                                 finish()
                             },
-                            isCreatePeerGroup = isDirectChat
+                            isCreateDirectGroup = isDirectChat
                         )
                     }
                     composable("enter_group_name") {

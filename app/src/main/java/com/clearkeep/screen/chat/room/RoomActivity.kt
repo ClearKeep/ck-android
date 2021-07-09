@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -34,7 +33,6 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.utilities.printlnCK
-import group.GroupOuterClass
 
 
 @AndroidEntryPoint
@@ -120,7 +118,7 @@ class RoomActivity : AppCompatActivity() {
                             onInsertFriend = {
                                 navController.navigate("insert_friend")
                             },
-                            isCreatePeerGroup = false
+                            isCreateDirectGroup = false
                         )
                     }
                     composable("member_group_screen") {
