@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -16,10 +17,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
+import com.clearkeep.screen.chat.group_create.EnterGroupNameScreen
+import com.clearkeep.screen.chat.group_invite.AddMemberUIType
+import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
@@ -28,6 +34,7 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.utilities.printlnCK
+import group.GroupOuterClass
 
 
 @AndroidEntryPoint
@@ -36,6 +43,9 @@ class RoomActivity : AppCompatActivity() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val roomViewModel: RoomViewModel by viewModels {
+        viewModelFactory
+    }
+    private val createGroupViewModel: CreateGroupViewModel by viewModels {
         viewModelFactory
     }
 
@@ -93,18 +103,25 @@ class RoomActivity : AppCompatActivity() {
                         )
                     }
                     composable("invite_group_screen") {
-                        /*InviteGroupScreenComingSoon(
+                        selectedItem.clear()
+                        InviteGroupScreen(
+                                AddMemberUIType,
                                 inviteGroupViewModel,
-                                onFriendSelected = { friends ->
-                                    if (!friends.isNullOrEmpty()) {
-                                        roomViewModel.inviteToGroup(friends[0].id, roomId)
-                                    }
+                            listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
+                            onFriendSelected = { friends ->
+                                    roomViewModel.inviteToGroup(friends, groupId = roomId)
+                                    navController.navigate("room_screen")
                                 },
                                 onBackPressed = {
                                     navController.popBackStack()
                                 },
-                            selectedItem = selectedItem
-                        )*/
+                            selectedItem = selectedItem,
+                            onDirectFriendSelected = { },
+                            onInsertFriend = {
+                                navController.navigate("insert_friend")
+                            },
+                            isCreatePeerGroup = false
+                        )
                     }
                     composable("member_group_screen") {
                         GroupMemberScreen(
@@ -112,6 +129,14 @@ class RoomActivity : AppCompatActivity() {
                                 navController
                         )
                     }
+                    composable("enter_group_name") {
+                        EnterGroupNameScreen(
+                            navController,
+                            createGroupViewModel,
+                        )
+                    }
+
+
                 }
             }
         }

@@ -13,7 +13,9 @@ import user.UserGrpc
 import video_call.VideoCallGrpc
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
-
+/*
+* active server
+* */
 class DynamicAPIProviderImpl @Inject constructor(
     private val channelSelector: ChannelSelector,
 ) : DynamicAPIProvider {

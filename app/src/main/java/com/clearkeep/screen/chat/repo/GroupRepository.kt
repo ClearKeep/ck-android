@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.repo
 
+import android.util.Log
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.DynamicAPIProvider
@@ -107,21 +108,37 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun inviteToGroupFromAPI(ourClientId: String, invitedFriendId: String, groupId: Long): Boolean = withContext(Dispatchers.IO) {
-        printlnCK("inviteToGroup: $invitedFriendId")
-        /*try {
-            val request = GroupOuterClass.InviteToGroupRequest.newBuilder()
-                    .setFromClientId(ourClientId)
-                    .setClientId(invitedFriendId)
-                    .setGroupId(groupId)
-                    .build()
-            val response = dynamicAPIProvider.provideGroupBlockingStub().inviteToGroup(request)
+    suspend fun inviteToGroupFromAPIs(invitedUsers:List<User>, groupId: Long,owner: Owner): ChatGroup? = withContext(Dispatchers.IO) {
+        invitedUsers.forEach {
+            printlnCK("inviteToGroupFromAPIs: ${it.userName}")
+            inviteToGroupFromAPI(it, groupId)
+        }
+        val grbc = dynamicAPIProvider.provideGroupBlockingStub()
+        val group=getGroupFromAPI(groupId, grbc, owner)
+        group?.let { insertGroup(it) }
+        return@withContext group
+    }
 
+  private suspend fun inviteToGroupFromAPI(invitedUser:User, groupId: Long): Boolean? = withContext(Dispatchers.IO) {
+        printlnCK("inviteToGroup: $groupId")
+        try {
+            val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                .setId(invitedUser.userId)
+                .setWorkspaceDomain(invitedUser.domain)
+                .setDisplayName(invitedUser.userName)
+                .build()
+
+            val request = GroupOuterClass.AddMemberRequest.newBuilder()
+                    .setGroupId(groupId)
+                    .setAddingMemberId(getClientId())
+                    .setAddedMemberInfo(memberInfo)
+                    .build()
+            val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
             return@withContext response.success
         } catch (e: Exception) {
-            printlnCK("inviteToGroup error: $e")
+            printlnCK("inviteToGroupFromAPI error: $e")
             return@withContext false
-        }*/
+        }
         return@withContext true
     }
 

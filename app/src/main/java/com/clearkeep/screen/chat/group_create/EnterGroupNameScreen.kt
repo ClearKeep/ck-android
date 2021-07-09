@@ -4,18 +4,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.clearkeep.R
 import com.clearkeep.components.base.*
+import com.clearkeep.components.grayscale1
 import com.clearkeep.screen.chat.composes.FriendListItem
 
 @Composable
@@ -30,59 +31,75 @@ fun EnterGroupNameScreen(
     Surface(
         color = MaterialTheme.colors.background
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(start = 5.dp, end = 8.dp, top = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .weight(0.66f)
             ) {
                 Row(
-                    modifier = Modifier
-                        .weight(1.0f, true),
-                    horizontalArrangement = Arrangement.Start
+                    modifier = Modifier.padding(end = 8.dp, top = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = {
-                            navController.popBackStack(navController.graph.startDestination, false)
-                        }
+                    Row(
+                        modifier = Modifier
+                            .weight(1.0f, true),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "",
-                            tint = MaterialTheme.colors.primaryVariant
-                        )
+                        IconButton(
+                            onClick = {
+                                navController.popBackStack(
+                                    navController.graph.startDestination,
+                                    false
+                                )
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_chev_left),
+                                contentDescription = "",
+                                tint = grayscale1
+                            )
+                        }
+                        CKHeaderText("Create group", headerTextType = HeaderTextType.Medium)
                     }
                 }
-
-                CKTextButton(
-                    title = "Create",
-                    onClick = { createGroupViewModel.createGroup(groupName.value.trim()) },
-                    enabled = groupName.value.isNotBlank() && createGroupState.value != CreateGroupProcessing,
-                    fontSize = 16.sp,
-                    textButtonType = TextButtonType.Blue
+                Spacer(modifier = Modifier.height(24.dp))
+                CKHeaderText("Group Name", headerTextType = HeaderTextType.Normal)
+                Spacer(modifier = Modifier.height(16.dp))
+                CKTextInputField(
+                    "Name this group",
+                    groupName
                 )
-            }
-            Spacer(modifier = Modifier.height(25.dp))
-            CKHeaderText("New Group Message", headerTextType = HeaderTextType.Medium)
-            Spacer(modifier = Modifier.height(24.dp))
-            Text("Group Name", style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.secondaryVariant,
-            ))
-            CKTextInputField(
-                "Name this group",
-                groupName
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            friends.let { values ->
-                LazyColumn(
-                    contentPadding = PaddingValues(end = 16.dp),
-                ) {
-                    itemsIndexed(values) { _, friend ->
-                        FriendListItem(friend)
+                Spacer(modifier = Modifier.height(16.dp))
+                CKHeaderText("User in this group", headerTextType = HeaderTextType.Normal)
+                Spacer(modifier = Modifier.height(16.dp))
+                friends.let { values ->
+                    LazyColumn(
+                        contentPadding = PaddingValues(end = 16.dp),
+                    ) {
+                        itemsIndexed(values) { _, friend ->
+                            FriendListItem(friend)
+                        }
                     }
                 }
+            }
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CKButton(
+                    stringResource(R.string.btn_next),
+                    onClick = {
+                        createGroupViewModel.createGroup(groupName.value.trim())
+                    },
+                    modifier = Modifier
+                        .width(200.dp)
+                )
             }
         }
     }
+
 }
