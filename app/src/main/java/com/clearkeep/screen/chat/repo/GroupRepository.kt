@@ -78,7 +78,7 @@ class GroupRepository @Inject constructor(
                 GroupOuterClass.ClientInGroupObject.newBuilder()
                     .setId(people.userId)
                     .setDisplayName(people.userName)
-                    .setWorkspaceDomain(people.ownerDomain).build()
+                    .setWorkspaceDomain(people.domain).build()
             }
             val request = GroupOuterClass.CreateGroupRequest.newBuilder()
                 .setGroupName(groupName)
@@ -147,7 +147,7 @@ class GroupRepository @Inject constructor(
             clientList = listOf(createPeople, receiverPeople),
 
             isJoined = false,
-            ownerDomain = createPeople.ownerDomain,
+            ownerDomain = createPeople.domain,
             ownerClientId = createPeople.userId,
 
             lastMessage = null,
@@ -177,10 +177,10 @@ class GroupRepository @Inject constructor(
         return room
     }
 
-    suspend fun getGroupPeerByClientId(friend: User): ChatGroup? {
+    suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup? {
         return friend.let {
-            groupDAO.getPeerGroups().firstOrNull { group ->
-                group.clientList.firstOrNull { it.userId == friend.userId && it.ownerDomain == friend.ownerDomain } != null
+            groupDAO.getPeerGroups(domain = owner.domain, ownerId = owner.clientId).firstOrNull { group ->
+                group.clientList.firstOrNull { it.userId == friend.userId && it.domain == friend.domain } != null
             }
         }
     }
@@ -232,7 +232,7 @@ class GroupRepository @Inject constructor(
             User(
                 userId = it.id,
                 userName = it.displayName,
-                ownerDomain = it.workspaceDomain,
+                domain = it.workspaceDomain,
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {

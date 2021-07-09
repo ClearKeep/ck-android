@@ -1,9 +1,13 @@
 package com.clearkeep.screen.chat.repo
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.UserDao
+import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserEntity
 import com.clearkeep.dynamicapi.DynamicAPIProvider
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,28 +20,19 @@ class PeopleRepository @Inject constructor(
     // dao
     private val peopleDao: UserDao,
 
+    private val environment: Environment,
+
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
 ) {
-    fun getFriends(domain: String) = peopleDao.getFriends(domain).map { list ->
-        list.sortedBy { it.userName.toLowerCase() }
+    fun getFriends(ownerDomain: String, ownerClientId: String) : LiveData<List<User>> = peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
+        list.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
     }
 
-    suspend fun updatePeople() {
-        try {
-            val friends = getFriendsFromAPI()
-            if (friends.isNotEmpty()) {
-                printlnCK("updatePeople: $friends")
-                insertFriends(friends)
-            }
-        } catch(exception: Exception) {
-            printlnCK("updatePeople: $exception")
-        }
-    }
-
-    suspend fun getFriend(friendId: String, domain: String) : User? = withContext(Dispatchers.IO) {
-        printlnCK("getFriend: $friendId + $domain")
-        return@withContext peopleDao.getFriend(friendId, domain)
+    suspend fun getFriend(userId: String, domain: String, owner: Owner) : User? = withContext(Dispatchers.IO) {
+        printlnCK("getFriend: $userId + $domain")
+        val ret = peopleDao.getFriend(userId, domain, owner.domain, owner.clientId)
+        return@withContext if (ret != null) convertEntityToUser(ret) else null
     }
 
     suspend fun searchUser(userName: String) : List<User>  = withContext(Dispatchers.IO) {
@@ -51,7 +46,7 @@ class PeopleRepository @Inject constructor(
                         User(
                             userId = userInfoResponseOrBuilder.id,
                             userName = userInfoResponseOrBuilder.displayName,
-                            ownerDomain = userInfoResponseOrBuilder.workspaceDomain,
+                            domain = userInfoResponseOrBuilder.workspaceDomain,
                         )
                     }
         } catch (e: Exception) {
@@ -60,27 +55,34 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    suspend fun insertFriend(friend: User) {
-        val oldUser = peopleDao.getFriend(friend.userId, friend.ownerDomain)
-        if (oldUser != null) {
-            peopleDao.insert(
-                User(
-                    generateId = oldUser.generateId,
-                    userId = friend.userId,
-                    userName = friend.userName,
-                    ownerDomain = friend.ownerDomain
-                )
-            )
-        } else {
-            peopleDao.insert(friend)
+    suspend fun updatePeople() {
+        try {
+            val friends = getFriendsFromAPI()
+            if (friends.isNotEmpty()) {
+                printlnCK("updatePeople: $friends")
+                peopleDao.insertPeopleList(friends)
+            }
+        } catch(exception: Exception) {
+            printlnCK("updatePeople: $exception")
         }
     }
 
-    private suspend fun insertFriends(friends: List<User>) {
-        peopleDao.insertPeopleList(friends)
+    suspend fun insertFriend(friend: User, owner: Owner) {
+        val oldUser = peopleDao.getFriend(friend.userId, friend.domain, ownerDomain = owner.domain, ownerClientId = owner.clientId)
+        if (oldUser == null) {
+            peopleDao.insert(
+                UserEntity(
+                    userId = friend.userId,
+                    userName = friend.userName,
+                    domain = friend.domain,
+                    ownerDomain = owner.domain,
+                    ownerClientId = owner.clientId
+                )
+            )
+        }
     }
 
-    private suspend fun getFriendsFromAPI() : List<User>  = withContext(Dispatchers.IO) {
+    private suspend fun getFriendsFromAPI() : List<UserEntity>  = withContext(Dispatchers.IO) {
         printlnCK("getFriendsFromAPI")
         try {
             val request = UserOuterClass.Empty.newBuilder()
@@ -88,7 +90,7 @@ class PeopleRepository @Inject constructor(
             val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
             return@withContext response.lstUserOrBuilderList
                 .map { userInfoResponse ->
-                    convertUserResponse(userInfoResponse)
+                    convertUserResponse(userInfoResponse, Owner(environment.getServer().serverDomain, environment.getServer().profile.userId))
                 }
         } catch (e: Exception) {
             printlnCK("getFriendsFromAPI: $e")
@@ -96,13 +98,24 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    private suspend fun convertUserResponse(userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder) : User {
-        val oldGroup = peopleDao.getFriend(userInfoResponse.id, userInfoResponse.workspaceDomain)
-        return User(
-            generateId = oldGroup?.generateId ?: null,
+    private suspend fun convertUserResponse(userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder, owner: Owner) : UserEntity {
+        val oldUser = peopleDao.getFriend(userInfoResponse.id, userInfoResponse.workspaceDomain,
+            ownerDomain = owner.domain, ownerClientId = owner.clientId)
+        return UserEntity(
+            generateId = oldUser?.generateId ?: null,
             userId = userInfoResponse.id,
             userName = userInfoResponse.displayName,
-            ownerDomain = userInfoResponse.workspaceDomain,
+            domain = userInfoResponse.workspaceDomain,
+            ownerDomain = owner.domain,
+            ownerClientId = owner.clientId
+        )
+    }
+
+    private fun convertEntityToUser(userEntity: UserEntity) : User {
+        return User(
+            userId = userEntity.userId,
+            userName = userEntity.userName,
+            domain = userEntity.domain
         )
     }
 }
