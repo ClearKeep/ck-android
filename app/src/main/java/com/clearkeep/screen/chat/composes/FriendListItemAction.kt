@@ -66,6 +66,6 @@ fun FriendListItemAction(
 fun FriendListItemActionPreview() {
     FriendListItemAction(
         "Unbanned",
-        User(null, "" , "", "test")
+        User("", "test", "")
     ) {}
 }

@@ -9,13 +9,13 @@ import com.clearkeep.db.clear_keep.model.*
     Profile::class,
     Message::class,
     ChatGroup::class,
-    User::class,
+    UserEntity::class,
     Server::class
 ], version = 6, exportSchema = false)
 abstract class ClearKeepDatabase : RoomDatabase() {
-    abstract fun userDao(): ProfileDao
+    abstract fun profileDao(): ProfileDao
     abstract fun serverDao(): ServerDAO
     abstract fun messageDao(): MessageDAO
     abstract fun groupDao(): GroupDAO
-    abstract fun peopleDao(): UserDao
+    abstract fun userDao(): UserDao
 }

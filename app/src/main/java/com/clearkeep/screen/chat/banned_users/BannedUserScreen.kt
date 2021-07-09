@@ -43,9 +43,9 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
             item {
-                FriendListItemAction("Unbanned", User(null, "", "Alex Mendes", "")) {}
-                FriendListItemAction("Unbanned", User(null,"", "Alissa Baker", "")) {}
-                FriendListItemAction("Unbanned", User(null,"", "Barbara Johnson", "")) {}
+                FriendListItemAction("Unbanned", User( "", "Alex Mendes", ""), {})
+                FriendListItemAction("Unbanned", User("", "Alissa Baker", ""), {})
+                FriendListItemAction("Unbanned", User("", "Barbara Johnson", ""), {})
             }
         }
     }
