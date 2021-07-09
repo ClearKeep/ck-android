@@ -9,6 +9,7 @@ import com.clearkeep.utilities.BASE_URL
 import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.printlnCK
 import com.facebook.AccessToken
 import com.facebook.login.LoginManager
 import javax.inject.Inject
@@ -18,6 +19,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
 import com.facebook.GraphRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 
 class LoginViewModel @Inject constructor(
@@ -68,7 +73,13 @@ class LoginViewModel @Inject constructor(
                 IPublicClientApplication.ISingleAccountApplicationCreatedListener {
                 override fun onCreated(application: ISingleAccountPublicClientApplication?) {
                     mSingleAccountApp = application
-                    mSingleAccountApp?.signOut()
+                    viewModelScope.launch(Dispatchers.IO) {
+                        try {
+                            mSingleAccountApp?.signOut()
+                        }catch (e:Exception){
+                            printlnCK(e.message.toString())
+                        }
+                    }
                     onSuccess.invoke()
                 }
 
