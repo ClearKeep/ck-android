@@ -154,18 +154,15 @@ class ChatService : Service(),
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
+                    // groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
                     groupRepository.fetchGroups()
                 }
                 "new-peer" -> {
+                    // groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
                     groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    val remoteUser = peopleRepository.getFriend(value.refClientId, value.refWorkspaceDomain)
-                    if (remoteUser != null) {
-                        chatRepository.processPeerKey(remoteUser.userId, remoteUser.ownerDomain)
-                    } else {
-                        printlnCK("Warning, can not get user to peer update key")
-                    }
+                    chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain)
                 }
                 CALL_TYPE_VIDEO -> {
                     val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
@@ -219,7 +216,7 @@ class ChatService : Service(),
                     client.userId != currentServer.profile.userId
                 }
                 if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.userId, receiver.ownerDomain)
+                    chatRepository.processPeerKey(receiver.userId, receiver.domain)
                 }
             }
         }

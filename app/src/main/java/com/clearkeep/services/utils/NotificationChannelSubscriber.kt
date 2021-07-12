@@ -50,7 +50,7 @@ class NotificationChannelSubscriber(
         notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
             override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
                 printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
-                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType}")
+                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType} to ${value.clientId} + ${value.clientWorkspaceDomain}")
                 notificationChannelListener.onNotificationReceived(value, domain)
             }
 

@@ -1,10 +1,10 @@
 package com.clearkeep.db.clear_keep.model
 
 import androidx.room.*
-import com.clearkeep.db.clear_keep.converter.UserConverter
+import com.clearkeep.db.clear_keep.converter.ProfileConverter
 
 @Entity
-@TypeConverters(UserConverter::class)
+@TypeConverters(ProfileConverter::class)
 data class Server(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     @ColumnInfo(name = "server_name") val serverName: String,

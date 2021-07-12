@@ -5,12 +5,14 @@ import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Server
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
@@ -39,7 +41,6 @@ class HomeViewModel @Inject constructor(
     var currentServer = serverRepository.activeServer
 
     val selectingJoinServer = MutableLiveData(false)
-
     private val _prepareState = MutableLiveData<PrepareViewState>()
 
     val prepareState: LiveData<PrepareViewState>
@@ -167,6 +168,11 @@ class HomeViewModel @Inject constructor(
         if (!token.isNullOrEmpty()) {
             profileRepository.registerToken(token)
         }
+    }
+
+    fun getProfileLink() : String {
+        val server = environment.getServer()
+        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain))
     }
 }
 

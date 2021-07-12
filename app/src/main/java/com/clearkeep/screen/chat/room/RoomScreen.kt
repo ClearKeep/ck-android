@@ -37,11 +37,8 @@ fun RoomScreen(
             roomViewModel.setJoiningRoomId(group.groupId)
         }
         val messageList = roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId).observeAsState()
-        val groupName = if (group.isGroup()) group.groupName else {
-            group.clientList.firstOrNull { client ->
-                client.userId != roomViewModel.clientId
-            }?.userName ?: ""
-        }
+        printlnCK("test: ${group.clientList}")
+        val groupName = group.groupName
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         Box(
                 modifier = Modifier.fillMaxSize(),

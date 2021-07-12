@@ -48,7 +48,7 @@ fun CKButton(
                         backgroundGradientEnd
                     )
                 )
-            )
+                )
         } else null,
         modifier = modifier.height(height),
         contentPadding = PaddingValues(),
