@@ -29,7 +29,7 @@ fun RoomScreen(
         roomViewModel: RoomViewModel,
         navHostController: NavHostController,
         onFinishActivity: () -> Unit,
-        onCallingClick: ((isPeer: Boolean) -> Unit)
+        onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
     val group = roomViewModel.group.observeAsState()
     group.value?.let { group ->
