@@ -18,14 +18,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CKSearchBox
-import com.clearkeep.components.base.HeaderTextType
+import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale5
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemAction
+import com.clearkeep.screen.chat.composes.NewFriendListItem
+import com.clearkeep.screen.chat.composes.StatusText
 import com.clearkeep.screen.chat.contact_search.InputSearchBox
 
 @Composable
@@ -43,9 +43,9 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
             item {
-                FriendListItemAction("Unbanned", User( "", "Alex Mendes", ""), {})
-                FriendListItemAction("Unbanned", User("", "Alissa Baker", ""), {})
-                FriendListItemAction("Unbanned", User("", "Barbara Johnson", ""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User( "", "Alex Mendes", ""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Alissa Baker", ""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Barbara Johnson", ""), {})
             }
         }
     }
@@ -63,7 +63,7 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
                 .fillMaxWidth(),
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_left),
+                painter = painterResource(id = R.drawable.ic_chev_left),
                 contentDescription = null, modifier = Modifier
                     .clickable {
                         onCloseView.invoke()
@@ -74,6 +74,22 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
         Spacer(modifier = Modifier.size(16.dp))
         CKHeaderText("Banned User", headerTextType = HeaderTextType.Medium)
     }
+}
+
+@Composable
+fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: User) -> Unit) {
+    NewFriendListItem(modifier,
+        user,
+        { StatusText(user) },
+        {
+            CKButton(
+                "Unbanned",
+                { onAction(user) },
+                Modifier.width(123.dp),
+                buttonType = ButtonType.BorderGradient
+            )
+        }
+    )
 }
 
 @Preview
