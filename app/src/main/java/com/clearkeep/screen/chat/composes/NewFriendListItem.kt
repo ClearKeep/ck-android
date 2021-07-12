@@ -60,22 +60,6 @@ fun NewFriendListItem(
 }
 
 @Composable
-fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: User) -> Unit) {
-    NewFriendListItem(modifier,
-        user,
-        { StatusText(user) },
-        {
-            CKButton(
-                "Unbanned",
-                { onAction(user) },
-                Modifier.width(123.dp),
-                buttonType = ButtonType.BorderGradient
-            )
-        }
-    )
-}
-
-@Composable
 fun BoxScope.StatusIndicator() {
     Box(
         Modifier
@@ -84,30 +68,6 @@ fun BoxScope.StatusIndicator() {
             .align(Alignment.BottomEnd)
     )
 
-}
-
-@Composable
-fun InviteFromFacebookItem(
-    modifier: Modifier,
-    user: User,
-    isSelected: Boolean,
-    onFriendSelected: (people: User, isAdd: Boolean) -> Unit,
-) {
-    NewFriendListItem(modifier,
-        user,
-        { Text("Facebook Friend", color = Color(0xFF3F65EC)) },
-        {
-            CKRadioButton(
-                isSelected,
-                { onFriendSelected(user, !isSelected) },
-            )
-        }, {
-            Image(painterResource(R.drawable.ic_icons_facebook), null,
-                Modifier
-                    .background(Color.White, CircleShape)
-                    .align(Alignment.BottomEnd))
-        }
-    )
 }
 
 @Composable
@@ -180,15 +140,7 @@ fun NewFriendListItemPreview() {
     val user = User( "", "Alex Mendes", "")
 
     Column {
-        BannedUserItem(Modifier, user) {
-
-        }
-
         GroupMemberItem(Modifier, user)
-
-        InviteFromFacebookItem(Modifier, user, true) { people: User, isAdd: Boolean ->
-
-        }
     }
 }
 
