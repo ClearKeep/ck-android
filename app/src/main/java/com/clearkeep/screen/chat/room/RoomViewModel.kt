@@ -43,20 +43,20 @@ class RoomViewModel @Inject constructor(
 
     var domain: String = ""
 
-    fun joinRoom(domain: String, clientId: String, roomId: Long?, friendId: String?) {
-        if (domain.isNullOrBlank() || clientId.isNullOrBlank()) {
+    fun joinRoom(ownerDomain: String, ownerClientId: String, roomId: Long?, friendId: String?, friendDomain: String?) {
+        if (ownerDomain.isNullOrBlank() || ownerClientId.isNullOrBlank()) {
             throw IllegalArgumentException("domain and clientId must be not NULL")
         }
         if (roomId == null && TextUtils.isEmpty(friendId)) {
             throw IllegalArgumentException("Can not load room with both groupId and friendId is empty")
         }
-        this.domain = domain
-        this.clientId = clientId
+        this.domain = ownerDomain
+        this.clientId = ownerClientId
         this.roomId = roomId
         this.friendId = friendId
 
         viewModelScope.launch {
-            val selectedServer = serverRepository.getServerByOwner(Owner(domain, clientId))
+            val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
                 return@launch
@@ -66,14 +66,20 @@ class RoomViewModel @Inject constructor(
 
             if (roomId != null && roomId != 0L) {
                 updateGroupWithId(roomId)
-            } else if (!friendId.isNullOrEmpty()) {
-                updateGroupWithFriendId(friendId)
+            } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
+                updateGroupWithFriendId(friendId, friendDomain)
             }
         }
     }
 
     fun leaveRoom() {
         setJoiningRoomId(-1)
+    }
+
+    fun refreshRoom(){
+        viewModelScope.launch {
+            roomId?.let { updateGroupWithId(it) }
+        }
     }
 
     fun setJoiningRoomId(roomId: Long) {
@@ -94,16 +100,24 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateGroupWithFriendId(friendId: String) {
+    private suspend fun updateGroupWithFriendId(friendId: String, friendDomain: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
-        val friend = peopleRepository.getFriend(friendId, domain) ?: User(userId = friendId, userName = "", ownerDomain = domain)
-        var existingGroup = groupRepository.getGroupPeerByClientId(friend)
+        val friend = peopleRepository.getFriend(friendId, friendDomain, getOwner()) ?: User(userId = friendId, userName = "", domain = friendDomain)
+        if (friend == null) {
+            printlnCK("updateGroupWithFriendId: can not find friend with id $friendId")
+            return
+        }
+        var existingGroup = groupRepository.getGroupPeerByClientId(friend, Owner(domain = domain, clientId = clientId))
         if (existingGroup == null) {
             existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
         } else {
             updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
         }
         setJoiningGroup(existingGroup)
+    }
+
+    private fun getOwner(): Owner {
+        return Owner(domain, clientId)
     }
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
@@ -131,10 +145,10 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.ownerDomain, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.ownerDomain, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message)
                 }
             }
         }
@@ -156,9 +170,12 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun inviteToGroup(invitedFriendId: String, groupId: Long) {
+    fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-            groupRepository.inviteToGroupFromAPI(clientId, invitedFriendId, groupId)
+            val inviteGroupSuccess = groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId,getOwner())
+            inviteGroupSuccess?.let {
+                setJoiningGroup(inviteGroupSuccess)
+            }
         }
     }
 
@@ -169,7 +186,7 @@ class RoomViewModel @Inject constructor(
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
-                val friend = peopleRepository.getFriend(friendId!!, domain)!!
+                val friend = peopleRepository.getFriend(friendId!!, domain, getOwner())!!
                 val group = groupRepository.createGroupFromAPI(
                     user.userId,
                     "",
@@ -198,7 +215,7 @@ class RoomViewModel @Inject constructor(
 
     private fun getUser(): User {
         val server = environment.getServer()
-        return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), ownerDomain = server.serverDomain)
+        return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain)
     }
 }
 

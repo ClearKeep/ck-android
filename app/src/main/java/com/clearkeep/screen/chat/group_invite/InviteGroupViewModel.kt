@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.group_invite
 
 import androidx.lifecycle.*
+import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.repo.PeopleRepository
@@ -14,14 +15,16 @@ class InviteGroupViewModel @Inject constructor(
 ): ViewModel() {
         fun getClientId() = environment.getServer().profile.userId
 
+        fun getDomain() = environment.getServer().serverDomain
+
         private var textSearch = MutableLiveData<String>()
 
-        val friends: LiveData<List<User>> = peopleRepository.getFriends(environment.getServer().serverDomain)
+        val friends: LiveData<List<User>> = peopleRepository.getFriends(getDomain(), getClientId())
 
         val filterFriends = liveData<List<User>> {
                 val result = MediatorLiveData<List<User>>()
-                result.addSource(friends) { friendList ->
-                        result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
+                result.addSource(friends) { _ ->
+                   //     result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
                 }
                 result.addSource(textSearch) { text ->
                         result.value = getFilterFriends(friends.value ?: emptyList(), text)
@@ -30,13 +33,18 @@ class InviteGroupViewModel @Inject constructor(
         }
 
         private fun getFilterFriends(list: List<User>, search: String): List<User> {
+                if (search.isEmpty()) return emptyList()
                 return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
         }
 
         fun insertFriend(people: User) {
                 viewModelScope.launch {
-                        peopleRepository.insertFriend(people)
+                        peopleRepository.insertFriend(people, owner = getOwner())
                 }
+        }
+
+        private fun getOwner(): Owner {
+                return Owner(getDomain(), getClientId())
         }
 
         fun search(text: String) {

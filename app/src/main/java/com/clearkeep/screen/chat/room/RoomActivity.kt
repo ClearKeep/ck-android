@@ -16,10 +16,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
+import com.clearkeep.screen.chat.group_create.EnterGroupNameScreen
+import com.clearkeep.screen.chat.group_invite.AddMemberUIType
+import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
@@ -36,6 +41,9 @@ class RoomActivity : AppCompatActivity() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val roomViewModel: RoomViewModel by viewModels {
+        viewModelFactory
+    }
+    private val createGroupViewModel: CreateGroupViewModel by viewModels {
         viewModelFactory
     }
 
@@ -60,13 +68,14 @@ class RoomActivity : AppCompatActivity() {
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
+        val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
 
         if (roomId > 0) {
             val notificationManagerCompat = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
 
-        roomViewModel.joinRoom(domain, clientId, roomId, friendId)
+        roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
 
         setContent {
             CKTheme {
@@ -92,18 +101,25 @@ class RoomActivity : AppCompatActivity() {
                         )
                     }
                     composable("invite_group_screen") {
-                        /*InviteGroupScreenComingSoon(
+                        selectedItem.clear()
+                        InviteGroupScreen(
+                                AddMemberUIType,
                                 inviteGroupViewModel,
-                                onFriendSelected = { friends ->
-                                    if (!friends.isNullOrEmpty()) {
-                                        roomViewModel.inviteToGroup(friends[0].id, roomId)
-                                    }
+                            listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
+                            onFriendSelected = { friends ->
+                                    roomViewModel.inviteToGroup(friends, groupId = roomId)
+                                    navController.navigate("room_screen")
                                 },
                                 onBackPressed = {
                                     navController.popBackStack()
                                 },
-                            selectedItem = selectedItem
-                        )*/
+                            selectedItem = selectedItem,
+                            onDirectFriendSelected = { },
+                            onInsertFriend = {
+                                navController.navigate("insert_friend")
+                            },
+                            isCreateDirectGroup = false
+                        )
                     }
                     composable("member_group_screen") {
                         GroupMemberScreen(
@@ -111,6 +127,14 @@ class RoomActivity : AppCompatActivity() {
                                 navController
                         )
                     }
+                    composable("enter_group_name") {
+                        EnterGroupNameScreen(
+                            navController,
+                            createGroupViewModel,
+                        )
+                    }
+
+
                 }
             }
         }
@@ -159,5 +183,6 @@ class RoomActivity : AppCompatActivity() {
         const val DOMAIN = "domain"
         const val CLIENT_ID = "client_id"
         const val FRIEND_ID = "remote_id"
+        const val FRIEND_DOMAIN = "remote_domain"
     }
 }

@@ -19,6 +19,7 @@ import androidx.navigation.compose.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
+import com.clearkeep.screen.chat.group_invite.InviteMemberUIType
 import com.clearkeep.utilities.printlnCK
 
 @AndroidEntryPoint
@@ -49,7 +50,9 @@ class CreateGroupActivity : AppCompatActivity() {
                     composable("invite_group") {
                         inviteGroupViewModel.updateContactList()
                         InviteGroupScreen(
+                            InviteMemberUIType,
                             inviteGroupViewModel,
+                            listMemberInGroup = listOf(),
                             selectedItem = selectedItem,
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)
@@ -63,7 +66,7 @@ class CreateGroupActivity : AppCompatActivity() {
                             onBackPressed = {
                                 finish()
                             },
-                            isCreatePeerGroup = isDirectChat
+                            isCreateDirectGroup = isDirectChat
                         )
                     }
                     composable("enter_group_name") {
@@ -95,6 +98,7 @@ class CreateGroupActivity : AppCompatActivity() {
     private fun handleDirectChat(people: User) {
         val intent = Intent()
         intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
+        intent.putExtra(EXTRA_PEOPLE_DOMAIN, people.domain)
         intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
         setResult(RESULT_OK, intent)
         finish()
@@ -115,6 +119,7 @@ class CreateGroupActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_GROUP_ID = "extra_group_id"
         const val EXTRA_PEOPLE_ID = "extra_people_id"
+        const val EXTRA_PEOPLE_DOMAIN = "extra_people_domain"
         const val EXTRA_IS_DIRECT_CHAT = "extra_is_direct"
     }
 }
