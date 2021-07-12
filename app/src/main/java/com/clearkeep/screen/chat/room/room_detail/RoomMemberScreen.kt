@@ -8,11 +8,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.clearkeep.R
+import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKTopAppBar
+import com.clearkeep.components.base.HeaderTextType
+import com.clearkeep.components.grayscale1
 import com.clearkeep.screen.chat.composes.FriendListItem
+import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
 
 @Composable
@@ -26,33 +33,56 @@ fun GroupMemberScreen(
             color = MaterialTheme.colors.background
         ) {
             Column {
-                CKTopAppBar(
-                    title = {
-                        Text(text = "Member")
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                navHostController.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = ""
-                            )
-                        }
-                    },
-                )
-                Spacer(modifier = Modifier.height(30.dp))
+                RoomMemberHeader {
+                    navHostController.popBackStack()
+                }
                 LazyColumn(
-                    modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                    contentPadding = PaddingValues(top = 20.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(
+                        top = 20.dp,
+                        bottom = 20.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    ),
                 ) {
                     itemsIndexed(group.clientList) { _, friend ->
-                        FriendListItem(friend)
+                        NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RoomMemberHeader(onCloseView: () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+    ) {
+        Spacer(Modifier.size(24.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(
+                onClick = {
+                    onCloseView.invoke()
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chev_left),
+                    contentDescription = null,
+                    tint = grayscale1,
+                )
+            }
+            CKHeaderText(
+                "Member", modifier = Modifier
+                    .weight(1.0f, true), headerTextType = HeaderTextType.Medium
+            )
         }
     }
 }
