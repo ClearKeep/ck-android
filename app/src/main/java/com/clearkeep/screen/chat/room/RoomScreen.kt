@@ -78,6 +78,7 @@ fun RoomScreen(
                     }
                 }
                 SendBottomCompose(
+                        navHostController,
                         onSendMessage = { message ->
                             val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
                             if (validMessage .isEmpty()) {
