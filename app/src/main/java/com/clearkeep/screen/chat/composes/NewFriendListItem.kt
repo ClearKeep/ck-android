@@ -60,20 +60,6 @@ fun NewFriendListItem(
 }
 
 @Composable
-fun RemoveMemberItem(modifier: Modifier = Modifier, user: User, onAction: (user: User) -> Unit) {
-    NewFriendListItem(modifier, user, { StatusText(user) }, {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_cross),
-                contentDescription = "",
-                tint = errorDefault,
-                modifier = Modifier.clickable {
-                    onAction(user)
-                }
-            )
-    })
-}
-
-@Composable
 fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: User) -> Unit) {
     NewFriendListItem(modifier,
         user,
@@ -189,69 +175,12 @@ fun StatusText(user: User) {
 }
 
 @Composable
-fun RemoveMemberScreen(onCloseView: () -> Unit) {
-        val text = remember { mutableStateOf("") }
-        Column(
-            Modifier
-                .padding(horizontal = 16.dp)
-                .fillMaxSize()) {
-            HeaderRemoveMember(onCloseView)
-            Spacer(modifier = Modifier.height(24.dp))
-            CKSearchBox(text,
-                Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(grayscale5))
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("User in this Group Chat", color = grayscale2)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val itemModifier = Modifier.padding(vertical = 8.dp)
-            LazyColumn {
-                item {
-                    RemoveMemberItem(itemModifier, User( null, "",  "Alex Mendes", "")){}
-                    RemoveMemberItem(itemModifier, User(null, "", "Alissa Baker", "")){}
-                    RemoveMemberItem(itemModifier, User(null, "", "Barbara Johnson", "")){}
-                }
-            }
-        }
-}
-
-@Composable
-fun HeaderRemoveMember(onCloseView: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-    ) {
-        Spacer(Modifier.size(32.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_left),
-                contentDescription = null, modifier = Modifier
-                    .clickable {
-                        onCloseView.invoke()
-                    },
-                tint = grayscale1,
-            )
-        }
-        Spacer(modifier = Modifier.size(16.dp))
-        CKHeaderText("Remove Member", headerTextType = HeaderTextType.Medium)
-    }
-}
-
-@Composable
 @Preview
 fun NewFriendListItemPreview() {
-    val user = User(null, "", "Alex Mendes", "")
+    val user = User( "", "Alex Mendes", "")
 
     Column {
         BannedUserItem(Modifier, user) {
-
-        }
-
-        RemoveMemberItem(Modifier, user) {
 
         }
 
@@ -276,11 +205,4 @@ fun CircleAvatarNewPreview() {
             )
         })
     }
-}
-@Composable
-@Preview
-fun RemoveMemberScreenPreview() {
-        RemoveMemberScreen {
-
-        }
 }
