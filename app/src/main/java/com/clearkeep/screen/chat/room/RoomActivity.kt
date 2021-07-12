@@ -136,6 +136,7 @@ class RoomActivity : AppCompatActivity() {
                     }
                     composable("remove_member") {
                         RemoveMemberScreen(
+                            roomViewModel,
                             navController
                         )
                     }

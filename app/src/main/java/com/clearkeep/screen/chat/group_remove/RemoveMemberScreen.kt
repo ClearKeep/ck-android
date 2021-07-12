@@ -4,9 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,39 +24,44 @@ import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.*
+import com.clearkeep.screen.chat.room.RoomViewModel
 
 @Composable
-fun RemoveMemberScreen(navController: NavController) {
+fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavController) {
     val text = remember { mutableStateOf("") }
+    val groupState = roomViewModel.group.observeAsState()
 
-    CKSimpleTheme {
-        Surface(color = MaterialTheme.colors.background) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-            ) {
-                HeaderRemoveMember {
-                    navController.popBackStack()
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Column(Modifier.padding(horizontal = 16.dp)
+    groupState?.value?.let { group ->
+        CKSimpleTheme {
+            Surface(color = MaterialTheme.colors.background) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
                 ) {
-                    CKSearchBox(
-                        text,
-                        Modifier
-                            .background(grayscale5, RoundedCornerShape(16.dp))
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("User in this Group Chat", color = grayscale2)
-                    Spacer(modifier = Modifier.height(16.dp))
+                    HeaderRemoveMember {
+                        navController.popBackStack()
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    val itemModifier = Modifier.padding(vertical = 8.dp)
-                    LazyColumn {
-                        item {
-                            RemoveMemberItem(itemModifier, User("", "Alex Mendes", "")) {}
-                            RemoveMemberItem(itemModifier, User("", "Alissa Baker", "")) {}
-                            RemoveMemberItem(itemModifier, User("", "Barbara Johnson", "")) {}
+                    Column(
+                        Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        CKSearchBox(
+                            text,
+                            Modifier
+                                .background(grayscale5, RoundedCornerShape(16.dp))
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("User in this Group Chat", color = grayscale2)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        val itemModifier = Modifier.padding(vertical = 8.dp)
+
+
+                        LazyColumn {
+                            itemsIndexed(group.clientList) { _, user ->
+                                RemoveMemberItem(itemModifier, user) {}
+                            }
                         }
                     }
                 }
