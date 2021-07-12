@@ -176,7 +176,9 @@ fun RoomInfoScreen(
                                 "Remove member",
                                 R.drawable.ic_user_off,
                                 textColor = grayscale1,
-                                onClickAction = {})
+                                onClickAction = {
+                                    navHostController.navigate("remove_member")
+                                })
                         }
 
                     }
