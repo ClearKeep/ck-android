@@ -27,6 +27,7 @@ import com.clearkeep.screen.chat.group_invite.AddMemberUIType
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
+import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
 import com.clearkeep.utilities.network.Status
@@ -133,8 +134,11 @@ class RoomActivity : AppCompatActivity() {
                             createGroupViewModel,
                         )
                     }
-
-
+                    composable("image_picker") {
+                        ImagePickerScreen(
+                            navController
+                        )
+                    }
                 }
             }
         }

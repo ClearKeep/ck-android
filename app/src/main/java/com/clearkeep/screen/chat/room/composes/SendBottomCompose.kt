@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.room.composes
 
 import android.text.TextUtils
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -16,6 +17,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
 import com.clearkeep.components.grayscaleBackground
@@ -23,6 +26,7 @@ import com.clearkeep.components.grayscaleBackground
 @ExperimentalComposeUiApi
 @Composable
 fun SendBottomCompose(
+    navController: NavController,
     onSendMessage: (String) -> Unit
 ) {
     val msgState = remember { mutableStateOf("") }
@@ -45,6 +49,9 @@ fun SendBottomCompose(
                 painterResource(R.drawable.ic_photos),
                 contentDescription = "",
                 tint = MaterialTheme.colors.surface,
+                modifier = Modifier.clickable {
+                    navController.navigate("image_picker")
+                }
             )
         }
 
