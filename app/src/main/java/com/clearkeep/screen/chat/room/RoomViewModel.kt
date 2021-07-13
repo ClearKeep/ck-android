@@ -43,6 +43,14 @@ class RoomViewModel @Inject constructor(
 
     var domain: String = ""
 
+    private val _imageUri = MutableLiveData<List<String>>()
+    val imageUri : LiveData<List<String>>
+        get() = _imageUri as LiveData<List<String>>
+
+    private val _imageUriSelected = MutableLiveData<List<String>>()
+    val imageUriSelected : LiveData<List<String>>
+        get() = _imageUriSelected as LiveData<List<String>>
+
     fun joinRoom(ownerDomain: String, ownerClientId: String, roomId: Long?, friendId: String?, friendDomain: String?) {
         if (ownerDomain.isNullOrBlank() || ownerClientId.isNullOrBlank()) {
             throw IllegalArgumentException("domain and clientId must be not NULL")
@@ -216,6 +224,14 @@ class RoomViewModel @Inject constructor(
     private fun getUser(): User {
         val server = environment.getServer()
         return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain)
+    }
+
+    fun setSelectedImages(uris: List<String>) {
+        _imageUriSelected.value = uris
+    }
+
+    fun setImageUriList(uris: List<String>) {
+        _imageUri.value = uris
     }
 }
 

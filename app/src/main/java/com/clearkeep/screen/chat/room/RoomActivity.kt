@@ -142,6 +142,7 @@ class RoomActivity : AppCompatActivity() {
                     }
                     composable("image_picker") {
                         ImagePickerScreen(
+                            roomViewModel,
                             navController
                         )
                     }
