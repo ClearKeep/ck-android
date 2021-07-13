@@ -15,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
+import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscaleBackground
 
 @ExperimentalComposeUiApi
@@ -44,7 +46,7 @@ fun SendBottomCompose(
             Icon(
                 painterResource(R.drawable.ic_photos),
                 contentDescription = "",
-                tint = MaterialTheme.colors.surface,
+                tint = grayscale1,
             )
         }
 
@@ -58,9 +60,9 @@ fun SendBottomCompose(
                 .height(24.dp),
         ) {
             Icon(
-                painterResource(R.drawable.ic_at),
+                painterResource(R.drawable.ic_link),
                 contentDescription = "",
-                tint = MaterialTheme.colors.surface,
+                tint = grayscale1,
             )
         }
 
@@ -95,7 +97,7 @@ fun SendBottomCompose(
                 .height(24.dp),
         ) {
             Icon(
-                if (msgState.value == "") painterResource(R.drawable.ic_microphone) else painterResource(
+                painterResource(
                     id = R.drawable.ic_send_plane
                 ),
                 contentDescription = "",
