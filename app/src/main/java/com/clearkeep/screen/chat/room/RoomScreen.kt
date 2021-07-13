@@ -1,16 +1,30 @@
 package com.clearkeep.screen.chat.room
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
@@ -21,6 +35,10 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
+import androidx.compose.ui.window.Dialog
+import com.clearkeep.components.colorLightBlue
+import com.clearkeep.components.separatorDarkNonOpaque
+import com.clearkeep.components.tintsRedLight
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -32,6 +50,8 @@ fun RoomScreen(
         onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
     val group = roomViewModel.group.observeAsState()
+    val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+
     group.value?.let { group ->
         if (group.groupId != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.groupId)
@@ -99,7 +119,10 @@ fun RoomScreen(
                                     printlnCK("can not found friend")
                                 }
                             }
-                        }
+                        },
+                    onClickUploadPhoto = {
+                        isUploadPhotoDialogVisible.value = true
+                    }
                 )
             }
             requestCallViewState?.value?.let {
@@ -111,15 +134,114 @@ fun RoomScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             CircularProgressIndicator(color = Color.Blue)
                             Spacer(modifier = Modifier.height(10.dp))
-                            Text(text = "creating group...", style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold))
+                            Text(
+                                text = "creating group...",
+                                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+                            )
                         }
                     }
                 }
             }
+            UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
+                isUploadPhotoDialogVisible.value = false
+            }, onNavigateToAlbums = {
+                isUploadPhotoDialogVisible.value = false
+                navHostController.navigate("image_picker")
+            }, onNavigateToTakePhoto = {
+
+            })
+        }
+    }
+}
+
+@Composable
+fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onNavigateToTakePhoto: () -> Unit) {
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            onNavigateToAlbums()
+        } else {
+            onDismiss()
+        }
+    }
+
+    printlnCK("onDismiss $isOpen")
+
+    val context = LocalContext.current
+
+    if (isOpen) {
+        Box {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(0x66000000))
+                    .clickable {
+                        onDismiss()
+                    })
+            Column(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 10.dp)
+            ) {
+                Column(
+                    Modifier
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                ) {
+                    Text("Take a photo",
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+
+                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                    )
+                    Divider(color = separatorDarkNonOpaque)
+                    Text("Albums",
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                if (isFilePermissionGranted(context)) {
+                                    onNavigateToAlbums()
+                                } else {
+                                    launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                }
+                            }, textAlign = TextAlign.Center, color = tintsRedLight
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Box {
+                    Text(
+                        "Cancel", modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White)
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clickable {
+                                onDismiss()
+                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                    )
+                }
+                Spacer(Modifier.height(14.dp))
+            }
+        }
+    }
+}
+
+private fun isFilePermissionGranted(context: Context): Boolean {
+    return when (PackageManager.PERMISSION_GRANTED) {
+        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) -> {
+            true
+        }
+        else -> {
+            false
         }
     }
 }

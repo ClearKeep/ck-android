@@ -15,9 +15,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -26,7 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,6 +51,7 @@ fun SendBottomCompose(
     roomViewModel: RoomViewModel,
     navController: NavController,
     onSendMessage: (String) -> Unit,
+    onClickUploadPhoto: () -> Unit
 ) {
     val msgState = remember { mutableStateOf("") }
     val isKeyboardShow = remember { mutableStateOf(false) }
@@ -60,7 +61,10 @@ fun SendBottomCompose(
     Column(Modifier.background(grayscaleBackground)) {
         selectedImagesList.value.let { values ->
             if (!values.isNullOrEmpty())
-                Row(Modifier.padding(horizontal = 14.dp).fillMaxWidth()) {
+                Row(
+                    Modifier
+                        .padding(horizontal = 14.dp)
+                        .fillMaxWidth()) {
                     LazyRow {
                         itemsIndexed(values) { _, uri ->
                             ItemImage(uri) {
@@ -77,33 +81,20 @@ fun SendBottomCompose(
         ) {
             IconButton(
                 onClick = {
+                    onClickUploadPhoto()
                 },
                 modifier = Modifier
                     .padding(8.dp)
                     .width(24.dp)
                     .height(24.dp),
-
                 ) {
-                val launcher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestPermission()
-                ) { isGranted: Boolean ->
-                    if (isGranted) {
-                        navController.navigate("image_picker")
-
-                    } else {
-                    }
-                }
 
                 Icon(
                     painterResource(R.drawable.ic_photos),
                     contentDescription = "",
                     tint = MaterialTheme.colors.surface,
                     modifier = Modifier.clickable {
-                        if (isFilePermissionGranted(context)) {
-                            navController.navigate("image_picker")
-                        } else {
-                            launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        }
+                        onClickUploadPhoto()
                     }
                 )
             }
@@ -195,17 +186,6 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
                 }
                 .align(Alignment.TopEnd)) {
             Icon(painter = painterResource(R.drawable.ic_cross), null, tint = grayscaleOffWhite)
-        }
-    }
-}
-
-private fun isFilePermissionGranted(context: Context) : Boolean{
-    return when (PackageManager.PERMISSION_GRANTED) {
-        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) -> {
-            true
-        }
-        else -> {
-            false
         }
     }
 }

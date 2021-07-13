@@ -60,3 +60,6 @@ val backgroundGradientStart = Color(0xff7773F3)
 val backgroundGradientEnd = Color(0xff8ABFF3)
 
 val colorWarningLight= Color(0xffFFD789)
+
+val separatorDarkNonOpaque = Color(0xA6545458)
+val tintsRedLight = Color(0xFFFF3B30)
