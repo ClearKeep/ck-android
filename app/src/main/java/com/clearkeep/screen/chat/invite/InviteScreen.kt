@@ -100,9 +100,3 @@ fun InviteOption(text: String) {
             Alignment.CenterEnd), tint = pickledBlueWood)
     }
 }
-
-@Preview
-@Composable
-fun InviteScreenPreview() {
-    InviteScreen({})
-}

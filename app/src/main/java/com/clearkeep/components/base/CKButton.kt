@@ -112,9 +112,3 @@ enum class ButtonType {
     BorderWhite,
     BorderGradient,
 }
-
-@Preview
-@Composable
-fun CKButtonPreview() {
-    CKButton("test", {}, enabled = false, buttonType = ButtonType.Blue)
-}

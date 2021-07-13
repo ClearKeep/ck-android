@@ -133,28 +133,3 @@ fun CircleAvatarNew(
 fun StatusText(user: User) {
     Text("Online", color = colorSuccessDefault)
 }
-
-@Composable
-@Preview
-fun NewFriendListItemPreview() {
-    val user = User( "", "Alex Mendes", "")
-
-    Column {
-        GroupMemberItem(Modifier, user)
-    }
-}
-
-@Composable
-@Preview
-fun CircleAvatarNewPreview() {
-    Box(Modifier.background(Color.Black)) {
-        CircleAvatarNew(emptyList(), "Linh Nguyen", statusIcon = {
-            Box(
-                Modifier
-                    .size(16.dp)
-                    .background(colorSuccessDefault, CircleShape)
-                    .align(Alignment.BottomEnd)
-            )
-        })
-    }
-}

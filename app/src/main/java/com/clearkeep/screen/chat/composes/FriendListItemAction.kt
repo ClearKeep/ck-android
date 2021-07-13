@@ -60,12 +60,3 @@ fun FriendListItemAction(
         }
     }
 }
-
-@Preview
-@Composable
-fun FriendListItemActionPreview() {
-    FriendListItemAction(
-        "Unbanned",
-        User("", "test", "")
-    ) {}
-}

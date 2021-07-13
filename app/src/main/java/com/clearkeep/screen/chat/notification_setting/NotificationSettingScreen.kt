@@ -98,9 +98,3 @@ private fun CKSetting(modifier: Modifier, name: String, description: String = ""
         }
     }
 }
-
-@Preview
-@Composable
-fun NotificationSettingPreview() {
-    NotificationSettingScreen{}
-}

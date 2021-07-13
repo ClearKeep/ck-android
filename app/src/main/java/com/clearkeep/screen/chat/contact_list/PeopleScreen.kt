@@ -78,9 +78,3 @@ fun FriendItem(
         Spacer(modifier = Modifier.height(10.dp))
     }
 }
-
-@Preview
-@Composable
-fun FriendItemPreview() {
-    FriendItem(User( "", "test", "")) {}
-}

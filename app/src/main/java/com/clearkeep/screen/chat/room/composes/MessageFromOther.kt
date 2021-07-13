@@ -93,18 +93,3 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
         }
     }
 }
-
-@Preview
-@Composable
-fun MessageFromOtherPreview() {
-    MessageFromOther(
-        MessageDisplayInfo(
-            Message(null, "", 0, "", "", "", "msg", 0, 0, "", ""),
-            false,
-            true,
-            true,
-            "linh",
-            RoundedCornerShape(8.dp)
-        )
-    )
-}

@@ -106,9 +106,3 @@ fun InviteFromFacebookItem(
         }
     )
 }
-
-@Preview
-@Composable
-fun InviteFacebookScreenPreview() {
-    InviteFacebookScreen()
-}
