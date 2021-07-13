@@ -86,7 +86,6 @@ fun CircleAvatarNew(
     if (!url.isNullOrEmpty()) {
         //
     }
-
     if (isGroup) {
         Image(
             imageVector = Icons.Filled.Groups,
