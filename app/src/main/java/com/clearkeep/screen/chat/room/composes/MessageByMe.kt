@@ -45,18 +45,3 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
         }
     }
 }
-
-@Preview
-@Composable
-fun MessageByMePreview() {
-    MessageByMe(
-        MessageDisplayInfo(
-            Message(null, "", 0, "", "", "", "msg", 0, 0, "", ""),
-            true,
-            false,
-            true,
-            "linh",
-            RoundedCornerShape(8.dp)
-        )
-    )
-}

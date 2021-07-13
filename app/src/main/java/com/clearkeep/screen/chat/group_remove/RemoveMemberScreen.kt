@@ -118,13 +118,3 @@ fun RemoveMemberItem(
         )
     })
 }
-
-@Composable
-@Preview
-fun NewFriendListItemPreview() {
-    val user = User("", "Alex Mendes", "")
-
-    Column {
-        RemoveMemberItem(Modifier, user) {}
-    }
-}

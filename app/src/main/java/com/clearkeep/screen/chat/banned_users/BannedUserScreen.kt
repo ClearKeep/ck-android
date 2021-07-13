@@ -91,9 +91,3 @@ fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: U
         }
     )
 }
-
-@Preview
-@Composable
-fun BannedUserScreenPreview() {
-    BannedUserScreen{}
-}
