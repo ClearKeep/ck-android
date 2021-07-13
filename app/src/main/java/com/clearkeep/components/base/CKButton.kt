@@ -37,9 +37,9 @@ fun CKButton(
         shape = RoundedCornerShape(radius),
         border = if (buttonType == ButtonType.BorderWhite) {
             BorderStroke(
-            2.dp,
-            grayscaleOffWhite
-        )
+                2.dp,
+                grayscaleOffWhite
+            )
         } else if (buttonType == ButtonType.BorderGradient) {
             BorderStroke(
                 2.dp, Brush.horizontalGradient(
@@ -111,10 +111,4 @@ enum class ButtonType {
     Red,
     BorderWhite,
     BorderGradient,
-}
-
-@Preview
-@Composable
-fun CKButtonPreview() {
-    CKButton("test", {}, enabled = false, buttonType = ButtonType.Blue)
 }
