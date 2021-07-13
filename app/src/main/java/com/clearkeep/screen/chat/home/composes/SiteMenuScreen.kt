@@ -298,12 +298,6 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
     }
 }
 
-@Preview
-@Composable
-fun StatusItemPreview() {
-    StatusItem({}, Color.Red, "Busy")
-}
-
 private fun copyProfileLinkToClipBoard(context: Context, label: String, text: String) {
     val clipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
