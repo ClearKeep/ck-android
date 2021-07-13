@@ -65,11 +65,8 @@ class LoginActivity : AppCompatActivity() {
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MyApp()
-        }
-
         isJoinServer = intent.getBooleanExtra(IS_JOIN_SERVER, false)
+
         if (isJoinServer) {
             val domain = intent.getStringExtra(SERVER_DOMAIN)
             if(domain.isNullOrBlank()) {
@@ -78,13 +75,18 @@ class LoginActivity : AppCompatActivity() {
             loginViewModel.isCustomServer = true
             loginViewModel.customDomain = domain
         }
+
+        setContent {
+            MyApp(isJoinServer)
+        }
+
         subscriberError()
     }
 
     @Composable
-    fun MyApp() {
+    fun MyApp(isJoinServer: Boolean) {
         CKTheme {
-            MainComposable()
+            MainComposable(isJoinServer)
         }
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -93,7 +95,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun AppContent(navController: NavController) {
+    fun AppContent(navController: NavController, isjoinServer: Boolean) {
         val (messageError, setShowDialog) = remember { mutableStateOf<ErrorMessage?>(null) }
         loginViewModel.initGoogleSingIn(this)
         showErrorDiaLog = {
@@ -141,7 +143,9 @@ class LoginActivity : AppCompatActivity() {
                             navigateToAdvanceSetting(navController)
                         },
                         isLoading = isLoadingState.value ?: false,
-                        isShowAdvanceSetting = !isJoinServer
+                        isShowAdvanceSetting = !isJoinServer,
+                        isJoinServer = isJoinServer,
+                        onNavigateBack = { finish() }
                     )
                 }
             }
@@ -163,13 +167,13 @@ class LoginActivity : AppCompatActivity() {
     }
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
-    fun MainComposable(){
+    fun MainComposable(isJoinServer: Boolean){
         val navController = rememberNavController()
         Box(Modifier
             .fillMaxSize()) {
             NavHost(navController, startDestination = "login"){
                 composable("login"){
-                    AppContent(navController)
+                    AppContent(navController, isJoinServer)
                 }
                 composable("advance_setting") {
                     CustomServerScreen(
