@@ -56,8 +56,6 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                         Spacer(modifier = Modifier.height(16.dp))
 
                         val itemModifier = Modifier.padding(vertical = 8.dp)
-
-
                         LazyColumn {
                             itemsIndexed(group.clientList) { _, user ->
                                 RemoveMemberItem(itemModifier, user) {}

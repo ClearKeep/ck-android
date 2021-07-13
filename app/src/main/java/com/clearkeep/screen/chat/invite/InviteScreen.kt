@@ -56,7 +56,6 @@ fun InviteScreen(onCloseView: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         CKButton("Invite", {}, enabled = email.value.isNotBlank())
         Spacer(modifier = Modifier.height(40.dp))
-
         InviteOption(text = "User from Facebook")
         Spacer(modifier = Modifier.height(8.dp))
         InviteOption(text = "User from Google")
