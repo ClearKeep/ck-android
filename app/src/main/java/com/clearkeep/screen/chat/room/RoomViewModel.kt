@@ -236,6 +236,13 @@ class RoomViewModel @Inject constructor(
         list.remove(uri)
         _imageUriSelected.value = list
     }
+
+    fun addImage(uri: String) {
+        val list = mutableListOf<String>()
+        list.addAll(_imageUriSelected.value ?: emptyList())
+        list.add(uri)
+        _imageUriSelected.value = list
+    }
 }
 
 class RequestInfo(val chatGroup: ChatGroup, val isAudioMode: Boolean)

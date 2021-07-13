@@ -35,10 +35,16 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import androidx.compose.ui.window.Dialog
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.components.tintsRedLight
+import android.net.Uri
+import android.os.Environment
+import androidx.core.content.FileProvider
+import com.clearkeep.BuildConfig
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -151,15 +157,17 @@ fun RoomScreen(
             }, onNavigateToAlbums = {
                 isUploadPhotoDialogVisible.value = false
                 navHostController.navigate("image_picker")
-            }, onNavigateToTakePhoto = {
-
+            }, onTakePhoto = {
+                roomViewModel.addImage(it)
             })
         }
     }
 }
 
 @Composable
-fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onNavigateToTakePhoto: () -> Unit) {
+fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
+    val context = LocalContext.current
+
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -170,9 +178,13 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         }
     }
 
-    printlnCK("onDismiss $isOpen")
-
-    val context = LocalContext.current
+    var uri : Uri? = null
+    val takePhotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful : Boolean ->
+        if (isSuccessful) {
+            onTakePhoto(uri.toString())
+            onDismiss()
+        }
+    }
 
     if (isOpen) {
         Box {
@@ -198,7 +210,8 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                             .fillMaxWidth()
                             .padding(16.dp)
                             .clickable {
-
+                                uri = generatePhotoUri(context)
+                                takePhotoLauncher.launch(uri)
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                     Divider(color = separatorDarkNonOpaque)
@@ -244,4 +257,15 @@ private fun isFilePermissionGranted(context: Context): Boolean {
             false
         }
     }
+}
+
+private fun generatePhotoUri(context: Context) : Uri {
+    val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+    val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+    val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+    return FileProvider.getUriForFile(
+        context.applicationContext,
+        BuildConfig.APPLICATION_ID + ".provider",
+        file
+    )
 }
