@@ -137,10 +137,10 @@ fun showMessageNotificationToSystemBar(
 
     val contentTitle = chatGroup.groupName
     val participants = chatGroup.clientList
-
+    val userName=if (me.userName.isEmpty())  "me" else me.userName
     val messagingStyle: NotificationCompat.MessagingStyle = NotificationCompat.MessagingStyle(
         Person.Builder()
-            .setName(me.userName)
+            .setName(userName)
             .setKey(me.userId)
             .build()
     )
