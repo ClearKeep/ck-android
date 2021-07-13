@@ -230,8 +230,11 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = uris
     }
 
-    fun setImageUriList(uris: List<String>) {
-        _imageUri.value = uris
+    fun removeImage(uri: String) {
+        val list = mutableListOf<String>()
+        list.addAll(_imageUriSelected.value ?: emptyList())
+        list.remove(uri)
+        _imageUriSelected.value = list
     }
 }
 
