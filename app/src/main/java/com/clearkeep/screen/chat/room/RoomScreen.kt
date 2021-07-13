@@ -77,7 +77,7 @@ fun RoomScreen(
                     if (it.isCalling)
                         TopBoxCallingStatus(callingStateData = it, onClick = { isCallPeer -> onCallingClick(isCallPeer)})
                 }
-                ToolbarMessage(modifier = Modifier, groupName,isGroup = group.isGroup(), onBackClick = {
+                ToolbarMessage(modifier = Modifier, groupName, isGroup = group.isGroup(), onBackClick = {
                     onFinishActivity()
                 }, onUserClick = {
                     if (group.isGroup()) {
@@ -168,7 +168,7 @@ fun RoomScreen(
 fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
     val context = LocalContext.current
 
-    val launcher = rememberLauncherForActivityResult(
+    val requestStoragePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
@@ -182,6 +182,15 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
     val takePhotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful : Boolean ->
         if (isSuccessful) {
             onTakePhoto(uri.toString())
+            onDismiss()
+        }
+    }
+
+    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) {
+            uri = generatePhotoUri(context)
+            takePhotoLauncher.launch(uri)
+        } else {
             onDismiss()
         }
     }
@@ -210,8 +219,12 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                             .fillMaxWidth()
                             .padding(16.dp)
                             .clickable {
-                                uri = generatePhotoUri(context)
-                                takePhotoLauncher.launch(uri)
+                                if (isCameraPermissionGranted(context)) {
+                                    uri = generatePhotoUri(context)
+                                    takePhotoLauncher.launch(uri)
+                                } else {
+                                    requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                     Divider(color = separatorDarkNonOpaque)
@@ -223,7 +236,7 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                                 if (isFilePermissionGranted(context)) {
                                     onNavigateToAlbums()
                                 } else {
-                                    launcher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    requestStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                                 }
                             }, textAlign = TextAlign.Center, color = tintsRedLight
                     )
@@ -249,8 +262,16 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
 }
 
 private fun isFilePermissionGranted(context: Context): Boolean {
+    return isPermissionGranted(context, Manifest.permission.READ_EXTERNAL_STORAGE)
+}
+
+private fun isCameraPermissionGranted(context: Context): Boolean {
+    return isPermissionGranted(context, Manifest.permission.CAMERA)
+}
+
+private fun isPermissionGranted(context: Context, permission: String): Boolean  {
     return when (PackageManager.PERMISSION_GRANTED) {
-        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) -> {
+        ContextCompat.checkSelfPermission(context, permission) -> {
             true
         }
         else -> {
