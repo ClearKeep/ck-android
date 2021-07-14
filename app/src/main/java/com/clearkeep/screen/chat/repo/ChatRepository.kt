@@ -14,6 +14,12 @@ import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.CiphertextMessage
+import upload_file.UploadFileOuterClass
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.security.DigestInputStream
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -75,7 +81,7 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,): Boolean {
+    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String): Boolean {
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
@@ -110,5 +116,35 @@ class ChatRepository @Inject constructor(
         }
 
         return@withContext false
+    }
+
+    suspend fun uploadFileToGroup(byteString: ByteString, md5Sum: String, senderId: String, ownerWorkSpace: String, groupId: Long) = withContext(Dispatchers.IO) {
+        try {
+//            val byteArray = ByteArray(file.length().toInt())
+//            val inputStream = FileInputStream(file)
+//            inputStream.read(byteArray)
+//            inputStream.close()
+//
+//            val messageDigest = MessageDigest.getInstance("MD5")
+//            val digestInputStream = DigestInputStream(inputStream, messageDigest)
+
+            val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
+                .setFileName("test.png")
+                .setFileContentType("image/png")
+                .setFileData(byteString)
+                .setFileHash(md5Sum)
+                .build()
+
+//            val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
+//                .setFileName("test")
+//                .setFileContentType("")
+//                .setFileDataBlock(byteArray)
+            val response = dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
+//            val response = dynamicAPIProvider.provideUploadFileStub().uploadChunkedFile(object : StreamO)
+            println(response)
+            println("File url ${response.fileUrl}")
+        } catch (e: Exception) {
+            printlnCK("uploadFileToGroup $e")
+        }
     }
 }

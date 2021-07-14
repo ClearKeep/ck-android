@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.room
 
+import android.content.Context
+import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
@@ -8,9 +10,17 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import com.google.common.io.ByteStreams
+import com.google.protobuf.ByteString
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
+import java.security.DigestInputStream
+import java.security.MessageDigest
 import javax.inject.Inject
+import java.math.BigInteger
+
+
+
 
 class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
@@ -242,6 +252,38 @@ class RoomViewModel @Inject constructor(
         list.addAll(_imageUriSelected.value ?: emptyList())
         list.add(uri)
         _imageUriSelected.value = list
+    }
+
+    fun uploadImage(context: Context) {
+        viewModelScope.launch {
+            val imageUris = _imageUriSelected.value
+            imageUris?.forEach {
+                printlnCK("Image URIs" + it)
+            }
+            if (!imageUris.isNullOrEmpty()) {
+                val bufferSize = 1000000
+                val byteArray = ByteArray(bufferSize)
+                val inputStream = context.contentResolver.openInputStream(Uri.parse("content://media/external/images/media/2698"))
+                var size: Int
+                size = inputStream?.read(byteArray) ?: 0
+                val byteString = ByteString.copyFrom(byteArray, 0, size)
+
+                val messageDigest = MessageDigest.getInstance("MD5")
+                messageDigest.update(byteArray, 0, size)
+                val md5sum = messageDigest.digest()
+                val bigInt = BigInteger(1, md5sum)
+                var md5Sum = bigInt.toString(16)
+                md5Sum = String.format("%32s", md5Sum).replace(' ', '0')
+                printlnCK(md5Sum)
+//                inputStream?.read(byteArray)
+//                inputStream?.close()
+                chatRepository.uploadFileToGroup(byteString, md5Sum, "", "", 0)
+            }
+        }
+    }
+
+    private fun getFile() {
+
     }
 }
 

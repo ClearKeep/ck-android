@@ -44,6 +44,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.glide.rememberGlidePainter
+import java.util.*
 
 @ExperimentalFoundationApi
 @Composable
@@ -77,6 +78,7 @@ fun ImagePickerScreen(
                             .padding(end = 16.dp)
                             .clickable {
                                 roomViewModel.setSelectedImages(urisSelected)
+                                roomViewModel.uploadImage(context)
                                 navController.popBackStack()
                             }
                     )
