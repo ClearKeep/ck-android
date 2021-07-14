@@ -256,23 +256,39 @@ class RoomViewModel @Inject constructor(
                 val bufferSize = 4_000_000 //4MB
 
                 imageUris.forEach { uri ->
+                    val byteStrings = mutableListOf<ByteString>()
+                    val blockDigestStrings = mutableListOf<String>()
                     val byteArray = ByteArray(bufferSize)
                     val inputStream = context.contentResolver.openInputStream(Uri.parse(uri))
+                    var fileSize = 0
                     var size: Int
                     size = inputStream?.read(byteArray) ?: 0
-                    val byteString = ByteString.copyFrom(byteArray, 0, size)
-
-                    val messageDigest = MessageDigest.getInstance("MD5")
-                    messageDigest.update(byteArray, 0, size)
-                    val md5sum = messageDigest.digest()
-                    val bigInt = BigInteger(1, md5sum)
-                    var md5Sum = bigInt.toString(16)
-                    md5Sum = String.format("%32s", md5Sum).replace(' ', '0')
-                    printlnCK(md5Sum)
-                    chatRepository.uploadFile(byteString, md5Sum)
+                    val fileDigest = MessageDigest.getInstance("MD5")
+                    while (size > 0) {
+                        val blockDigest = MessageDigest.getInstance("MD5")
+                        blockDigest.update(byteArray, 0, size)
+                        val blockDigestByteArray = blockDigest.digest()
+                        val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
+                        blockDigestStrings.add(blockDigestString)
+                        fileDigest.update(byteArray, 0, size)
+                        byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
+                        fileSize += size
+                        size = inputStream?.read(byteArray) ?: 0
+                    }
+                    printlnCK(fileSize.toString())
+                    val fileHashByteArray = fileDigest.digest()
+                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                    printlnCK(fileHashString)
+                    chatRepository.uploadFile(byteStrings, blockDigestStrings, fileHashString)
                 }
             }
         }
+    }
+
+    private fun byteArrayToMd5HashString(byteArray: ByteArray) : String {
+        val bigInt = BigInteger(1, byteArray)
+        val hashString = bigInt.toString(16)
+        return String.format("%32s", hashString).replace(' ', '0')
     }
 }
 

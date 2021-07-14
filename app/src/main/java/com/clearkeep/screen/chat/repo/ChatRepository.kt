@@ -8,6 +8,7 @@ import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
+import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import message.MessageOuterClass
 import org.whispersystems.libsignal.SessionCipher
@@ -118,31 +119,46 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun uploadFile(byteString: ByteString, md5Sum: String) = withContext(Dispatchers.IO) {
+    suspend fun uploadFile(byteStrings: List<ByteString>, blockHash: List<String>, fileHash: String) = withContext(Dispatchers.IO) {
         try {
-//            val byteArray = ByteArray(file.length().toInt())
-//            val inputStream = FileInputStream(file)
-//            inputStream.read(byteArray)
-//            inputStream.close()
-//
-//            val messageDigest = MessageDigest.getInstance("MD5")
-//            val digestInputStream = DigestInputStream(inputStream, messageDigest)
+            if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
+                val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
+                    .setFileName("test.png")
+                    .setFileContentType("image/png")
+                    .setFileData(byteStrings[0])
+                    .setFileHash(fileHash)
+                    .build()
 
-            val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
-                .setFileName("test.png")
-                .setFileContentType("image/png")
-                .setFileData(byteString)
-                .setFileHash(md5Sum)
-                .build()
+                val response = dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
+                println(response)
+                println("File url ${response.fileUrl}")
+            } else {
+                val responseObserver = object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
+                    override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
+                        printlnCK("onNext response" + value?.fileUrl)
+                    }
 
-//            val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
-//                .setFileName("test")
-//                .setFileContentType("")
-//                .setFileDataBlock(byteArray)
-            val response = dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
-//            val response = dynamicAPIProvider.provideUploadFileStub().uploadChunkedFile(object : StreamO)
-            println(response)
-            println("File url ${response.fileUrl}")
+                    override fun onError(t: Throwable?) {
+                    }
+
+                    override fun onCompleted() {
+                    }
+                }
+                val requestObserver = dynamicAPIProvider.provideUploadFileStub().uploadChunkedFile(responseObserver)
+
+                byteStrings.forEachIndexed { index, byteString ->
+                    val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
+                        .setFileName("test")
+                        .setFileContentType("")
+                        .setFileDataBlock(byteString)
+                        .setFileDataBlockHash(blockHash[index])
+                        .setFileHash(fileHash)
+                        .build()
+
+                    requestObserver.onNext(request)
+                }
+                requestObserver.onCompleted()
+            }
         } catch (e: Exception) {
             printlnCK("uploadFileToGroup $e")
         }
