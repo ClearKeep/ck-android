@@ -118,7 +118,7 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun uploadFileToGroup(byteString: ByteString, md5Sum: String, senderId: String, ownerWorkSpace: String, groupId: Long) = withContext(Dispatchers.IO) {
+    suspend fun uploadFile(byteString: ByteString, md5Sum: String) = withContext(Dispatchers.IO) {
         try {
 //            val byteArray = ByteArray(file.length().toInt())
 //            val inputStream = FileInputStream(file)
