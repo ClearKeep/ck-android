@@ -9,6 +9,7 @@ import message.MessageGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
+import upload_file.UploadFileGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
 import java.lang.IllegalArgumentException
@@ -125,6 +126,30 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return VideoCallGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                server!!.accessKey,
+                server!!.hashKey
+            ))
+    }
+
+    override fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub {
+        if (server == null) {
+            throw IllegalArgumentException("server must be not null")
+        }
+        val managedChannel = channelSelector.getChannel(server!!.serverDomain)
+        return UploadFileGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                server!!.accessKey,
+                server!!.hashKey
+            ))
+    }
+
+    override fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub {
+        if (server == null) {
+            throw IllegalArgumentException("server must be not null")
+        }
+        val managedChannel = channelSelector.getChannel(server!!.serverDomain)
+        return UploadFileGrpc.newStub(managedChannel)
             .withCallCredentials(CallCredentials(
                 server!!.accessKey,
                 server!!.hashKey
