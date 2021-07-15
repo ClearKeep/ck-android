@@ -26,6 +26,7 @@ class RoomViewModel @Inject constructor(
     private var roomId: Long? = null
 
     private var friendId: String? = null
+    private var friendDomain: String? = null
 
     private var isLatestPeerSignalKeyProcessed = false
 
@@ -62,6 +63,7 @@ class RoomViewModel @Inject constructor(
         this.clientId = ownerClientId
         this.roomId = roomId
         this.friendId = friendId
+        this.friendDomain = friendDomain
 
         viewModelScope.launch {
             val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
@@ -187,6 +189,15 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    fun removeMember(user: User,groupId:Long){
+        viewModelScope.launch {
+            val remoteMember=groupRepository.removeMemberInGroup(user,groupId,getOwner())
+            remoteMember?.let {
+                setJoiningGroup(remoteMember)
+            }
+        }
+    }
+
     fun requestCall(groupId: Long, isAudioMode: Boolean) {
         viewModelScope.launch {
             _requestCallState.value = Resource.loading(null)
@@ -194,7 +205,8 @@ class RoomViewModel @Inject constructor(
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
-                val friend = peopleRepository.getFriend(friendId!!, domain, getOwner())!!
+                printlnCK("requestCall $domain")
+                val friend = peopleRepository.getFriend(friendId!!, friendDomain!! , getOwner())!!
                 val group = groupRepository.createGroupFromAPI(
                     user.userId,
                     "",

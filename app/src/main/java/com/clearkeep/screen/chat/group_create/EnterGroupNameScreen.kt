@@ -93,7 +93,8 @@ fun EnterGroupNameScreen(
                 CKButton(
                     stringResource(R.string.btn_next),
                     onClick = {
-                        createGroupViewModel.createGroup(groupName.value.trim())
+                        if (groupName.value.trim().isNotEmpty())
+                             createGroupViewModel.createGroup(groupName.value.trim())
                     },
                     modifier = Modifier
                         .width(200.dp)
