@@ -34,6 +34,7 @@ import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import jp.wasabeef.glide.transformations.BlurTransformation
 
@@ -53,6 +54,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imgEnd: ImageView
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
+    private val environment: Environment? = null
 
     private var ringtone: Ringtone? = null
 
@@ -65,7 +67,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private val endCallReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
-            Log.e("antx","endCallReceiver")
+            printlnCK("endCallReceiver mGroupId: $mGroupId  groupId: $groupId")
             if (mGroupId == groupId) {
                 finishAndRemoveFromTask()
             }
@@ -110,7 +112,11 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun unRegisterEndCallReceiver() {
-        unregisterReceiver(endCallReceiver)
+        try {
+            unregisterReceiver(endCallReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun playRingTone() {
