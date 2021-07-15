@@ -16,8 +16,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
@@ -70,9 +71,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            CKSimpleTheme {
+            CKSimpleInsetTheme() {
                 homeViewModel.prepareState.observeAsState().value.let { prepareState ->
                     when (prepareState) {
                         PrepareSuccess -> {

@@ -7,9 +7,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 val lightThemeColors = lightColors(
     primary = primaryDefault,
@@ -72,6 +76,40 @@ fun CKTheme(
                 )
         ) {
             children()
+        }
+    }
+}
+
+@Composable
+fun CKInsetTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    children: @Composable () -> Unit
+) {
+    val systemUiController = rememberSystemUiController()
+    SideEffect {
+        systemUiController.setStatusBarColor(Color.Transparent, true)
+    }
+
+    MaterialTheme(
+        //todo disable dark mode
+        colors = if (darkTheme) lightThemeColors else lightThemeColors,
+        shapes = Shapes,
+        typography = ckTypography
+    ) {
+        ProvideWindowInsets {
+            Box(
+                modifier = Modifier
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                if (darkTheme) backgroundGradientStart else backgroundGradientStart,
+                                if (darkTheme) backgroundGradientEnd else backgroundGradientEnd,
+                            )
+                        )
+                    )
+            ) {
+                children()
+            }
         }
     }
 }

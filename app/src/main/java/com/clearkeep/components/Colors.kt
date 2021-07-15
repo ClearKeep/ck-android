@@ -63,3 +63,4 @@ val colorWarningLight= Color(0xffFFD789)
 
 val separatorDarkNonOpaque = Color(0xA6545458)
 val tintsRedLight = Color(0xFFFF3B30)
+val colorStatusBar = Color(0xFF090979)
