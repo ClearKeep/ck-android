@@ -8,19 +8,14 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -36,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.clearkeep.R
+import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.base.CKRadioButton
 import com.clearkeep.components.base.CKTopAppBar
@@ -44,6 +40,9 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.statusBarsHeight
+import com.google.accompanist.insets.statusBarsPadding
 
 @ExperimentalFoundationApi
 @Composable
@@ -57,9 +56,10 @@ fun ImagePickerScreen(
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
-    CKSimpleTheme {
-        Column {
+    CKSimpleInsetTheme {
+        Column(Modifier.navigationBarsPadding()) {
             printlnCK((roomViewModel.imageUriSelected.value?.size ?: 0).toString())
+            Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
             CKTopAppBar(
                 {},
                 Modifier,
