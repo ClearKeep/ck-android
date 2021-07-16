@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.text.TextUtils
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -17,6 +18,7 @@ import java.lang.IllegalArgumentException
 import java.security.MessageDigest
 import javax.inject.Inject
 import java.math.BigInteger
+import java.util.*
 
 class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
@@ -60,6 +62,7 @@ class RoomViewModel @Inject constructor(
     private val _uploadFileResponse = MediatorLiveData<String>()
     val uploadFileResponse: LiveData<String>
         get() = _uploadFileResponse
+    private var uploadFileSource: LiveData<String> = MutableLiveData()
 
     fun joinRoom(
         ownerDomain: String,
@@ -172,29 +175,51 @@ class RoomViewModel @Inject constructor(
                     val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(
+                        clientId,
+                        domain,
+                        receiverPeople.userId,
+                        receiverPeople.domain,
+                        lastGroupId,
+                        message
+                    )
                 }
             }
         }
     }
 
-    fun sendMessageToGroup(context: Context, groupId: Long, message: String, isRegisteredGroup: Boolean) {
+    fun sendMessageToGroup(
+        context: Context,
+        groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean
+    ) {
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
                     uploadImage(context, groupId, message, isRegisteredGroup)
-                } else if (!isRegisteredGroup) {
-                    val result =
-                        signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
-                    if (result) {
-                        _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                        chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
-                    }
                 } else {
-                    chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
+                    sendMessageToGroup(groupId, message, isRegisteredGroup)
                 }
             } catch (e: Exception) {
             }
+        }
+    }
+
+    private suspend fun sendMessageToGroup(
+        groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean
+    ) {
+        if (!isRegisteredGroup) {
+            val result =
+                signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
+            if (result) {
+                _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
+                chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
+            }
+        } else {
+            chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
         }
     }
 
@@ -271,6 +296,7 @@ class RoomViewModel @Inject constructor(
         isRegisteredGroup: Boolean
     ) {
         val imageUris = _imageUriSelected.value
+        _imageUriSelected.postValue(emptyList())
 
         if (!imageUris.isNullOrEmpty()) {
             imageUris.forEach { uriString ->
@@ -303,18 +329,15 @@ class RoomViewModel @Inject constructor(
                 val fileHashByteArray = fileDigest.digest()
                 val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                 printlnCK(fileHashString)
-                _uploadFileResponse.addSource(
-                    chatRepository.uploadFile(
-                        mimeType,
-                        fileName,
-                        byteStrings,
-                        blockDigestStrings,
-                        fileHashString
-                    )
-                ) {
-                    _imageUriSelected.postValue(emptyList())
-                    sendMessageToGroup(context, groupId, "$it $message", isRegisteredGroup)
-                }
+                val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
+                val url = chatRepository.uploadFile(
+                    mimeType,
+                    fileName,
+                    byteStrings,
+                    blockDigestStrings,
+                    fileHashString
+                )
+                sendMessageToGroup(groupId, "$url $message", isRegisteredGroup)
             }
         }
     }

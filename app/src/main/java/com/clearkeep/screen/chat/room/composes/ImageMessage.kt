@@ -35,7 +35,7 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
         ImageMessageItem(
             Modifier
                 .then(modifier)
-                .size(203.dp), imageUris[0]
+                .size(130.dp), imageUris[0]
         ) { }
     } else {
         Column(Modifier.wrapContentSize()) {

@@ -183,7 +183,7 @@ class RoomActivity : AppCompatActivity() {
         })
 
         roomViewModel.uploadFileResponse.observe(this) {
-
+            printlnCK("upload file url $it")
         }
     }
 

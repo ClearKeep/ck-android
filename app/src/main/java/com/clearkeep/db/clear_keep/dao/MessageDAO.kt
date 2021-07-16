@@ -8,7 +8,7 @@ import com.clearkeep.db.clear_keep.model.Message
 @Dao
 interface MessageDAO {
     @Insert(onConflict = REPLACE)
-    suspend fun insert(message: Message)
+    suspend fun insert(message: Message) : Long
 
     @Insert(onConflict = REPLACE)
     suspend fun insertMessages(messages: List<Message>)

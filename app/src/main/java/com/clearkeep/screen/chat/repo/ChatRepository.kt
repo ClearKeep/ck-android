@@ -128,9 +128,9 @@ class ChatRepository @Inject constructor(
         byteStrings: List<ByteString>,
         blockHash: List<String>,
         fileHash: String
-    ): LiveData<String> {
-        val liveData = MutableLiveData<String>()
-        withContext(Dispatchers.IO) {
+    ): String {
+//        val liveData = MutableLiveData<String>()
+        return withContext(Dispatchers.IO) {
             try {
                 if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
                     val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
@@ -145,42 +145,42 @@ class ChatRepository @Inject constructor(
 
                     return@withContext response.fileUrl
                 } else {
-                    val responseObserver =
-                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
-                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
-                                printlnCK("onNext response" + value?.fileUrl)
-                                liveData.postValue(value?.fileUrl ?: "")
-                            }
-
-                            override fun onError(t: Throwable?) {
-                                printlnCK("onError $t")
-                            }
-
-                            override fun onCompleted() {
-                                printlnCK("onCompleted")
-                            }
-                        }
-                    val requestObserver = dynamicAPIProvider.provideUploadFileStub()
-                        .uploadChunkedFile(responseObserver)
-
-                    byteStrings.forEachIndexed { index, byteString ->
-                        val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
-                            .setFileName(fileName)
-                            .setFileContentType(mimeType)
-                            .setFileDataBlock(byteString)
-                            .setFileDataBlockHash(blockHash[index])
-                            .setFileHash(fileHash)
-                            .build()
-
-                        requestObserver.onNext(request)
-                    }
-                    requestObserver.onCompleted()
+//                    val responseObserver =
+//                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
+//                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
+//                                printlnCK("onNext response" + value?.fileUrl)
+//                                liveData.postValue(value?.fileUrl ?: "")
+//                            }
+//
+//                            override fun onError(t: Throwable?) {
+//                                printlnCK("onError $t")
+//                            }
+//
+//                            override fun onCompleted() {
+//                                printlnCK("onCompleted")
+//                            }
+//                        }
+//                    val requestObserver = dynamicAPIProvider.provideUploadFileStub()
+//                        .uploadChunkedFile(responseObserver)
+//
+//                    byteStrings.forEachIndexed { index, byteString ->
+//                        val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
+//                            .setFileName(fileName)
+//                            .setFileContentType(mimeType)
+//                            .setFileDataBlock(byteString)
+//                            .setFileDataBlockHash(blockHash[index])
+//                            .setFileHash(fileHash)
+//                            .build()
+//
+//                        requestObserver.onNext(request)
+//                    }
+//                    requestObserver.onCompleted()
+                    return@withContext ""
                 }
             } catch (e: Exception) {
                 printlnCK("uploadFileToGroup $e")
-                liveData.postValue("")
+                return@withContext ""
             }
         }
-        return liveData
     }
 }
