@@ -58,6 +58,7 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     group.value?.let { group ->
         if (group.groupId != GROUP_ID_TEMPO) {
@@ -115,7 +116,7 @@ fun RoomScreen(
                             val groupResult = group
                             val isGroup = groupResult.isGroup()
                             if (isGroup) {
-                                roomViewModel.sendMessageToGroup(groupResult.groupId, validMessage, groupResult.isJoined)
+                                roomViewModel.sendMessageToGroup(context, groupResult.groupId, validMessage, groupResult.isJoined)
                             } else {
                                 val friend = groupResult.clientList.firstOrNull { client ->
                                     client.userId != roomViewModel.clientId

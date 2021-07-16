@@ -78,7 +78,6 @@ fun ImagePickerScreen(
                             .padding(end = 16.dp)
                             .clickable {
                                 roomViewModel.setSelectedImages(urisSelected)
-                                roomViewModel.uploadImage(context)
                                 navController.popBackStack()
                             }
                     )
