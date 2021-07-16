@@ -29,35 +29,59 @@ const val MAX_IMAGE_COUNT = 4
 
 @ExperimentalFoundationApi
 @Composable
-fun ImageMessageContent(imageUris: List<String>) {
+fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
+    println("ImageMessageContent $imageUris")
     if (imageUris.size == 1) {
-        ImageMessageItem(Modifier.size(203.dp), imageUris[0]) {
-
-        }
+        ImageMessageItem(
+            Modifier
+                .then(modifier)
+                .size(203.dp), imageUris[0]
+        ) { }
     } else {
-        LazyVerticalGrid(cells = GridCells.Fixed(2)) {
-            for (index in imageUris.indices) {
-                if (index <= MAX_IMAGE_COUNT - 2) {
-                    item {
-                        Box(Modifier.padding(4.dp)) {
-                            ImageMessageItem(Modifier.size(110.dp), imageUris[index]) {
+        Column(Modifier.wrapContentSize()) {
+            println("multi item grid")
+            Row(Modifier.weight(1f, false)) {
+                for (i in 0..minOf(imageUris.size, 1)) {
+                    Box(
+                        Modifier
+                            .padding(4.dp)
+                            .weight(1f)
+                    ) {
+                        ImageMessageItem(Modifier.size(110.dp), imageUris[i]) {
+
+                        }
+                    }
+                }
+            }
+            Row(Modifier.weight(1f, false)) {
+                for (i in 2 until imageUris.size) {
+                    if (i == 2 || (i == 3 && imageUris.size <= 4)) {
+                        Box(
+                            Modifier
+                                .padding(4.dp)
+                                .weight(1f)
+                        ) {
+                            ImageMessageItem(Modifier.size(110.dp), imageUris[i]) {
 
                             }
                         }
-                    }
-                } else {
-                    item {
+                    } else {
                         Box(
                             Modifier
+                                .size(110.dp)
                                 .clip(RoundedCornerShape(16.dp))
                                 .aspectRatio(1f)
                                 .padding(4.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[index]) {
+                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[i]) {
 
                             }
-                            Box(Modifier.background(Color(0x4D000000), RoundedCornerShape(16.dp)).fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier
+                                    .background(Color(0x4D000000), RoundedCornerShape(16.dp))
+                                    .fillMaxSize(), contentAlignment = Alignment.Center
+                            ) {
                                 Text(
                                     "+${imageUris.size - 4}",
                                     Modifier
@@ -69,8 +93,8 @@ fun ImageMessageContent(imageUris: List<String>) {
                             }
 
                         }
+                        break
                     }
-                    break
                 }
             }
         }

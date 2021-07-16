@@ -50,14 +50,24 @@ class RoomViewModel @Inject constructor(
     var domain: String = ""
 
     private val _imageUri = MutableLiveData<List<String>>()
-    val imageUri : LiveData<List<String>>
-        get() = _imageUri as LiveData<List<String>>
+    val imageUri: LiveData<List<String>>
+        get() = _imageUri
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
-    val imageUriSelected : LiveData<List<String>>
-        get() = _imageUriSelected as LiveData<List<String>>
+    val imageUriSelected: LiveData<List<String>>
+        get() = _imageUriSelected
 
-    fun joinRoom(ownerDomain: String, ownerClientId: String, roomId: Long?, friendId: String?, friendDomain: String?) {
+    private val _uploadFileResponse = MediatorLiveData<String>()
+    val uploadFileResponse: LiveData<String>
+        get() = _uploadFileResponse
+
+    fun joinRoom(
+        ownerDomain: String,
+        ownerClientId: String,
+        roomId: Long?,
+        friendId: String?,
+        friendDomain: String?
+    ) {
         if (ownerDomain.isNullOrBlank() || ownerClientId.isNullOrBlank()) {
             throw IllegalArgumentException("domain and clientId must be not NULL")
         }
@@ -168,11 +178,14 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun sendMessageToGroup(groupId: Long, message: String, isRegisteredGroup: Boolean) {
+    fun sendMessageToGroup(context: Context, groupId: Long, message: String, isRegisteredGroup: Boolean) {
         viewModelScope.launch {
             try {
-                if (!isRegisteredGroup) {
-                    val result = signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, groupId, message, isRegisteredGroup)
+                } else if (!isRegisteredGroup) {
+                    val result =
+                        signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
                     if (result) {
                         _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
                         chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
@@ -180,13 +193,15 @@ class RoomViewModel @Inject constructor(
                 } else {
                     chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
                 }
-            } catch (e : Exception) {}
+            } catch (e: Exception) {
+            }
         }
     }
 
     fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-            val inviteGroupSuccess = groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId,getOwner())
+            val inviteGroupSuccess =
+                groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId, getOwner())
             inviteGroupSuccess?.let {
                 setJoiningGroup(inviteGroupSuccess)
             }
@@ -250,49 +265,61 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
-    fun uploadImage(context: Context) {
-        viewModelScope.launch {
-            val imageUris = _imageUriSelected.value
-            if (!imageUris.isNullOrEmpty()) {
-                val bufferSize = 4_000_000 //4MB
+    private suspend fun uploadImage(
+        context: Context, groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean
+    ) {
+        val imageUris = _imageUriSelected.value
 
-                imageUris.forEach { uriString ->
-                    val uri = Uri.parse(uriString)
-                    val contentResolver = context.contentResolver
-                    val mimeType = getFileMimeType(context, uri)
-                    val fileName = getFileName(context, uri)
-                    printlnCK("MIME $mimeType")
-                    printlnCK("FILE NAME $fileName")
-                    val byteStrings = mutableListOf<ByteString>()
-                    val blockDigestStrings = mutableListOf<String>()
-                    val byteArray = ByteArray(bufferSize)
-                    val inputStream = contentResolver.openInputStream(uri)
-                    var fileSize = 0
-                    var size: Int
+        if (!imageUris.isNullOrEmpty()) {
+            imageUris.forEach { uriString ->
+                val uri = Uri.parse(uriString)
+                val contentResolver = context.contentResolver
+                val mimeType = getFileMimeType(context, uri)
+                val fileName = getFileName(context, uri)
+                printlnCK("MIME $mimeType")
+                printlnCK("FILE NAME $fileName")
+                val byteStrings = mutableListOf<ByteString>()
+                val blockDigestStrings = mutableListOf<String>()
+                val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
+                val inputStream = contentResolver.openInputStream(uri)
+                var fileSize = 0
+                var size: Int
+                size = inputStream?.read(byteArray) ?: 0
+                val fileDigest = MessageDigest.getInstance("MD5")
+                while (size > 0) {
+                    val blockDigest = MessageDigest.getInstance("MD5")
+                    blockDigest.update(byteArray, 0, size)
+                    val blockDigestByteArray = blockDigest.digest()
+                    val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
+                    blockDigestStrings.add(blockDigestString)
+                    fileDigest.update(byteArray, 0, size)
+                    byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
+                    fileSize += size
                     size = inputStream?.read(byteArray) ?: 0
-                    val fileDigest = MessageDigest.getInstance("MD5")
-                    while (size > 0) {
-                        val blockDigest = MessageDigest.getInstance("MD5")
-                        blockDigest.update(byteArray, 0, size)
-                        val blockDigestByteArray = blockDigest.digest()
-                        val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
-                        blockDigestStrings.add(blockDigestString)
-                        fileDigest.update(byteArray, 0, size)
-                        byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
-                        fileSize += size
-                        size = inputStream?.read(byteArray) ?: 0
-                    }
-                    printlnCK(fileSize.toString())
-                    val fileHashByteArray = fileDigest.digest()
-                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                    printlnCK(fileHashString)
-                    chatRepository.uploadFile(mimeType, fileName, byteStrings, blockDigestStrings, fileHashString)
+                }
+                printlnCK(fileSize.toString())
+                val fileHashByteArray = fileDigest.digest()
+                val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                printlnCK(fileHashString)
+                _uploadFileResponse.addSource(
+                    chatRepository.uploadFile(
+                        mimeType,
+                        fileName,
+                        byteStrings,
+                        blockDigestStrings,
+                        fileHashString
+                    )
+                ) {
+                    _imageUriSelected.postValue(emptyList())
+                    sendMessageToGroup(context, groupId, "$it $message", isRegisteredGroup)
                 }
             }
         }
     }
 
-    private fun getFileMimeType(context: Context, uri: Uri) : String {
+    private fun getFileMimeType(context: Context, uri: Uri): String {
         val contentResolver = context.contentResolver
         val mimeType = contentResolver.getType(uri)
         return mimeType ?: ""
@@ -307,10 +334,14 @@ class RoomViewModel @Inject constructor(
         return ""
     }
 
-    private fun byteArrayToMd5HashString(byteArray: ByteArray) : String {
+    private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
         val bigInt = BigInteger(1, byteArray)
         val hashString = bigInt.toString(16)
         return String.format("%32s", hashString).replace(' ', '0')
+    }
+
+    companion object {
+        private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
     }
 }
 

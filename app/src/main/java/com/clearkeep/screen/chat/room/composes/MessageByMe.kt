@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -18,7 +19,9 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
+import com.clearkeep.utilities.printlnCK
 
+@ExperimentalFoundationApi
 @Composable
 fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
@@ -35,13 +38,30 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
             backgroundColor = grayscale2,
             shape = messageDisplayInfo.cornerShape,
         ) {
-            Text(
-                text = messageDisplayInfo.message.message,
-                style = MaterialTheme.typography.body2.copy(
-                    color = grayscaleOffWhite
-                ),
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-            )
+            if (isImageMessage(messageDisplayInfo.message.message)) {
+                ImageMessageContent(Modifier.padding(24.dp, 16.dp), getImageUriStrings(messageDisplayInfo.message.message))
+            } else {
+                Text(
+                    text = messageDisplayInfo.message.message,
+                    style = MaterialTheme.typography.body2.copy(
+                        color = grayscaleOffWhite
+                    ),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
         }
     }
 }
+
+private fun isImageMessage(content: String) : Boolean {
+    return content.contains(imageMessageRegex)
+}
+
+private fun getImageUriStrings(content: String) : List<String> {
+    return imageMessageRegex.findAll(content).map {
+        it.value.split(" ")
+    }.toList().flatten()
+}
+
+private val imageMessageRegex =
+    "(https://s3.amazonaws.com/storage.clearkeep.io/dev.+[a-zA-Z0-9\\/\\_\\-\\.]+(\\.png|\\.jpeg|\\.jpg|\\.gif|\\.PNG|\\.JPEG|\\.JPG|\\.GIF))".toRegex()

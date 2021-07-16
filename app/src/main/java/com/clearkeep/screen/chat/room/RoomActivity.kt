@@ -181,6 +181,10 @@ class RoomActivity : AppCompatActivity() {
                 it.data?.let { requestInfo -> navigateToInComingCallActivity(requestInfo.chatGroup, requestInfo.isAudioMode) }
             }
         })
+
+        roomViewModel.uploadFileResponse.observe(this) {
+
+        }
     }
 
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
