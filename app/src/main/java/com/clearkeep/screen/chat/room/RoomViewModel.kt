@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.room
 
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
@@ -255,11 +256,17 @@ class RoomViewModel @Inject constructor(
             if (!imageUris.isNullOrEmpty()) {
                 val bufferSize = 4_000_000 //4MB
 
-                imageUris.forEach { uri ->
+                imageUris.forEach { uriString ->
+                    val uri = Uri.parse(uriString)
+                    val contentResolver = context.contentResolver
+                    val mimeType = getFileMimeType(context, uri)
+                    val fileName = getFileName(context, uri)
+                    printlnCK("MIME $mimeType")
+                    printlnCK("FILE NAME $fileName")
                     val byteStrings = mutableListOf<ByteString>()
                     val blockDigestStrings = mutableListOf<String>()
                     val byteArray = ByteArray(bufferSize)
-                    val inputStream = context.contentResolver.openInputStream(Uri.parse(uri))
+                    val inputStream = contentResolver.openInputStream(uri)
                     var fileSize = 0
                     var size: Int
                     size = inputStream?.read(byteArray) ?: 0
@@ -279,10 +286,25 @@ class RoomViewModel @Inject constructor(
                     val fileHashByteArray = fileDigest.digest()
                     val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                     printlnCK(fileHashString)
-                    chatRepository.uploadFile(byteStrings, blockDigestStrings, fileHashString)
+                    chatRepository.uploadFile(mimeType, fileName, byteStrings, blockDigestStrings, fileHashString)
                 }
             }
         }
+    }
+
+    private fun getFileMimeType(context: Context, uri: Uri) : String {
+        val contentResolver = context.contentResolver
+        val mimeType = contentResolver.getType(uri)
+        return mimeType ?: ""
+    }
+
+    private fun getFileName(context: Context, uri: Uri): String {
+        val contentResolver = context.contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null, null)
+        if (cursor != null && cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+        }
+        return ""
     }
 
     private fun byteArrayToMd5HashString(byteArray: ByteArray) : String {

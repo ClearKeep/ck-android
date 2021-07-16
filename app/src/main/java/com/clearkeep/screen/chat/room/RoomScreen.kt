@@ -40,6 +40,7 @@ import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.components.tintsRedLight
 import android.net.Uri
 import android.os.Environment
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.core.content.FileProvider
 import com.clearkeep.BuildConfig
 import java.io.File
@@ -164,6 +165,7 @@ fun RoomScreen(
     }
 }
 
+@ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
     val context = LocalContext.current
@@ -190,12 +192,16 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         if (isGranted) {
             uri = generatePhotoUri(context)
             takePhotoLauncher.launch(uri)
+            onDismiss()
         } else {
             onDismiss()
         }
     }
 
     if (isOpen) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+        keyboardController?.hide()
+
         Box {
             Box(
                 Modifier
