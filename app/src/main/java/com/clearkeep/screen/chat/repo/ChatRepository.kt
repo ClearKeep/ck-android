@@ -119,19 +119,18 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun uploadFile(byteStrings: List<ByteString>, blockHash: List<String>, fileHash: String) = withContext(Dispatchers.IO) {
+    suspend fun uploadFile(mimeType: String, fileName: String, byteStrings: List<ByteString>, blockHash: List<String>, fileHash: String) = withContext(Dispatchers.IO) {
         try {
             if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
                 val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
-                    .setFileName("test.png")
-                    .setFileContentType("image/png")
+                    .setFileName(fileName)
+                    .setFileContentType(mimeType)
                     .setFileData(byteStrings[0])
                     .setFileHash(fileHash)
                     .build()
 
                 val response = dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
                 println(response)
-                println("File url ${response.fileUrl}")
             } else {
                 val responseObserver = object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
                     override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
@@ -139,17 +138,19 @@ class ChatRepository @Inject constructor(
                     }
 
                     override fun onError(t: Throwable?) {
+                        printlnCK("onError $t")
                     }
 
                     override fun onCompleted() {
+                        printlnCK("onCompleted")
                     }
                 }
                 val requestObserver = dynamicAPIProvider.provideUploadFileStub().uploadChunkedFile(responseObserver)
 
                 byteStrings.forEachIndexed { index, byteString ->
                     val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
-                        .setFileName("test")
-                        .setFileContentType("")
+                        .setFileName(fileName)
+                        .setFileContentType(mimeType)
                         .setFileDataBlock(byteString)
                         .setFileDataBlockHash(blockHash[index])
                         .setFileHash(fileHash)
