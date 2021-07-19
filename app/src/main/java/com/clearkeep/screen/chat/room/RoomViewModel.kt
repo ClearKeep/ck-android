@@ -299,6 +299,8 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.postValue(emptyList())
 
         if (!imageUris.isNullOrEmpty()) {
+            val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
+            val imageUrls = mutableListOf<String>()
             imageUris.forEach { uriString ->
                 val uri = Uri.parse(uriString)
                 val contentResolver = context.contentResolver
@@ -329,7 +331,6 @@ class RoomViewModel @Inject constructor(
                 val fileHashByteArray = fileDigest.digest()
                 val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                 printlnCK(fileHashString)
-                val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
                 val url = chatRepository.uploadFile(
                     mimeType,
                     fileName,
@@ -337,8 +338,9 @@ class RoomViewModel @Inject constructor(
                     blockDigestStrings,
                     fileHashString
                 )
-                sendMessageToGroup(groupId, "$url $message", isRegisteredGroup)
+                imageUrls.add(url)
             }
+            sendMessageToGroup(groupId, "${imageUrls.joinToString(" ")} $message", isRegisteredGroup)
         }
     }
 

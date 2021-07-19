@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.imageloading.rememberDrawablePainter
 
 const val MAX_IMAGE_COUNT = 4
 
-@ExperimentalFoundationApi
 @Composable
 fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
     println("ImageMessageContent $imageUris")
@@ -38,33 +38,23 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
                 .size(130.dp), imageUris[0]
         ) { }
     } else {
-        Column(Modifier.wrapContentSize()) {
+        Column(Modifier.wrapContentSize().padding(12.dp)) {
             println("multi item grid")
-            Row(Modifier.weight(1f, false)) {
+            Row(Modifier.wrapContentSize()) {
                 for (i in 0..minOf(imageUris.size, 1)) {
-                    Box(
+                    ImageMessageItem(
                         Modifier
-                            .padding(4.dp)
-                            .weight(1f)
-                    ) {
-                        ImageMessageItem(Modifier.size(110.dp), imageUris[i]) {
-
-                        }
+                            .size(110.dp)
+                            .padding(4.dp), imageUris[i]) {
                     }
                 }
             }
-            Row(Modifier.weight(1f, false)) {
+            Row(Modifier.wrapContentSize()) {
                 for (i in 2 until imageUris.size) {
                     if (i == 2 || (i == 3 && imageUris.size <= 4)) {
-                        Box(
-                            Modifier
-                                .padding(4.dp)
-                                .weight(1f)
-                        ) {
-                            ImageMessageItem(Modifier.size(110.dp), imageUris[i]) {
+                            ImageMessageItem(Modifier.size(110.dp).padding(4.dp), imageUris[i]) {
 
                             }
-                        }
                     } else {
                         Box(
                             Modifier
@@ -88,7 +78,7 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
                                         .align(Alignment.Center),
                                     color = grayscaleOffWhite,
                                     textAlign = TextAlign.Center,
-                                    fontSize = 46.sp
+                                    fontSize = 28.sp
                                 )
                             }
 
@@ -108,12 +98,13 @@ fun ImageMessageItem(
     onClick: (uri: String) -> Unit
 ) {
     Image(
-        painter = rememberGlidePainter(uri), contentScale = ContentScale.FillBounds,
+        painter = rememberGlidePainter(uri),
+        contentScale = ContentScale.Crop,
         contentDescription = null,
         modifier = Modifier
+            .then(modifier)
             .clip(RoundedCornerShape(16.dp))
             .aspectRatio(1f)
             .clickable { onClick(uri) }
-            .then(modifier)
     )
 }

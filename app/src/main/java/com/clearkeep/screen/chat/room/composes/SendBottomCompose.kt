@@ -138,7 +138,7 @@ fun SendBottomCompose(
             }
             IconButton(
                 onClick = {
-                    if (!TextUtils.isEmpty(msgState.value)) {
+                    if (!TextUtils.isEmpty(msgState.value) || !selectedImagesList.value.isNullOrEmpty()) {
                         val message = msgState.value
                         onSendMessage(message)
                         // clear text
@@ -151,7 +151,7 @@ fun SendBottomCompose(
                     .height(24.dp),
             ) {
                 Icon(
-                    if (msgState.value == "") painterResource(R.drawable.ic_microphone) else painterResource(
+                    painterResource(
                         id = R.drawable.ic_send_plane
                     ),
                     contentDescription = "",
