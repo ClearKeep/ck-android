@@ -123,7 +123,7 @@ fun RoomScreen(
                                     client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
-                                    roomViewModel.sendMessageToUser(friend, groupResult.groupId, validMessage)
+                                    roomViewModel.sendMessageToUser(context, friend, groupResult.groupId, validMessage)
                                 } else {
                                     printlnCK("can not found friend")
                                 }
