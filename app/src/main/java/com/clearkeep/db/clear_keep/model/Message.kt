@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Message(
-    @PrimaryKey(autoGenerate = true) val generateId: Int? = null,
+    @PrimaryKey(autoGenerate = true) var generateId: Int? = null,
     @ColumnInfo(name = "message_id") val messageId: String,
     @ColumnInfo(name = "group_id") val groupId: Long,
     @ColumnInfo(name = "group_type") val groupType: String,

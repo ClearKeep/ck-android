@@ -152,7 +152,20 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 
-    fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String) {
+    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
+        viewModelScope.launch {
+            try {
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, groupId, message, null, receiverPeople)
+                } else {
+                    sendMessageToUser(receiverPeople, groupId, message)
+                }
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    private fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String, tempMessageId: Int = 0) {
         viewModelScope.launch {
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
@@ -172,7 +185,7 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true, cachedMessageId = tempMessageId)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
                     chatRepository.sendMessageInPeer(
@@ -181,7 +194,8 @@ class RoomViewModel @Inject constructor(
                         receiverPeople.userId,
                         receiverPeople.domain,
                         lastGroupId,
-                        message
+                        message,
+                        cachedMessageId = tempMessageId
                     )
                 }
             }
@@ -209,17 +223,18 @@ class RoomViewModel @Inject constructor(
     private suspend fun sendMessageToGroup(
         groupId: Long,
         message: String,
-        isRegisteredGroup: Boolean
+        isRegisteredGroup: Boolean,
+        cachedMessageId: Int = 0
     ) {
         if (!isRegisteredGroup) {
             val result =
                 signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
             if (result) {
                 _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
+                chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
             }
         } else {
-            chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
+            chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
         }
     }
 
@@ -293,7 +308,8 @@ class RoomViewModel @Inject constructor(
     private suspend fun uploadImage(
         context: Context, groupId: Long,
         message: String,
-        isRegisteredGroup: Boolean
+        isRegisteredGroup: Boolean? = null,
+        receiverPeople: User? = null
     ) {
         val imageUris = _imageUriSelected.value
         _imageUriSelected.postValue(emptyList())
@@ -340,7 +356,11 @@ class RoomViewModel @Inject constructor(
                 )
                 imageUrls.add(url)
             }
-            sendMessageToGroup(groupId, "${imageUrls.joinToString(" ")} $message", isRegisteredGroup)
+            if (isRegisteredGroup != null) {
+                sendMessageToGroup(groupId, "${imageUrls.joinToString(" ")} $message", isRegisteredGroup, tempMessageId)
+            } else {
+                sendMessageToUser(receiverPeople!!, groupId, "${imageUrls.joinToString(" ")} $message", tempMessageId)
+            }
         }
     }
 
