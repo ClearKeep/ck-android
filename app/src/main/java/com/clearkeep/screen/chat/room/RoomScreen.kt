@@ -42,6 +42,7 @@ import android.net.Uri
 import android.os.Environment
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
 import java.io.File
 import java.text.SimpleDateFormat
@@ -110,7 +111,7 @@ fun RoomScreen(
                         navHostController,
                         onSendMessage = { message ->
                             val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                            if (validMessage .isEmpty()) {
+                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                 return@SendBottomCompose
                             }
                             val groupResult = group
