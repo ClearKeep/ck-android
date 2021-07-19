@@ -61,7 +61,6 @@ fun HomeScreen(
 
     Row(
         Modifier
-            .systemBarsPadding()
             .fillMaxSize()
     ) {
         Box(

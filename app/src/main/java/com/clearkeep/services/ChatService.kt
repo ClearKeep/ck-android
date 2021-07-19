@@ -185,6 +185,7 @@ class ChatService : Service(),
 
     private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message, domain: String, ownerClientId: String) {
         scope.launch {
+            printlnCK("handleShowNotification $groupId")
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.let {
                 val currentServer = environment.getServer()
