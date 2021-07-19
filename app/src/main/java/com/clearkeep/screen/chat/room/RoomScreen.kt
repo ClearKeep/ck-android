@@ -41,9 +41,12 @@ import com.clearkeep.components.tintsRedLight
 import android.net.Uri
 import android.os.Environment
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
+import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.utilities.network.Resource
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,6 +62,8 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+    val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
+    val isUploadFileResponseDialogVisible = remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     group.value?.let { group ->
@@ -163,6 +168,13 @@ fun RoomScreen(
             }, onTakePhoto = {
                 roomViewModel.addImage(it)
             })
+            val response = uploadFileResponse.value
+            if (response?.status == Status.ERROR) {
+                CKAlertDialog(onDismissButtonClick = {
+                    roomViewModel.uploadFileResponse.value = null
+                }, title =response.message ?: "",
+                )
+            }
         }
     }
 }

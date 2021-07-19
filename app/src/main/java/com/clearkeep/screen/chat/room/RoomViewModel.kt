@@ -59,10 +59,7 @@ class RoomViewModel @Inject constructor(
     val imageUriSelected: LiveData<List<String>>
         get() = _imageUriSelected
 
-    private val _uploadFileResponse = MediatorLiveData<String>()
-    val uploadFileResponse: LiveData<String>
-        get() = _uploadFileResponse
-    private var uploadFileSource: LiveData<String> = MutableLiveData()
+    val uploadFileResponse = MutableLiveData<Resource<String>>()
 
     fun joinRoom(
         ownerDomain: String,
@@ -315,6 +312,16 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.postValue(emptyList())
 
         if (!imageUris.isNullOrEmpty()) {
+            if (!isValidFileCount()) {
+                uploadFileResponse.value = Resource.error("Failed to send message - Maximum number of attachments in a message reached (10)", null)
+                return
+            }
+
+            if (!isValidFileSizes(context, imageUris)) {
+                uploadFileResponse.value = Resource.error("Failed to send message - File is larger than 4 MB.", null)
+                return
+            }
+
             val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
             val imageUrls = mutableListOf<String>()
             imageUris.forEach { uriString ->
@@ -343,7 +350,7 @@ class RoomViewModel @Inject constructor(
                     fileSize += size
                     size = inputStream?.read(byteArray) ?: 0
                 }
-                printlnCK(fileSize.toString())
+                printlnCK("File size from inputStream ${fileSize.toString()}")
                 val fileHashByteArray = fileDigest.digest()
                 val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                 printlnCK(fileHashString)
@@ -364,6 +371,20 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    private fun isValidFileCount() =
+        _imageUriSelected.value != null && _imageUriSelected.value!!.size <= FILE_MAX_COUNT
+
+    private fun isValidFileSizes(context: Context, fileUriList: List<String>) : Boolean {
+        fileUriList.forEach {
+            val fileSize = getFileSize(context, Uri.parse(it))
+            printlnCK("File size $fileSize")
+            if (fileSize > FILE_MAX_SIZE) {
+                return false
+            }
+        }
+        return true
+    }
+
     private fun getFileMimeType(context: Context, uri: Uri): String {
         val contentResolver = context.contentResolver
         val mimeType = contentResolver.getType(uri)
@@ -379,6 +400,15 @@ class RoomViewModel @Inject constructor(
         return ""
     }
 
+    private fun getFileSize(context: Context, uri: Uri): Long {
+        val contentResolver = context.contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null, null)
+        if (cursor != null && cursor.moveToFirst()) {
+            return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
+        }
+        return 0L
+    }
+
     private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
         val bigInt = BigInteger(1, byteArray)
         val hashString = bigInt.toString(16)
@@ -387,6 +417,8 @@ class RoomViewModel @Inject constructor(
 
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
+        private const val FILE_MAX_COUNT = 10
+        private const val FILE_MAX_SIZE = 4_000_000 //4MB
     }
 }
 
