@@ -24,7 +24,7 @@ fun ServerSettingScreen(
     onCopiedServerDomain: (url: String) -> Unit,
     onBackPressed: () -> Unit,
 ) {
-    Column {
+    Column(Modifier.fillMaxSize()) {
         CKTopAppBarSample(
             title = server.serverName,
             onBackPressed = onBackPressed,
