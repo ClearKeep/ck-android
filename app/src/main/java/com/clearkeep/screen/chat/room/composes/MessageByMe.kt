@@ -2,7 +2,6 @@ package com.clearkeep.screen.chat.room.composes
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -10,15 +9,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
-import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
 
@@ -43,7 +40,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
                 backgroundColor = grayscale2,
                 shape = messageDisplayInfo.cornerShape,
             ) {
-                Column {
+                Column(horizontalAlignment = Alignment.End) {
                     if (isImageMessage(messageDisplayInfo.message.message)) {
                         ImageMessageContent(
                             Modifier.padding(24.dp, 16.dp),
@@ -53,13 +50,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
                     val messageContent = getMessageContent(messageDisplayInfo.message.message)
                     if (messageContent.isNotBlank()) {
                         Row(Modifier.align(Alignment.End).wrapContentHeight()) {
-                            Text(
-                                text = messageContent,
-                                style = MaterialTheme.typography.body2.copy(
-                                    color = grayscaleOffWhite
-                                ),
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                            )
+                            ClickableLinkContent(messageContent)
                         }
                     }
                 }

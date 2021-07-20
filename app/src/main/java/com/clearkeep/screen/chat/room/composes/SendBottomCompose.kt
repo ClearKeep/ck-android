@@ -32,12 +32,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
+import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
@@ -92,7 +94,7 @@ fun SendBottomCompose(
                 Icon(
                     painterResource(R.drawable.ic_photos),
                     contentDescription = "",
-                    tint = MaterialTheme.colors.surface,
+                    tint = grayscale1,
                     modifier = Modifier.clickable {
                         onClickUploadPhoto()
                     }
@@ -109,9 +111,9 @@ fun SendBottomCompose(
                     .height(24.dp),
             ) {
                 Icon(
-                    painterResource(R.drawable.ic_at),
+                    painterResource(R.drawable.ic_link),
                     contentDescription = "",
-                    tint = MaterialTheme.colors.surface,
+                    tint = grayscale1,
                 )
             }
 

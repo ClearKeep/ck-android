@@ -29,9 +29,9 @@ class PeopleRepository @Inject constructor(
         list.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
     }
 
-    suspend fun getFriend(userId: String, domain: String, owner: Owner) : User? = withContext(Dispatchers.IO) {
-        printlnCK("getFriend: $userId + $domain")
-        val ret = peopleDao.getFriend(userId, domain, owner.domain, owner.clientId)
+    suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner) : User? = withContext(Dispatchers.IO) {
+        printlnCK("getFriend: $friendClientId + $friendDomain")
+        val ret = peopleDao.getFriend(friendClientId, friendDomain, owner.domain, owner.clientId)
         return@withContext if (ret != null) convertEntityToUser(ret) else null
     }
 
