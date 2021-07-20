@@ -128,6 +128,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         setContentView(view)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
+        if (environment.getServerCanNull() == null) {
+            GlobalScope.launch(context = Dispatchers.Main) {
+                val selectedServer = serverRepository.getDefaultServer()
+                environment.setUpDomain(selectedServer)
+            }
+        }
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
@@ -260,14 +266,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     return@launch
                 }
             }
-            if (!mIsGroupCall) {
                 delay(CALL_WAIT_TIME_OUT)
                 if (remoteRenders.isEmpty()) {
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
                     }
                 }
-            }
 
         }
     }

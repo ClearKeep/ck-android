@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -18,8 +17,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigate
@@ -37,14 +35,16 @@ import com.clearkeep.screen.chat.group_remove.RemoveMemberScreen
 import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
 import com.clearkeep.screen.chat.room.room_detail.GroupMemberScreen
 import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
+import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.utilities.printlnCK
+import android.app.ActivityManager
 
 
 @AndroidEntryPoint
-class RoomActivity : AppCompatActivity() {
+class RoomActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
@@ -62,6 +62,7 @@ class RoomActivity : AppCompatActivity() {
     private var roomId: Long = 0
     private lateinit var domain: String
     private lateinit var clientId: String
+    private var chatServiceIsStartInRoom = false
 
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
@@ -71,7 +72,7 @@ class RoomActivity : AppCompatActivity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         roomId = intent.getLongExtra(GROUP_ID, 0)
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
@@ -79,7 +80,8 @@ class RoomActivity : AppCompatActivity() {
         val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
 
         if (roomId > 0) {
-            val notificationManagerCompat = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManagerCompat =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
 
@@ -104,23 +106,23 @@ class RoomActivity : AppCompatActivity() {
                     }
                     composable("room_info_screen") {
                         RoomInfoScreen(
-                                roomViewModel,
+                            roomViewModel,
                             navController
                         )
                     }
                     composable("invite_group_screen") {
                         selectedItem.clear()
                         InviteGroupScreen(
-                                AddMemberUIType,
-                                inviteGroupViewModel,
+                            AddMemberUIType,
+                            inviteGroupViewModel,
                             listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
                             onFriendSelected = { friends ->
-                                    roomViewModel.inviteToGroup(friends, groupId = roomId)
-                                    navController.navigate("room_screen")
-                                },
-                                onBackPressed = {
-                                    navController.popBackStack()
-                                },
+                                roomViewModel.inviteToGroup(friends, groupId = roomId)
+                                navController.navigate("room_screen")
+                            },
+                            onBackPressed = {
+                                navController.popBackStack()
+                            },
                             selectedItem = selectedItem,
                             onDirectFriendSelected = { },
                             onInsertFriend = {
@@ -131,8 +133,8 @@ class RoomActivity : AppCompatActivity() {
                     }
                     composable("member_group_screen") {
                         GroupMemberScreen(
-                                roomViewModel,
-                                navController
+                            roomViewModel,
+                            navController
                         )
                     }
                     composable("enter_group_name") {
@@ -178,7 +180,12 @@ class RoomActivity : AppCompatActivity() {
     private fun subscriber() {
         roomViewModel.requestCallState.observe(this, Observer {
             if (it.status == Status.SUCCESS) {
-                it.data?.let { requestInfo -> navigateToInComingCallActivity(requestInfo.chatGroup, requestInfo.isAudioMode) }
+                it.data?.let { requestInfo ->
+                    navigateToInComingCallActivity(
+                        requestInfo.chatGroup,
+                        requestInfo.isAudioMode
+                    )
+                }
             }
         })
 
@@ -199,6 +206,54 @@ class RoomActivity : AppCompatActivity() {
             domain, clientId, roomName, "", false
         )
     }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onAppBackgrounded() {
+        if (chatServiceIsStartInRoom) {
+            printlnCK("CK room go into background")
+            stopChatService()
+        }
+
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onAppForegrounded() {
+        printlnCK("CK room go into foregrounded")
+        if (!checkServiceRunning(ChatService::class.java)) {
+            chatServiceIsStartInRoom = true
+            startChatService()
+        }
+    }
+
+    private fun startChatService() {
+        Intent(this, ChatService::class.java).also { intent ->
+            startService(intent)
+        }
+    }
+
+    private fun stopChatService() {
+        Intent(this, ChatService::class.java).also { intent ->
+            stopService(intent)
+        }
+    }
+
+
+    /**
+     * Check if the service is Running
+     * @param serviceClass the class of the Service
+     *
+     * @return true if the service is running otherwise false
+     */
+    private fun checkServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
 
     companion object {
         const val GROUP_ID = "room_id"

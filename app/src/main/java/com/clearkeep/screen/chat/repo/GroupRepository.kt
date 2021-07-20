@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.repo
 
-import android.util.Log
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.DynamicAPIProvider
@@ -46,10 +45,11 @@ class GroupRepository @Inject constructor(
             try {
                 val groups = getGroupListFromAPI(groupGrpc, server.profile.userId)
                 for (group in groups) {
-                    val decryptedGroup = convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
+                    val decryptedGroup =
+                        convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
                 }
-            } catch(exception: Exception) {
+            } catch (exception: Exception) {
                 printlnCK("fetchGroups: $exception")
             }
         }
@@ -69,7 +69,7 @@ class GroupRepository @Inject constructor(
             if (group != null) {
                 insertGroup(group)
             }
-        } catch(exception: Exception) {
+        } catch (exception: Exception) {
             printlnCK("fetchNewGroup: $exception")
         }
     }
@@ -108,46 +108,100 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun inviteToGroupFromAPIs(invitedUsers:List<User>, groupId: Long,owner: Owner): ChatGroup? = withContext(Dispatchers.IO) {
+    suspend fun inviteToGroupFromAPIs(
+        invitedUsers: List<User>,
+        groupId: Long,
+        owner: Owner
+    ): ChatGroup? = withContext(Dispatchers.IO) {
         invitedUsers.forEach {
             printlnCK("inviteToGroupFromAPIs: ${it.userName}")
             inviteToGroupFromAPI(it, groupId)
         }
         val grbc = dynamicAPIProvider.provideGroupBlockingStub()
-        val group=getGroupFromAPI(groupId, grbc, owner)
+        val group = getGroupFromAPI(groupId, grbc, owner)
         group?.let { insertGroup(it) }
         return@withContext group
     }
 
-  private suspend fun inviteToGroupFromAPI(invitedUser:User, groupId: Long): Boolean? = withContext(Dispatchers.IO) {
-        printlnCK("inviteToGroup: $groupId")
-        try {
-            val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
-                .setId(invitedUser.userId)
-                .setWorkspaceDomain(invitedUser.domain)
-                .setDisplayName(invitedUser.userName)
-                .build()
+    suspend fun removeMemberInGroup(remoteUsers: User, groupId: Long, owner: Owner): ChatGroup? =
+        withContext(Dispatchers.IO) {
+            try {
+                printlnCK("remoteMemberInGroup: remoteUser ${remoteUsers.toString()}  groupId: $groupId")
+                val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                    .setId(remoteUsers.userId)
+                    .setWorkspaceDomain(remoteUsers.domain)
+                    .setDisplayName(remoteUsers.userName)
+                    .build()
 
-            val request = GroupOuterClass.AddMemberRequest.newBuilder()
+                val removing=GroupOuterClass.MemberInfo.newBuilder()
+                .setId(getClientId())
+                    .setWorkspaceDomain(owner.domain)
+                    .setDisplayName(environment.getServer().profile.userName)
+                    .build()
+
+                val request = GroupOuterClass.RemoveMemberRequest.newBuilder()
+                    .setRemovedMemberInfo(memberInfo)
+                    .setRemovingMemberInfo(removing)
+                    .setGroupId(groupId)
+                    .build()
+
+                val server = serverRepository.getServer(owner.domain, owner.clientId)
+                if (server == null) {
+                    printlnCK("removeMemberInGroup: null server")
+                }
+                printlnCK("removeMemberInGroup:  server $server")
+
+                server?.let {
+                    val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+                    val response =
+                        dynamicAPIProvider.provideGroupBlockingStub().removeMember(request)
+                    return@withContext convertGroupFromResponse(
+                        response,
+                        owner.domain,
+                        owner.clientId
+                    )
+                }
+                return@withContext null
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return@withContext null
+        }
+
+    private suspend fun inviteToGroupFromAPI(invitedUser: User, groupId: Long): Boolean? =
+        withContext(Dispatchers.IO) {
+            printlnCK("inviteToGroup: $groupId")
+            try {
+                val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                    .setId(invitedUser.userId)
+                    .setWorkspaceDomain(invitedUser.domain)
+                    .setDisplayName(invitedUser.userName)
+                    .build()
+
+                val request = GroupOuterClass.AddMemberRequest.newBuilder()
                     .setGroupId(groupId)
                     .setAddingMemberId(getClientId())
                     .setAddedMemberInfo(memberInfo)
                     .build()
-            val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
-            return@withContext response.success
-        } catch (e: Exception) {
-            printlnCK("inviteToGroupFromAPI error: $e")
-            return@withContext false
+                val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
+                return@withContext response.success
+            } catch (e: Exception) {
+                printlnCK("inviteToGroupFromAPI error: $e")
+                return@withContext false
+            }
+            return@withContext true
         }
-        return@withContext true
-    }
 
-    private suspend fun getGroupFromAPI(groupId: Long, groupGrpc: GroupGrpc.GroupBlockingStub, owner: Owner): ChatGroup? = withContext(Dispatchers.IO) {
+    private suspend fun getGroupFromAPI(
+        groupId: Long,
+        groupGrpc: GroupGrpc.GroupBlockingStub,
+        owner: Owner
+    ): ChatGroup? = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
         try {
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
-                    .setGroupId(groupId)
-                    .build()
+                .setGroupId(groupId)
+                .build()
             val response = groupGrpc.getGroup(request)
 
             val group = convertGroupFromResponse(response, owner.domain, owner.clientId)
@@ -160,7 +214,10 @@ class GroupRepository @Inject constructor(
     }
 
     @Throws(Exception::class)
-    private suspend fun getGroupListFromAPI(groupGrpc: GroupGrpc.GroupBlockingStub, clientId: String) : List<GroupOuterClass.GroupObjectResponse>  = withContext(Dispatchers.IO) {
+    private suspend fun getGroupListFromAPI(
+        groupGrpc: GroupGrpc.GroupBlockingStub,
+        clientId: String
+    ): List<GroupOuterClass.GroupObjectResponse> = withContext(Dispatchers.IO) {
         printlnCK("getGroupListFromAPI: $clientId")
         val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
             .setClientId(clientId)
@@ -196,7 +253,7 @@ class GroupRepository @Inject constructor(
         groupDAO.insert(group)
     }
 
-    suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String) : ChatGroup? {
+    suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): ChatGroup? {
         var room: ChatGroup? = groupDAO.getGroupById(groupId, domain, ownerId)
         if (room == null) {
             val server = serverRepository.getServer(domain, ownerId)
@@ -204,7 +261,13 @@ class GroupRepository @Inject constructor(
                 printlnCK("getGroupByID: null server")
                 return null
             }
-            val groupGrpc = apiProvider.provideGroupBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val groupGrpc = apiProvider.provideGroupBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             room = getGroupFromAPI(groupId, groupGrpc, Owner(domain, ownerId))
             if (room != null) {
                 insertGroup(room)
@@ -215,9 +278,10 @@ class GroupRepository @Inject constructor(
 
     suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup? {
         return friend.let {
-            groupDAO.getPeerGroups(domain = owner.domain, ownerId = owner.clientId).firstOrNull { group ->
-                group.clientList.firstOrNull { it.userId == friend.userId && it.domain == friend.domain } != null
-            }
+            groupDAO.getPeerGroups(domain = owner.domain, ownerId = owner.clientId)
+                .firstOrNull { group ->
+                    group.clientList.firstOrNull { it.userId == friend.userId && it.domain == friend.domain } != null
+                }
         }
     }
 
@@ -262,7 +326,8 @@ class GroupRepository @Inject constructor(
         val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         val isRegisteredKey = oldGroup?.isJoined ?: false
-        val lastMessageSyncTime = oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
+        val lastMessageSyncTime =
+            oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
         val clientList = response.lstClientList.map {
             User(

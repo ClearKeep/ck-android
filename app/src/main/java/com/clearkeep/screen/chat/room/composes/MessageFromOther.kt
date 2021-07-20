@@ -1,7 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -11,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.*
 import com.clearkeep.db.clear_keep.model.Message
@@ -55,7 +53,9 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                                 color = grayscale3,
                                 textAlign = TextAlign.Start
                             ),
-                            modifier = Modifier.weight(1.0f, true).padding(start = 4.dp),
+                            modifier = Modifier
+                                .weight(1.0f, true)
+                                .padding(start = 4.dp),
                         )
                     }
                 }
@@ -78,7 +78,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                                 backgroundColor = primaryDefault,
                                 shape = messageDisplayInfo.cornerShape,
                             ) {
-                                Column {
+                                Column(horizontalAlignment = Alignment.Start) {
                                     if (isImageMessage(messageDisplayInfo.message.message)) {
                                         ImageMessageContent(
                                             Modifier.padding(24.dp, 16.dp),
@@ -89,16 +89,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                                         getMessageContent(messageDisplayInfo.message.message)
                                     if (messageContent.isNotBlank()) {
                                         Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
-                                            Text(
-                                                text = messageContent,
-                                                style = MaterialTheme.typography.body2.copy(
-                                                    color = grayscaleOffWhite
-                                                ),
-                                                modifier = Modifier.padding(
-                                                    horizontal = 24.dp,
-                                                    vertical = 8.dp
-                                                )
-                                            )
+                                            ClickableLinkContent(messageContent)
                                         }
                                     }
                                 }

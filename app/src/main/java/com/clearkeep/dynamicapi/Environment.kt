@@ -14,6 +14,7 @@ class Environment @Inject constructor(
         if (server == null) {
             throw IllegalArgumentException("account, server must be not null")
         }
+        printlnCK("setUpDomain: $server")
         this.server = server
         dynamicAPIProvider.setUpDomain(server)
     }
@@ -24,5 +25,9 @@ class Environment @Inject constructor(
             throw IllegalArgumentException("getServer: server must be not NULL")
         }
         return server!!
+    }
+
+    fun getServerCanNull() : Server?{
+        return server
     }
 }
