@@ -7,6 +7,7 @@ import message.MessageGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
+import upload_file.UploadFileGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
 
@@ -34,4 +35,8 @@ interface DynamicAPIProvider {
     fun provideNotifyPushBlockingStub(): NotifyPushGrpc.NotifyPushBlockingStub
 
     fun provideVideoCallBlockingStub(): VideoCallGrpc.VideoCallBlockingStub
+
+    fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub
+
+    fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub
 }
