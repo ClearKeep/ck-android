@@ -35,18 +35,22 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import com.clearkeep.components.colorLightBlue
-import com.clearkeep.components.separatorDarkNonOpaque
-import com.clearkeep.components.tintsRedLight
 import android.net.Uri
 import android.os.Environment
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.window.Dialog
+import androidx.compose.runtime.SideEffect
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.components.*
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -75,7 +79,7 @@ fun RoomScreen(
         val groupName = group.groupName
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().navigationBarsWithImePadding(),
         ) {
             Column(
                     modifier = Modifier.fillMaxSize()

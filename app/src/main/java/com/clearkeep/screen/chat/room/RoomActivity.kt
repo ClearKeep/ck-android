@@ -1,27 +1,23 @@
 package com.clearkeep.screen.chat.room
 
-import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.*
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
+import com.clearkeep.components.CKInsetTheme
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
@@ -41,6 +37,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.utilities.printlnCK
 import android.app.ActivityManager
+import androidx.lifecycle.*
 
 
 @AndroidEntryPoint
@@ -86,9 +83,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            CKTheme {
+            CKInsetTheme {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
                 NavHost(navController, startDestination = "room_screen") {
