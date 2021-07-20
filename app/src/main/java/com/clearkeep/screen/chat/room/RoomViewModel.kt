@@ -160,6 +160,7 @@ class RoomViewModel @Inject constructor(
                     sendMessageToUser(receiverPeople, groupId, message)
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -215,6 +216,7 @@ class RoomViewModel @Inject constructor(
                     sendMessageToGroup(groupId, message, isRegisteredGroup)
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
