@@ -224,6 +224,14 @@ class MessageRepository @Inject constructor(
         return message
     }
 
+    suspend fun updateMessage(message: Message) {
+        messageDAO.updateMessage(message)
+    }
+
+    suspend fun saveMessage(message: Message) : Int {
+        return messageDAO.insert(message).toInt()
+    }
+
     fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String, owner: Owner): Message {
         return Message(
             messageId = value.id,

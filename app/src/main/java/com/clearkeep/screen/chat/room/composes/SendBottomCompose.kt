@@ -140,7 +140,7 @@ fun SendBottomCompose(
             }
             IconButton(
                 onClick = {
-                    if (!TextUtils.isEmpty(msgState.value)) {
+                    if (!TextUtils.isEmpty(msgState.value) || !selectedImagesList.value.isNullOrEmpty()) {
                         val message = msgState.value
                         onSendMessage(message)
                         // clear text
@@ -153,7 +153,9 @@ fun SendBottomCompose(
                     .height(24.dp),
             ) {
                 Icon(
-                    painterResource(id = R.drawable.ic_send_plane),
+                    painterResource(
+                        id = R.drawable.ic_send_plane
+                    ),
                     contentDescription = "",
                     tint = MaterialTheme.colors.surface,
                 )

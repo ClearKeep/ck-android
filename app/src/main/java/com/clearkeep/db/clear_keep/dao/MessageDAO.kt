@@ -8,10 +8,13 @@ import com.clearkeep.db.clear_keep.model.Message
 @Dao
 interface MessageDAO {
     @Insert(onConflict = REPLACE)
-    suspend fun insert(message: Message)
+    suspend fun insert(message: Message) : Long
 
     @Insert(onConflict = REPLACE)
     suspend fun insertMessages(messages: List<Message>)
+
+    @Update
+    suspend fun updateMessage(message: Message)
 
     @Query("DELETE FROM message WHERE group_id =:groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId")
     suspend fun deleteMessageFromGroupId(groupId: Long, domain: String, ownerClientId: String)

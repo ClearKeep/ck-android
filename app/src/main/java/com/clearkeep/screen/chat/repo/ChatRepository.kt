@@ -14,6 +14,7 @@ import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.CiphertextMessage
+import upload_file.UploadFileOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +40,7 @@ class ChatRepository @Inject constructor(
         return roomId
     }
 
-    suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
@@ -64,7 +65,12 @@ class ChatRepository @Inject constructor(
                     .build()
 
             val response = dynamicAPIProvider.provideMessageBlockingStub().publish(request)
-            messageRepository.saveNewMessage(messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId)))
+            val responseMessage = messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId))
+            if (cachedMessageId == 0) {
+                messageRepository.saveNewMessage(responseMessage)
+            } else {
+                messageRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
+            }
 
             printlnCK("send message success: $plainMessage")
         } catch (e: java.lang.Exception) {
@@ -75,7 +81,7 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,): Boolean {
+    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String): Boolean {
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
@@ -84,7 +90,7 @@ class ChatRepository @Inject constructor(
         )
     }
 
-    suspend fun sendMessageToGroup(senderId: String, ownerWorkSpace: String, groupId: Long, plainMessage: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageToGroup(senderId: String, ownerWorkSpace: String, groupId: Long, plainMessage: String, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId, ownerWorkSpace = $ownerWorkSpace")
         try {
             val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
@@ -101,7 +107,12 @@ class ChatRepository @Inject constructor(
                     .build()
             val response = dynamicAPIProvider.provideMessageBlockingStub().publish(request)
             val message = messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId))
-            messageRepository.saveNewMessage(message)
+
+            if (cachedMessageId == 0) {
+                messageRepository.saveNewMessage(message)
+            } else {
+                messageRepository.updateMessage(message.copy(generateId = cachedMessageId))
+            }
 
             printlnCK("send message success: $plainMessage")
             return@withContext true
@@ -110,5 +121,67 @@ class ChatRepository @Inject constructor(
         }
 
         return@withContext false
+    }
+
+    suspend fun uploadFile(
+        mimeType: String,
+        fileName: String,
+        byteStrings: List<ByteString>,
+        blockHash: List<String>,
+        fileHash: String
+    ): String {
+//        val liveData = MutableLiveData<String>()
+        return withContext(Dispatchers.IO) {
+            try {
+                if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
+                    val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
+                        .setFileName(fileName)
+                        .setFileContentType(mimeType)
+                        .setFileData(byteStrings[0])
+                        .setFileHash(fileHash)
+                        .build()
+
+                    val response =
+                        dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
+
+                    return@withContext response.fileUrl
+                } else {
+//                    val responseObserver =
+//                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
+//                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
+//                                printlnCK("onNext response" + value?.fileUrl)
+//                                liveData.postValue(value?.fileUrl ?: "")
+//                            }
+//
+//                            override fun onError(t: Throwable?) {
+//                                printlnCK("onError $t")
+//                            }
+//
+//                            override fun onCompleted() {
+//                                printlnCK("onCompleted")
+//                            }
+//                        }
+//                    val requestObserver = dynamicAPIProvider.provideUploadFileStub()
+//                        .uploadChunkedFile(responseObserver)
+//
+//                    byteStrings.forEachIndexed { index, byteString ->
+//                        val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
+//                            .setFileName(fileName)
+//                            .setFileContentType(mimeType)
+//                            .setFileDataBlock(byteString)
+//                            .setFileDataBlockHash(blockHash[index])
+//                            .setFileHash(fileHash)
+//                            .build()
+//
+//                        requestObserver.onNext(request)
+//                    }
+//                    requestObserver.onCompleted()
+                    return@withContext ""
+                }
+            } catch (e: Exception) {
+                printlnCK("uploadFileToGroup $e")
+                return@withContext ""
+            }
+        }
     }
 }

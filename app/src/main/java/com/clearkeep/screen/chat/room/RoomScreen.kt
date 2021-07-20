@@ -37,9 +37,14 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import android.net.Uri
 import android.os.Environment
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.SideEffect
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
+import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.components.*
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.navigationBarsWithImePadding
@@ -61,6 +66,9 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+    val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
+    val isUploadFileResponseDialogVisible = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     group.value?.let { group ->
         if (group.groupId != GROUP_ID_TEMPO) {
@@ -112,19 +120,19 @@ fun RoomScreen(
                         navHostController,
                         onSendMessage = { message ->
                             val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                            if (validMessage .isEmpty()) {
+                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                 return@SendBottomCompose
                             }
                             val groupResult = group
                             val isGroup = groupResult.isGroup()
                             if (isGroup) {
-                                roomViewModel.sendMessageToGroup(groupResult.groupId, validMessage, groupResult.isJoined)
+                                roomViewModel.sendMessageToGroup(context, groupResult.groupId, validMessage, groupResult.isJoined)
                             } else {
                                 val friend = groupResult.clientList.firstOrNull { client ->
                                     client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
-                                    roomViewModel.sendMessageToUser(friend, groupResult.groupId, validMessage)
+                                    roomViewModel.sendMessageToUser(context, friend, groupResult.groupId, validMessage)
                                 } else {
                                     printlnCK("can not found friend")
                                 }
@@ -164,10 +172,18 @@ fun RoomScreen(
             }, onTakePhoto = {
                 roomViewModel.addImage(it)
             })
+            val response = uploadFileResponse.value
+            if (response?.status == Status.ERROR) {
+                CKAlertDialog(onDismissButtonClick = {
+                    roomViewModel.uploadFileResponse.value = null
+                }, title =response.message ?: "",
+                )
+            }
         }
     }
 }
 
+@ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
     val context = LocalContext.current
@@ -194,12 +210,16 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         if (isGranted) {
             uri = generatePhotoUri(context)
             takePhotoLauncher.launch(uri)
+            onDismiss()
         } else {
             onDismiss()
         }
     }
 
     if (isOpen) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+        keyboardController?.hide()
+
         Box {
             Box(
                 Modifier
