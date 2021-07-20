@@ -153,9 +153,7 @@ fun SendBottomCompose(
                     .height(24.dp),
             ) {
                 Icon(
-                    if (msgState.value == "") painterResource(R.drawable.ic_microphone) else painterResource(
-                        id = R.drawable.ic_send_plane
-                    ),
+                    painterResource(id = R.drawable.ic_send_plane),
                     contentDescription = "",
                     tint = MaterialTheme.colors.surface,
                 )
