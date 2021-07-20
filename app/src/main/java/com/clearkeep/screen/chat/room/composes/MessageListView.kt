@@ -23,6 +23,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.screen.chat.room.message_display_generator.convertMessageList
 import com.clearkeep.utilities.getTimeAsString
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 
 var mIsNewMessage = true
@@ -76,6 +77,7 @@ private fun MessageListView(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
         ) {
             groupedMessages.forEach { (date, messages) ->
+                printlnCK("messages ${messages.map { it.message.message }} date $date")
                 itemsIndexed(messages) { index, item ->
                     Column {
                         if (index == messages.size -1) {

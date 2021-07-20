@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,10 @@ import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
 import com.clearkeep.utilities.printlnCK
+import com.google.accompanist.insets.statusBarsHeight
+import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

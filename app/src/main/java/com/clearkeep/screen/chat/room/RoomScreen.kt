@@ -35,16 +35,25 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import com.clearkeep.components.colorLightBlue
-import com.clearkeep.components.separatorDarkNonOpaque
-import com.clearkeep.components.tintsRedLight
 import android.net.Uri
 import android.os.Environment
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.window.Dialog
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import kotlinx.coroutines.launch
+import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.components.*
+import com.google.accompanist.insets.navigationBarsPadding
+import com.google.accompanist.insets.navigationBarsWithImePadding
+import com.google.accompanist.insets.statusBarsPadding
+import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -61,23 +70,26 @@ fun RoomScreen(
 ) {
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+    val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
+    val isUploadFileResponseDialogVisible = remember { mutableStateOf(false) }
+    val context = LocalContext.current
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
     val coroutineScope = rememberCoroutineScope()
 
-        group.value?.let { group ->
-            if (group.groupId != GROUP_ID_TEMPO) {
-                roomViewModel.setJoiningRoomId(group.groupId)
-            }
-            val messageList = roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId).observeAsState()
-            printlnCK("test: ${group.clientList}")
-            val groupName = group.groupName
-            val requestCallViewState = roomViewModel.requestCallState.observeAsState()
-            Box(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Column(
+    group.value?.let { group ->
+        if (group.groupId != GROUP_ID_TEMPO) {
+            roomViewModel.setJoiningRoomId(group.groupId)
+        }
+        val messageList = roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId).observeAsState()
+        printlnCK("test: ${group.clientList}")
+        val groupName = group.groupName
+        val requestCallViewState = roomViewModel.requestCallState.observeAsState()
+        Box(
+                modifier = Modifier.fillMaxSize().navigationBarsWithImePadding(),
+        ) {
+            Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     val remember = AppCall.listenerCallingState.observeAsState()
@@ -129,13 +141,13 @@ fun RoomScreen(
                                 val groupResult = group
                                 val isGroup = groupResult.isGroup()
                                 if (isGroup) {
-                                    roomViewModel.sendMessageToGroup(groupResult.groupId, validMessage, groupResult.isJoined)
+                                    roomViewModel.sendMessageToGroup(context, groupResult.groupId, validMessage, groupResult.isJoined)
                                 } else {
                                     val friend = groupResult.clientList.firstOrNull { client ->
                                         client.userId != roomViewModel.clientId
                                     }
                                     if (friend != null) {
-                                        roomViewModel.sendMessageToUser(friend, groupResult.groupId, validMessage)
+                                        roomViewModel.sendMessageToUser(context, friend, groupResult.groupId, validMessage)
                                     } else {
                                         printlnCK("can not found friend")
                                     }
@@ -159,33 +171,40 @@ fun RoomScreen(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                CircularProgressIndicator(color = Color.Blue)
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Text(
-                                    text = "creating group...",
-                                    style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
+                            CircularProgressIndicator(color = Color.Blue)
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "creating group...",
+                                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+                            )
                         }
                     }
                 }
-                UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
-                    isUploadPhotoDialogVisible.value = false
-                }, onNavigateToAlbums = {
-                    isUploadPhotoDialogVisible.value = false
-                    navHostController.navigate("image_picker")
-                }, onTakePhoto = {
-                    roomViewModel.addImage(it)
-                })
-//            }
+            }
+            UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
+                isUploadPhotoDialogVisible.value = false
+            }, onNavigateToAlbums = {
+                isUploadPhotoDialogVisible.value = false
+                navHostController.navigate("image_picker")
+            }, onTakePhoto = {
+                roomViewModel.addImage(it)
+            })
+            val response = uploadFileResponse.value
+            if (response?.status == Status.ERROR) {
+                CKAlertDialog(onDismissButtonClick = {
+                    roomViewModel.uploadFileResponse.value = null
+                }, title =response.message ?: "",
+                )
+            }
         }
     }
 }
 
+@ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
     val context = LocalContext.current
@@ -212,12 +231,16 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         if (isGranted) {
             uri = generatePhotoUri(context)
             takePhotoLauncher.launch(uri)
+            onDismiss()
         } else {
             onDismiss()
         }
     }
 
     if (isOpen) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+        keyboardController?.hide()
+
         Box {
             Box(
                 Modifier

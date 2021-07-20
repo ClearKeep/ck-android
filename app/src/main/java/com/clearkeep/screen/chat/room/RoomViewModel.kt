@@ -1,16 +1,24 @@
 package com.clearkeep.screen.chat.room
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import android.text.TextUtils
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import com.google.protobuf.ByteString
 import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
+import java.security.MessageDigest
 import javax.inject.Inject
+import java.math.BigInteger
+import java.util.*
 
 class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
@@ -45,14 +53,22 @@ class RoomViewModel @Inject constructor(
     var domain: String = ""
 
     private val _imageUri = MutableLiveData<List<String>>()
-    val imageUri : LiveData<List<String>>
-        get() = _imageUri as LiveData<List<String>>
+    val imageUri: LiveData<List<String>>
+        get() = _imageUri
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
-    val imageUriSelected : LiveData<List<String>>
-        get() = _imageUriSelected as LiveData<List<String>>
+    val imageUriSelected: LiveData<List<String>>
+        get() = _imageUriSelected
 
-    fun joinRoom(ownerDomain: String, ownerClientId: String, roomId: Long?, friendId: String?, friendDomain: String?) {
+    val uploadFileResponse = MutableLiveData<Resource<String>>()
+
+    fun joinRoom(
+        ownerDomain: String,
+        ownerClientId: String,
+        roomId: Long?,
+        friendId: String?,
+        friendDomain: String?
+    ) {
         if (ownerDomain.isNullOrBlank() || ownerClientId.isNullOrBlank()) {
             throw IllegalArgumentException("domain and clientId must be not NULL")
         }
@@ -135,7 +151,21 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 
-    fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String) {
+    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
+        viewModelScope.launch {
+            try {
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, groupId, message, null, receiverPeople)
+                } else {
+                    sendMessageToUser(receiverPeople, groupId, message)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String, tempMessageId: Int = 0) {
         viewModelScope.launch {
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
@@ -155,34 +185,64 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true)
+                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true, cachedMessageId = tempMessageId)
                     isLatestPeerSignalKeyProcessed = success
                 } else {
-                    chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message)
+                    chatRepository.sendMessageInPeer(
+                        clientId,
+                        domain,
+                        receiverPeople.userId,
+                        receiverPeople.domain,
+                        lastGroupId,
+                        message,
+                        cachedMessageId = tempMessageId
+                    )
                 }
             }
         }
     }
 
-    fun sendMessageToGroup(groupId: Long, message: String, isRegisteredGroup: Boolean) {
+    fun sendMessageToGroup(
+        context: Context,
+        groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean
+    ) {
         viewModelScope.launch {
             try {
-                if (!isRegisteredGroup) {
-                    val result = signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
-                    if (result) {
-                        _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                        chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
-                    }
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, groupId, message, isRegisteredGroup)
                 } else {
-                    chatRepository.sendMessageToGroup(clientId, domain, groupId, message)
+                    sendMessageToGroup(groupId, message, isRegisteredGroup)
                 }
-            } catch (e : Exception) {}
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun sendMessageToGroup(
+        groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean,
+        cachedMessageId: Int = 0
+    ) {
+        if (!isRegisteredGroup) {
+            val result =
+                signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
+            if (result) {
+                _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
+                chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+            }
+        } else {
+            chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
         }
     }
 
     fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-            val inviteGroupSuccess = groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId,getOwner())
+            val inviteGroupSuccess =
+                groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId, getOwner())
             inviteGroupSuccess?.let {
                 setJoiningGroup(inviteGroupSuccess)
             }
@@ -254,6 +314,125 @@ class RoomViewModel @Inject constructor(
         list.addAll(_imageUriSelected.value ?: emptyList())
         list.add(uri)
         _imageUriSelected.value = list
+    }
+
+    private suspend fun uploadImage(
+        context: Context, groupId: Long,
+        message: String,
+        isRegisteredGroup: Boolean? = null,
+        receiverPeople: User? = null
+    ) {
+        val imageUris = _imageUriSelected.value
+        _imageUriSelected.postValue(emptyList())
+
+        if (!imageUris.isNullOrEmpty()) {
+            if (!isValidFileCount()) {
+                uploadFileResponse.value = Resource.error("Failed to send message - Maximum number of attachments in a message reached (10)", null)
+                return
+            }
+
+            if (!isValidFileSizes(context, imageUris)) {
+                uploadFileResponse.value = Resource.error("Failed to send message - File is larger than 4 MB.", null)
+                return
+            }
+
+            val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
+            val imageUrls = mutableListOf<String>()
+            imageUris.forEach { uriString ->
+                val uri = Uri.parse(uriString)
+                val contentResolver = context.contentResolver
+                val mimeType = getFileMimeType(context, uri)
+                val fileName = getFileName(context, uri)
+                printlnCK("MIME $mimeType")
+                printlnCK("FILE NAME $fileName")
+                val byteStrings = mutableListOf<ByteString>()
+                val blockDigestStrings = mutableListOf<String>()
+                val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
+                val inputStream = contentResolver.openInputStream(uri)
+                var fileSize = 0
+                var size: Int
+                size = inputStream?.read(byteArray) ?: 0
+                val fileDigest = MessageDigest.getInstance("MD5")
+                while (size > 0) {
+                    val blockDigest = MessageDigest.getInstance("MD5")
+                    blockDigest.update(byteArray, 0, size)
+                    val blockDigestByteArray = blockDigest.digest()
+                    val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
+                    blockDigestStrings.add(blockDigestString)
+                    fileDigest.update(byteArray, 0, size)
+                    byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
+                    fileSize += size
+                    size = inputStream?.read(byteArray) ?: 0
+                }
+                printlnCK("File size from inputStream ${fileSize.toString()}")
+                val fileHashByteArray = fileDigest.digest()
+                val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                printlnCK(fileHashString)
+                val url = chatRepository.uploadFile(
+                    mimeType,
+                    fileName,
+                    byteStrings,
+                    blockDigestStrings,
+                    fileHashString
+                )
+                imageUrls.add(url)
+            }
+            if (isRegisteredGroup != null) {
+                sendMessageToGroup(groupId, "${imageUrls.joinToString(" ")} $message", isRegisteredGroup, tempMessageId)
+            } else {
+                sendMessageToUser(receiverPeople!!, groupId, "${imageUrls.joinToString(" ")} $message", tempMessageId)
+            }
+        }
+    }
+
+    private fun isValidFileCount() =
+        _imageUriSelected.value != null && _imageUriSelected.value!!.size <= FILE_MAX_COUNT
+
+    private fun isValidFileSizes(context: Context, fileUriList: List<String>) : Boolean {
+        fileUriList.forEach {
+            val fileSize = getFileSize(context, Uri.parse(it))
+            printlnCK("File size $fileSize")
+            if (fileSize > FILE_MAX_SIZE) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun getFileMimeType(context: Context, uri: Uri): String {
+        val contentResolver = context.contentResolver
+        val mimeType = contentResolver.getType(uri)
+        return mimeType ?: ""
+    }
+
+    private fun getFileName(context: Context, uri: Uri): String {
+        val contentResolver = context.contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null, null)
+        if (cursor != null && cursor.moveToFirst()) {
+            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+        }
+        return ""
+    }
+
+    private fun getFileSize(context: Context, uri: Uri): Long {
+        val contentResolver = context.contentResolver
+        val cursor = contentResolver.query(uri, null, null, null, null, null)
+        if (cursor != null && cursor.moveToFirst()) {
+            return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
+        }
+        return 0L
+    }
+
+    private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
+        val bigInt = BigInteger(1, byteArray)
+        val hashString = bigInt.toString(16)
+        return String.format("%32s", hashString).replace(' ', '0')
+    }
+
+    companion object {
+        private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
+        private const val FILE_MAX_COUNT = 10
+        private const val FILE_MAX_SIZE = 4_000_000 //4MB
     }
 }
 
