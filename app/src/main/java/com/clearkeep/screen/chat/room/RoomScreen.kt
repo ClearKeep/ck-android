@@ -115,7 +115,8 @@ fun RoomScreen(
                         sheetContent = {
                             FilePickerBottomSheetDialog()
                         },
-                        sheetBackgroundColor = Color.White
+                        sheetPeekHeight = 0.dp,
+                        sheetBackgroundColor = Color(0xF3FFFFFF)
                     ) {
                         Column(modifier = Modifier
                             .weight(
