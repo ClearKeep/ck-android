@@ -186,10 +186,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 }
             }
         })
-
-        roomViewModel.uploadFileResponse.observe(this) {
-            printlnCK("upload file url $it")
-        }
     }
 
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {

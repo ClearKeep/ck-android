@@ -69,7 +69,7 @@ class ChatRepository @Inject constructor(
             if (cachedMessageId == 0) {
                 messageRepository.saveNewMessage(responseMessage)
             } else {
-                messageRepository.updateMessage(responseMessage.apply { generateId = cachedMessageId })
+                messageRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
             }
 
             printlnCK("send message success: $plainMessage")
@@ -111,7 +111,7 @@ class ChatRepository @Inject constructor(
             if (cachedMessageId == 0) {
                 messageRepository.saveNewMessage(message)
             } else {
-                messageRepository.updateMessage(message.apply { generateId = cachedMessageId })
+                messageRepository.updateMessage(message.copy(generateId = cachedMessageId))
             }
 
             printlnCK("send message success: $plainMessage")
