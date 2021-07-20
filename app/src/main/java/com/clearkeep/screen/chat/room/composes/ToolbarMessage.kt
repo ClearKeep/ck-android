@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.google.accompanist.insets.statusBarsHeight
+import com.google.accompanist.insets.statusBarsPadding
 
 
 @Composable
@@ -28,7 +30,7 @@ fun ToolbarMessage(
     onVideoClick: () -> Unit
 
 ) {
-    Row(modifier = Modifier.height(58.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.statusBarsHeight(58.dp).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
