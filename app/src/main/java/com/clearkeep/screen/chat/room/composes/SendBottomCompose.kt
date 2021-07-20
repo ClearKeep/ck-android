@@ -53,7 +53,8 @@ fun SendBottomCompose(
     roomViewModel: RoomViewModel,
     navController: NavController,
     onSendMessage: (String) -> Unit,
-    onClickUploadPhoto: () -> Unit
+    onClickUploadPhoto: () -> Unit,
+    onClickUploadFile: () -> Unit
 ) {
     val msgState = remember { mutableStateOf("") }
     val isKeyboardShow = remember { mutableStateOf(false) }
@@ -103,7 +104,7 @@ fun SendBottomCompose(
 
             IconButton(
                 onClick = {
-
+                    onClickUploadFile()
                 },
                 modifier = Modifier
                     .padding(8.dp)
