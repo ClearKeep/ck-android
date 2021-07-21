@@ -14,13 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
-import com.clearkeep.utilities.getHourTimeAsString
+import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable
@@ -28,7 +29,10 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
-    Column(Modifier.fillMaxWidth().wrapContentHeight(), horizontalAlignment = Alignment.End) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(), horizontalAlignment = Alignment.End) {
         Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp))
         Text(
             text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
@@ -39,7 +43,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
             ),
         )
         Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            if (message.contains(tempFileRegex))
+            if (isTempMessage(message))
                 CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
             Spacer(Modifier.width(18.dp))
             Card(
@@ -69,46 +73,3 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
         }
     }
 }
-
-private fun isImageMessage(content: String): Boolean {
-    return content.contains(remoteImageRegex) || content.contains(tempImageRegex)
-}
-
-private fun isFileMessage(content: String): Boolean {
-    return content.contains(remoteFileRegex) || content.contains(tempFileRegex)
-}
-
-private fun getImageUriStrings(content: String): List<String> {
-    val temp = remoteImageRegex.findAll(content).map {
-        it.value.split(" ")
-    }.toMutableList()
-    temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    return temp.flatten()
-}
-
-private fun getFileUriStrings(content: String): List<String> {
-    val temp = remoteFileRegex.findAll(content).map {
-        it.value.split(" ")
-    }.toMutableList()
-    temp.add(tempFileRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    return temp.flatten()
-}
-
-private fun getMessageContent(content: String): String {
-    val temp = remoteImageRegex.replace(content, "")
-    val temp2 = remoteFileRegex.replace(temp, "")
-    val temp3 = tempFileRegex.replace(temp2, "")
-    return tempImageRegex.replace(temp3, "")
-}
-
-private val remoteImageRegex =
-    "(https://s3.amazonaws.com/storage.clearkeep.io/[dev|prod].+[a-zA-Z0-9\\/\\_\\-\\.]+(\\.png|\\.jpeg|\\.jpg|\\.gif|\\.PNG|\\.JPEG|\\.JPG|\\.GIF))".toRegex()
-
-private val remoteFileRegex =
-    "(https://s3.amazonaws.com/storage.clearkeep.io/[dev|prod].+)".toRegex()
-
-private val tempImageRegex =
-    "content://media/external/images/media/\\d+".toRegex()
-
-private val tempFileRegex =
-    "content://.+".toRegex()
