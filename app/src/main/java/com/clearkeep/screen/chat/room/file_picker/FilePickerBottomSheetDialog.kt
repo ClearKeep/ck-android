@@ -38,7 +38,12 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                 roomViewModel.addStagedFileUri(it)
             }
         }
-    val filePickerMime = "*/*"
+    val videoMime = "video/*"
+    val applicationMime = "application/*"
+    val audioMime = "audio/*"
+    val textMime = "text/*"
+    val fontMime = "font/*"
+    val mimeTypes = arrayOf(videoMime, applicationMime, audioMime, textMime, fontMime)
     val stagedFiles = roomViewModel.fileUriStaged.observeAsState()
 
     Column(Modifier.padding(horizontal = 12.dp)) {
@@ -53,7 +58,7 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                     Modifier
                         .align(Alignment.CenterEnd)
                         .clickable {
-                            addFileLauncher.launch(arrayOf(filePickerMime))
+                            addFileLauncher.launch(mimeTypes)
                         }, verticalAlignment = Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.ic_plus), null)
                     Text("Add File")
