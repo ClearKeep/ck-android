@@ -125,6 +125,20 @@ fun RoomScreen(
                             FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    val groupResult = group
+                                    val isGroup = groupResult.isGroup()
+                                    if (isGroup) {
+                                        roomViewModel.uploadFile(context, groupResult.groupId, groupResult.isJoined)
+                                    } else {
+                                        val friend = groupResult.clientList.firstOrNull { client ->
+                                            client.userId != roomViewModel.clientId
+                                        }
+                                        if (friend != null) {
+                                            roomViewModel.uploadFile(context, groupResult.groupId, null, friend)
+                                        } else {
+                                            printlnCK("can not found friend")
+                                        }
+                                    }
                                 }
                             })
                         },
