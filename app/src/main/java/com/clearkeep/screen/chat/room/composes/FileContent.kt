@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,19 +32,29 @@ fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
 @Composable
 fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
+    val fileName = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(fileUrl)
+    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else 0L
+    val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick(fileUrl) } else Modifier
 
-    Column(Modifier.padding(28.dp, 8.dp, 54.dp, 8.dp).clickable { onClick(fileUrl) }) {
+    Column(Modifier.padding(28.dp, 8.dp, 54.dp, 8.dp).then(clickableModifier)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.dp))
             Spacer(Modifier.width(12.dp))
-            Text(getFileNameFromUrl(fileUrl), color = grayscaleOffWhite)
+            Text(fileName, color = grayscaleOffWhite)
         }
-        Text("12.3MB", color = grayscale4, fontSize = 12.sp)
+        Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sp)
     }
 }
+
+private fun isTempFile(uri: String) = uri.startsWith("content://")
 
 private fun getFileNameFromUrl(url: String): String {
     val fileNameRegex = "(?:.(?!\\/))+\$".toRegex()
     val fileName = fileNameRegex.find(url)?.value
     return fileName?.substring(1 until fileName.length) ?: ""
+}
+
+private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
+    val fileSizeInMegabytes = fileSizeInBytes.toDouble() / 1_000_000
+    return "%.2f MB".format(fileSizeInMegabytes)
 }

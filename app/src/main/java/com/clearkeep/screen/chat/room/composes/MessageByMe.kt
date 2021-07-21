@@ -39,7 +39,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
             ),
         )
         Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-            if (message.contains(tempImageRegex))
+            if (message.contains(tempFileRegex))
                 CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
             Spacer(Modifier.width(18.dp))
             Card(
@@ -75,7 +75,7 @@ private fun isImageMessage(content: String): Boolean {
 }
 
 private fun isFileMessage(content: String): Boolean {
-    return content.contains(remoteFileRegex)
+    return content.contains(remoteFileRegex) || content.contains(tempFileRegex)
 }
 
 private fun getImageUriStrings(content: String): List<String> {
@@ -90,13 +90,15 @@ private fun getFileUriStrings(content: String): List<String> {
     val temp = remoteFileRegex.findAll(content).map {
         it.value.split(" ")
     }.toMutableList()
+    temp.add(tempFileRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
     return temp.flatten()
 }
 
 private fun getMessageContent(content: String): String {
     val temp = remoteImageRegex.replace(content, "")
     val temp2 = remoteFileRegex.replace(temp, "")
-    return tempImageRegex.replace(temp2, "")
+    val temp3 = tempFileRegex.replace(temp2, "")
+    return tempImageRegex.replace(temp3, "")
 }
 
 private val remoteImageRegex =
@@ -107,3 +109,6 @@ private val remoteFileRegex =
 
 private val tempImageRegex =
     "content://media/external/images/media/\\d+".toRegex()
+
+private val tempFileRegex =
+    "content://.+".toRegex()
