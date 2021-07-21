@@ -32,9 +32,6 @@ import com.clearkeep.screen.chat.room.RoomViewModel
 @ExperimentalMaterialApi
 @Composable
 fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () -> Unit) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-    keyboardController?.hide()
-
     val context = LocalContext.current
     val addFileLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {

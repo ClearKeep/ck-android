@@ -84,6 +84,7 @@ fun RoomScreen(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
 
     group.value?.let { group ->
@@ -174,7 +175,9 @@ fun RoomScreen(
                                 }
                             },
                             onClickUploadFile = {
+                                keyboardController?.hide()
                                 coroutineScope.launch {
+                                    delay(KEYBOARD_HIDE_DELAY_MILLIS)
                                     bottomSheetScaffoldState.bottomSheetState.expand()
                                 }
                             }
@@ -350,4 +353,4 @@ private fun generatePhotoUri(context: Context) : Uri {
     )
 }
 
-private const val KEYBOARD_HIDE_DELAY_MILLIS = 300L
+private const val KEYBOARD_HIDE_DELAY_MILLIS = 500L
