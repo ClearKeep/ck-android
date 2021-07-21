@@ -37,11 +37,18 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.content.FileProvider
+import androidx.core.os.HandlerCompat.postDelayed
+import androidx.core.os.postDelayed
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
@@ -54,6 +61,7 @@ import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -63,19 +71,19 @@ import java.util.*
 @ExperimentalComposeUiApi
 @Composable
 fun RoomScreen(
-        roomViewModel: RoomViewModel,
-        navHostController: NavHostController,
-        onFinishActivity: () -> Unit,
-        onCallingClick: ((isPeer: Boolean) -> Unit),
+    roomViewModel: RoomViewModel,
+    navHostController: NavHostController,
+    onFinishActivity: () -> Unit,
+    onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
-    val isUploadFileResponseDialogVisible = remember { mutableStateOf(false) }
     val context = LocalContext.current
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
     )
+    val focusManager = LocalFocusManager.current
     val coroutineScope = rememberCoroutineScope()
 
     group.value?.let { group ->
@@ -113,7 +121,11 @@ fun RoomScreen(
                     BottomSheetScaffold(
                         scaffoldState = bottomSheetScaffoldState,
                         sheetContent = {
-                            FilePickerBottomSheetDialog()
+                            FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            })
                         },
                         sheetPeekHeight = 0.dp,
                         sheetBackgroundColor = Color(0xF3FFFFFF)
@@ -155,7 +167,11 @@ fun RoomScreen(
                                 }
                             },
                             onClickUploadPhoto = {
-                                isUploadPhotoDialogVisible.value = true
+                                focusManager.clearFocus()
+                                Handler(Looper.getMainLooper()).postDelayed(
+                                    KEYBOARD_HIDE_DELAY_MILLIS) {
+                                    isUploadPhotoDialogVisible.value = true
+                                }
                             },
                             onClickUploadFile = {
                                 coroutineScope.launch {
@@ -239,9 +255,6 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
     }
 
     if (isOpen) {
-        val keyboardController = LocalSoftwareKeyboardController.current
-        keyboardController?.hide()
-
         Box {
             Box(
                 Modifier
@@ -336,3 +349,5 @@ private fun generatePhotoUri(context: Context) : Uri {
         file
     )
 }
+
+private const val KEYBOARD_HIDE_DELAY_MILLIS = 300L
