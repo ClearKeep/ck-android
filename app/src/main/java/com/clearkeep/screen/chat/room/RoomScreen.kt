@@ -98,7 +98,7 @@ fun RoomScreen(
         val groupName = group.groupName
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         Box(
-                modifier = Modifier.fillMaxSize().navigationBarsWithImePadding(),
+                modifier = Modifier.fillMaxSize(),
         ) {
             Column(
                     modifier = Modifier.fillMaxSize()
