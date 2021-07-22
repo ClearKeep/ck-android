@@ -98,9 +98,7 @@ fun RoomScreen(
         val groupName = group.groupName
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsWithImePadding(),
+                modifier = Modifier.fillMaxSize(),
         ) {
             Column(
                     modifier = Modifier.fillMaxSize()
@@ -153,7 +151,7 @@ fun RoomScreen(
                             navHostController,
                             onSendMessage = { message ->
                                 val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                                if (validMessage .isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
+                                if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                     return@SendBottomCompose
                                 }
                                 val groupResult = group
