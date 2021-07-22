@@ -41,6 +41,13 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.graphics.Color.parseColor
+import android.view.View
+import android.view.WindowInsets
+import androidx.compose.ui.graphics.Color
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.clearkeep.utilities.*
 
 
@@ -73,7 +80,13 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // To keep input text field above keyboard
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val rootView = findViewById<View>(android.R.id.content).rootView
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            rootView.setPadding(0, 0, 0, imeHeight)
+            insets
+        }
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -90,7 +103,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             notificationManagerCompat.cancel(roomId.toInt())
         }
         roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             CKInsetTheme {
