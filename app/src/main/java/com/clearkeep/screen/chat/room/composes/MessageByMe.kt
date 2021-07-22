@@ -31,7 +31,8 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
     Column(
         Modifier
             .fillMaxWidth()
-            .wrapContentHeight(), horizontalAlignment = Alignment.End) {
+            .wrapContentHeight(), horizontalAlignment = Alignment.End
+    ) {
         Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp))
         Text(
             text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
@@ -41,7 +42,10 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
                 textAlign = TextAlign.Start
             ),
         )
-        Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             if (isTempMessage(message))
                 CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
             Spacer(Modifier.width(18.dp))
@@ -63,7 +67,10 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
                     }
                     val messageContent = getMessageContent(message)
                     if (messageContent.isNotBlank()) {
-                        Row(Modifier.align(Alignment.End).wrapContentHeight()) {
+                        Row(
+                            Modifier
+                                .align(Alignment.End)
+                                .wrapContentHeight()) {
                             ClickableLinkContent(messageContent)
                         }
                     }

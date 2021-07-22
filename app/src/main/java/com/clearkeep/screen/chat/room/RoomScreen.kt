@@ -41,26 +41,15 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.window.Dialog
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.content.FileProvider
-import androidx.core.os.HandlerCompat.postDelayed
 import androidx.core.os.postDelayed
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.BuildConfig
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import kotlinx.coroutines.launch
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.components.*
-import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.navigationBarsWithImePadding
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
@@ -127,16 +116,15 @@ fun RoomScreen(
                             FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    val groupResult = group
-                                    val isGroup = groupResult.isGroup()
+                                    val isGroup = group.isGroup()
                                     if (isGroup) {
-                                        roomViewModel.uploadFile(context, groupResult.groupId, groupResult.isJoined)
+                                        roomViewModel.uploadFile(context, group.groupId, group.isJoined)
                                     } else {
-                                        val friend = groupResult.clientList.firstOrNull { client ->
+                                        val friend = group.clientList.firstOrNull { client ->
                                             client.userId != roomViewModel.clientId
                                         }
                                         if (friend != null) {
-                                            roomViewModel.uploadFile(context, groupResult.groupId, null, friend)
+                                            roomViewModel.uploadFile(context, group.groupId, null, friend)
                                         } else {
                                             printlnCK("can not found friend")
                                         }
