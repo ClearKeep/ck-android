@@ -23,7 +23,7 @@ data class ChatGroup(
         @ColumnInfo(name = "updated_at") val updateAt: Long,
         @ColumnInfo(name = "group_rtc_token") val rtcToken: String,
 
-        @ColumnInfo(name = "lst_client") val clientList: List<User>,
+        @ColumnInfo(name = "lst_client") var clientList: List<User>,
 
         @ColumnInfo(name = "is_registered_to_group") val isJoined: Boolean = false,
 

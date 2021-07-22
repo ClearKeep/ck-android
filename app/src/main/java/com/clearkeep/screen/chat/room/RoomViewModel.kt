@@ -27,7 +27,6 @@ class RoomViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val messageRepository: MessageRepository,
     private val serverRepository: ServerRepository,
-
     private val environment: Environment
 ): ViewModel() {
     private var roomId: Long? = null
@@ -50,6 +49,12 @@ class RoomViewModel @Inject constructor(
     var clientId: String = ""
 
     var domain: String = ""
+
+    val groups: LiveData<List<ChatGroup>> = groupRepository.getAllRooms()
+
+    private val _imageUri = MutableLiveData<List<String>>()
+    val imageUri: LiveData<List<String>>
+        get() = _imageUri
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
@@ -248,11 +253,36 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun removeMember(user: User,groupId:Long){
+    fun removeMember(
+        user: User,
+        groupId: Long,
+        onSuccess: (() -> Unit)? = null,
+        onError: (() -> Unit)?
+    ) {
         viewModelScope.launch {
-            val remoteMember=groupRepository.removeMemberInGroup(user,groupId,getOwner())
-            remoteMember?.let {
-                setJoiningGroup(remoteMember)
+            val remoteMember = groupRepository.removeMemberInGroup(user, groupId, getOwner())
+            remoteMember.let {
+                val ret = groupRepository.getGroupFromAPIById(groupId, domain, clientId)
+                if (ret != null) {
+                    setJoiningGroup(ret)
+                    updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
+                    onSuccess?.invoke()
+                } else {
+                    onError?.invoke()
+                }
+            }
+        }
+    }
+
+    fun leaveGroup(onSuccess: (() -> Unit)? = null, onError: (() -> Unit)? = null) {
+        roomId?.let {
+            viewModelScope.launch {
+                val result = groupRepository.leaveGroup(it, getOwner())
+                if (result) {
+                    onSuccess?.invoke()
+                } else {
+                    onError?.invoke()
+                }
             }
         }
     }
@@ -297,6 +327,10 @@ class RoomViewModel @Inject constructor(
         return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain)
     }
 
+    fun getCurrentUser(): User {
+        return getUser()
+    }
+
     fun setSelectedImages(uris: List<String>) {
         _imageUriSelected.value = uris
     }
@@ -336,7 +370,7 @@ class RoomViewModel @Inject constructor(
         val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
         _fileUriStaged.postValue(emptyMap())
         files?.let {
-            uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople)
+            uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople, appendFileSize = true)
         }
     }
 
