@@ -37,6 +37,8 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.lifecycle.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import com.clearkeep.utilities.*
@@ -65,6 +67,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private lateinit var clientId: String
     private var chatServiceIsStartInRoom = false
 
+    @ExperimentalMaterialApi
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
