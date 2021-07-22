@@ -6,6 +6,7 @@ import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
@@ -50,6 +51,12 @@ class HomeViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
+    init {
+        viewModelScope.launch {
+            roomRepository.fetchGroups()
+        }
+    }
+
     val chatGroups = liveData<List<ChatGroup>> {
         val result = MediatorLiveData<List<ChatGroup>>()
         result.addSource(groups) { groupList ->
@@ -58,8 +65,11 @@ class HomeViewModel @Inject constructor(
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
                         && it.isGroup()
+                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.status == UserStateTypeInGroup.ACTIVE.value
+
             }
         }
+
         result.addSource(selectingJoinServer) { _ ->
             val server = environment.getServer()
             result.value = groups.value?.filter {

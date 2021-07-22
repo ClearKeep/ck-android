@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.group_create
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -27,7 +29,8 @@ fun EnterGroupNameScreen(
     val groupName = remember {mutableStateOf("")}
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     val friends = createGroupViewModel.invitedFriends
-
+    val isLoadingState = remember { mutableStateOf(false) }
+    Box() {
     Surface(
         color = MaterialTheme.colors.background
     ) {
@@ -93,12 +96,33 @@ fun EnterGroupNameScreen(
                 CKButton(
                     stringResource(R.string.btn_next),
                     onClick = {
-                        if (groupName.value.trim().isNotEmpty())
-                             createGroupViewModel.createGroup(groupName.value.trim())
+                        if (groupName.value.trim().isNotEmpty()) {
+                            createGroupViewModel.createGroup(groupName.value.trim(),onError = {
+                                isLoadingState.value = false
+                            })
+                            isLoadingState.value = true
+                        }
                     },
                     modifier = Modifier
                         .width(200.dp)
                 )
+            }
+        }
+    }
+        isLoadingState.value.let {
+            if (it) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { },
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+
+                ) {
+                    CKCircularProgressIndicator(
+                        color = Color.Blue
+                    )
+                }
             }
         }
     }

@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.clearkeep.R
@@ -23,8 +22,10 @@ import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.*
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavController) {
@@ -57,9 +58,13 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
 
                         val itemModifier = Modifier.padding(vertical = 8.dp)
                         LazyColumn {
-                            itemsIndexed(group.clientList) { _, user ->
+                            itemsIndexed(group.clientList.filter {
+                                it.status == UserStateTypeInGroup.ACTIVE.value && it != roomViewModel.getCurrentUser()
+                            }) { _, user ->
                                 RemoveMemberItem(itemModifier, user) {
-                                    roomViewModel.group.value?.groupId?.let { it1 -> roomViewModel.removeMember(user,groupId = it1) }
+                                    roomViewModel.group.value?.groupId?.let { it1 ->
+                                        roomViewModel.removeMember(user,groupId = it1)
+                                    }
                                 }
                             }
                         }
