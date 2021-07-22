@@ -52,10 +52,6 @@ class RoomViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = groupRepository.getAllRooms()
 
-    private val _imageUri = MutableLiveData<List<String>>()
-    val imageUri: LiveData<List<String>>
-        get() = _imageUri
-
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
         get() = _imageUriSelected
