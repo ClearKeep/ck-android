@@ -29,7 +29,7 @@ import com.google.accompanist.imageloading.rememberDrawablePainter
 const val MAX_IMAGE_COUNT = 4
 
 @Composable
-fun ColumnScope.ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
+fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
     println("ImageMessageContent $imageUris")
     if (imageUris.size == 1) {
         ImageMessageItem(
