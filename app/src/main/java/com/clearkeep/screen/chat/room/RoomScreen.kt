@@ -58,10 +58,7 @@ import kotlinx.coroutines.launch
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.components.*
-import com.google.accompanist.insets.navigationBarsPadding
-import com.google.accompanist.insets.navigationBarsWithImePadding
-import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.insets.systemBarsPadding
+import com.google.accompanist.insets.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import java.io.File

@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
-import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigate
@@ -45,9 +44,7 @@ import android.graphics.Color.parseColor
 import android.view.View
 import android.view.WindowInsets
 import androidx.compose.ui.graphics.Color
-import androidx.core.view.OnApplyWindowInsetsListener
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.*
 import com.clearkeep.utilities.*
 
 
@@ -79,16 +76,15 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // To keep input text field above keyboard
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val rootView = findViewById<View>(android.R.id.content).rootView
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
             val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
-            rootView.setPadding(0, 0, 0, imeHeight)
+            val navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val bottomPadding = if (imeHeight == 0) navigation else imeHeight
+            rootView.setPadding(0, 0, 0, bottomPadding)
             insets
         }
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerAddMemberReceiver()
         roomId = intent.getLongExtra(GROUP_ID, 0)
@@ -298,6 +294,16 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         return false
     }
 
+    private fun setWindowFlag(bits: Int, on: Boolean) {
+        val win = window
+        val winParams = win.attributes
+        if (on) {
+            winParams.flags = winParams.flags or bits
+        } else {
+            winParams.flags = winParams.flags and bits.inv()
+        }
+        win.attributes = winParams
+    }
 
     companion object {
         const val GROUP_ID = "room_id"
