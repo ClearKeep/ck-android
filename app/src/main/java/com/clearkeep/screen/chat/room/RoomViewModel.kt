@@ -355,7 +355,7 @@ class RoomViewModel @Inject constructor(
                 val blockDigestStrings = mutableListOf<String>()
                 val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
                 val inputStream = contentResolver.openInputStream(uri)
-                var fileSize = 0
+                var fileSize = 0L
                 var size: Int
                 size = inputStream?.read(byteArray) ?: 0
                 val fileDigest = MessageDigest.getInstance("MD5")
@@ -441,6 +441,7 @@ class RoomViewModel @Inject constructor(
             )
         )
         val fileUrls = mutableListOf<String>()
+        val filesSizeInBytes = mutableListOf<Long>()
         files?.keys?.forEach { uri ->
             val contentResolver = context.contentResolver
             val mimeType = getFileMimeType(context, uri)
@@ -449,7 +450,7 @@ class RoomViewModel @Inject constructor(
             val blockDigestStrings = mutableListOf<String>()
             val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
             val inputStream = contentResolver.openInputStream(uri)
-            var fileSize = 0
+            var fileSize = 0L
             var size: Int
             size = inputStream?.read(byteArray) ?: 0
             val fileDigest = MessageDigest.getInstance("MD5")
@@ -463,10 +464,8 @@ class RoomViewModel @Inject constructor(
                 byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
                 fileSize += size
                 size = inputStream?.read(byteArray) ?: 0
-                printlnCK("File size from inputStream ${fileSize.toString()}")
                 val fileHashByteArray = fileDigest.digest()
                 val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                printlnCK(fileHashString)
                 val url = chatRepository.uploadFile(
                     mimeType,
                     fileName,
@@ -475,11 +474,12 @@ class RoomViewModel @Inject constructor(
                     fileHashString
                 )
                 fileUrls.add(url)
+                filesSizeInBytes.add(fileSize)
             }
             if (isRegisteredGroup != null) {
                 sendMessageToGroup(
                     groupId,
-                    fileUrls.joinToString(" "),
+                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" "),
                     isRegisteredGroup,
                     tempMessageId
                 )
@@ -487,7 +487,7 @@ class RoomViewModel @Inject constructor(
                 sendMessageToUser(
                     receiverPeople!!,
                     groupId,
-                    fileUrls.joinToString(" "),
+                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" "),
                     tempMessageId
                 )
             }
