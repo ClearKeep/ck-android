@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.group_remove
 
+import android.widget.Toast
+import androidx.activity.contextaware.ContextAware
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,11 +15,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.HeaderTextType
@@ -31,6 +35,8 @@ import com.clearkeep.utilities.printlnCK
 fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavController) {
     val text = remember { mutableStateOf("") }
     val groupState = roomViewModel.group.observeAsState()
+    val context = LocalContext.current
+
 
     groupState?.value?.let { group ->
         CKSimpleTheme {
@@ -63,7 +69,11 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                             }) { _, user ->
                                 RemoveMemberItem(itemModifier, user) {
                                     roomViewModel.group.value?.groupId?.let { it1 ->
-                                        roomViewModel.removeMember(user,groupId = it1)
+                                        roomViewModel.removeMember(user,groupId = it1,onSuccess = {
+                                            Toast.makeText(context,"Remove member success",Toast.LENGTH_LONG).show()
+                                        },onError = {
+                                            Toast.makeText(context,"Remove member error !",Toast.LENGTH_LONG).show()
+                                        })
                                     }
                                 }
                             }
