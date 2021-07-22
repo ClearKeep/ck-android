@@ -57,7 +57,8 @@
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name="com.clearkeep.screen.chat.room.RoomActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".screen.splash.SplashActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar">
