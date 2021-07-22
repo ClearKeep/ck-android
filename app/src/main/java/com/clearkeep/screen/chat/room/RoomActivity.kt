@@ -12,6 +12,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,10 +36,12 @@ import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import com.clearkeep.utilities.printlnCK
 import android.app.ActivityManager
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.*
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import com.clearkeep.utilities.*
 
 
 @AndroidEntryPoint
@@ -57,6 +60,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    private var addMemberReceiver: BroadcastReceiver? = null
+
     private var roomId: Long = 0
     private lateinit var domain: String
     private lateinit var clientId: String
@@ -72,6 +77,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+        registerAddMemberReceiver()
         roomId = intent.getLongExtra(GROUP_ID, 0)
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
@@ -83,7 +89,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
-
         roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -162,6 +167,29 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         subscriber()
     }
 
+    private fun registerAddMemberReceiver() {
+        addMemberReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val groupId = intent.getLongExtra(EXTRA_GROUP_ID,-1)
+                if (roomId == groupId) {
+                    roomViewModel.refreshRoom()
+                }
+            }
+        }
+        registerReceiver(
+            addMemberReceiver,
+            IntentFilter(ACTION_ADD_REMOVE_MEMBER)
+        )
+    }
+
+    private fun unRegisterAddMemberReceiver() {
+        if (addMemberReceiver != null) {
+            unregisterReceiver(addMemberReceiver)
+            addMemberReceiver = null
+        }
+    }
+
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val newRoomId = intent.getLongExtra(GROUP_ID, 0)
@@ -174,6 +202,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onDestroy() {
         roomViewModel.leaveRoom()
+        unRegisterAddMemberReceiver()
         super.onDestroy()
     }
 
@@ -188,6 +217,13 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 }
             }
         })
+
+        if (roomId > 0)
+            roomViewModel.groups.observe(this, Observer {
+                val group =
+                    it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
+                if (group == null) finish()
+            })
     }
 
     private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {

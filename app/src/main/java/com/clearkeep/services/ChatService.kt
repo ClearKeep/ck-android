@@ -164,6 +164,22 @@ class ChatService : Service(),
                 "peer-update-key" -> {
                     chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain)
                 }
+                "member-add" -> {
+                    groupRepository.fetchGroups()
+                    val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
+                    updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
+                    sendBroadcast(updateGroupIntent)
+                }
+
+                "member-removal", "member-leave" -> {
+                    groupRepository.getGroupFromAPIById(value.refGroupId,domain,value.clientId)
+                    groupRepository.removeGroupOnWorkSpace(value.refGroupId,domain,value.refClientId)
+
+                    val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
+                    updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
+                    sendBroadcast(updateGroupIntent)
+
+                }
                 CALL_TYPE_VIDEO -> {
                     val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
                     switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)

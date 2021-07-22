@@ -17,7 +17,7 @@ interface GroupDAO {
     suspend fun insertGroupList(groups: List<ChatGroup>)
 
     @Update
-    suspend fun update(vararg group: ChatGroup)
+    suspend fun updateGroup(vararg group: ChatGroup)
 
     //@Query("SELECT * FROM chatgroup WHERE id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
@@ -33,6 +33,8 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
     fun getRoomsAsState(): LiveData<List<ChatGroup>>
 
+    @Query("DELETE  FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId")
+    suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
 /*    @Query("SELECT chatgroup.*, message.* FROM chatgroup LEFT JOIN message ON chatgroup.last_message_id = message.id")
     fun getRoomWithLastMessageAsState(): LiveData<List<GroupAndLastMessage>>*/
 }
