@@ -35,7 +35,7 @@ fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
     val fileName = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(fileUrl)
     val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
-    val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick(fileUrl) } else Modifier
+    val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick.invoke(fileUrl) } else Modifier
 
     Column(
         Modifier
