@@ -41,6 +41,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.view.View
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.clearkeep.utilities.*
 
 
@@ -72,10 +75,15 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // To keep input text field above keyboard
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val rootView = findViewById<View>(android.R.id.content).rootView
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val bottomPadding = if (imeHeight == 0) navigation else imeHeight
+            rootView.setPadding(0, 0, 0, bottomPadding)
+            insets
+        }
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerAddMemberReceiver()
         roomId = intent.getLongExtra(GROUP_ID, 0)

@@ -257,15 +257,15 @@ class RoomViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val remoteMember = groupRepository.removeMemberInGroup(user, groupId, getOwner())
-            remoteMember.let {
+            if (remoteMember) {
                 val ret = groupRepository.getGroupFromAPIById(groupId, domain, clientId)
                 if (ret != null) {
                     setJoiningGroup(ret)
                     updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
                     onSuccess?.invoke()
-                } else {
-                    onError?.invoke()
                 }
+            } else {
+                onError?.invoke()
             }
         }
     }
