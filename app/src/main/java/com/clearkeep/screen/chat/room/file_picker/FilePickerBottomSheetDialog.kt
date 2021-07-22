@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,7 +38,12 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                 roomViewModel.addStagedFileUri(it)
             }
         }
-    val filePickerMime = "*/*"
+    val videoMime = "video/*"
+    val applicationMime = "application/*"
+    val audioMime = "audio/*"
+    val textMime = "text/*"
+    val fontMime = "font/*"
+    val mimeTypes = arrayOf(videoMime, applicationMime, audioMime, textMime, fontMime)
     val stagedFiles = roomViewModel.fileUriStaged.observeAsState()
 
     Column(Modifier.padding(horizontal = 12.dp)) {
@@ -54,7 +58,7 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                     Modifier
                         .align(Alignment.CenterEnd)
                         .clickable {
-                            addFileLauncher.launch(arrayOf(filePickerMime))
+                            addFileLauncher.launch(mimeTypes)
                         }, verticalAlignment = Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.ic_plus), null)
                     Text("Add File")
@@ -65,7 +69,7 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
         if (!stagedFiles.value.isNullOrEmpty()) {
             LazyColumn {
                 itemsIndexed(stagedFiles.value!!.entries.toList()) { _: Int, entry: Map.Entry<Uri, Boolean> ->
-                    FileItem(
+                    FilePickerItem(
                         Modifier.padding(vertical = 16.dp),
                         roomViewModel.getFileName(context, entry.key),
                         isSelected = stagedFiles.value!![entry.key] ?: false
@@ -94,7 +98,7 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
 }
 
 @Composable
-fun FileItem(
+fun FilePickerItem(
     modifier: Modifier = Modifier,
     fileName: String,
     isSelected: Boolean,

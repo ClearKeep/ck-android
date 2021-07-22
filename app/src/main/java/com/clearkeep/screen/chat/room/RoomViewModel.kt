@@ -353,32 +353,66 @@ class RoomViewModel @Inject constructor(
     ) {
         val imageUris = _imageUriSelected.value
         _imageUriSelected.postValue(emptyList())
+        imageUris?.let {
+            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople)
+        }
+    }
 
-        if (!imageUris.isNullOrEmpty()) {
-            if (!isValidFileCount()) {
-                uploadFileResponse.value = Resource.error("Failed to send message - Maximum number of attachments in a message reached (10)", null)
+    suspend fun uploadFile(
+        context: Context, groupId: Long,
+        isRegisteredGroup: Boolean? = null,
+        receiverPeople: User? = null
+    ) {
+        val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
+        _fileUriStaged.postValue(emptyMap())
+        files?.let {
+            uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople, appendFileSize = true)
+        }
+    }
+
+    private suspend fun uploadFile(urisList: List<String>, context: Context, groupId: Long, message: String?, isRegisteredGroup: Boolean?, receiverPeople: User?, appendFileSize: Boolean = false) {
+        if (!urisList.isNullOrEmpty()) {
+            if (!isValidFilesCount(urisList)) {
+                uploadFileResponse.value = Resource.error(
+                    "Failed to send message - Maximum number of attachments in a message reached (10)",
+                    null
+                )
                 return
             }
 
-            if (!isValidFileSizes(context, imageUris)) {
-                uploadFileResponse.value = Resource.error("Failed to send message - File is larger than 4 MB.", null)
+            if (!isValidFileSizes(context, urisList)) {
+                uploadFileResponse.value =
+                    Resource.error("Failed to send message - File is larger than 4 MB.", null)
                 return
             }
 
-            val tempMessageId = messageRepository.saveMessage(Message(null, "", groupId, getOwner().domain, getOwner().clientId, getOwner().clientId, imageUris.joinToString(" ") + " " + message, Calendar.getInstance().timeInMillis, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
-            val imageUrls = mutableListOf<String>()
-            imageUris.forEach { uriString ->
+            val tempMessageId = messageRepository.saveMessage(
+                Message(
+                    null,
+                    "",
+                    groupId,
+                    getOwner().domain,
+                    getOwner().clientId,
+                    getOwner().clientId,
+                    urisList.joinToString(" "),
+                    Calendar.getInstance().timeInMillis,
+                    Calendar.getInstance().timeInMillis,
+                    getOwner().domain,
+                    getOwner().clientId
+                )
+            )
+            val fileUrls = mutableListOf<String>()
+            val filesSizeInBytes = mutableListOf<Long>()
+            urisList.forEach { uriString ->
                 val uri = Uri.parse(uriString)
                 val contentResolver = context.contentResolver
                 val mimeType = getFileMimeType(context, uri)
                 val fileName = getFileName(context, uri)
-                printlnCK("MIME $mimeType")
-                printlnCK("FILE NAME $fileName")
                 val byteStrings = mutableListOf<ByteString>()
                 val blockDigestStrings = mutableListOf<String>()
                 val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
                 val inputStream = contentResolver.openInputStream(uri)
-                var fileSize = 0
+                var fileSize = 0L
                 var size: Int
                 size = inputStream?.read(byteArray) ?: 0
                 val fileDigest = MessageDigest.getInstance("MD5")
@@ -392,32 +426,46 @@ class RoomViewModel @Inject constructor(
                     byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
                     fileSize += size
                     size = inputStream?.read(byteArray) ?: 0
+                    val fileHashByteArray = fileDigest.digest()
+                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                    val url = chatRepository.uploadFile(
+                        mimeType,
+                        fileName,
+                        byteStrings,
+                        blockDigestStrings,
+                        fileHashString
+                    )
+                    fileUrls.add(url)
+                    filesSizeInBytes.add(fileSize)
                 }
-                printlnCK("File size from inputStream ${fileSize.toString()}")
-                val fileHashByteArray = fileDigest.digest()
-                val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                printlnCK(fileHashString)
-                val url = chatRepository.uploadFile(
-                    mimeType,
-                    fileName,
-                    byteStrings,
-                    blockDigestStrings,
-                    fileHashString
-                )
-                imageUrls.add(url)
-            }
-            if (isRegisteredGroup != null) {
-                sendMessageToGroup(groupId, "${imageUrls.joinToString(" ")} $message", isRegisteredGroup, tempMessageId)
-            } else {
-                sendMessageToUser(receiverPeople!!, groupId, "${imageUrls.joinToString(" ")} $message", tempMessageId)
+                val fileUrlsString = if (appendFileSize) {
+                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" ")
+                } else {
+                    fileUrls.joinToString(" ")
+                }
+                if (isRegisteredGroup != null) {
+                    sendMessageToGroup(
+                        groupId,
+                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
+                        isRegisteredGroup,
+                        tempMessageId
+                    )
+                } else {
+                    sendMessageToUser(
+                        receiverPeople!!,
+                        groupId,
+                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
+                        tempMessageId
+                    )
+                }
             }
         }
     }
 
-    private fun isValidFileCount() =
-        _imageUriSelected.value != null && _imageUriSelected.value!!.size <= FILE_MAX_COUNT
+    private fun isValidFilesCount(fileUriList: List<String>?) =
+        fileUriList != null && fileUriList.size <= FILE_MAX_COUNT
 
-    private fun isValidFileSizes(context: Context, fileUriList: List<String>) : Boolean {
+    private fun isValidFileSizes(context: Context, fileUriList: List<String>): Boolean {
         fileUriList.forEach {
             val fileSize = getFileSize(context, Uri.parse(it))
             printlnCK("File size $fileSize")

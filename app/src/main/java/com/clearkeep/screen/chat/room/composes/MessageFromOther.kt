@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.room.composes
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -8,17 +10,22 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.clearkeep.components.*
-import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
+import com.clearkeep.utilities.*
 
 @Composable
 fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
+    val message = messageDisplayInfo.message.message
+    val context = LocalContext.current
     Column {
         Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp ))
         Row(
@@ -79,14 +86,18 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                                 shape = messageDisplayInfo.cornerShape,
                             ) {
                                 Column(horizontalAlignment = Alignment.Start) {
-                                    if (isImageMessage(messageDisplayInfo.message.message)) {
+                                    if (isImageMessage(message)) {
                                         ImageMessageContent(
                                             Modifier.padding(24.dp, 16.dp),
-                                            getImageUriStrings(messageDisplayInfo.message.message)
+                                            getImageUriStrings(message)
                                         )
+                                    } else if (isFileMessage(message)) {
+                                        FileMessageContent(getFileUriStrings(message)) {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                                            ContextCompat.startActivity(context, intent, null)
+                                        }
                                     }
-                                    val messageContent =
-                                        getMessageContent(messageDisplayInfo.message.message)
+                                    val messageContent = getMessageContent(message)
                                     if (messageContent.isNotBlank()) {
                                         Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
                                             ClickableLinkContent(messageContent)
@@ -95,8 +106,8 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
                                 }
                             }
                             Spacer(Modifier.width(18.dp))
-                            if (messageDisplayInfo.message.message.contains(tempImageRegex))
-                            CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
+                            if (isTempMessage(message))
+                                CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
                         }
                     }
                 }
@@ -104,26 +115,3 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo) {
         }
     }
 }
-
-private fun isImageMessage(content: String): Boolean {
-    return content.contains(remoteImageRegex) || content.contains(tempImageRegex)
-}
-
-private fun getImageUriStrings(content: String): List<String> {
-    val temp = remoteImageRegex.findAll(content).map {
-        it.value.split(" ")
-    }.toMutableList()
-    temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    return temp.flatten()
-}
-
-private fun getMessageContent(content: String): String {
-    val temp = remoteImageRegex.replace(content, "")
-    return tempImageRegex.replace(temp, "")
-}
-
-private val remoteImageRegex =
-    "(https://s3.amazonaws.com/storage.clearkeep.io/[dev|prod].+[a-zA-Z0-9\\/\\_\\-\\.]+(\\.png|\\.jpeg|\\.jpg|\\.gif|\\.PNG|\\.JPEG|\\.JPG|\\.GIF))".toRegex()
-
-private val tempImageRegex =
-    "content://media/external/images/media/\\d+".toRegex()
