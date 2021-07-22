@@ -126,7 +126,7 @@ class GroupRepository @Inject constructor(
         return@withContext group
     }
 
-    suspend fun removeMemberInGroup(remoteUsers: User, groupId: Long, owner: Owner): Boolean? =
+    suspend fun removeMemberInGroup(remoteUsers: User, groupId: Long, owner: Owner): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 printlnCK("remoteMemberInGroup: remoteUser ${remoteUsers.toString()}  groupId: $groupId")
@@ -154,10 +154,9 @@ class GroupRepository @Inject constructor(
                 return@withContext true
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
-
                 e.printStackTrace()
             }
-            return@withContext null
+            return@withContext false
         }
 
     private suspend fun inviteToGroupFromAPI(invitedUser: User, groupId: Long,owner: Owner): GroupOuterClass.GroupObjectResponse2? =
