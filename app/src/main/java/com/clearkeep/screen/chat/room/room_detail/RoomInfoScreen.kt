@@ -103,9 +103,11 @@ fun RoomInfoScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(Modifier.fillMaxWidth()) {
                     Column(
-                        modifier = Modifier.weight(1f).clickable {
-                            roomViewModel.requestCall(group.groupId, true)
-                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                roomViewModel.requestCall(group.groupId, true)
+                            },
                         horizontalAlignment = Alignment.CenterHorizontally,
 
                     ) {
@@ -118,9 +120,11 @@ fun RoomInfoScreen(
                         SideBarLabel(text = "Audio", color = primaryDefault)
                     }
                     Column(
-                        modifier = Modifier.weight(1f).clickable {
-                            roomViewModel.requestCall(group.groupId, false)
-                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable {
+                                roomViewModel.requestCall(group.groupId, false)
+                            },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Image(
@@ -188,8 +192,7 @@ fun RoomInfoScreen(
                                 "Leave Group",
                                 R.drawable.ic_logout,
                                 textColor = errorDefault,
-                                onClickAction = {})
-
+                                onClickAction = { roomViewModel.leaveGroup() })
                         }
                     }
                 }

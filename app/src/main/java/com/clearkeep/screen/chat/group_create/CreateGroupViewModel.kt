@@ -26,7 +26,7 @@ class CreateGroupViewModel @Inject constructor(
                 invitedFriends.addAll(friends)
         }
 
-        fun createGroup(groupName: String) {
+        fun createGroup(groupName: String,onError: (()->Unit)?=null) {
                 viewModelScope.launch {
                         _createGroupState.value = CreateGroupProcessing
                         val server = environment.getServer()
@@ -39,6 +39,7 @@ class CreateGroupViewModel @Inject constructor(
                                 groupId = res.groupId
                                 _createGroupState.value = CreateGroupSuccess
                         } else {
+                                onError?.invoke()
                                 _createGroupState.value = CreateGroupError
                         }
                 }
