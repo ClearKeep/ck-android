@@ -5,7 +5,6 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.text.TextUtils
 import androidx.lifecycle.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -60,6 +59,10 @@ class RoomViewModel @Inject constructor(
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
         get() = _imageUriSelected
+
+    private val _fileUriStaged = MutableLiveData<Map<Uri, Boolean>>()
+    val fileUriStaged: LiveData<Map<Uri, Boolean>>
+        get() = _fileUriStaged
 
     val uploadFileResponse = MutableLiveData<Resource<String>>()
 
@@ -427,7 +430,7 @@ class RoomViewModel @Inject constructor(
         return mimeType ?: ""
     }
 
-    private fun getFileName(context: Context, uri: Uri): String {
+    fun getFileName(context: Context, uri: Uri): String {
         val contentResolver = context.contentResolver
         val cursor = contentResolver.query(uri, null, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
@@ -449,6 +452,23 @@ class RoomViewModel @Inject constructor(
         val bigInt = BigInteger(1, byteArray)
         val hashString = bigInt.toString(16)
         return String.format("%32s", hashString).replace(' ', '0')
+    }
+
+    fun addStagedFileUri(uri: Uri) {
+        val stagedList = mutableMapOf<Uri, Boolean>()
+        stagedList.putAll(_fileUriStaged.value ?: emptyMap())
+        stagedList[uri] = true
+        _fileUriStaged.value = stagedList
+    }
+
+    fun toggleSelectedFile(uri: Uri) {
+        val selectedList = mutableMapOf<Uri, Boolean>()
+        selectedList.putAll(_fileUriStaged.value ?: emptyMap())
+        if (selectedList.contains(uri)) {
+            val oldValue = selectedList[uri]
+            selectedList[uri] = !oldValue!!
+        }
+        _fileUriStaged.value = selectedList
     }
 
     companion object {
