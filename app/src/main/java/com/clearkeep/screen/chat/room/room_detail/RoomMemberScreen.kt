@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -15,10 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
 import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.grayscale1
-import com.clearkeep.screen.chat.composes.FriendListItem
+import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
 
@@ -47,7 +44,7 @@ fun GroupMemberScreen(
                         end = 16.dp
                     ),
                 ) {
-                    itemsIndexed(group.clientList) { _, friend ->
+                    itemsIndexed(group.clientList.filter { it.status == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
                         NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }
