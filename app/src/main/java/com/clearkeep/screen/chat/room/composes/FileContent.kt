@@ -19,6 +19,7 @@ import com.clearkeep.components.grayscale4
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
+import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
@@ -33,10 +34,13 @@ fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
 fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
     val fileName = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(fileUrl)
-    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else 0L
+    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
     val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick(fileUrl) } else Modifier
 
-    Column(Modifier.padding(28.dp, 8.dp, 54.dp, 8.dp).then(clickableModifier)) {
+    Column(
+        Modifier
+            .padding(28.dp, 8.dp, 54.dp, 8.dp)
+            .then(clickableModifier)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.dp))
             Spacer(Modifier.width(12.dp))
@@ -50,11 +54,18 @@ private fun isTempFile(uri: String) = uri.startsWith("content://")
 
 private fun getFileNameFromUrl(url: String): String {
     val fileNameRegex = "(?:.(?!\\/))+\$".toRegex()
-    val fileName = fileNameRegex.find(url)?.value
+    val fileName = fileNameRegex.find(url)?.value?.replace(fileSizeRegex, "")
     return fileName?.substring(1 until fileName.length) ?: ""
+}
+
+private fun getFileSizeInBytesFromUrl(url: String): Long {
+    val fileSizeString = fileSizeRegex.find(url)?.value
+    return fileSizeString?.substring(1 until fileSizeString.length)?.toLongOrNull() ?: 0L
 }
 
 private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
     val fileSizeInMegabytes = fileSizeInBytes.toDouble() / 1_000_000
     return "%.2f MB".format(fileSizeInMegabytes)
 }
+
+private val fileSizeRegex = "\\|.+".toRegex()
