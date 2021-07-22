@@ -151,7 +151,7 @@ fun RoomScreen(
                             navHostController,
                             onSendMessage = { message ->
                                 val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                                if (validMessage .isEmpty()) {
+                                if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                     return@SendBottomCompose
                                 }
                                 val groupResult = group
@@ -253,7 +253,6 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         if (isGranted) {
             uri = generatePhotoUri(context)
             takePhotoLauncher.launch(uri)
-            onDismiss()
         } else {
             onDismiss()
         }
