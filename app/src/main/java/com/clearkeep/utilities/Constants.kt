@@ -38,6 +38,8 @@ const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
 const val EXTRA_CALL_CANCEL_GROUP_TYPE = "call_cancel_group_type"
 
 const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
+const val ACTION_REMOVE_MEMBER = "ck.action.remove.member"
+const val ACTION_ADD_REMOVE_MEMBER = "ck.action.add.member"
 const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
 
 const val INCOMING_NOTIFICATION_ID = 123456

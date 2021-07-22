@@ -113,7 +113,7 @@ class MessageRepository @Inject constructor(
             // update
             lastMessageSyncTimestamp = lastMessage.createdTime
         )
-        groupDAO.update(updateGroup)
+        groupDAO.updateGroup(updateGroup)
     }
 
     private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner,): Message {
@@ -216,7 +216,7 @@ class MessageRepository @Inject constructor(
                 lastMessageAt = message.createdTime,
                 lastMessageSyncTimestamp = room.lastMessageSyncTimestamp
             )
-            groupDAO.update(updateRoom)
+            groupDAO.updateGroup(updateRoom)
         } else {
             printlnCK("can not find owner group ${message.groupId} for this message")
         }
