@@ -2,7 +2,7 @@ package com.clearkeep.utilities
 
 
 fun isImageMessage(content: String): Boolean {
-    return content.contains(remoteImageRegex) || content.contains(tempImageRegex)
+    return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains(tempImageRegex2)
 }
 
 fun isFileMessage(content: String): Boolean {
@@ -10,7 +10,7 @@ fun isFileMessage(content: String): Boolean {
 }
 
 fun isTempMessage(content: String): Boolean {
-    return content.contains(tempFileRegex) || content.contains(tempImageRegex)
+    return content.contains(tempFileRegex) || content.contains(tempImageRegex) || content.contains(tempImageRegex2)
 }
 
 fun getImageUriStrings(content: String): List<String> {
@@ -18,6 +18,7 @@ fun getImageUriStrings(content: String): List<String> {
         it.value.split(" ")
     }.toMutableList()
     temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
+    temp.add(tempImageRegex2.findAll(content).map { it.value.split(" ") }.toList().flatten())
     return temp.flatten()
 }
 
@@ -47,3 +48,6 @@ val tempImageRegex =
 
 val tempFileRegex =
     "content://.+".toRegex()
+
+val tempImageRegex2 =
+    "content://.+/external_files/Pictures/.+".toRegex()
