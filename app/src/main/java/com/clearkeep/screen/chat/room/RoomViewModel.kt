@@ -62,6 +62,14 @@ class RoomViewModel @Inject constructor(
 
     val uploadFileResponse = MutableLiveData<Resource<String>>()
 
+    private val _message = MutableLiveData<String>()
+    val message : LiveData<String>
+        get() = _message
+
+    fun setMessage(message: String) {
+        _message.value = message
+    }
+
     fun joinRoom(
         ownerDomain: String,
         ownerClientId: String,
