@@ -2,7 +2,7 @@ package com.clearkeep.utilities
 
 
 fun isImageMessage(content: String): Boolean {
-    return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains(tempImageRegex2)
+    return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains("content://.+/external_files/Pictures/.+".toRegex())
 }
 
 fun isFileMessage(content: String): Boolean {

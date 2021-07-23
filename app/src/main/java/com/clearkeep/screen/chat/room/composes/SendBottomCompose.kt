@@ -56,8 +56,7 @@ fun SendBottomCompose(
     onClickUploadPhoto: () -> Unit,
     onClickUploadFile: () -> Unit
 ) {
-    val msgState = remember { mutableStateOf("") }
-    val isKeyboardShow = remember { mutableStateOf(false) }
+    val msgState = roomViewModel.message.observeAsState()
     val selectedImagesList = roomViewModel.imageUriSelected.observeAsState()
     val context = LocalContext.current
 
@@ -137,15 +136,18 @@ fun SendBottomCompose(
                             )
                         }
                     },
+                    onChangeMessage = {
+                        roomViewModel.setMessage(it)
+                    }
                 )
             }
             IconButton(
                 onClick = {
                     if (!TextUtils.isEmpty(msgState.value) || !selectedImagesList.value.isNullOrEmpty()) {
                         val message = msgState.value
-                        onSendMessage(message)
+                        onSendMessage(message ?: "")
                         // clear text
-                        msgState.value = ""
+                        roomViewModel.setMessage("")
                     }
                 },
                 modifier = Modifier
