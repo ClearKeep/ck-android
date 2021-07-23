@@ -1,6 +1,5 @@
 package com.clearkeep.utilities
 
-
 fun isImageMessage(content: String): Boolean {
     return content.contains(remoteImageRegex) || content.contains(tempImageRegex)
 }
@@ -29,6 +28,12 @@ fun getFileUriStrings(content: String): List<String> {
     return temp.flatten()
 }
 
+fun getFileNameFromUrl(url: String): String {
+    val fileNameRegex = "(?:.(?!\\/))+\$".toRegex()
+    val fileName = fileNameRegex.find(url)?.value?.replace(fileSizeRegex, "")
+    return fileName?.substring(1 until fileName.length) ?: ""
+}
+
 fun getMessageContent(content: String): String {
     val temp = remoteImageRegex.replace(content, "")
     val temp2 = remoteFileRegex.replace(temp, "")
@@ -47,3 +52,5 @@ val tempImageRegex =
 
 val tempFileRegex =
     "content://.+".toRegex()
+
+val fileSizeRegex = "\\|.+".toRegex()
