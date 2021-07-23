@@ -243,7 +243,7 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
         }
     }
 
-    var uri : Uri? = null
+    val uri = generatePhotoUri(context)
     val takePhotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful : Boolean ->
         if (isSuccessful) {
             onTakePhoto(uri.toString())
@@ -253,7 +253,6 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
 
     val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
         if (isGranted) {
-            uri = generatePhotoUri(context)
             takePhotoLauncher.launch(uri)
         } else {
             onDismiss()
@@ -285,7 +284,6 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                             .padding(16.dp)
                             .clickable {
                                 if (isCameraPermissionGranted(context)) {
-                                    uri = generatePhotoUri(context)
                                     takePhotoLauncher.launch(uri)
                                 } else {
                                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
