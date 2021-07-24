@@ -105,8 +105,8 @@ fun RoomScreen(
                     }
                 })
             },
-            sheetBackgroundColor = Color(0xF3FFFFFF),
-            scrimColor = Color(0x66000000)
+            sheetBackgroundColor = bottomSheetColor,
+            scrimColor = colorDialogScrim
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -297,7 +297,7 @@ fun UploadPhotoDialog(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .background(Color(0x66000000))
+                    .background(colorDialogScrim)
                     .clickable {
                         onDismiss()
                     })
