@@ -37,4 +37,7 @@ interface GroupDAO {
     suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
 /*    @Query("SELECT chatgroup.*, message.* FROM chatgroup LEFT JOIN message ON chatgroup.last_message_id = message.id")
     fun getRoomWithLastMessageAsState(): LiveData<List<GroupAndLastMessage>>*/
+
+    @Query("DELETE  FROM chatgroup WHERE  owner_domain = :domain AND owner_client_id = :ownerId")
+    suspend fun deleteGroupByOwnerDomain( domain: String, ownerId: String): Int
 }

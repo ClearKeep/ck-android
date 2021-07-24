@@ -12,6 +12,7 @@ import signal.SignalKeyDistributionGrpc
 import upload_file.UploadFileGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
+import workspace.WorkspaceGrpc
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 /*
@@ -154,5 +155,19 @@ class DynamicAPIProviderImpl @Inject constructor(
                 server!!.accessKey,
                 server!!.hashKey
             ))
+    }
+
+    override fun provideWorkSpaceBlockingStub(): WorkspaceGrpc.WorkspaceBlockingStub {
+        if (server == null) {
+            throw IllegalArgumentException("server must be not null")
+        }
+        printlnCK("server!!.serverDomain : ${server!!.serverDomain } server!!.accessKey: ${server!!.accessKey}  server!!.hashKey ${server!!.hashKey}")
+        val managedChannel = channelSelector.getChannel(server!!.serverDomain)
+        return WorkspaceGrpc.newBlockingStub(managedChannel).withCallCredentials(
+            CallCredentials(
+                server!!.accessKey,
+                server!!.hashKey
+            )
+        )
     }
 }

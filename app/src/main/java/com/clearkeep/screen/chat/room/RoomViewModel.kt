@@ -523,6 +523,8 @@ class RoomViewModel @Inject constructor(
         _fileUriStaged.value = selectedList
     }
 
+
+
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10
