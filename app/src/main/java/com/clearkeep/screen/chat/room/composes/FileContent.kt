@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.grayscale4
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.fileSizeRegex
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
+import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.printlnCK
 
 @Composable
@@ -52,12 +54,6 @@ fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
 
 private fun isTempFile(uri: String) = uri.startsWith("content://")
 
-private fun getFileNameFromUrl(url: String): String {
-    val fileNameRegex = "(?:.(?!\\/))+\$".toRegex()
-    val fileName = fileNameRegex.find(url)?.value?.replace(fileSizeRegex, "")
-    return fileName?.substring(1 until fileName.length) ?: ""
-}
-
 private fun getFileSizeInBytesFromUrl(url: String): Long {
     val fileSizeString = fileSizeRegex.find(url)?.value
     return fileSizeString?.substring(1 until fileSizeString.length)?.toLongOrNull() ?: 0L
@@ -67,5 +63,3 @@ private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
     val fileSizeInMegabytes = fileSizeInBytes.toDouble() / 1_000_000
     return "%.2f MB".format(fileSizeInMegabytes)
 }
-
-private val fileSizeRegex = "\\|.+".toRegex()

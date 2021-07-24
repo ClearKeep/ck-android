@@ -145,7 +145,9 @@ fun RoomScreen(
                                     clients = group.clientList,
                                     myClientId = roomViewModel.clientId,
                                     group.isGroup(),
-                                )
+                                ) {
+                                    roomViewModel.downloadFile(context, it)
+                                }
                             }
                         }
                         SendBottomCompose(

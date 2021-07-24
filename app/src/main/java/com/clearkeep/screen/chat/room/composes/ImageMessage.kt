@@ -26,17 +26,15 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
-const val MAX_IMAGE_COUNT = 4
-
 @Composable
-fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
+fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem: (uri: String) -> Unit) {
     println("ImageMessageContent $imageUris")
     if (imageUris.size == 1) {
         ImageMessageItem(
             Modifier
                 .then(modifier)
-                .size(130.dp), imageUris[0]
-        ) { }
+                .size(130.dp), imageUris[0], onClickItem
+        )
     } else {
         Column(Modifier.wrapContentSize().padding(12.dp)) {
             println("multi item grid")
@@ -45,16 +43,13 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
                     ImageMessageItem(
                         Modifier
                             .size(110.dp)
-                            .padding(4.dp), imageUris[i]) {
-                    }
+                            .padding(4.dp), imageUris[i], onClickItem)
                 }
             }
             Row(Modifier.wrapContentSize()) {
                 for (i in 2 until imageUris.size) {
                     if (i == 2 || (i == 3 && imageUris.size <= 4)) {
-                            ImageMessageItem(Modifier.size(110.dp).padding(4.dp), imageUris[i]) {
-
-                            }
+                            ImageMessageItem(Modifier.size(110.dp).padding(4.dp), imageUris[i], onClickItem)
                     } else {
                         Box(
                             Modifier
@@ -64,9 +59,7 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>) {
                                 .padding(4.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[i]) {
-
-                            }
+                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[i], onClickItem)
                             Box(
                                 Modifier
                                     .background(Color(0x4D000000), RoundedCornerShape(16.dp))
