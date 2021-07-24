@@ -141,7 +141,7 @@ fun SiteMenuScreen(
                             tint = errorDefault
                         )
                         Text(
-                            text = "Logout", modifier = Modifier
+                            text = "Leave Server", modifier = Modifier
                                 .padding(start = 16.dp), style = TextStyle(
                                 color = errorDefault ?: MaterialTheme.colors.onBackground,
                                 fontSize = 14.sp,

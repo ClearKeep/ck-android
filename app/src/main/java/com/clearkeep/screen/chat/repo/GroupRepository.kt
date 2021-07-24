@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.repo
 
-import android.content.Intent
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.DynamicAPIProvider
@@ -9,8 +8,6 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.utils.*
-import com.clearkeep.utilities.ACTION_CALL_SWITCH_VIDEO
-import com.clearkeep.utilities.EXTRA_CALL_SWITCH_VIDEO
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
@@ -48,6 +45,10 @@ class GroupRepository @Inject constructor(
             try {
                 val groups = getGroupListFromAPI(groupGrpc, server.profile.userId)
                 for (group in groups) {
+                    printlnCK("fetchGroups ${group.groupName} ${group.lstClientList}")
+                    group.lstClientList.forEach {
+                        printlnCK("item member: ${it.displayName} ${it.status}")
+                    }
                     val decryptedGroup =
                         convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
@@ -209,7 +210,7 @@ class GroupRepository @Inject constructor(
 
             val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
             if (response.groupId > 0) {
-                //removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
+                removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
                 printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.groupName}")
                 return@withContext true
             }
@@ -330,13 +331,18 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun removeGroupOnWorkSpace(groupId: Long, domain: String, ownerClientId: String){
-        var resulft= groupDAO.deleteGroupById(groupId, domain, ownerClientId)
-        if (resulft>0){
+        val result= groupDAO.deleteGroupById(groupId, domain, ownerClientId)
+        if (result>0){
             printlnCK("removeGroupOnWorkSpace: groupId: ${groupId}")
         }else {
             printlnCK("removeGroupOnWorkSpace: groupId: fail")
 
         }
+    }
+
+    suspend fun removeGroupByDomain(domain: String, ownerClientId: String){
+        val result= groupDAO.deleteGroupByOwnerDomain(domain, ownerClientId)
+        printlnCK("removeGroupOnWorkSpace: groupId: $domain $result  $ownerClientId")
     }
 
     suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup? {

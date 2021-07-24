@@ -10,6 +10,7 @@ import signal.SignalKeyDistributionGrpc
 import upload_file.UploadFileGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
+import workspace.WorkspaceGrpc
 
 interface DynamicAPIProvider {
     fun setUpDomain(server: Server)
@@ -39,4 +40,6 @@ interface DynamicAPIProvider {
     fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub
 
     fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub
+    
+    fun provideWorkSpaceBlockingStub():WorkspaceGrpc.WorkspaceBlockingStub
 }
