@@ -78,20 +78,37 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                     }
                     Divider(Modifier.height(1.dp), separatorDarkNonOpaque)
                 }
+                item {
+                    Spacer(Modifier.height(18.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        Button(
+                            onClick = { onClickNext() },
+                            Modifier
+                                .height(52.dp)
+                                .width(210.dp)
+                                .clip(RoundedCornerShape(26.dp)),
+                            shape = RoundedCornerShape(26.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0x80000000))
+                        ) {
+                            Text("Next", color = Color.White)
+                        }
+                    }
+                }
             }
-        }
-        Spacer(Modifier.height(18.dp))
-        Button(
-            onClick = { onClickNext() },
-            Modifier
-                .align(Alignment.CenterHorizontally)
-                .height(52.dp)
-                .width(210.dp)
-                .clip(RoundedCornerShape(26.dp)),
-            shape = RoundedCornerShape(26.dp),
-            colors = ButtonDefaults.buttonColors(Color(0x80000000))
-        ) {
-            Text("Next", color = Color.White)
+        } else {
+            Spacer(Modifier.height(18.dp))
+            Button(
+                onClick = { onClickNext() },
+                Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .height(52.dp)
+                    .width(210.dp)
+                    .clip(RoundedCornerShape(26.dp)),
+                shape = RoundedCornerShape(26.dp),
+                colors = ButtonDefaults.buttonColors(Color(0x80000000))
+            ) {
+                Text("Next", color = Color.White)
+            }
         }
         Spacer(Modifier.height(41.dp))
     }
