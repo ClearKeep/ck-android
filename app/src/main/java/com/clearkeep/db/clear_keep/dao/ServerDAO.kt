@@ -11,7 +11,7 @@ interface ServerDAO {
     suspend fun insert(server: Server)
 
     @Query("DELETE FROM server WHERE id =:serverId")
-    suspend fun deleteServer(serverId: Long)
+    suspend fun deleteServer(serverId: Int) : Int
 
     @Query("SELECT * FROM server WHERE server_domain = :domain AND owner_client_id = :clientId")
     suspend fun getServer(domain: String, clientId: String): Server?

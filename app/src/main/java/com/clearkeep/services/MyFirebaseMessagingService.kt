@@ -63,6 +63,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "new_message" -> {
                         handleNewMessage(remoteMessage)
                     }
+                    "old_member" -> {
+                        handlerRequestAddRemoteMember(remoteMessage)
+                    }
                 }
             }
         }
@@ -136,6 +139,24 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             }
         } catch (e: Exception) {
             printlnCK("onMessageReceived: error -> $e")
+        }
+    }
+
+    private suspend fun handlerRequestAddRemoteMember(remoteMessage: RemoteMessage) {
+        val data: Map<String, String> = Gson().fromJson(
+            remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
+        )
+        try {
+            val clientId = data["nclient_id"] ?: ""
+            val clientDomain = data["nclient_workspace_domain"] ?: ""
+            val groupId = data["group_id"]?.toLong() ?: 0
+            val removedMember = data["removed_member_id"] ?: ""
+            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain")
+            groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
+            groupRepository.removeGroupOnWorkSpace(groupId,clientDomain,removedMember)
+
+        }catch (e:Exception){
+
         }
     }
 
