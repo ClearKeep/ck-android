@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.home
 
+import android.widget.Toast
 import androidx.lifecycle.*
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
@@ -12,6 +13,7 @@ import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
+import com.clearkeep.screen.chat.repo.WorkSpaceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
@@ -35,6 +37,7 @@ class HomeViewModel @Inject constructor(
     private val storage: UserPreferencesStorage,
     private val clearKeepDatabase: ClearKeepDatabase,
     private val signalKeyDatabase: SignalKeyDatabase,
+    private val workSpaceRepository: WorkSpaceRepository
     ): ViewModel() {
 
     var profile = serverRepository.profile
@@ -155,7 +158,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun logOut() {
-        viewModelScope.launch {
+        /*viewModelScope.launch {
             _isLogOutProcessing.value = true
             val servers = serverRepository.getServers()
             servers.forEach { server ->
@@ -163,6 +166,53 @@ class HomeViewModel @Inject constructor(
             }
             clearDatabase()
             _isLogOutCompleted.value = true
+        }*/
+        leaveServer()
+    }
+
+    private fun leaveServer() {
+
+        viewModelScope.launch {
+
+            /*workSpaceRepository.leaveServer()
+            *//*currentServer.value?.id?.let { serverRepository.deleteServer(it) }
+            currentServer.value?.id?.let {
+              var resutf=  serverRepository.deleteServer(it)
+            }
+            printlnCK("leaveServer: ${servers.value?.size} ")
+            if (servers.value?.size!! > 0) {
+                printlnCK("leaveServer: ${servers.value?.size} ")
+                selectChannel(servers.value!![0])
+            }else {
+                logOut()
+            }*/
+            val result = workSpaceRepository.leaveServer()
+            if (result?.success == true){
+                currentServer.value?.id?.let {
+                    val removeResult = serverRepository.deleteServer(it)
+                    roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
+                    if (removeResult > 0) {
+                        if (serverRepository.getServers().isNotEmpty()) {
+                            selectChannel(servers.value!![0])
+                        }else {
+                            _isLogOutCompleted.value = true
+                        }
+                    }
+                }
+            }else {
+                printlnCK("Leave Server error")
+            }
+
+            /*if (result?.success == true) {
+                currentServer.value?.id?.let { serverRepository.deleteServer(it) }
+                if (servers.value?.size!! > 0) {
+                    selectChannel(servers.value!![0])
+                }else {
+                    logOut()
+                }
+            } else {
+                printlnCK("leaveServer error")
+            }*/
         }
     }
 

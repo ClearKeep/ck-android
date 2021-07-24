@@ -188,6 +188,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 restartToRoot(this)
             }
         })
+
+        homeViewModel.servers.observe(this, Observer {
+            printlnCK("homeViewModel servers: ${it.size}")
+        })
+
+
     }
 
     @Composable
@@ -205,7 +211,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         CircularProgressIndicator(color = Color.Blue)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "Log out...",
+                            text = "Leave server...",
                             style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
                         )
                     }

@@ -1,5 +1,9 @@
 package com.clearkeep.screen.chat.repo
 
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
@@ -183,5 +187,16 @@ class ChatRepository @Inject constructor(
                 return@withContext ""
             }
         }
+    }
+
+    fun downloadFile(context: Context, fileName: String, url: String) {
+        val dmRequest = DownloadManager.Request(Uri.parse(url))
+        dmRequest.setDescription("Downloading file")
+        dmRequest.setTitle(fileName)
+        dmRequest.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        dmRequest.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
+
+        val manager = (context.getSystemService(Context.DOWNLOAD_SERVICE)) as DownloadManager
+        val ref = manager.enqueue(dmRequest)
     }
 }
