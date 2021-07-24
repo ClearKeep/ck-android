@@ -232,7 +232,8 @@ fun RoomScreen(
                 }
             }
         }
-        UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
+        val photoUri = generatePhotoUri(context)
+        UploadPhotoDialog(photoUri, isUploadPhotoDialogVisible.value, onDismiss = {
             isUploadPhotoDialogVisible.value = false
         }, onNavigateToAlbums = {
             isUploadPhotoDialogVisible.value = false
@@ -255,6 +256,7 @@ fun RoomScreen(
 @ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(
+    photoUri: Uri,
     isOpen: Boolean,
     onDismiss: () -> Unit,
     onNavigateToAlbums: () -> Unit,
@@ -276,7 +278,7 @@ fun UploadPhotoDialog(
     val takePhotoLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful: Boolean ->
             if (isSuccessful) {
-                onTakePhoto(uri.toString())
+                onTakePhoto(photoUri.toString())
                 onDismiss()
             }
         }
@@ -284,7 +286,7 @@ fun UploadPhotoDialog(
     val requestCameraPermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                takePhotoLauncher.launch(uri)
+                takePhotoLauncher.launch(photoUri)
             } else {
                 onDismiss()
             }
@@ -316,7 +318,7 @@ fun UploadPhotoDialog(
                             .padding(16.dp)
                             .clickable {
                                 if (isCameraPermissionGranted(context)) {
-                                    takePhotoLauncher.launch(uri)
+                                    takePhotoLauncher.launch(photoUri)
                                 } else {
                                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                                 }
