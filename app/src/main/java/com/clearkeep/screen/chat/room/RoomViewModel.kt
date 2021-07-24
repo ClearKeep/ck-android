@@ -439,7 +439,7 @@ class RoomViewModel @Inject constructor(
                     val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                     val url = chatRepository.uploadFile(
                         mimeType,
-                        fileName,
+                        fileName.replace(" ", "_"),
                         byteStrings,
                         blockDigestStrings,
                         fileHashString
