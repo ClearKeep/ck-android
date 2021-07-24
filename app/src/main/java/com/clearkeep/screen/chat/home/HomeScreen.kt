@@ -35,10 +35,7 @@ import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
 import com.clearkeep.utilities.printlnCK
-import com.google.accompanist.insets.statusBarsHeight
-import com.google.accompanist.insets.statusBarsPadding
-import com.google.accompanist.insets.systemBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -121,7 +118,10 @@ fun HomeScreen(
                     closeSiteMenu = {
                         rememberStateSiteMenu.value = false
                     },
-                    onLogout = onlogOut,
+                    onLogout = {
+                        rememberStateSiteMenu.value = false
+                        onlogOut.invoke()
+                    } ,
                     onNavigateServerSetting = onNavigateServerSetting,
                     onNavigateAccountSetting = onNavigateAccountSetting,
                     onNavigateNotificationSetting = onNavigateNotificationSetting,
