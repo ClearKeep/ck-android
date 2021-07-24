@@ -30,7 +30,7 @@ import com.clearkeep.components.*
 @Composable
 fun CKTextInputFieldChat(
     placeholder: String,
-    textValue: MutableState<String>,
+    textValue: State<String?>,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
     error: String? = null,
@@ -39,6 +39,7 @@ fun CKTextInputFieldChat(
     imeAction: ImeAction = ImeAction.Done,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    onChangeMessage: (String) -> Unit
 ) {
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
@@ -63,8 +64,8 @@ fun CKTextInputFieldChat(
             elevation = 0.dp
         ) {
             TextField(
-                value = textValue.value,
-                onValueChange = { textValue.value = it },
+                value = textValue.value ?: "",
+                onValueChange = { onChangeMessage.invoke(it) },
                 /*label = {
                     if (label.isNotBlank()) {
                         Text(
