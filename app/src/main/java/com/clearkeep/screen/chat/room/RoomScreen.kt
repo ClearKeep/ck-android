@@ -49,9 +49,6 @@ import androidx.core.os.postDelayed
 import com.clearkeep.BuildConfig
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import kotlinx.coroutines.launch
-import com.google.accompanist.insets.navigationBarsWithImePadding
-import com.google.accompanist.insets.systemBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
 import java.io.File
 import java.text.SimpleDateFormat
@@ -71,9 +68,7 @@ fun RoomScreen(
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
     val context = LocalContext.current
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = BottomSheetState(BottomSheetValue.Collapsed)
-    )
+    val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
@@ -82,114 +77,140 @@ fun RoomScreen(
         if (group.groupId != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.groupId)
         }
-        val messageList = roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId).observeAsState()
+        val messageList =
+            roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
+                .observeAsState()
         printlnCK("test: ${group.clientList}")
         val groupName = group.groupName
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
-        Box(
-                modifier = Modifier.fillMaxSize(),
+        ModalBottomSheetLayout(
+            sheetState = bottomSheetState,
+            sheetContent = {
+                FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                        val isGroup = group.isGroup()
+                        if (isGroup) {
+                            roomViewModel.uploadFile(context, group.groupId, group.isJoined)
+                        } else {
+                            val friend = group.clientList.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
+                            }
+                            if (friend != null) {
+                                roomViewModel.uploadFile(context, group.groupId, null, friend)
+                            } else {
+                                printlnCK("can not found friend")
+                            }
+                        }
+                    }
+                })
+            },
+            sheetBackgroundColor = Color(0xF3FFFFFF),
+            scrimColor = Color(0x66000000)
         ) {
-            Column(
+            Box(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     val remember = AppCall.listenerCallingState.observeAsState()
                     remember.value?.let {
                         if (it.isCalling)
-                            TopBoxCallingStatus(callingStateData = it, onClick = { isCallPeer -> onCallingClick(isCallPeer)})
+                            TopBoxCallingStatus(
+                                callingStateData = it,
+                                onClick = { isCallPeer -> onCallingClick(isCallPeer) })
                     }
-                    ToolbarMessage(modifier = Modifier, groupName, isGroup = group.isGroup(), onBackClick = {
-                        onFinishActivity()
-                    }, onUserClick = {
-                        if (group.isGroup()) {
-                            navHostController.navigate("room_info_screen")
-                        }
-                    }, onAudioClick = {
-                        roomViewModel.requestCall(group.groupId, true)
-
-                    },onVideoClick = {
-                        roomViewModel.requestCall(group.groupId, false)
-
-                    })
-                    BottomSheetScaffold(
-                        scaffoldState = bottomSheetScaffoldState,
-                        sheetContent = {
-                            FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    val isGroup = group.isGroup()
-                                    if (isGroup) {
-                                        roomViewModel.uploadFile(context, group.groupId, group.isJoined)
-                                    } else {
-                                        val friend = group.clientList.firstOrNull { client ->
-                                            client.userId != roomViewModel.clientId
-                                        }
-                                        if (friend != null) {
-                                            roomViewModel.uploadFile(context, group.groupId, null, friend)
-                                        } else {
-                                            printlnCK("can not found friend")
-                                        }
-                                    }
-                                }
-                            })
+                    ToolbarMessage(
+                        modifier = Modifier,
+                        groupName,
+                        isGroup = group.isGroup(),
+                        onBackClick = {
+                            onFinishActivity()
                         },
-                        sheetPeekHeight = 0.dp,
-                        sheetBackgroundColor = Color(0xF3FFFFFF)
-                    ) {
-                        Column(modifier = Modifier
+                        onUserClick = {
+                            if (group.isGroup()) {
+                                navHostController.navigate("room_info_screen")
+                            }
+                        },
+                        onAudioClick = {
+                            roomViewModel.requestCall(group.groupId, true)
+
+                        },
+                        onVideoClick = {
+                            roomViewModel.requestCall(group.groupId, false)
+                        })
+                    Column(
+                        modifier = Modifier
                             .weight(
                                 0.66f
-                            )) {
-                            messageList?.value?.let { messages ->
-                                MessageListView(
-                                    messageList = messages,
-                                    clients = group.clientList,
-                                    myClientId = roomViewModel.clientId,
-                                    group.isGroup(),
-                                ) {
-                                    roomViewModel.downloadFile(context, it)
-                                }
+                            )
+                    ) {
+                        messageList?.value?.let { messages ->
+                            MessageListView(
+                                messageList = messages,
+                                clients = group.clientList,
+                                myClientId = roomViewModel.clientId,
+                                group.isGroup(),
+                            ) {
+                                roomViewModel.downloadFile(context, it)
                             }
                         }
-                        SendBottomCompose(
-                            roomViewModel,
-                            navHostController,
-                            onSendMessage = { message ->
-                                val validMessage = message.trim().dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                                if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
-                                    return@SendBottomCompose
+                    }
+                    SendBottomCompose(
+                        roomViewModel,
+                        navHostController,
+                        onSendMessage = { message ->
+                            val validMessage =
+                                message.trim()
+                                    .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
+                                return@SendBottomCompose
+                            }
+                            val groupResult = group
+                            val isGroup = groupResult.isGroup()
+                            if (isGroup) {
+                                roomViewModel.sendMessageToGroup(
+                                    context,
+                                    groupResult.groupId,
+                                    validMessage,
+                                    groupResult.isJoined
+                                )
+                            } else {
+                                val friend = groupResult.clientList.firstOrNull { client ->
+                                    client.userId != roomViewModel.clientId
                                 }
-                                val groupResult = group
-                                val isGroup = groupResult.isGroup()
-                                if (isGroup) {
-                                    roomViewModel.sendMessageToGroup(context, groupResult.groupId, validMessage, groupResult.isJoined)
+                                if (friend != null) {
+                                    roomViewModel.sendMessageToUser(
+                                        context,
+                                        friend,
+                                        groupResult.groupId,
+                                        validMessage
+                                    )
                                 } else {
-                                    val friend = groupResult.clientList.firstOrNull { client ->
-                                        client.userId != roomViewModel.clientId
-                                    }
-                                    if (friend != null) {
-                                        roomViewModel.sendMessageToUser(context, friend, groupResult.groupId, validMessage)
-                                    } else {
-                                        printlnCK("can not found friend")
-                                    }
-                                }
-                            },
-                            onClickUploadPhoto = {
-                                focusManager.clearFocus()
-                                Handler(Looper.getMainLooper()).postDelayed(
-                                    KEYBOARD_HIDE_DELAY_MILLIS) {
-                                    isUploadPhotoDialogVisible.value = true
-                                }
-                            },
-                            onClickUploadFile = {
-                                keyboardController?.hide()
-                                coroutineScope.launch {
-                                    delay(KEYBOARD_HIDE_DELAY_MILLIS)
-                                    bottomSheetScaffoldState.bottomSheetState.expand()
+                                    printlnCK("can not found friend")
                                 }
                             }
-                        )
-                    }
+                        },
+                        onClickUploadPhoto = {
+                            focusManager.clearFocus()
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                KEYBOARD_HIDE_DELAY_MILLIS
+                            ) {
+                                isUploadPhotoDialogVisible.value = true
+                            }
+                        },
+                        onClickUploadFile = {
+                            keyboardController?.hide()
+                            coroutineScope.launch {
+                                delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                                bottomSheetState.show()
+                            }
+                        }
+                    )
                 }
+            }
+        }
                 requestCallViewState?.value?.let {
                     printlnCK("status = ${it.status}")
                     if (Status.LOADING == it.status) {
@@ -228,7 +249,6 @@ fun RoomScreen(
             }
         }
     }
-}
 
 @ExperimentalComposeUiApi
 @Composable
