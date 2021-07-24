@@ -211,48 +211,55 @@ fun RoomScreen(
                 }
             }
         }
-                requestCallViewState?.value?.let {
-                    printlnCK("status = ${it.status}")
-                    if (Status.LOADING == it.status) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
+        requestCallViewState?.value?.let {
+            printlnCK("status = ${it.status}")
+            if (Status.LOADING == it.status) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            CircularProgressIndicator(color = Color.Blue)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "creating group...",
-                                style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
-                            )
-                        }
+                        CircularProgressIndicator(color = Color.Blue)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "creating group...",
+                            style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
-            UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
-                isUploadPhotoDialogVisible.value = false
-            }, onNavigateToAlbums = {
-                isUploadPhotoDialogVisible.value = false
-                navHostController.navigate("image_picker")
-            }, onTakePhoto = {
-                roomViewModel.addImage(it)
-            })
-            val response = uploadFileResponse.value
-            if (response?.status == Status.ERROR) {
-                CKAlertDialog(onDismissButtonClick = {
+        }
+        UploadPhotoDialog(isUploadPhotoDialogVisible.value, onDismiss = {
+            isUploadPhotoDialogVisible.value = false
+        }, onNavigateToAlbums = {
+            isUploadPhotoDialogVisible.value = false
+            navHostController.navigate("image_picker")
+        }, onTakePhoto = {
+            roomViewModel.addImage(it)
+        })
+        val response = uploadFileResponse.value
+        if (response?.status == Status.ERROR) {
+            CKAlertDialog(
+                onDismissButtonClick = {
                     roomViewModel.uploadFileResponse.value = null
-                }, title =response.message ?: "",
-                )
-            }
+                },
+                title = response.message ?: "",
+            )
         }
     }
+}
 
 @ExperimentalComposeUiApi
 @Composable
-fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums: () -> Unit, onTakePhoto: (String) -> Unit) {
+fun UploadPhotoDialog(
+    isOpen: Boolean,
+    onDismiss: () -> Unit,
+    onNavigateToAlbums: () -> Unit,
+    onTakePhoto: (String) -> Unit
+) {
     val context = LocalContext.current
 
     val requestStoragePermissionLauncher = rememberLauncherForActivityResult(
@@ -266,20 +273,22 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
     }
 
     val uri = generatePhotoUri(context)
-    val takePhotoLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful : Boolean ->
-        if (isSuccessful) {
-            onTakePhoto(uri.toString())
-            onDismiss()
+    val takePhotoLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful: Boolean ->
+            if (isSuccessful) {
+                onTakePhoto(uri.toString())
+                onDismiss()
+            }
         }
-    }
 
-    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) {
-            takePhotoLauncher.launch(uri)
-        } else {
-            onDismiss()
+    val requestCameraPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                takePhotoLauncher.launch(uri)
+            } else {
+                onDismiss()
+            }
         }
-    }
 
     if (isOpen) {
         Box {
@@ -300,7 +309,8 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                         .clip(RoundedCornerShape(14.dp))
                         .background(Color.White)
                 ) {
-                    Text("Take a photo",
+                    Text(
+                        "Take a photo",
                         Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -313,7 +323,8 @@ fun UploadPhotoDialog(isOpen: Boolean, onDismiss: () -> Unit, onNavigateToAlbums
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                     Divider(color = separatorDarkNonOpaque)
-                    Text("Albums",
+                    Text(
+                        "Albums",
                         Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -354,7 +365,7 @@ private fun isCameraPermissionGranted(context: Context): Boolean {
     return isPermissionGranted(context, Manifest.permission.CAMERA)
 }
 
-private fun isPermissionGranted(context: Context, permission: String): Boolean  {
+private fun isPermissionGranted(context: Context, permission: String): Boolean {
     return when (PackageManager.PERMISSION_GRANTED) {
         ContextCompat.checkSelfPermission(context, permission) -> {
             true
@@ -365,7 +376,7 @@ private fun isPermissionGranted(context: Context, permission: String): Boolean  
     }
 }
 
-private fun generatePhotoUri(context: Context) : Uri {
+private fun generatePhotoUri(context: Context): Uri {
     val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
