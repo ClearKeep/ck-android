@@ -19,12 +19,13 @@ import androidx.core.content.ContextCompat
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
+import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable
-fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
+fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
@@ -58,11 +59,12 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo) {
                         ImageMessageContent(
                             Modifier.padding(24.dp, 16.dp),
                             getImageUriStrings(message)
-                        )
+                        ) {
+                            onClickFile.invoke(it)
+                        }
                     } else if (isFileMessage(message)) {
                         FileMessageContent(getFileUriStrings(message)) {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
-                            ContextCompat.startActivity(context, intent, null)
+                            onClickFile.invoke(it)
                         }
                     }
                     val messageContent = getMessageContent(message)
