@@ -9,6 +9,7 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
@@ -523,7 +524,9 @@ class RoomViewModel @Inject constructor(
         _fileUriStaged.value = selectedList
     }
 
-
+    fun downloadFile(context: Context, url: String) {
+        chatRepository.downloadFile(context, getFileNameFromUrl(url), url)
+    }
 
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
