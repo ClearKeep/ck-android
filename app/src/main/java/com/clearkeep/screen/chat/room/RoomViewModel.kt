@@ -9,6 +9,7 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.utilities.fileSizeRegex
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
@@ -533,7 +534,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun downloadFile(context: Context, url: String) {
-        chatRepository.downloadFile(context, getFileNameFromUrl(url), url)
+        chatRepository.downloadFile(context, getFileNameFromUrl(url), url.replace(fileSizeRegex, ""))
     }
 
     companion object {
