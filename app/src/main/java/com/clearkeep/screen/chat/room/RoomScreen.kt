@@ -64,6 +64,7 @@ fun RoomScreen(
     onFinishActivity: () -> Unit,
     onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
+    println("recomposition screen")
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
@@ -232,14 +233,13 @@ fun RoomScreen(
                 }
             }
         }
-        val photoUri = generatePhotoUri(context)
-        UploadPhotoDialog(photoUri, isUploadPhotoDialogVisible.value, onDismiss = {
+        UploadPhotoDialog(roomViewModel, isUploadPhotoDialogVisible.value, onDismiss = {
             isUploadPhotoDialogVisible.value = false
         }, onNavigateToAlbums = {
             isUploadPhotoDialogVisible.value = false
             navHostController.navigate("image_picker")
         }, onTakePhoto = {
-            roomViewModel.addImage(it)
+            roomViewModel.addImage()
         })
         val response = uploadFileResponse.value
         if (response?.status == Status.ERROR) {
@@ -256,12 +256,13 @@ fun RoomScreen(
 @ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(
-    photoUri: Uri,
+    roomViewModel: RoomViewModel,
     isOpen: Boolean,
     onDismiss: () -> Unit,
     onNavigateToAlbums: () -> Unit,
-    onTakePhoto: (String) -> Unit
+    onTakePhoto: () -> Unit
 ) {
+    println("recomposition dialog")
     val context = LocalContext.current
 
     val requestStoragePermissionLauncher = rememberLauncherForActivityResult(
@@ -274,11 +275,10 @@ fun UploadPhotoDialog(
         }
     }
 
-    val uri = generatePhotoUri(context)
     val takePhotoLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful: Boolean ->
             if (isSuccessful) {
-                onTakePhoto(photoUri.toString())
+                onTakePhoto()
                 onDismiss()
             }
         }
@@ -286,7 +286,7 @@ fun UploadPhotoDialog(
     val requestCameraPermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                takePhotoLauncher.launch(photoUri)
+                takePhotoLauncher.launch(roomViewModel.getPhotoUri(context))
             } else {
                 onDismiss()
             }
@@ -318,7 +318,7 @@ fun UploadPhotoDialog(
                             .padding(16.dp)
                             .clickable {
                                 if (isCameraPermissionGranted(context)) {
-                                    takePhotoLauncher.launch(photoUri)
+                                    takePhotoLauncher.launch(roomViewModel.getPhotoUri(context))
                                 } else {
                                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                                 }
@@ -376,17 +376,6 @@ private fun isPermissionGranted(context: Context, permission: String): Boolean {
             false
         }
     }
-}
-
-private fun generatePhotoUri(context: Context): Uri {
-    val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-    return FileProvider.getUriForFile(
-        context.applicationContext,
-        BuildConfig.APPLICATION_ID + ".provider",
-        file
-    )
 }
 
 private const val KEYBOARD_HIDE_DELAY_MILLIS = 500L
