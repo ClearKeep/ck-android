@@ -230,7 +230,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             roomViewModel.groups.observe(this, Observer {
                 val group =
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
-                if (group == null) finish()
+                if (group == null) finish() else roomViewModel.refreshRoom()
             })
     }
 

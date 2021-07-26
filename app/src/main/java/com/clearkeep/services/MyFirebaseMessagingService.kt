@@ -63,7 +63,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "new_message" -> {
                         handleNewMessage(remoteMessage)
                     }
-                    "old_member" -> {
+                    "old_member","new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
                 }
@@ -154,7 +154,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain")
             groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
             groupRepository.removeGroupOnWorkSpace(groupId,clientDomain,removedMember)
-
+            val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
+            updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
+            sendBroadcast(updateGroupIntent)
         }catch (e:Exception){
 
         }
@@ -178,6 +180,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         Log.w(TAG, "onNewToken: $token")
+
         printlnCK("onNewToken: $token")
         super.onNewToken(token)
     }
