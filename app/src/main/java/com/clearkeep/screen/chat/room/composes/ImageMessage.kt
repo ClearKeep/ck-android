@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.isTempMessage
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
@@ -92,6 +93,7 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
+    val clickableModifier = if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
     val context = LocalContext.current
     Image(
         painter = rememberCoilPainter(uri, context.imageLoader),
@@ -101,6 +103,6 @@ fun ImageMessageItem(
             .then(modifier)
             .clip(RoundedCornerShape(16.dp))
             .aspectRatio(1f)
-            .clickable { onClick(uri) }
+            .then(clickableModifier)
     )
 }
