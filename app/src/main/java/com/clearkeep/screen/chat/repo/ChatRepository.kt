@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import com.clearkeep.db.clear_keep.model.Note
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
@@ -14,6 +15,7 @@ import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.*
 import message.MessageOuterClass
+import note.NoteOuterClass
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
@@ -122,6 +124,41 @@ class ChatRepository @Inject constructor(
             return@withContext true
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
+        }
+
+        return@withContext false
+    }
+
+    suspend fun sendNote(note: Note) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            val signalProtocolAddress = CKSignalProtocolAddress(Owner(note.ownerDomain, note.ownerClientId), 111)
+
+            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
+                val processSuccess = processPeerKey(note.ownerClientId, note.ownerDomain)
+                if (!processSuccess) {
+                    printlnCK("sendMessageInPeer, init session failed with message \"${note.content}\"")
+                    return@withContext false
+                }
+            }
+
+            val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
+            val message: CiphertextMessage =
+                sessionCipher.encrypt(note.content.toByteArray(charset("UTF-8")))
+
+            val request = NoteOuterClass.CreateNoteRequest.newBuilder()
+                .setTitle("title")
+                .setContent(ByteString.copyFrom(message.serialize()))
+                .setNoteType("1")
+                .build()
+            val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
+            printlnCK("create note success? ${response.success}")
+            printlnCK("create note error? ${response.errors.message}")
+            if (response.success) {
+                messageRepository.saveNote(note)
+            }
+            return@withContext true
+        } catch (e: Exception) {
+            printlnCK("create note $e")
         }
 
         return@withContext false

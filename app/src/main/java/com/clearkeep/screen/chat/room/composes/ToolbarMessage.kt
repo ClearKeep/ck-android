@@ -24,11 +24,11 @@ fun ToolbarMessage(
     modifier: Modifier = Modifier,
     title: String = "",
     isGroup: Boolean = false,
+    isNote: Boolean = false,
     onBackClick: () -> Unit,
     onUserClick: () -> Unit,
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
-
 ) {
     Row(modifier = Modifier.statusBarsHeight(58.dp).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
@@ -39,7 +39,7 @@ fun ToolbarMessage(
             )
         }
 
-        if (!isGroup) {
+        if (!isGroup && !isNote) {
             CircleAvatar(emptyList(),
                 name = title,
                 size = 36.dp,
@@ -64,37 +64,39 @@ fun ToolbarMessage(
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onAudioClick,
-                modifier
-                    .padding(8.dp)
-                    .width(36.dp)
-                    .height(36.dp)
+        if (!isNote) {
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_icon_call_audio),
-                    contentDescription = null,
-                    tint = Color.White
-                )
+                IconButton(
+                    onClick = onAudioClick,
+                    modifier
+                        .padding(8.dp)
+                        .width(36.dp)
+                        .height(36.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_icon_call_audio),
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+                IconButton(
+                    onClick = onVideoClick,
+                    modifier
+                        .padding(8.dp)
+                        .width(36.dp)
+                        .height(36.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_icon_call_video),
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
             }
-            IconButton(
-                onClick = onVideoClick,
-                modifier
-                    .padding(8.dp)
-                    .width(36.dp)
-                    .height(36.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_icon_call_video),
-                    contentDescription = null,
-                    tint = Color.White
-                )
-            }
-            Spacer(Modifier.width(10.dp))
         }
     }
 }

@@ -6,6 +6,7 @@ import com.clearkeep.dynamicapi.channel.ChannelSelector
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import message.MessageGrpc
+import note.NoteGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
@@ -107,6 +108,19 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return MessageGrpc.newStub(managedChannel)
+    }
+
+    override fun provideNoteBlockingStub(): NoteGrpc.NoteBlockingStub {
+        if (server == null) {
+            throw IllegalArgumentException("server must be not null")
+        }
+        val managedChannel = channelSelector.getChannel(server!!.serverDomain)
+        printlnCK("provideNoteBlockingStub: ${managedChannel.authority()}")
+        return NoteGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                server!!.accessKey,
+                server!!.hashKey
+            ))
     }
 
     override fun provideNotifyPushBlockingStub(): NotifyPushGrpc.NotifyPushBlockingStub {

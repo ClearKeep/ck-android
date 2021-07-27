@@ -65,6 +65,7 @@ fun RoomScreen(
 ) {
     val systemUiController = rememberSystemUiController()
     val group = roomViewModel.group.observeAsState()
+    val isNote = roomViewModel.isNote.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
     val context = LocalContext.current
@@ -80,15 +81,20 @@ fun RoomScreen(
         )
     }
 
-    group.value?.let { group ->
-        if (group.groupId != GROUP_ID_TEMPO) {
+    if (group.value != null || isNote.value == true) {
+        val group = group.value
+        if (group != null && group.groupId != GROUP_ID_TEMPO) {
             roomViewModel.setJoiningRoomId(group.groupId)
         }
-        val messageList =
+        val messageList = if (group != null) {
             roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
                 .observeAsState()
-        printlnCK("test: ${group.clientList}")
-        val groupName = group.groupName
+        } else {
+            roomViewModel.getNotes().observeAsState()
+        }
+
+        printlnCK("test: ${group?.clientList}")
+        val groupName = group?.groupName ?: "Note"
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
@@ -96,17 +102,21 @@ fun RoomScreen(
                 FilePickerBottomSheetDialog(roomViewModel) {
                     coroutineScope.launch {
                         bottomSheetState.hide()
-                        val isGroup = group.isGroup()
-                        if (isGroup) {
-                            roomViewModel.uploadFile(context, group.groupId, group.isJoined)
-                        } else {
-                            val friend = group.clientList.firstOrNull { client ->
-                                client.userId != roomViewModel.clientId
-                            }
-                            if (friend != null) {
-                                roomViewModel.uploadFile(context, group.groupId, null, friend)
+                        if (isNote.value == true) {
+                            roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
+                        } else if (group != null) {
+                            val isGroup = group.isGroup()
+                            if (isGroup) {
+                                roomViewModel.uploadFile(context, group.groupId, group.isJoined)
                             } else {
-                                printlnCK("can not found friend")
+                                val friend = group.clientList.firstOrNull { client ->
+                                    client.userId != roomViewModel.clientId
+                                }
+                                if (friend != null) {
+                                    roomViewModel.uploadFile(context, group.groupId, null, friend)
+                                } else {
+                                    printlnCK("can not found friend")
+                                }
                             }
                         }
                     }
@@ -131,21 +141,21 @@ fun RoomScreen(
                     ToolbarMessage(
                         modifier = Modifier,
                         groupName,
-                        isGroup = group.isGroup(),
+                        isGroup = group?.isGroup() ?: false,
+                        isNote = isNote.value ?: false,
                         onBackClick = {
                             onFinishActivity()
                         },
                         onUserClick = {
-                            if (group.isGroup()) {
+                            if (group?.isGroup() == true) {
                                 navHostController.navigate("room_info_screen")
                             }
                         },
                         onAudioClick = {
-                            roomViewModel.requestCall(group.groupId, true)
-
+                            roomViewModel.requestCall(group?.groupId ?: 0L, true)
                         },
                         onVideoClick = {
-                            roomViewModel.requestCall(group.groupId, false)
+                            roomViewModel.requestCall(group?.groupId ?: 0L, false)
                         })
                     Column(
                         modifier = Modifier
@@ -153,12 +163,12 @@ fun RoomScreen(
                                 0.66f
                             )
                     ) {
-                        messageList?.value?.let { messages ->
+                        messageList.value?.let { messages ->
                             MessageListView(
                                 messageList = messages,
-                                clients = group.clientList,
+                                clients = group?.clientList ?: emptyList(),
                                 myClientId = roomViewModel.clientId,
-                                group.isGroup(),
+                                group?.isGroup() ?: false,
                                 onClickFile = {
                                     roomViewModel.downloadFile(context, it)
                                 },
@@ -181,8 +191,10 @@ fun RoomScreen(
                                 return@SendBottomCompose
                             }
                             val groupResult = group
-                            val isGroup = groupResult.isGroup()
-                            if (isGroup) {
+                            val isGroup = groupResult?.isGroup()
+                            if (isNote.value == true) {
+                                roomViewModel.sendNote()
+                            } else if (isGroup == true) {
                                 roomViewModel.sendMessageToGroup(
                                     context,
                                     groupResult.groupId,
@@ -190,7 +202,7 @@ fun RoomScreen(
                                     groupResult.isJoined
                                 )
                             } else {
-                                val friend = groupResult.clientList.firstOrNull { client ->
+                                val friend = groupResult?.clientList?.firstOrNull { client ->
                                     client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
