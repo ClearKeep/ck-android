@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import message.MessageOuterClass
+import note.NoteOuterClass
 import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.SessionBuilder
@@ -97,7 +98,37 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    private suspend fun updateLastSyncMessageTime(groupId: Long, owner: Owner, lastMessage: Message) {
+    suspend fun updateNotesFromAPI(owner: Owner) = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext
+            val notesGrpc = apiProvider.provideNotesBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
+            val request = NoteOuterClass.Empty.newBuilder().build()
+            val responses = notesGrpc.getUserNotes(request)
+            val notes = responses.userNotesList.map { parseNoteResponse(it, owner) }
+            if (notes.isNotEmpty()) {
+                noteDAO.insertNotes(notes)
+                //TODO: Update last sync time
+//                val lastMessage = messages.maxByOrNull { it.createdTime }
+//                if (lastMessage != null) {
+//                    updateLastSyncMessageTime(groupId, owner, lastMessage)
+//                }
+            }
+        } catch (e: Exception) {
+            printlnCK("updateNotesFromAPI: $e")
+        }
+    }
+
+    private suspend fun updateLastSyncMessageTime(
+        groupId: Long,
+        owner: Owner,
+        lastMessage: Message
+    ) {
         printlnCK("updateLastSyncMessageTime, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId, owner.domain, owner.clientId)!!
         val updateGroup = ChatGroup(
@@ -135,6 +166,15 @@ class MessageRepository @Inject constructor(
             response.message,
             owner
         )
+    }
+
+    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNote, owner: Owner): Note {
+        //TODO: Check if that note is old?
+//        val oldMessage = messageDAO.getMessage(response.id)
+//        if (oldMessage != null) {
+//            return oldMessage
+//        }
+        return decryptNote(response.content, owner)
     }
 
     suspend fun decryptMessage(
@@ -192,12 +232,51 @@ class MessageRepository @Inject constructor(
         )
     }
 
-    suspend fun saveNewMessage(message: Message) : Message {
+    private suspend fun decryptNote(noteContent: ByteString, owner: Owner): Note =
+        withContext(Dispatchers.IO) {
+            var messageText = ""
+            try {
+                val signalProtocolAddress = CKSignalProtocolAddress(owner, 222)
+                val preKeyMessage = PreKeySignalMessage(noteContent.toByteArray())
+
+                val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
+                val rawNote = sessionCipher.decrypt(preKeyMessage)
+                messageText = String(rawNote, StandardCharsets.UTF_8)
+            } catch (e: DuplicateMessageException) {
+                printlnCK("decryptNote, maybe this message decrypted, waiting 1,5s and check again")
+                /**
+                 * To fix case: both load message and receive note from socket at the same time
+                 * Need wait 1.5s to load old note before save unableDecryptMessage
+                 */
+                delay(1500)
+                //TODO: Handle case
+//                val oldMessage = noteDAO.getMessage(messageId)
+//                if (oldMessage != null) {
+//                    printlnCK("decryptNote, exactly old message: ${oldMessage.message}")
+//                    return oldMessage
+//                } else {
+//                    messageText = getUnableErrorMessage(e.message)
+//                }
+            } catch (e: Exception) {
+                printlnCK("decrpytNote error : $e")
+                messageText = getUnableErrorMessage(e.message)
+            }
+
+            return@withContext Note(
+                null,
+                messageText,
+                owner.domain,
+                owner.clientId
+            )
+        }
+
+    suspend fun saveNewMessage(message: Message): Message {
         printlnCK("saveNewMessage: ${message.messageId}, ${message.message}")
         insertMessage(message)
 
         val groupId = message.groupId
-        var room: ChatGroup? = groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
+        var room: ChatGroup? =
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
 
         if (room != null) {
             // update last message in room
