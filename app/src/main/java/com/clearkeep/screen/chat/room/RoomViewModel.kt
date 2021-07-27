@@ -461,7 +461,8 @@ class RoomViewModel @Inject constructor(
                 return
             }
 
-            val tempMessageContent = urisList.joinToString(" ")
+            val tempMessageUris = urisList.joinToString(" ")
+            val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
             val tempMessageId = if (isNote.value == true) {
                 messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
             } else {
