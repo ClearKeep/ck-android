@@ -35,6 +35,10 @@ fun getFileNameFromUrl(url: String): String {
     return fileName?.substring(1 until fileName.length) ?: ""
 }
 
+fun getFileUrl(urlWithFileSize: String): String {
+    return urlWithFileSize.replace(fileSizeRegex, "")
+}
+
 fun getMessageContent(content: String): String {
     val temp = remoteImageRegex.replace(content, "")
     val temp2 = remoteFileRegex.replace(temp, "")
