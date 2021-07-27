@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.group_invite
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -21,6 +22,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,6 +57,8 @@ fun InviteGroupScreen(
     val textSearch = remember { mutableStateOf("") }
     val useCustomServerChecked = remember { mutableStateOf(false) }
     val urlOtherServer = remember { mutableStateOf("") }
+    val context = LocalContext.current
+
     CKSimpleTheme {
         Column(
             modifier = Modifier
@@ -209,14 +213,18 @@ fun InviteGroupScreen(
                     onClick = {
                         if (useCustomServerChecked.value) {
                             val people = getPeopleFromLink(urlOtherServer.value)
-                            if (isCreateDirectGroup) {
-                                people?.let { onDirectFriendSelected(it) }
-                            } else {
-                                if (people != null) {
-                                    inviteGroupViewModel.insertFriend(people)
-                                    if (selectedItem.find { people == it } == null)
-                                        selectedItem.add(people)
+                            if (people?.userId != inviteGroupViewModel.getClientId()&&people?.domain != inviteGroupViewModel.getDomain()){
+                                if (isCreateDirectGroup) {
+                                    people?.let { onDirectFriendSelected(it) }
+                                } else {
+                                    if (people != null) {
+                                        inviteGroupViewModel.insertFriend(people)
+                                        if (selectedItem.find { people == it } == null)
+                                            selectedItem.add(people)
+                                    }
                                 }
+                            }else {
+                                Toast.makeText(context,"User error !", Toast.LENGTH_SHORT).show()
                             }
                             urlOtherServer.value = ""
                             useCustomServerChecked.value = false
