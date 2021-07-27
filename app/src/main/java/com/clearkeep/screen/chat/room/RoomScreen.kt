@@ -86,7 +86,7 @@ fun RoomScreen(
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
             sheetContent = {
-                FilePickerBottomSheetDialog(roomViewModel, onClickNext = {
+                FilePickerBottomSheetDialog(roomViewModel) {
                     coroutineScope.launch {
                         bottomSheetState.hide()
                         val isGroup = group.isGroup()
@@ -103,7 +103,7 @@ fun RoomScreen(
                             }
                         }
                     }
-                })
+                }
             },
             sheetBackgroundColor = bottomSheetColor,
             scrimColor = colorDialogScrim
