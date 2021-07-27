@@ -54,9 +54,20 @@ class HomeViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
+    val isRefreshing= MutableLiveData(false)
+
     init {
         viewModelScope.launch {
             roomRepository.fetchGroups()
+        }
+    }
+
+    fun onPullToRefresh(){
+        isRefreshing.postValue(true)
+        viewModelScope.launch {
+            roomRepository.fetchGroups()
+            isRefreshing.postValue(false)
+
         }
     }
 

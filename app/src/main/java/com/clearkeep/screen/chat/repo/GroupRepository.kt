@@ -427,7 +427,7 @@ class GroupRepository @Inject constructor(
             ownerDomain = serverDomain,
             ownerClientId = ownerId,
             lastMessage = null,
-            lastMessageAt = response.lastMessageALqgitt,
+            lastMessageAt = response.lastMessageAt,
             lastMessageSyncTimestamp = lastMessageSyncTime
         )
     }

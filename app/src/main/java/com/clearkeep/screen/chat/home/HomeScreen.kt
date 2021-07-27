@@ -35,6 +35,8 @@ import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
 import com.clearkeep.utilities.printlnCK
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -508,52 +510,57 @@ fun WorkSpaceView(
 ) {
     val searchKey = remember { mutableStateOf("") }
     val activeServer = homeViewModel.currentServer.observeAsState()
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
-    ) {
-        Spacer(modifier = Modifier.size(24.dp))
-        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText(
-                text = activeServer?.value?.serverName ?: "", modifier = Modifier
-                    .weight(0.66f), headerTextType = HeaderTextType.Large
-            )
+    val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
+
+    SwipeRefresh(state = rememberSwipeRefreshState(swipeRefreshState.value == true), onRefresh = { homeViewModel.onPullToRefresh() },modifier = Modifier.padding(end = 50.dp)) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+        ) {
+            Spacer(modifier = Modifier.size(24.dp))
+            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+                CKHeaderText(
+                    text = activeServer?.value?.serverName ?: "", modifier = Modifier
+                        .weight(0.66f), headerTextType = HeaderTextType.Large
+                )
+                Column(
+                    modifier = Modifier.clickable { gotoProfile.invoke() },
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_hamburger),
+                        null, alignment = Alignment.Center
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            CKSearchBox(searchKey)
+            Spacer(modifier = Modifier.size(24.dp))
+            NoteView()
             Column(
-                modifier = Modifier.clickable { gotoProfile.invoke() },
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_hamburger),
-                    null, alignment = Alignment.Center
+                Spacer(modifier = Modifier.size(24.dp))
+                ChatGroupView(
+                    homeViewModel, createGroupChat = createGroupChat,
+                    onItemClickListener = onItemClickListener
+                )
+                Spacer(modifier = Modifier.size(28.dp))
+                DirectMessagesView(
+                    homeViewModel,
+                    createGroupChat = createGroupChat,
+                    onItemClickListener = onItemClickListener
                 )
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-        CKSearchBox(searchKey)
-        Spacer(modifier = Modifier.size(24.dp))
-        NoteView()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-
-        ) {
-            Spacer(modifier = Modifier.size(24.dp))
-            ChatGroupView(
-                homeViewModel, createGroupChat = createGroupChat,
-                onItemClickListener = onItemClickListener
-            )
-            Spacer(modifier = Modifier.size(28.dp))
-            DirectMessagesView(
-                homeViewModel,
-                createGroupChat = createGroupChat,
-                onItemClickListener = onItemClickListener
-            )
-        }
     }
+
 }
 
 @Composable
