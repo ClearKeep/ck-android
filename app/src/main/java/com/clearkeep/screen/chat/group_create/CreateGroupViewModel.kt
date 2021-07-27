@@ -12,6 +12,7 @@ class CreateGroupViewModel @Inject constructor(
 
         private val environment: Environment
 ): ViewModel() {
+
         var groupId: Long = -1
 
         val invitedFriends: MutableList<User> = mutableListOf()

@@ -79,6 +79,7 @@ class CreateGroupActivity : AppCompatActivity() {
                     }
                     composable("insert_friend") {
                         InsertFriendScreen(
+                            inviteGroupViewModel,
                             navController,
                             onInsertFriend = { people ->
                                 printlnCK("people insert = $people")

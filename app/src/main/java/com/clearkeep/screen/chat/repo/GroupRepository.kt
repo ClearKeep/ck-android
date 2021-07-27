@@ -335,8 +335,7 @@ class GroupRepository @Inject constructor(
         if (result>0){
             printlnCK("removeGroupOnWorkSpace: groupId: ${groupId}")
         }else {
-            printlnCK("removeGroupOnWorkSpace: groupId: fail")
-
+            printlnCK("removeGroupOnWorkSpace: groupId: ${groupId} fail")
         }
     }
 
@@ -428,7 +427,7 @@ class GroupRepository @Inject constructor(
             ownerDomain = serverDomain,
             ownerClientId = ownerId,
             lastMessage = null,
-            lastMessageAt = response.lastMessageAt,
+            lastMessageAt = response.lastMessageALqgitt,
             lastMessageSyncTimestamp = lastMessageSyncTime
         )
     }

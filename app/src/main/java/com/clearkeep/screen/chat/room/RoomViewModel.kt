@@ -112,6 +112,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun refreshRoom(){
+        printlnCK("refreshRoom")
         viewModelScope.launch {
             roomId?.let { updateGroupWithId(it) }
         }
