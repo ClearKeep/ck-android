@@ -518,30 +518,30 @@ class RoomViewModel @Inject constructor(
                     fileUrls.add(url)
                     filesSizeInBytes.add(fileSize)
                 }
-                val fileUrlsString = if (appendFileSize) {
-                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" ")
+            }
+            val fileUrlsString = if (appendFileSize) {
+                fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" ")
+            } else {
+                fileUrls.joinToString(" ")
+            }
+            val messageContent = if (message != null) "$fileUrlsString $message" else fileUrlsString
+            if (isNote.value == true) {
+                sendNote(messageContent,tempMessageId.toLong())
+            } else {
+                if (isRegisteredGroup != null) {
+                    sendMessageToGroup(
+                        groupId,
+                        messageContent,
+                        isRegisteredGroup,
+                        tempMessageId.toInt()
+                    )
                 } else {
-                    fileUrls.joinToString(" ")
-                }
-                val messageContent = if (message != null) "$fileUrlsString $message" else fileUrlsString
-                if (isNote.value == true) {
-                    sendNote(messageContent,tempMessageId.toLong())
-                } else {
-                    if (isRegisteredGroup != null) {
-                        sendMessageToGroup(
-                            groupId,
-                            messageContent,
-                            isRegisteredGroup,
-                            tempMessageId.toInt()
-                        )
-                    } else {
-                        sendMessageToUser(
-                            receiverPeople!!,
-                            groupId,
-                            messageContent,
-                            tempMessageId.toInt()
-                        )
-                    }
+                    sendMessageToUser(
+                        receiverPeople!!,
+                        groupId,
+                        messageContent,
+                        tempMessageId.toInt()
+                    )
                 }
             }
         }

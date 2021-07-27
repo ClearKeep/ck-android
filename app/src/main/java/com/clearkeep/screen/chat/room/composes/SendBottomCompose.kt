@@ -89,8 +89,7 @@ fun SendBottomCompose(
                 },
                 modifier = Modifier
                     .padding(8.dp)
-                    .width(24.dp)
-                    .height(24.dp),
+                    .size(24.dp),
                 ) {
 
                 Icon(
@@ -109,8 +108,7 @@ fun SendBottomCompose(
                 },
                 modifier = Modifier
                     .padding(8.dp)
-                    .width(24.dp)
-                    .height(24.dp),
+                    .size(24.dp),
             ) {
                 Icon(
                     painterResource(R.drawable.ic_link),
