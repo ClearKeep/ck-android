@@ -163,7 +163,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun getNotes() : LiveData<List<Message>> {
-        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", "", "", it.content, 0L, 0L, it.ownerDomain, it.ownerClientId) } }
+        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, 0L, 0L, it.ownerDomain, it.ownerClientId) } }
     }
 
     private suspend fun updateGroupWithId(groupId: Long) {
