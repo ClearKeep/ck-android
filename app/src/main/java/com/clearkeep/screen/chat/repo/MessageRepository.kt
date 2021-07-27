@@ -39,6 +39,7 @@ import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -174,7 +175,7 @@ class MessageRepository @Inject constructor(
 //        if (oldMessage != null) {
 //            return oldMessage
 //        }
-        return decryptNote(response.content, owner)
+        return Note(null, response.content.toString(Charsets.UTF_8), owner.domain, owner.clientId)
     }
 
     suspend fun decryptMessage(
@@ -231,44 +232,6 @@ class MessageRepository @Inject constructor(
             ),
         )
     }
-
-    private suspend fun decryptNote(noteContent: ByteString, owner: Owner): Note =
-        withContext(Dispatchers.IO) {
-            var messageText = ""
-            try {
-                val signalProtocolAddress = CKSignalProtocolAddress(owner, 222)
-                val preKeyMessage = PreKeySignalMessage(noteContent.toByteArray())
-
-                val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
-                val rawNote = sessionCipher.decrypt(preKeyMessage)
-                messageText = String(rawNote, StandardCharsets.UTF_8)
-            } catch (e: DuplicateMessageException) {
-                printlnCK("decryptNote, maybe this message decrypted, waiting 1,5s and check again")
-                /**
-                 * To fix case: both load message and receive note from socket at the same time
-                 * Need wait 1.5s to load old note before save unableDecryptMessage
-                 */
-                delay(1500)
-                //TODO: Handle case
-//                val oldMessage = noteDAO.getMessage(messageId)
-//                if (oldMessage != null) {
-//                    printlnCK("decryptNote, exactly old message: ${oldMessage.message}")
-//                    return oldMessage
-//                } else {
-//                    messageText = getUnableErrorMessage(e.message)
-//                }
-            } catch (e: Exception) {
-                printlnCK("decrpytNote error : $e")
-                messageText = getUnableErrorMessage(e.message)
-            }
-
-            return@withContext Note(
-                null,
-                messageText,
-                owner.domain,
-                owner.clientId
-            )
-        }
 
     suspend fun saveNewMessage(message: Message): Message {
         printlnCK("saveNewMessage: ${message.messageId}, ${message.message}")

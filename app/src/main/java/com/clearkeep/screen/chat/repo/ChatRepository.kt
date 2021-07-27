@@ -131,23 +131,9 @@ class ChatRepository @Inject constructor(
 
     suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
         try {
-            val signalProtocolAddress = CKSignalProtocolAddress(Owner(note.ownerDomain, note.ownerClientId), 111)
-
-            if (!signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val processSuccess = processPeerKey(note.ownerClientId, note.ownerDomain)
-                if (!processSuccess) {
-                    printlnCK("sendMessageInPeer, init session failed with message \"${note.content}\"")
-                    return@withContext false
-                }
-            }
-
-            val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
-            val message: CiphertextMessage =
-                sessionCipher.encrypt(note.content.toByteArray(charset("UTF-8")))
-
             val request = NoteOuterClass.CreateNoteRequest.newBuilder()
                 .setTitle("title")
-                .setContent(ByteString.copyFrom(message.serialize()))
+                .setContent(ByteString.copyFrom(note.content, Charsets.UTF_8))
                 .setNoteType("1")
                 .build()
             val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
