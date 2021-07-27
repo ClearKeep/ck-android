@@ -131,9 +131,15 @@ class RoomViewModel @Inject constructor(
         ownerDomain: String,
         ownerClientId: String,
     ) {
+        if (ownerDomain.isBlank() || ownerClientId.isBlank()) {
+            throw IllegalArgumentException("domain and clientId must be not NULL")
+        }
         this.domain = ownerDomain
         this.clientId = ownerClientId
         _isNote.value = true
+        viewModelScope.launch {
+            updateNotesFromRemote()
+        }
     }
 
     fun leaveRoom() {
@@ -192,6 +198,11 @@ class RoomViewModel @Inject constructor(
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
+    }
+
+    private suspend fun updateNotesFromRemote() {
+        val server = environment.getServer()
+        messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {

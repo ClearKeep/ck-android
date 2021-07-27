@@ -3,6 +3,7 @@ package com.clearkeep.dynamicapi
 import auth.AuthGrpc
 import group.GroupGrpc
 import message.MessageGrpc
+import note.NoteGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
@@ -25,6 +26,8 @@ interface ParamAPIProvider {
     fun provideGroupBlockingStub(paramAPI: ParamAPI): GroupGrpc.GroupBlockingStub
 
     fun provideMessageBlockingStub(paramAPI: ParamAPI): MessageGrpc.MessageBlockingStub
+
+    fun provideNotesBlockingStub(paramAPI: ParamAPI): NoteGrpc.NoteBlockingStub
 
     fun provideMessageStub(paramAPI: ParamAPI): MessageGrpc.MessageStub
 

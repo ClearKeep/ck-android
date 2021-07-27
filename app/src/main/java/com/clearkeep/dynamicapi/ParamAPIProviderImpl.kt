@@ -4,6 +4,7 @@ import auth.AuthGrpc
 import com.clearkeep.dynamicapi.channel.ChannelSelector
 import group.GroupGrpc
 import message.MessageGrpc
+import note.NoteGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
@@ -62,6 +63,18 @@ class ParamAPIProviderImpl @Inject constructor(
     override fun provideMessageBlockingStub(paramAPI: ParamAPI): MessageGrpc.MessageBlockingStub {
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return MessageGrpc.newBlockingStub(managedChannel)
+    }
+
+    override fun provideNotesBlockingStub(paramAPI: ParamAPI): NoteGrpc.NoteBlockingStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyPushBlockingStub: access and hash key must not null")
+        }
+        val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
+        return NoteGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                paramAPI.accessKey,
+                paramAPI.hashKey
+            ))
     }
 
     override fun provideMessageStub(paramAPI: ParamAPI): MessageGrpc.MessageStub {
