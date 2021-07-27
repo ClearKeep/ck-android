@@ -1,10 +1,11 @@
 package com.clearkeep.screen.chat.room.file_picker
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,8 +34,13 @@ import com.clearkeep.screen.chat.room.RoomViewModel
 @Composable
 fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () -> Unit) {
     val context = LocalContext.current
+    val addFileContract = object : ActivityResultContracts.OpenDocument() {
+        override fun createIntent(context: Context, input: Array<out String>): Intent {
+            return super.createIntent(context, input).addCategory(Intent.CATEGORY_OPENABLE)
+        }
+    }
     val addFileLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        rememberLauncherForActivityResult(addFileContract) {
             if (it != null) {
                 roomViewModel.addStagedFileUri(it)
             }
