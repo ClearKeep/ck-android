@@ -193,7 +193,7 @@ fun RoomScreen(
                             val groupResult = group
                             val isGroup = groupResult?.isGroup()
                             if (isNote.value == true) {
-                                roomViewModel.sendNote()
+                                roomViewModel.sendNote(context)
                             } else if (isGroup == true) {
                                 roomViewModel.sendMessageToGroup(
                                     context,

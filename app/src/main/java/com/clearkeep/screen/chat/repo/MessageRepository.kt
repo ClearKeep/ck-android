@@ -310,12 +310,16 @@ class MessageRepository @Inject constructor(
         return message
     }
 
-    suspend fun saveNote(note: Note) {
-        insertNote(note)
+    suspend fun saveNote(note: Note) : Long {
+        return insertNote(note)
     }
 
     suspend fun updateMessage(message: Message) {
         messageDAO.updateMessage(message)
+    }
+
+    suspend fun updateNote(note: Note) {
+        noteDAO.updateNotes(note)
     }
 
     suspend fun saveMessage(message: Message) : Int {

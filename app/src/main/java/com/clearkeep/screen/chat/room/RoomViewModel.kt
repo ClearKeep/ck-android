@@ -293,9 +293,23 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun sendNote() {
+    fun sendNote(context: Context) {
         viewModelScope.launch {
-            chatRepository.sendNote(Note(null, _message.value ?: "", domain, clientId))
+            try {
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, message = _message.value ?: "")
+                } else {
+                    sendNote(_message.value ?: "")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun sendNote(message: String, cachedNoteId: Long = 0) {
+        viewModelScope.launch {
+            chatRepository.sendNote(Note(null, message, domain, clientId), cachedNoteId)
         }
     }
 
@@ -406,7 +420,8 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun uploadImage(
-        context: Context, groupId: Long,
+        context: Context,
+        groupId: Long = 0L,
         message: String,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
@@ -446,21 +461,26 @@ class RoomViewModel @Inject constructor(
                 return
             }
 
-            val tempMessageId = messageRepository.saveMessage(
-                Message(
-                    null,
-                    "",
-                    groupId,
-                    getOwner().domain,
-                    getOwner().clientId,
-                    getOwner().clientId,
-                    urisList.joinToString(" "),
-                    Calendar.getInstance().timeInMillis,
-                    Calendar.getInstance().timeInMillis,
-                    getOwner().domain,
-                    getOwner().clientId
+            val tempMessageContent = urisList.joinToString(" ")
+            val tempMessageId = if (isNote.value == true) {
+                messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
+            } else {
+                messageRepository.saveMessage(
+                    Message(
+                        null,
+                        "",
+                        groupId,
+                        getOwner().domain,
+                        getOwner().clientId,
+                        getOwner().clientId,
+                        tempMessageContent,
+                        Calendar.getInstance().timeInMillis,
+                        Calendar.getInstance().timeInMillis,
+                        getOwner().domain,
+                        getOwner().clientId
+                    )
                 )
-            )
+            }
             val fileUrls = mutableListOf<String>()
             val filesSizeInBytes = mutableListOf<Long>()
             urisList.forEach { uriString ->
@@ -503,20 +523,25 @@ class RoomViewModel @Inject constructor(
                 } else {
                     fileUrls.joinToString(" ")
                 }
-                if (isRegisteredGroup != null) {
-                    sendMessageToGroup(
-                        groupId,
-                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
-                        isRegisteredGroup,
-                        tempMessageId
-                    )
+                val messageContent = if (message != null) "$fileUrlsString $message" else fileUrlsString
+                if (isNote.value == true) {
+                    sendNote(messageContent,tempMessageId.toLong())
                 } else {
-                    sendMessageToUser(
-                        receiverPeople!!,
-                        groupId,
-                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
-                        tempMessageId
-                    )
+                    if (isRegisteredGroup != null) {
+                        sendMessageToGroup(
+                            groupId,
+                            messageContent,
+                            isRegisteredGroup,
+                            tempMessageId.toInt()
+                        )
+                    } else {
+                        sendMessageToUser(
+                            receiverPeople!!,
+                            groupId,
+                            messageContent,
+                            tempMessageId.toInt()
+                        )
+                    }
                 }
             }
         }
