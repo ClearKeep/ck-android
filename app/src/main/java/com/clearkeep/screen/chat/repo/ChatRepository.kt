@@ -129,7 +129,7 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun sendNote(note: Note) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
         try {
             val signalProtocolAddress = CKSignalProtocolAddress(Owner(note.ownerDomain, note.ownerClientId), 111)
 
@@ -154,7 +154,11 @@ class ChatRepository @Inject constructor(
             printlnCK("create note success? ${response.success}")
             printlnCK("create note error? ${response.errors.message}")
             if (response.success) {
-                messageRepository.saveNote(note)
+                if (cachedNoteId == 0L) {
+                    messageRepository.saveNote(note)
+                } else {
+                    messageRepository.updateNote(note.copy(generateId = cachedNoteId))
+                }
             }
             return@withContext true
         } catch (e: Exception) {
