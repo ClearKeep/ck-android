@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.group_invite
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -9,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -18,10 +20,12 @@ import com.clearkeep.screen.chat.utils.getPeopleFromLink
 
 @Composable
 fun InsertFriendScreen(
+    inviteGroupViewModel: InviteGroupViewModel,
     navController: NavHostController,
     onInsertFriend: (people: User) -> Unit,
 ) {
     val link = remember {mutableStateOf("")}
+    val context=LocalContext.current
 
     Surface(
         color = MaterialTheme.colors.background
@@ -58,7 +62,11 @@ fun InsertFriendScreen(
                     onClick = {
                         val people = getPeopleFromLink(link.value)
                         if (people != null) {
-                            onInsertFriend(people)
+                            if (people?.userId != inviteGroupViewModel.getClientId() && people?.userId != inviteGroupViewModel.getDomain()) {
+                                onInsertFriend(people)
+                            } else {
+                                Toast.makeText(context,"Error user !",Toast.LENGTH_SHORT).show()
+                            }
                         }
                     },
                     fontSize = 16.sp,
