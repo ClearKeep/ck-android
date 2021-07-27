@@ -59,6 +59,7 @@ fun SendBottomCompose(
 ) {
     val msgState = roomViewModel.message.observeAsState()
     val selectedImagesList = roomViewModel.imageUriSelected.observeAsState()
+    val isNote = roomViewModel.isNote.observeAsState()
     val context = LocalContext.current
 
     Column(Modifier.background(grayscaleBackground)) {
@@ -124,7 +125,7 @@ fun SendBottomCompose(
                     .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
             ) {
                 CKTextInputFieldChat(
-                    "Enter message...",
+                    if (isNote.value == true) "Write your note here" else "Enter message...",
                     msgState,
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.None,

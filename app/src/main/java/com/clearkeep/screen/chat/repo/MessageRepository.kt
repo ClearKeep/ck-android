@@ -3,8 +3,10 @@ package com.clearkeep.screen.chat.repo
 import android.text.TextUtils
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
+import com.clearkeep.db.clear_keep.dao.NoteDAO
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.Note
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
@@ -45,6 +47,7 @@ class MessageRepository @Inject constructor(
     // dao
     private val groupDAO: GroupDAO,
     private val messageDAO: MessageDAO,
+    private val noteDAO: NoteDAO,
 
     // network calls
     private val apiProvider: ParamAPIProvider,
@@ -56,6 +59,8 @@ class MessageRepository @Inject constructor(
 ) {
     fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
 
+    fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
+
     suspend fun getMessages(groupId: Long, owner: Owner) = messageDAO.getMessages(groupId, owner.domain, owner.clientId)
 
     suspend fun getMessage(messageId: String,groupId: Long) = messageDAO.getMessage(messageId,groupId)
@@ -66,6 +71,8 @@ class MessageRepository @Inject constructor(
     }
 
     private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
+
+    private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
     suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
         try {
@@ -222,6 +229,10 @@ class MessageRepository @Inject constructor(
         }
 
         return message
+    }
+
+    suspend fun saveNote(note: Note) {
+        insertNote(note)
     }
 
     suspend fun updateMessage(message: Message) {

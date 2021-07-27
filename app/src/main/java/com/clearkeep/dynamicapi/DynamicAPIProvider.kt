@@ -4,6 +4,7 @@ import auth.AuthGrpc
 import com.clearkeep.db.clear_keep.model.Server
 import group.GroupGrpc
 import message.MessageGrpc
+import note.NoteGrpc
 import notification.NotifyGrpc
 import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
@@ -32,6 +33,8 @@ interface DynamicAPIProvider {
     fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub
 
     fun provideMessageStub(): MessageGrpc.MessageStub
+
+    fun provideNoteBlockingStub(): NoteGrpc.NoteBlockingStub
 
     fun provideNotifyPushBlockingStub(): NotifyPushGrpc.NotifyPushBlockingStub
 

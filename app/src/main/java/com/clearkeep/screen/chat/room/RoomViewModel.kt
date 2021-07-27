@@ -73,6 +73,10 @@ class RoomViewModel @Inject constructor(
     val message : LiveData<String>
         get() = _message
 
+    private val _isNote = MutableLiveData<Boolean>()
+    val isNote : LiveData<Boolean>
+        get() = _isNote
+
     private var _currentPhotoUri : Uri? = null
 
     private val _imageDetailList = MutableLiveData<List<String>>()
@@ -123,6 +127,15 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    fun initNotes(
+        ownerDomain: String,
+        ownerClientId: String,
+    ) {
+        this.domain = ownerDomain
+        this.clientId = ownerClientId
+        _isNote.value = true
+    }
+
     fun leaveRoom() {
         setJoiningRoomId(-1)
     }
@@ -141,6 +154,10 @@ class RoomViewModel @Inject constructor(
     fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
         printlnCK("getMessages: groupId $groupId")
         return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
+    }
+
+    fun getNotes() : LiveData<List<Message>> {
+        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", "", "", it.content, 0L, 0L, it.ownerDomain, it.ownerClientId) } }
     }
 
     private suspend fun updateGroupWithId(groupId: Long) {
@@ -262,6 +279,12 @@ class RoomViewModel @Inject constructor(
             }
         } else {
             chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+        }
+    }
+
+    fun sendNote() {
+        viewModelScope.launch {
+            chatRepository.sendNote(Note(null, _message.value ?: "", domain, clientId))
         }
     }
 

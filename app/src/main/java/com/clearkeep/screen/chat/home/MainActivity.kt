@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.components.CKSimpleTheme
@@ -109,6 +108,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 },
                                 onNavigateBannedUser = {
                                     navigateToBannedUserScreen()
+                                },
+                                onNavigateNotes = {
+                                    navigateToNotesScreen()
                                 }
                             )
                         }
@@ -286,6 +288,14 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun navigateToBannedUserScreen() {
         val intent = Intent(this, BannedUserActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToNotesScreen() {
+        val intent = Intent(this, RoomActivity::class.java)
+        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
+        intent.putExtra(RoomActivity.IS_NOTE, true)
         startActivity(intent)
     }
 }
