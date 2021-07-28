@@ -44,6 +44,7 @@ import android.content.IntentFilter
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.clearkeep.screen.chat.room.photo_detail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
 
@@ -166,6 +167,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                         ImagePickerScreen(
                             roomViewModel,
                             navController
+                        )
+                    }
+                    composable("photo_detail") {
+                        PhotoDetailScreen(
                         )
                     }
                 }

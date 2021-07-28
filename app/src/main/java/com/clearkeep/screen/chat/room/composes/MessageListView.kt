@@ -37,7 +37,8 @@ fun MessageListView(
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
-    onClickFile: (url: String) -> Unit
+    onClickFile: (url: String) -> Unit,
+    onClickImage: () -> Unit
 ) {
     mIsNewMessage = isNewMessage
     MessageListView(
@@ -45,7 +46,8 @@ fun MessageListView(
         clients = clients,
         myClientId = myClientId,
         isGroup = isGroup,
-        onClickFile
+        onClickFile,
+        onClickImage
     )
 }
 
@@ -57,7 +59,8 @@ private fun MessageListView(
     clients: List<User>,
     myClientId: String,
     isGroup: Boolean,
-    onClickFile: (url: String) -> Unit
+    onClickFile: (url: String) -> Unit,
+    onClickImage: () -> Unit
 ) {
     val reversedMessage = messageList.reversed()
     val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
@@ -86,7 +89,7 @@ private fun MessageListView(
                         if (index == messages.size -1) {
                             DateHeader(date)
                         }
-                        if (item.isOwner) MessageByMe(item, onClickFile) else MessageFromOther(item, onClickFile)
+                        if (item.isOwner) MessageByMe(item, onClickFile, onClickImage) else MessageFromOther(item, onClickFile, onClickImage)
                         if (index == 0) Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
