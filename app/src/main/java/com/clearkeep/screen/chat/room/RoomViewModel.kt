@@ -463,6 +463,7 @@ class RoomViewModel @Inject constructor(
 
             val tempMessageUris = urisList.joinToString(" ")
             val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
+            println("take photo tempMessageContent $tempMessageContent")
             val tempMessageId = if (isNote.value == true) {
                 messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
             } else {
@@ -529,6 +530,7 @@ class RoomViewModel @Inject constructor(
             if (isNote.value == true) {
                 sendNote(messageContent,tempMessageId.toLong())
             } else {
+                println("take photo upload success messageContent $messageContent")
                 if (isRegisteredGroup != null) {
                     sendMessageToGroup(
                         groupId,
