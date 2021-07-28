@@ -153,9 +153,13 @@ fun RoomScreen(
                                 clients = group.clientList,
                                 myClientId = roomViewModel.clientId,
                                 group.isGroup(),
-                            ) {
-                                roomViewModel.downloadFile(context, it)
-                            }
+                                onClickFile = {
+                                    roomViewModel.downloadFile(context, it)
+                                },
+                                onClickImage = {
+                                    navHostController.navigate("photo_detail")
+                                }
+                            )
                         }
                     }
                     SendBottomCompose(
