@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -14,6 +15,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +31,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
 import com.clearkeep.components.primaryDefault
+import com.clearkeep.screen.chat.room.RoomViewModel
 import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.imageloading.rememberDrawablePainter
 import com.google.accompanist.insets.statusBarsPadding
@@ -34,13 +39,19 @@ import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
-fun PhotoDetailScreen() {
+fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
     val systemUiController = rememberSystemUiController()
+    val imagesList = roomViewModel.imageDetailList.observeAsState()
+    val selectedImageUri = remember { mutableStateOf("") }
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
             darkIcons = false
         )
+    }
+
+    if (!imagesList.value.isNullOrEmpty()) {
+        selectedImageUri.value = imagesList.value!![0]
     }
 
     ConstraintLayout(
@@ -50,14 +61,19 @@ fun PhotoDetailScreen() {
             .statusBarsPadding()
     ) {
         val (imageId, imageListId) = createRefs()
-        Box(Modifier.fillMaxHeight(0.875f).constrainAs(imageId) {
-            top.linkTo(parent.top)
-            start.linkTo(parent.start)
-            end.linkTo(parent.end)
-            bottom.linkTo(imageListId.top)
-        }) {
-            IconButton(onClick = { /*TODO*/ },
-                Modifier.align(Alignment.TopStart)) {
+        Box(
+            Modifier
+                .fillMaxHeight(0.875f)
+                .constrainAs(imageId) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    bottom.linkTo(imageListId.top)
+                }) {
+            IconButton(
+                onClick = { onDismiss.invoke() },
+                Modifier.align(Alignment.TopStart)
+            ) {
                 Icon(
                     Icons.Default.Close,
                     null,
@@ -66,7 +82,8 @@ fun PhotoDetailScreen() {
             }
             Text("You", Modifier.align(Alignment.TopCenter))
             Image(
-                painterResource(R.drawable.test), null,
+                rememberGlidePainter(request = selectedImageUri.value ?: "", previewPlaceholder = R.drawable.ic_cross),
+                null,
                 Modifier
                     .fillMaxSize(),
                 contentScale = ContentScale.Fit
@@ -85,12 +102,18 @@ fun PhotoDetailScreen() {
         }
         BottomImageList(
             Modifier
-                .height(48.dp)
+                .fillMaxWidth()
+                .height(60.dp)
                 .constrainAs(imageListId) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                }
+                },
+            imagesList.value ?: emptyList(),
+            selectedImageUri.value,
+            onSelect = {
+                selectedImageUri.value = it
+            }
         )
     }
 }
@@ -98,9 +121,9 @@ fun PhotoDetailScreen() {
 @Composable
 fun SelectableImageItem(
     modifier: Modifier = Modifier,
-//    uri: String,
-//    isSelected: Boolean,
-//    onSelect: (String, Boolean) -> Unit
+    uri: String,
+    isSelected: Boolean,
+    onSelect: (String) -> Unit
 ) {
     Box(
         modifier.then(
@@ -108,14 +131,13 @@ fun SelectableImageItem(
                 .clip(RectangleShape)
                 .aspectRatio(1f)
                 .clickable {
-//                    onSelect(uri, !isSelected)
+                    onSelect.invoke(uri)
                 }
-//                .then(if (isSelected) Modifier.border(2.dp, primaryDefault) else Modifier)
+                .then(if (isSelected) Modifier.border(1.dp, Color.White) else Modifier)
         )
     ) {
         Image(
-            painterResource(R.drawable.test),
-//            rememberGlidePainter(request = uri, previewPlaceholder = R.drawable.ic_cross),
+            rememberGlidePainter(request = uri, previewPlaceholder = R.drawable.ic_cross),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier.then(Modifier.align(Alignment.Center)),
@@ -129,23 +151,17 @@ fun ImageCarouselItem() {
 }
 
 @Composable
-fun BottomImageList(modifier: Modifier = Modifier) {
+fun BottomImageList(
+    modifier: Modifier = Modifier,
+    imagesList: List<String>,
+    selectedImageUri: String,
+    onSelect: (String) -> Unit
+) {
+    println("imagesList $imagesList")
     LazyRow(modifier) {
-        items(8) {
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp))
+        itemsIndexed(imagesList) { _, uri: String ->
+            val isSelected = uri == selectedImageUri
+            SelectableImageItem(Modifier.padding(horizontal = 2.dp), uri, isSelected, onSelect)
         }
     }
-}
-
-@Composable
-@Preview
-fun PhotoDetailScreenPreview() {
-    PhotoDetailScreen()
 }

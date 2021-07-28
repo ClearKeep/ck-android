@@ -25,7 +25,7 @@ import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable
-fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit, onClickImage: () -> Unit) {
+fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit, onClickImage: (uris: List<String>) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
@@ -60,7 +60,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                             Modifier.padding(24.dp, 16.dp),
                             getImageUriStrings(message)
                         ) {
-                            onClickImage.invoke()
+                            onClickImage.invoke(getImageUriStrings(message))
                         }
                     } else if (isFileMessage(message)) {
                         FileMessageContent(getFileUriStrings(message)) {
