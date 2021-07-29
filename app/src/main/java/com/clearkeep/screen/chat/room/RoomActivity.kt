@@ -125,6 +125,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                     }
                     composable("invite_group_screen") {
                         selectedItem.clear()
+                        inviteGroupViewModel.updateContactList()
                         InviteGroupScreen(
                             AddMemberUIType,
                             inviteGroupViewModel,

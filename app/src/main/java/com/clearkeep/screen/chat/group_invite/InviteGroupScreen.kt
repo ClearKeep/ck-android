@@ -213,7 +213,7 @@ fun InviteGroupScreen(
                     onClick = {
                         if (useCustomServerChecked.value) {
                             val people = getPeopleFromLink(urlOtherServer.value)
-                            if (people?.userId != inviteGroupViewModel.getClientId()&&people?.domain != inviteGroupViewModel.getDomain()){
+                            if (people?.userId != inviteGroupViewModel.getClientId()){
                                 if (isCreateDirectGroup) {
                                     people?.let { onDirectFriendSelected(it) }
                                 } else {

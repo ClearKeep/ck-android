@@ -57,7 +57,9 @@ fun HomeScreen(
     val showJoinServer = homeViewModel.selectingJoinServer.observeAsState()
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
     val profile = homeViewModel.profile.observeAsState()
+    val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
 
+    SwipeRefresh(state = rememberSwipeRefreshState(swipeRefreshState.value == true), onRefresh = { homeViewModel.onPullToRefresh() }) {
     Row(
         Modifier
             .fillMaxSize()
@@ -91,7 +93,7 @@ fun HomeScreen(
             }
         }
 
-    }
+    }}
     AnimatedVisibility(
         visible = rememberStateSiteMenu.value,
         enter = slideInHorizontally(
@@ -510,9 +512,7 @@ fun WorkSpaceView(
 ) {
     val searchKey = remember { mutableStateOf("") }
     val activeServer = homeViewModel.currentServer.observeAsState()
-    val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
 
-    SwipeRefresh(state = rememberSwipeRefreshState(swipeRefreshState.value == true), onRefresh = { homeViewModel.onPullToRefresh() },modifier = Modifier.padding(end = 50.dp)) {
         Column(
             Modifier
                 .fillMaxWidth()
@@ -559,8 +559,6 @@ fun WorkSpaceView(
                 )
             }
         }
-    }
-
 }
 
 @Composable

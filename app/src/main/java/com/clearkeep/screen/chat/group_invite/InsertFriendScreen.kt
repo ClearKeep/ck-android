@@ -62,7 +62,7 @@ fun InsertFriendScreen(
                     onClick = {
                         val people = getPeopleFromLink(link.value)
                         if (people != null) {
-                            if (people?.userId != inviteGroupViewModel.getClientId() && people?.userId != inviteGroupViewModel.getDomain()) {
+                            if (people.userId != inviteGroupViewModel.getClientId()) {
                                 onInsertFriend(people)
                             } else {
                                 Toast.makeText(context,"Error user !",Toast.LENGTH_SHORT).show()

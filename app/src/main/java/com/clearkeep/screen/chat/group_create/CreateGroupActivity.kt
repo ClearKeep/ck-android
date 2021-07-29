@@ -78,6 +78,7 @@ class CreateGroupActivity : AppCompatActivity() {
                         )
                     }
                     composable("insert_friend") {
+                        inviteGroupViewModel.updateContactList()
                         InsertFriendScreen(
                             inviteGroupViewModel,
                             navController,

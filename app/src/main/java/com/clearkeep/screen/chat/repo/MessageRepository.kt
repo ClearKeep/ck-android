@@ -58,7 +58,7 @@ class MessageRepository @Inject constructor(
 
     suspend fun getMessages(groupId: Long, owner: Owner) = messageDAO.getMessages(groupId, owner.domain, owner.clientId)
 
-    suspend fun getMessage(messageId: String) = messageDAO.getMessage(messageId)
+    suspend fun getMessage(messageId: String,groupId: Long) = messageDAO.getMessage(messageId,groupId)
 
     suspend fun getUnreadMessage(groupId: Long, domain: String, ourClientId: String) : List<Message> {
         val group = groupDAO.getGroupById(groupId, domain, ourClientId)!!
@@ -74,7 +74,7 @@ class MessageRepository @Inject constructor(
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
                     .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt)
+                    .setLastMessageAt(lastMessageAt-(10*60*60*1000))
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val messages = responses.lstMessageList.map { parseMessageResponse(it, owner) }
@@ -117,7 +117,7 @@ class MessageRepository @Inject constructor(
     }
 
     private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner,): Message {
-        val oldMessage = messageDAO.getMessage(response.id)
+        val oldMessage = messageDAO.getMessage(response.id,response.groupId)
         if (oldMessage != null) {
             return oldMessage
         }
@@ -162,7 +162,7 @@ class MessageRepository @Inject constructor(
              * Need wait 1.5s to load old message before save unableDecryptMessage
              */
             delay(1500)
-            val oldMessage = messageDAO.getMessage(messageId)
+            val oldMessage = messageDAO.getMessage(messageId,groupId)
             if (oldMessage != null) {
                 printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
                 return oldMessage
