@@ -16,6 +16,9 @@ interface NoteDAO {
     @Update
     suspend fun updateNotes(note: Note)
 
+    @Query("SELECT * FROM note WHERE created_time = :createdTime")
+    suspend fun getNote(createdTime: Long): Note?
+
     @Query("SELECT * FROM note WHERE owner_domain = :domain AND owner_client_id = :ownerClientId ORDER BY generateId ASC")
     fun getNotesAsState(domain: String, ownerClientId: String): LiveData<List<Note>>
 }
