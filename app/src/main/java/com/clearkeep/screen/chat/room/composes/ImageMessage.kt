@@ -16,14 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
-import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
 @Composable
@@ -90,8 +92,9 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
+    val context = LocalContext.current
     Image(
-        painter = rememberGlidePainter(uri),
+        painter = rememberCoilPainter(uri, context.imageLoader),
         contentScale = ContentScale.Crop,
         contentDescription = null,
         modifier = Modifier

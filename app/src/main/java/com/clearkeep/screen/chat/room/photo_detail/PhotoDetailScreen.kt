@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import coil.imageLoader
 import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -84,7 +85,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
             }
             Text(senderName.value ?: "", Modifier.align(Alignment.TopCenter).padding(top = 12.dp), color = Color.White)
             Image(
-                rememberCoilPainter(selectedImageUri.value),
+                rememberCoilPainter(selectedImageUri.value, context.imageLoader),
                 null,
                 Modifier
                     .fillMaxSize(),
@@ -135,6 +136,7 @@ fun SelectableImageItem(
     isSelected: Boolean,
     onSelect: (String) -> Unit
 ) {
+    val context = LocalContext.current
     Box(
         modifier.then(
             Modifier
@@ -147,7 +149,7 @@ fun SelectableImageItem(
         )
     ) {
         Image(
-            rememberCoilPainter(uri),
+            rememberCoilPainter(uri, context.imageLoader),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier.then(Modifier.align(Alignment.Center)),

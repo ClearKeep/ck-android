@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.components.CKSimpleTheme
@@ -39,7 +40,7 @@ import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
-import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
@@ -137,6 +138,7 @@ fun ImageItem(
     isSelected: Boolean,
     onSelect: (String, Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     Box(
         modifier.then(
             Modifier
@@ -149,7 +151,7 @@ fun ImageItem(
         )
     ) {
         Image(
-            rememberGlidePainter(request = uri, previewPlaceholder = R.drawable.ic_cross),
+            rememberCoilPainter(request = uri, imageLoader = context.imageLoader, previewPlaceholder = R.drawable.ic_cross),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier
