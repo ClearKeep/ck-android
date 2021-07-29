@@ -147,13 +147,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
         try {
-            val clientId = data["nclient_id"] ?: ""
-            val clientDomain = data["nclient_workspace_domain"] ?: ""
+            val clientId = data["client_id"] ?: ""
+            val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["removed_member_id"] ?: ""
             printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain")
             groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
-            groupRepository.removeGroupOnWorkSpace(groupId,clientDomain,removedMember)
+            if (removedMember.isNotEmpty())
+                groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
             updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
             sendBroadcast(updateGroupIntent)

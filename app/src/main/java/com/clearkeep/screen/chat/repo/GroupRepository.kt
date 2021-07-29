@@ -160,7 +160,7 @@ class GroupRepository @Inject constructor(
             return@withContext false
         }
 
-    private suspend fun inviteToGroupFromAPI(invitedUser: User, groupId: Long,owner: Owner): GroupOuterClass.GroupObjectResponse2? =
+    private suspend fun inviteToGroupFromAPI(invitedUser: User, groupId: Long,owner: Owner): GroupOuterClass.BaseResponse? =
         withContext(Dispatchers.IO) {
             printlnCK("inviteToGroupFromAPI: $groupId ")
             try {
@@ -185,7 +185,7 @@ class GroupRepository @Inject constructor(
                     .build()
 
                 val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
-                printlnCK("inviteToGroupFromAPI: ${response.groupId} ${response.groupName}")
+                printlnCK("inviteToGroupFromAPI: ${response.success}")
                 return@withContext response
             } catch (e: Exception) {
                 printlnCK("inviteToGroupFromAPI error: $e")
