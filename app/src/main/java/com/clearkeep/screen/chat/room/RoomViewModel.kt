@@ -17,7 +17,9 @@ import com.clearkeep.utilities.getFileUrl
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
@@ -446,105 +448,111 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun uploadFile(urisList: List<String>, context: Context, groupId: Long, message: String?, isRegisteredGroup: Boolean?, receiverPeople: User?, appendFileSize: Boolean = false) {
-        if (!urisList.isNullOrEmpty()) {
-            if (!isValidFilesCount(urisList)) {
-                uploadFileResponse.value = Resource.error(
-                    "Failed to send message - Maximum number of attachments in a message reached (10)",
-                    null
-                )
-                return
-            }
-
-            if (!isValidFileSizes(context, urisList)) {
-                uploadFileResponse.value =
-                    Resource.error("Failed to send message - File is larger than 4 MB.", null)
-                return
-            }
-
-            val tempMessageUris = urisList.joinToString(" ")
-            val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
-            println("take photo tempMessageContent $tempMessageContent")
-            val tempMessageId = if (isNote.value == true) {
-                messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
-            } else {
-                messageRepository.saveMessage(
-                    Message(
-                        null,
-                        "",
-                        groupId,
-                        getOwner().domain,
-                        getOwner().clientId,
-                        getOwner().clientId,
-                        tempMessageContent,
-                        Calendar.getInstance().timeInMillis,
-                        Calendar.getInstance().timeInMillis,
-                        getOwner().domain,
-                        getOwner().clientId
+        withContext(Dispatchers.IO) {
+            if (!urisList.isNullOrEmpty()) {
+                if (!isValidFilesCount(urisList)) {
+                    uploadFileResponse.value = Resource.error(
+                        "Failed to send message - Maximum number of attachments in a message reached (10)",
+                        null
                     )
-                )
-            }
-            val fileUrls = mutableListOf<String>()
-            val filesSizeInBytes = mutableListOf<Long>()
-            urisList.forEach { uriString ->
-                val uri = Uri.parse(uriString)
-                val contentResolver = context.contentResolver
-                val mimeType = getFileMimeType(context, uri)
-                val fileName = getFileName(context, uri)
-                val byteStrings = mutableListOf<ByteString>()
-                val blockDigestStrings = mutableListOf<String>()
-                val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
-                val inputStream = contentResolver.openInputStream(uri)
-                var fileSize = 0L
-                var size: Int
-                size = inputStream?.read(byteArray) ?: 0
-                val fileDigest = MessageDigest.getInstance("MD5")
-                while (size > 0) {
-                    val blockDigest = MessageDigest.getInstance("MD5")
-                    blockDigest.update(byteArray, 0, size)
-                    val blockDigestByteArray = blockDigest.digest()
-                    val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
-                    blockDigestStrings.add(blockDigestString)
-                    fileDigest.update(byteArray, 0, size)
-                    byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
-                    fileSize += size
-                    size = inputStream?.read(byteArray) ?: 0
-                    val fileHashByteArray = fileDigest.digest()
-                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                    val url = chatRepository.uploadFile(
-                        mimeType,
-                        fileName.replace(" ", "_"),
-                        byteStrings,
-                        blockDigestStrings,
-                        fileHashString
-                    )
-                    fileUrls.add(url)
-                    filesSizeInBytes.add(fileSize)
+                    return@withContext
                 }
-            }
-            val fileUrlsString = if (appendFileSize) {
-                fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" ")
-            } else {
-                fileUrls.joinToString(" ")
-            }
-            val messageContent = if (message != null) "$fileUrlsString $message" else fileUrlsString
-            if (isNote.value == true) {
-                sendNote(messageContent,tempMessageId.toLong())
-            } else {
-                println("take photo upload success messageContent $messageContent")
-                if (isRegisteredGroup != null) {
-                    sendMessageToGroup(
-                        groupId,
-                        messageContent,
-                        isRegisteredGroup,
-                        tempMessageId.toInt()
-                    )
+
+                if (!isValidFileSizes(context, urisList)) {
+                    uploadFileResponse.value =
+                        Resource.error("Failed to send message - File is larger than 4 MB.", null)
+                    return@withContext
+                }
+
+                val tempMessageUris = urisList.joinToString(" ")
+                val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
+                println("take photo tempMessageContent $tempMessageContent")
+                val tempMessageId = if (isNote.value == true) {
+                    messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
                 } else {
-                    sendMessageToUser(
-                        receiverPeople!!,
-                        groupId,
-                        messageContent,
-                        tempMessageId.toInt()
+                    messageRepository.saveMessage(
+                        Message(
+                            null,
+                            "",
+                            groupId,
+                            getOwner().domain,
+                            getOwner().clientId,
+                            getOwner().clientId,
+                            tempMessageContent,
+                            Calendar.getInstance().timeInMillis,
+                            Calendar.getInstance().timeInMillis,
+                            getOwner().domain,
+                            getOwner().clientId
+                        )
                     )
+                }
+                val fileUrls = mutableListOf<String>()
+                val filesSizeInBytes = mutableListOf<Long>()
+                urisList.forEach { uriString ->
+                    val uri = Uri.parse(uriString)
+                    val contentResolver = context.contentResolver
+                    val mimeType = getFileMimeType(context, uri)
+                    val fileName = getFileName(context, uri)
+                    val byteStrings = mutableListOf<ByteString>()
+                    val blockDigestStrings = mutableListOf<String>()
+                    val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
+                    val inputStream = contentResolver.openInputStream(uri)
+                    var fileSize = 0L
+                    var size: Int
+                    size = inputStream?.read(byteArray) ?: 0
+                    val fileDigest = MessageDigest.getInstance("MD5")
+                    while (size > 0) {
+                        val blockDigest = MessageDigest.getInstance("MD5")
+                        blockDigest.update(byteArray, 0, size)
+                        val blockDigestByteArray = blockDigest.digest()
+                        val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
+                        blockDigestStrings.add(blockDigestString)
+                        fileDigest.update(byteArray, 0, size)
+                        byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
+                        fileSize += size
+                        size = inputStream?.read(byteArray) ?: 0
+                        val fileHashByteArray = fileDigest.digest()
+                        val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                        val url = chatRepository.uploadFile(
+                            mimeType,
+                            fileName.replace(" ", "_"),
+                            byteStrings,
+                            blockDigestStrings,
+                            fileHashString
+                        )
+                        fileUrls.add(url)
+                        filesSizeInBytes.add(fileSize)
+                    }
+                }
+                val fileUrlsString = if (appendFileSize) {
+                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
+                        .joinToString(" ")
+                } else {
+                    fileUrls.joinToString(" ")
+                }
+                val messageContent =
+                    if (message != null) "$fileUrlsString $message" else fileUrlsString
+                withContext(Dispatchers.Main) {
+                    if (isNote.value == true) {
+                        sendNote(messageContent, tempMessageId.toLong())
+                    } else {
+                        println("take photo upload success messageContent $messageContent")
+                        if (isRegisteredGroup != null) {
+                            sendMessageToGroup(
+                                groupId,
+                                messageContent,
+                                isRegisteredGroup,
+                                tempMessageId.toInt()
+                            )
+                        } else {
+                            sendMessageToUser(
+                                receiverPeople!!,
+                                groupId,
+                                messageContent,
+                                tempMessageId.toInt()
+                            )
+                        }
+                    }
                 }
             }
         }
