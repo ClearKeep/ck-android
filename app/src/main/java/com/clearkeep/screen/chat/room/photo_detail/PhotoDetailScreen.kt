@@ -41,6 +41,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
     val systemUiController = rememberSystemUiController()
     val imagesList = roomViewModel.imageDetailList.observeAsState()
+    val senderName = roomViewModel.imageDetailSenderName.observeAsState()
     val selectedImageUri = remember { mutableStateOf("") }
     val isShareDialogOpen = remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -51,7 +52,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
         )
     }
 
-    if (!imagesList.value.isNullOrEmpty()) {
+    if (!imagesList.value.isNullOrEmpty() && selectedImageUri.value.isEmpty()) {
         selectedImageUri.value = imagesList.value!![0]
     }
 
@@ -81,6 +82,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
                     tint = Color.White
                 )
             }
+            Text(senderName.value ?: "", Modifier.align(Alignment.TopCenter).padding(top = 12.dp), color = Color.White)
             Image(
                 rememberCoilPainter(selectedImageUri.value),
                 null,
@@ -204,7 +206,6 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
         }
     }
 }
-
 
 @Composable
 fun BottomImageList(

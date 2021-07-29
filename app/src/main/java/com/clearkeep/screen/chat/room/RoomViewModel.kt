@@ -79,6 +79,10 @@ class RoomViewModel @Inject constructor(
     val imageDetailList : LiveData<List<String>>
         get() = _imageDetailList
 
+    private val _imageDetailSenderName = MutableLiveData<String>()
+    val imageDetailSenderName : LiveData<String>
+        get() = _imageDetailSenderName
+
     fun setMessage(message: String) {
         _message.value = message
     }
@@ -558,6 +562,10 @@ class RoomViewModel @Inject constructor(
 
     fun setImageDetailList(list: List<String>) {
         _imageDetailList.value = list
+    }
+
+    fun setImageDetailSenderName(senderName: String) {
+        _imageDetailSenderName.value = senderName
     }
 
     private fun generatePhotoUri(context: Context): Uri {
