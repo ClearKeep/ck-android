@@ -4,7 +4,9 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.text.TextUtils
+import androidx.core.content.FileProvider
 import androidx.lifecycle.*
+import com.clearkeep.BuildConfig
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -16,10 +18,12 @@ import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.launch
+import java.io.File
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
 import javax.inject.Inject
 import java.math.BigInteger
+import java.text.SimpleDateFormat
 import java.util.*
 
 class RoomViewModel @Inject constructor(
@@ -68,6 +72,8 @@ class RoomViewModel @Inject constructor(
     private val _message = MutableLiveData<String>()
     val message : LiveData<String>
         get() = _message
+
+    private var _currentPhotoUri : Uri? = null
 
     fun setMessage(message: String) {
         _message.value = message
@@ -350,10 +356,10 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
-    fun addImage(uri: String) {
+    fun addImage() {
         val list = mutableListOf<String>()
         list.addAll(_imageUriSelected.value ?: emptyList())
-        list.add(uri)
+        list.add(_currentPhotoUri.toString())
         _imageUriSelected.value = list
     }
 
@@ -364,7 +370,7 @@ class RoomViewModel @Inject constructor(
         receiverPeople: User? = null
     ) {
         val imageUris = _imageUriSelected.value
-        _imageUriSelected.postValue(emptyList())
+        _imageUriSelected.value = emptyList()
         imageUris?.let {
             uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople)
         }
@@ -376,7 +382,7 @@ class RoomViewModel @Inject constructor(
         receiverPeople: User? = null
     ) {
         val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
-        _fileUriStaged.postValue(emptyMap())
+        _fileUriStaged.value = emptyMap()
         files?.let {
             uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople, appendFileSize = true)
         }
@@ -537,6 +543,24 @@ class RoomViewModel @Inject constructor(
 
     fun downloadFile(context: Context, url: String) {
         chatRepository.downloadFile(context, getFileNameFromUrl(url), getFileUrl(url))
+    }
+
+    fun getPhotoUri(context: Context) : Uri {
+        if (_currentPhotoUri == null) {
+            _currentPhotoUri = generatePhotoUri(context)
+        }
+        return _currentPhotoUri!!
+    }
+
+    private fun generatePhotoUri(context: Context): Uri {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+        val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+        return FileProvider.getUriForFile(
+            context.applicationContext,
+            BuildConfig.APPLICATION_ID + ".provider",
+            file
+        )
     }
 
     companion object {
