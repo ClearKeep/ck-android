@@ -132,19 +132,15 @@ class ChatRepository @Inject constructor(
     suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
         try {
             val request = NoteOuterClass.CreateNoteRequest.newBuilder()
-                .setTitle("title")
+                .setTitle("")
                 .setContent(ByteString.copyFrom(note.content, Charsets.UTF_8))
-                .setNoteType("1")
+                .setNoteType("")
                 .build()
             val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
-            printlnCK("create note success? ${response.success}")
-            printlnCK("create note error? ${response.errors.message}")
-            if (response.success) {
-                if (cachedNoteId == 0L) {
-                    messageRepository.saveNote(note)
-                } else {
-                    messageRepository.updateNote(note.copy(generateId = cachedNoteId))
-                }
+            if (cachedNoteId == 0L) {
+                messageRepository.saveNote(note.copy(createdTime = response.createdAt))
+            } else {
+                messageRepository.updateNote(note.copy(generateId = cachedNoteId, createdTime = response.createdAt))
             }
             return@withContext true
         } catch (e: Exception) {

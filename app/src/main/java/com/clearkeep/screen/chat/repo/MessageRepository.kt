@@ -109,16 +109,11 @@ class MessageRepository @Inject constructor(
                     server.hashKey
                 )
             )
-            val request = NoteOuterClass.Empty.newBuilder().build()
+            val request = NoteOuterClass.GetUserNotesRequest.newBuilder().build()
             val responses = notesGrpc.getUserNotes(request)
             val notes = responses.userNotesList.map { parseNoteResponse(it, owner) }
             if (notes.isNotEmpty()) {
                 noteDAO.insertNotes(notes)
-                //TODO: Update last sync time
-//                val lastMessage = messages.maxByOrNull { it.createdTime }
-//                if (lastMessage != null) {
-//                    updateLastSyncMessageTime(groupId, owner, lastMessage)
-//                }
             }
         } catch (e: Exception) {
             printlnCK("updateNotesFromAPI: $e")
@@ -169,13 +164,12 @@ class MessageRepository @Inject constructor(
         )
     }
 
-    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNote, owner: Owner): Note {
-        //TODO: Check if that note is old?
-//        val oldMessage = messageDAO.getMessage(response.id)
-//        if (oldMessage != null) {
-//            return oldMessage
-//        }
-        return Note(null, response.content.toString(Charsets.UTF_8), owner.domain, owner.clientId)
+    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNoteResponse, owner: Owner): Note {
+        val oldNote = noteDAO.getNote(response.createdAt)
+        if (oldNote != null) {
+            return oldNote
+        }
+        return Note(null, response.content.toString(Charsets.UTF_8), response.createdAt, owner.domain, owner.clientId)
     }
 
     suspend fun decryptMessage(
@@ -238,7 +232,7 @@ class MessageRepository @Inject constructor(
         insertMessage(message)
 
         val groupId = message.groupId
-        var room: ChatGroup? =
+        val room: ChatGroup? =
             groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
 
         if (room != null) {

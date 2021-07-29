@@ -165,7 +165,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun getNotes() : LiveData<List<Message>> {
-        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, 0L, 0L, it.ownerDomain, it.ownerClientId) } }
+        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, it.createdTime, it.createdTime, it.ownerDomain, it.ownerClientId) } }
     }
 
     private suspend fun updateGroupWithId(groupId: Long) {
@@ -311,7 +311,7 @@ class RoomViewModel @Inject constructor(
 
     private fun sendNote(message: String, cachedNoteId: Long = 0) {
         viewModelScope.launch {
-            chatRepository.sendNote(Note(null, message, domain, clientId), cachedNoteId)
+            chatRepository.sendNote(Note(null, message, Calendar.getInstance().timeInMillis, domain, clientId), cachedNoteId)
         }
     }
 
@@ -468,7 +468,7 @@ class RoomViewModel @Inject constructor(
                 val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
                 println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
-                    messageRepository.saveNote(Note(null, tempMessageContent, getOwner().domain, getOwner().clientId))
+                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
                 } else {
                     messageRepository.saveMessage(
                         Message(

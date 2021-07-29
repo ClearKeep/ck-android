@@ -12,7 +12,7 @@ import com.clearkeep.db.clear_keep.model.*
     UserEntity::class,
     Server::class,
     Note::class
-], version = 7, exportSchema = false)
+], version = 8, exportSchema = false)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
     abstract fun serverDao(): ServerDAO
