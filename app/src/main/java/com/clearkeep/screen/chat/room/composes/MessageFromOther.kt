@@ -19,7 +19,7 @@ import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.*
 
 @Composable
-fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>) -> Unit) {
+fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
     Column {
@@ -87,7 +87,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                             Modifier.padding(24.dp, 16.dp),
                                             getImageUriStrings(message)
                                         ) {
-                                            onClickImage.invoke(getImageUriStrings(message))
+                                            onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
                                         }
                                     } else if (isFileMessage(message)) {
                                         FileMessageContent(getFileUriStrings(message)) {

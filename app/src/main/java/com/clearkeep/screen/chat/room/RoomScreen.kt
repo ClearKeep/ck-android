@@ -162,8 +162,9 @@ fun RoomScreen(
                                 onClickFile = {
                                     roomViewModel.downloadFile(context, it)
                                 },
-                                onClickImage = {
-                                    roomViewModel.setImageDetailList(it)
+                                onClickImage = { uris: List<String>, senderName: String ->
+                                    roomViewModel.setImageDetailList(uris)
+                                    roomViewModel.setImageDetailSenderName(senderName)
                                     navHostController.navigate("photo_detail")
                                 }
                             )
