@@ -30,6 +30,7 @@ fun ProfileScreen(
     onCloseView: () -> Unit,
     onChangePassword: () -> Unit,
     onCopyToClipBoard: () -> Unit,
+    onNavigateToOtp: () -> Unit
 ) {
     val versionName = BuildConfig.VERSION_NAME
     val env = BuildConfig.FLAVOR
@@ -99,7 +100,7 @@ fun ProfileScreen(
                             Spacer(Modifier.height(8.dp))
                             ChangePassword(onChangePassword)
                             Spacer(Modifier.height(24.dp))
-                            TwoFaceAuthView (authCheckedChange)
+                            TwoFaceAuthView (authCheckedChange, onNavigateToOtp)
                             Spacer(Modifier.height(24.dp))
 
                             Column(
@@ -250,7 +251,7 @@ fun ChangePassword(onChangePassword: () -> Unit) {
 }
 
 @Composable
-fun TwoFaceAuthView(mutableState: MutableState<Boolean>) {
+fun TwoFaceAuthView(mutableState: MutableState<Boolean>, onNavigateToOtp: () -> Unit) {
     Column() {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText("Two Factors Authentication",
@@ -263,9 +264,16 @@ fun TwoFaceAuthView(mutableState: MutableState<Boolean>) {
             ) {
                 Switch(
                     checked = mutableState.value,
-                    onCheckedChange = { mutableState.value = it },
-                    colors = SwitchDefaults.colors(checkedThumbColor = primaryDefault,checkedTrackColor = primaryDefault,
-                    uncheckedThumbColor = grayscale3,uncheckedTrackColor = grayscale3),
+                    onCheckedChange = {
+                        mutableState.value = it
+                        if (it) {
+                            onNavigateToOtp.invoke()
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,
+                        uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
+                    ),
                     modifier = Modifier
                         .width(64.dp)
                         .height(36.dp)
