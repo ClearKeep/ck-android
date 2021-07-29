@@ -60,7 +60,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                             Modifier.padding(24.dp, 16.dp),
                             getImageUriStrings(message)
                         ) {
-                            onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
+                            onClickImage.invoke(getImageUriStrings(message), "You")
                         }
                     } else if (isFileMessage(message)) {
                         FileMessageContent(getFileUriStrings(message)) {
