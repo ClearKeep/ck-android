@@ -418,6 +418,7 @@ class RoomViewModel @Inject constructor(
         val list = mutableListOf<String>()
         list.addAll(_imageUriSelected.value ?: emptyList())
         list.add(_currentPhotoUri.toString())
+        _currentPhotoUri = null
         _imageUriSelected.value = list
     }
 
