@@ -18,6 +18,7 @@ import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -424,7 +425,7 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
-    private suspend fun uploadImage(
+    private fun uploadImage(
         context: Context,
         groupId: Long = 0L,
         message: String,
@@ -438,7 +439,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    suspend fun uploadFile(
+    fun uploadFile(
         context: Context, groupId: Long,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
@@ -446,32 +447,54 @@ class RoomViewModel @Inject constructor(
         val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
         _fileUriStaged.value = emptyMap()
         files?.let {
-            uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople, appendFileSize = true)
+            uploadFile(
+                it,
+                context,
+                groupId,
+                null,
+                isRegisteredGroup,
+                receiverPeople,
+                appendFileSize = true
+            )
         }
     }
 
-    private suspend fun uploadFile(urisList: List<String>, context: Context, groupId: Long, message: String?, isRegisteredGroup: Boolean?, receiverPeople: User?, appendFileSize: Boolean = false) {
-        withContext(Dispatchers.IO) {
-            if (!urisList.isNullOrEmpty()) {
-                if (!isValidFilesCount(urisList)) {
-                    uploadFileResponse.value = Resource.error(
+    private fun uploadFile(
+        urisList: List<String>,
+        context: Context,
+        groupId: Long,
+        message: String?,
+        isRegisteredGroup: Boolean?,
+        receiverPeople: User?,
+        appendFileSize: Boolean = false
+    ) {
+        if (!urisList.isNullOrEmpty()) {
+            if (!isValidFilesCount(urisList)) {
+                uploadFileResponse.postValue(
+                    Resource.error(
                         "Failed to send message - Maximum number of attachments in a message reached (10)",
                         null
                     )
-                    return@withContext
-                }
+                )
+                return
+            }
 
-                if (!isValidFileSizes(context, urisList)) {
-                    uploadFileResponse.value =
-                        Resource.error("Failed to send message - File is larger than 4 MB.", null)
-                    return@withContext
-                }
-
+            GlobalScope.launch {
                 val tempMessageUris = urisList.joinToString(" ")
-                val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
+                val tempMessageContent =
+                    if (message != null) "$tempMessageUris $message" else tempMessageUris
                 println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
-                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId, true))
+                    messageRepository.saveNote(
+                        Note(
+                            null,
+                            tempMessageContent,
+                            Calendar.getInstance().timeInMillis,
+                            getOwner().domain,
+                            getOwner().clientId,
+                            true
+                        )
+                    )
                 } else {
                     messageRepository.saveMessage(
                         Message(
@@ -514,21 +537,21 @@ class RoomViewModel @Inject constructor(
                         byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
                         fileSize += size
                         size = inputStream?.read(byteArray) ?: 0
-                        val fileHashByteArray = fileDigest.digest()
-                        val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                        val url = chatRepository.uploadFile(
-                            mimeType,
-                            fileName.replace(" ", "_"),
-                            byteStrings,
-                            blockDigestStrings,
-                            fileHashString
-                        )
-                        fileUrls.add(url)
-                        filesSizeInBytes.add(fileSize)
                     }
+                    val fileHashByteArray = fileDigest.digest()
+                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                    val url = chatRepository.uploadFile(
+                        mimeType,
+                        fileName.replace(" ", "_"),
+                        byteStrings,
+                        blockDigestStrings,
+                        fileHashString
+                    )
+                    fileUrls.add(url)
+                    filesSizeInBytes.add(fileSize)
                 }
                 val fileUrlsString = if (appendFileSize) {
-                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
+                    fileUrls.filter{ it.isNotBlank() }.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
                         .joinToString(" ")
                 } else {
                     fileUrls.joinToString(" ")
