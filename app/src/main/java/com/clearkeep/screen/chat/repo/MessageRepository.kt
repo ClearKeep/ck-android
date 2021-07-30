@@ -267,6 +267,18 @@ class MessageRepository @Inject constructor(
         return message
     }
 
+    suspend fun clearTempMessage() {
+        withContext(Dispatchers.IO) {
+            messageDAO.deleteTempMessages()
+        }
+    }
+
+    suspend fun clearTempNotes() {
+        withContext(Dispatchers.IO) {
+            noteDAO.deleteTempNotes()
+        }
+    }
+
     suspend fun saveNote(note: Note) : Long {
         return insertNote(note)
     }

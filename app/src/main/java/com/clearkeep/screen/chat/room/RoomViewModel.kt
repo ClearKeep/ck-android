@@ -113,6 +113,7 @@ class RoomViewModel @Inject constructor(
         this.friendDomain = friendDomain
 
         viewModelScope.launch {
+            messageRepository.clearTempMessage()
             val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
@@ -140,6 +141,7 @@ class RoomViewModel @Inject constructor(
         this.clientId = ownerClientId
         _isNote.value = true
         viewModelScope.launch {
+            messageRepository.clearTempNotes()
             updateNotesFromRemote()
         }
     }
@@ -469,7 +471,7 @@ class RoomViewModel @Inject constructor(
                 val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
                 println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
-                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId))
+                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId, true))
                 } else {
                     messageRepository.saveMessage(
                         Message(
