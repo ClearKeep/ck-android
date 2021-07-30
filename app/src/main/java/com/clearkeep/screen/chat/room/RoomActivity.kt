@@ -14,10 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
-import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKInsetTheme
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
@@ -44,6 +40,8 @@ import android.content.IntentFilter
 import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.compose.*
+import com.clearkeep.screen.chat.room.photo_detail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
 
@@ -168,6 +166,13 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                             roomViewModel,
                             navController
                         )
+                    }
+                    composable("photo_detail") {
+                        PhotoDetailScreen(
+                            roomViewModel,
+                        ) {
+                            navController.popBackStack()
+                        }
                     }
                 }
             }

@@ -11,10 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -38,16 +35,18 @@ import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import android.net.Uri
+import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.content.FileProvider
 import androidx.core.os.postDelayed
 import com.clearkeep.BuildConfig
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.io.File
@@ -64,7 +63,7 @@ fun RoomScreen(
     onFinishActivity: () -> Unit,
     onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
-    println("recomposition screen")
+    val systemUiController = rememberSystemUiController()
     val group = roomViewModel.group.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
@@ -73,6 +72,13 @@ fun RoomScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
+
+    SideEffect {
+        systemUiController.setSystemBarsColor(
+            color = Color.Transparent,
+            darkIcons = true
+        )
+    }
 
     group.value?.let { group ->
         if (group.groupId != GROUP_ID_TEMPO) {
@@ -153,9 +159,15 @@ fun RoomScreen(
                                 clients = group.clientList,
                                 myClientId = roomViewModel.clientId,
                                 group.isGroup(),
-                            ) {
-                                roomViewModel.downloadFile(context, it)
-                            }
+                                onClickFile = {
+                                    roomViewModel.downloadFile(context, it)
+                                },
+                                onClickImage = { uris: List<String>, senderName: String ->
+                                    roomViewModel.setImageDetailList(uris)
+                                    roomViewModel.setImageDetailSenderName(senderName)
+                                    navHostController.navigate("photo_detail")
+                                }
+                            )
                         }
                     }
                     SendBottomCompose(
@@ -262,7 +274,6 @@ fun UploadPhotoDialog(
     onNavigateToAlbums: () -> Unit,
     onTakePhoto: () -> Unit
 ) {
-    println("recomposition dialog")
     val context = LocalContext.current
 
     val requestStoragePermissionLauncher = rememberLauncherForActivityResult(

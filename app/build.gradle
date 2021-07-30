@@ -244,7 +244,7 @@ dependencies {
     implementation 'jp.wasabeef:glide-transformations:4.0.0'
     implementation 'net.colindodd:toggleimagebutton:1.2'
 
-    implementation "com.google.accompanist:accompanist-glide:0.9.0"
+    implementation "com.google.accompanist:accompanist-coil:0.9.0"
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.9.0"
     implementation "com.google.accompanist:accompanist-insets:0.9.0"
     implementation "com.google.accompanist:accompanist-swiperefresh:0.9.0"

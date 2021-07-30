@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.navigate
+import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
 import com.clearkeep.components.grayscale1
@@ -45,7 +46,7 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
-import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.coil.rememberCoilPainter
 
 @ExperimentalComposeUiApi
 @Composable
@@ -169,13 +170,15 @@ fun SendBottomCompose(
 
 @Composable
 fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
+    val context = LocalContext.current
     Box(
         Modifier
             .size(56.dp)
     ) {
         Image(
-            painter = rememberGlidePainter(
-                request = uri,
+            painter = rememberCoilPainter(
+                uri,
+                imageLoader = context.imageLoader,
                 previewPlaceholder = R.drawable.ic_cross
             ), contentDescription = "", contentScale = ContentScale.Crop,
             modifier = Modifier.clip(RoundedCornerShape(16.dp))
