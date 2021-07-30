@@ -13,6 +13,7 @@ import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
+import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import message.MessageOuterClass
 import note.NoteOuterClass
@@ -23,6 +24,8 @@ import org.whispersystems.libsignal.protocol.CiphertextMessage
 import upload_file.UploadFileOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class ChatRepository @Inject constructor(
@@ -157,7 +160,6 @@ class ChatRepository @Inject constructor(
         blockHash: List<String>,
         fileHash: String
     ): String {
-//        val liveData = MutableLiveData<String>()
         return withContext(Dispatchers.IO) {
             try {
                 if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
@@ -173,37 +175,43 @@ class ChatRepository @Inject constructor(
 
                     return@withContext response.fileUrl
                 } else {
-//                    val responseObserver =
-//                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
-//                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
-//                                printlnCK("onNext response" + value?.fileUrl)
-//                                liveData.postValue(value?.fileUrl ?: "")
-//                            }
-//
-//                            override fun onError(t: Throwable?) {
-//                                printlnCK("onError $t")
-//                            }
-//
-//                            override fun onCompleted() {
-//                                printlnCK("onCompleted")
-//                            }
-//                        }
-//                    val requestObserver = dynamicAPIProvider.provideUploadFileStub()
-//                        .uploadChunkedFile(responseObserver)
-//
-//                    byteStrings.forEachIndexed { index, byteString ->
-//                        val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
-//                            .setFileName(fileName)
-//                            .setFileContentType(mimeType)
-//                            .setFileDataBlock(byteString)
-//                            .setFileDataBlockHash(blockHash[index])
-//                            .setFileHash(fileHash)
-//                            .build()
-//
-//                        requestObserver.onNext(request)
-//                    }
-//                    requestObserver.onCompleted()
-                    return@withContext ""
+                    val result = suspendCancellableCoroutine <String?> {
+                        cont ->
+                        val responseObserver =
+                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
+                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
+                                printlnCK("onNext response" + value?.fileUrl)
+                                if (value?.fileUrl?.isNotBlank() == true) {
+                                    cont.resume(value.fileUrl)
+                                }
+                            }
+
+                            override fun onError(t: Throwable?) {
+                                cont.resume("")
+                            }
+
+                            override fun onCompleted() {
+                                printlnCK("onCompleted")
+                            }
+                        }
+
+                        val requestObserver = dynamicAPIProvider.provideUploadFileStub()
+                            .uploadChunkedFile(responseObserver)
+
+                        byteStrings.forEachIndexed { index, byteString ->
+                            val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
+                                .setFileName(fileName)
+                                .setFileContentType(mimeType)
+                                .setFileDataBlock(byteString)
+                                .setFileDataBlockHash(blockHash[index])
+                                .setFileHash(fileHash)
+                                .build()
+
+                            requestObserver.onNext(request)
+                        }
+                        requestObserver.onCompleted()
+                    }
+                    return@withContext result ?: ""
                 }
             } catch (e: Exception) {
                 printlnCK("uploadFileToGroup $e")
