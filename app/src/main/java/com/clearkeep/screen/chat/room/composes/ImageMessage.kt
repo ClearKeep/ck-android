@@ -27,7 +27,6 @@ import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
 import com.google.accompanist.coil.rememberCoilPainter
-import com.google.accompanist.glide.rememberGlidePainter
 import com.google.accompanist.imageloading.ImageLoadState
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
@@ -101,6 +100,7 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
+    val context = LocalContext.current
     val clickableModifier = if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
     val painter = rememberCoilPainter(uri, context.imageLoader)
     Box(modifier) {
