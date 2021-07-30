@@ -94,6 +94,13 @@ class RoomViewModel @Inject constructor(
         _message.value = message
     }
 
+    fun clearTempMessage() {
+        viewModelScope.launch {
+            messageRepository.clearTempMessage()
+            messageRepository.clearTempNotes()
+        }
+    }
+
     fun joinRoom(
         ownerDomain: String,
         ownerClientId: String,
@@ -114,7 +121,6 @@ class RoomViewModel @Inject constructor(
         this.friendDomain = friendDomain
 
         viewModelScope.launch {
-            messageRepository.clearTempMessage()
             val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
@@ -142,7 +148,6 @@ class RoomViewModel @Inject constructor(
         this.clientId = ownerClientId
         _isNote.value = true
         viewModelScope.launch {
-            messageRepository.clearTempNotes()
             updateNotesFromRemote()
         }
     }
@@ -673,6 +678,11 @@ class RoomViewModel @Inject constructor(
             BuildConfig.APPLICATION_ID + ".provider",
             file
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        printlnCK("Share file cancel onCleared")
     }
 
     companion object {
