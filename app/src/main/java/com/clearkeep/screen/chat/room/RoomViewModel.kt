@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.room
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.text.TextUtils
@@ -12,6 +13,8 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.fileSizeRegex
+import com.clearkeep.utilities.files.getFileName
+import com.clearkeep.utilities.files.getFileSize
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
 import com.clearkeep.utilities.network.Resource
@@ -484,6 +487,12 @@ class RoomViewModel @Inject constructor(
                 return
             }
 
+            if (!isValidFileSizes(context, urisList)) {
+                uploadFileResponse.value =
+                    Resource.error("Failed to send message - File is larger than 1 GB.", null)
+                return
+            }
+
             GlobalScope.launch {
                 val tempMessageUris = urisList.joinToString(" ")
                 val tempMessageContent =
@@ -522,8 +531,9 @@ class RoomViewModel @Inject constructor(
                 urisList.forEach { uriString ->
                     val uri = Uri.parse(uriString)
                     val contentResolver = context.contentResolver
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     val mimeType = getFileMimeType(context, uri)
-                    val fileName = getFileName(context, uri)
+                    val fileName = uri.getFileName(context)
                     val byteStrings = mutableListOf<ByteString>()
                     val blockDigestStrings = mutableListOf<String>()
                     val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
@@ -593,38 +603,22 @@ class RoomViewModel @Inject constructor(
         fileUriList != null && fileUriList.size <= FILE_MAX_COUNT
 
     private fun isValidFileSizes(context: Context, fileUriList: List<String>): Boolean {
+        var totalFileSize = 0L
         fileUriList.forEach {
-            val fileSize = getFileSize(context, Uri.parse(it))
-            printlnCK("File size $fileSize")
-            if (fileSize > FILE_MAX_SIZE) {
-                return false
-            }
+            val uri = Uri.parse(it)
+            totalFileSize += uri.getFileSize(context)
+        }
+        if (totalFileSize > FILE_MAX_SIZE) {
+            return false
         }
         return true
     }
 
     private fun getFileMimeType(context: Context, uri: Uri): String {
         val contentResolver = context.contentResolver
+        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val mimeType = contentResolver.getType(uri)
         return mimeType ?: ""
-    }
-
-    fun getFileName(context: Context, uri: Uri): String {
-        val contentResolver = context.contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-        }
-        return ""
-    }
-
-    private fun getFileSize(context: Context, uri: Uri): Long {
-        val contentResolver = context.contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
-        }
-        return 0L
     }
 
     private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
@@ -688,7 +682,7 @@ class RoomViewModel @Inject constructor(
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10
-        private const val FILE_MAX_SIZE = 4_000_000 //4MB
+        private const val FILE_MAX_SIZE = 1_000_000_000 //1GB
     }
 }
 
