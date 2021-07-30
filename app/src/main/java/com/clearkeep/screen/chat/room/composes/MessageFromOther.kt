@@ -1,7 +1,5 @@
 package com.clearkeep.screen.chat.room.composes
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -13,9 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.clearkeep.components.*
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
@@ -23,7 +19,7 @@ import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.*
 
 @Composable
-fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit) {
+fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
     Column {
@@ -91,7 +87,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                             Modifier.padding(24.dp, 16.dp),
                                             getImageUriStrings(message)
                                         ) {
-                                            onClickFile.invoke(it)
+                                            onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
                                         }
                                     } else if (isFileMessage(message)) {
                                         FileMessageContent(getFileUriStrings(message)) {
