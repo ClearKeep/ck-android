@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import com.clearkeep.db.clear_keep.model.Note
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
@@ -14,6 +15,7 @@ import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.*
 import message.MessageOuterClass
+import note.NoteOuterClass
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.SenderKeyName
@@ -122,6 +124,27 @@ class ChatRepository @Inject constructor(
             return@withContext true
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
+        }
+
+        return@withContext false
+    }
+
+    suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            val request = NoteOuterClass.CreateNoteRequest.newBuilder()
+                .setTitle("")
+                .setContent(ByteString.copyFrom(note.content, Charsets.UTF_8))
+                .setNoteType("")
+                .build()
+            val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
+            if (cachedNoteId == 0L) {
+                messageRepository.saveNote(note.copy(createdTime = response.createdAt))
+            } else {
+                messageRepository.updateNote(note.copy(generateId = cachedNoteId, createdTime = response.createdAt))
+            }
+            return@withContext true
+        } catch (e: Exception) {
+            printlnCK("create note $e")
         }
 
         return@withContext false

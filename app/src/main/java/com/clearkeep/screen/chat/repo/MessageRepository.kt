@@ -3,8 +3,10 @@ package com.clearkeep.screen.chat.repo
 import android.text.TextUtils
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
+import com.clearkeep.db.clear_keep.dao.NoteDAO
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clear_keep.model.Note
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
@@ -21,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import message.MessageOuterClass
+import note.NoteOuterClass
 import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.SessionBuilder
@@ -36,6 +39,7 @@ import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import signal.Signal
 import signal.SignalKeyDistributionGrpc
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -45,6 +49,7 @@ class MessageRepository @Inject constructor(
     // dao
     private val groupDAO: GroupDAO,
     private val messageDAO: MessageDAO,
+    private val noteDAO: NoteDAO,
 
     // network calls
     private val apiProvider: ParamAPIProvider,
@@ -56,6 +61,8 @@ class MessageRepository @Inject constructor(
 ) {
     fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
 
+    fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
+
     suspend fun getMessages(groupId: Long, owner: Owner) = messageDAO.getMessages(groupId, owner.domain, owner.clientId)
 
     suspend fun getMessage(messageId: String,groupId: Long) = messageDAO.getMessage(messageId,groupId)
@@ -66,6 +73,8 @@ class MessageRepository @Inject constructor(
     }
 
     private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
+
+    private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
     suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
         try {
@@ -90,7 +99,32 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    private suspend fun updateLastSyncMessageTime(groupId: Long, owner: Owner, lastMessage: Message) {
+    suspend fun updateNotesFromAPI(owner: Owner) = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext
+            val notesGrpc = apiProvider.provideNotesBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
+            val request = NoteOuterClass.GetUserNotesRequest.newBuilder().build()
+            val responses = notesGrpc.getUserNotes(request)
+            val notes = responses.userNotesList.map { parseNoteResponse(it, owner) }
+            if (notes.isNotEmpty()) {
+                noteDAO.insertNotes(notes)
+            }
+        } catch (e: Exception) {
+            printlnCK("updateNotesFromAPI: $e")
+        }
+    }
+
+    private suspend fun updateLastSyncMessageTime(
+        groupId: Long,
+        owner: Owner,
+        lastMessage: Message
+    ) {
         printlnCK("updateLastSyncMessageTime, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId, owner.domain, owner.clientId)!!
         val updateGroup = ChatGroup(
@@ -128,6 +162,14 @@ class MessageRepository @Inject constructor(
             response.message,
             owner
         )
+    }
+
+    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNoteResponse, owner: Owner): Note {
+        val oldNote = noteDAO.getNote(response.createdAt)
+        if (oldNote != null) {
+            return oldNote
+        }
+        return Note(null, response.content.toString(Charsets.UTF_8), response.createdAt, owner.domain, owner.clientId)
     }
 
     suspend fun decryptMessage(
@@ -185,12 +227,13 @@ class MessageRepository @Inject constructor(
         )
     }
 
-    suspend fun saveNewMessage(message: Message) : Message {
+    suspend fun saveNewMessage(message: Message): Message {
         printlnCK("saveNewMessage: ${message.messageId}, ${message.message}")
         insertMessage(message)
 
         val groupId = message.groupId
-        var room: ChatGroup? = groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
+        val room: ChatGroup? =
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
 
         if (room != null) {
             // update last message in room
@@ -224,8 +267,28 @@ class MessageRepository @Inject constructor(
         return message
     }
 
+    suspend fun clearTempMessage() {
+        withContext(Dispatchers.IO) {
+            messageDAO.deleteTempMessages()
+        }
+    }
+
+    suspend fun clearTempNotes() {
+        withContext(Dispatchers.IO) {
+            noteDAO.deleteTempNotes()
+        }
+    }
+
+    suspend fun saveNote(note: Note) : Long {
+        return insertNote(note)
+    }
+
     suspend fun updateMessage(message: Message) {
         messageDAO.updateMessage(message)
+    }
+
+    suspend fun updateNote(note: Note) {
+        noteDAO.updateNotes(note)
     }
 
     suspend fun saveMessage(message: Message) : Int {

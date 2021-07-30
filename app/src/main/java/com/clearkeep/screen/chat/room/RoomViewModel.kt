@@ -17,7 +17,9 @@ import com.clearkeep.utilities.getFileUrl
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
@@ -73,6 +75,10 @@ class RoomViewModel @Inject constructor(
     val message : LiveData<String>
         get() = _message
 
+    private val _isNote = MutableLiveData<Boolean>()
+    val isNote : LiveData<Boolean>
+        get() = _isNote
+
     private var _currentPhotoUri : Uri? = null
 
     private val _imageDetailList = MutableLiveData<List<String>>()
@@ -107,6 +113,7 @@ class RoomViewModel @Inject constructor(
         this.friendDomain = friendDomain
 
         viewModelScope.launch {
+            messageRepository.clearTempMessage()
             val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
@@ -120,6 +127,22 @@ class RoomViewModel @Inject constructor(
             } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
                 updateGroupWithFriendId(friendId, friendDomain)
             }
+        }
+    }
+
+    fun initNotes(
+        ownerDomain: String,
+        ownerClientId: String,
+    ) {
+        if (ownerDomain.isBlank() || ownerClientId.isBlank()) {
+            throw IllegalArgumentException("domain and clientId must be not NULL")
+        }
+        this.domain = ownerDomain
+        this.clientId = ownerClientId
+        _isNote.value = true
+        viewModelScope.launch {
+            messageRepository.clearTempNotes()
+            updateNotesFromRemote()
         }
     }
 
@@ -141,6 +164,10 @@ class RoomViewModel @Inject constructor(
     fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
         printlnCK("getMessages: groupId $groupId")
         return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
+    }
+
+    fun getNotes() : LiveData<List<Message>> {
+        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, it.createdTime, it.createdTime, it.ownerDomain, it.ownerClientId) } }
     }
 
     private suspend fun updateGroupWithId(groupId: Long) {
@@ -175,6 +202,11 @@ class RoomViewModel @Inject constructor(
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
+    }
+
+    private suspend fun updateNotesFromRemote() {
+        val server = environment.getServer()
+        messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
@@ -262,6 +294,26 @@ class RoomViewModel @Inject constructor(
             }
         } else {
             chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+        }
+    }
+
+    fun sendNote(context: Context) {
+        viewModelScope.launch {
+            try {
+                if (!_imageUriSelected.value.isNullOrEmpty()) {
+                    uploadImage(context, message = _message.value ?: "")
+                } else {
+                    sendNote(_message.value ?: "")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun sendNote(message: String, cachedNoteId: Long = 0) {
+        viewModelScope.launch {
+            chatRepository.sendNote(Note(null, message, Calendar.getInstance().timeInMillis, domain, clientId), cachedNoteId)
         }
     }
 
@@ -368,11 +420,13 @@ class RoomViewModel @Inject constructor(
         val list = mutableListOf<String>()
         list.addAll(_imageUriSelected.value ?: emptyList())
         list.add(_currentPhotoUri.toString())
+        _currentPhotoUri = null
         _imageUriSelected.value = list
     }
 
     private suspend fun uploadImage(
-        context: Context, groupId: Long,
+        context: Context,
+        groupId: Long = 0L,
         message: String,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
@@ -397,92 +451,111 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun uploadFile(urisList: List<String>, context: Context, groupId: Long, message: String?, isRegisteredGroup: Boolean?, receiverPeople: User?, appendFileSize: Boolean = false) {
-        if (!urisList.isNullOrEmpty()) {
-            if (!isValidFilesCount(urisList)) {
-                uploadFileResponse.value = Resource.error(
-                    "Failed to send message - Maximum number of attachments in a message reached (10)",
-                    null
-                )
-                return
-            }
-
-            if (!isValidFileSizes(context, urisList)) {
-                uploadFileResponse.value =
-                    Resource.error("Failed to send message - File is larger than 4 MB.", null)
-                return
-            }
-
-            val tempMessageId = messageRepository.saveMessage(
-                Message(
-                    null,
-                    "",
-                    groupId,
-                    getOwner().domain,
-                    getOwner().clientId,
-                    getOwner().clientId,
-                    urisList.joinToString(" "),
-                    Calendar.getInstance().timeInMillis,
-                    Calendar.getInstance().timeInMillis,
-                    getOwner().domain,
-                    getOwner().clientId
-                )
-            )
-            val fileUrls = mutableListOf<String>()
-            val filesSizeInBytes = mutableListOf<Long>()
-            urisList.forEach { uriString ->
-                val uri = Uri.parse(uriString)
-                val contentResolver = context.contentResolver
-                val mimeType = getFileMimeType(context, uri)
-                val fileName = getFileName(context, uri)
-                val byteStrings = mutableListOf<ByteString>()
-                val blockDigestStrings = mutableListOf<String>()
-                val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
-                val inputStream = contentResolver.openInputStream(uri)
-                var fileSize = 0L
-                var size: Int
-                size = inputStream?.read(byteArray) ?: 0
-                val fileDigest = MessageDigest.getInstance("MD5")
-                while (size > 0) {
-                    val blockDigest = MessageDigest.getInstance("MD5")
-                    blockDigest.update(byteArray, 0, size)
-                    val blockDigestByteArray = blockDigest.digest()
-                    val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
-                    blockDigestStrings.add(blockDigestString)
-                    fileDigest.update(byteArray, 0, size)
-                    byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
-                    fileSize += size
-                    size = inputStream?.read(byteArray) ?: 0
-                    val fileHashByteArray = fileDigest.digest()
-                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                    val url = chatRepository.uploadFile(
-                        mimeType,
-                        fileName.replace(" ", "_"),
-                        byteStrings,
-                        blockDigestStrings,
-                        fileHashString
+        withContext(Dispatchers.IO) {
+            if (!urisList.isNullOrEmpty()) {
+                if (!isValidFilesCount(urisList)) {
+                    uploadFileResponse.value = Resource.error(
+                        "Failed to send message - Maximum number of attachments in a message reached (10)",
+                        null
                     )
-                    fileUrls.add(url)
-                    filesSizeInBytes.add(fileSize)
+                    return@withContext
+                }
+
+                if (!isValidFileSizes(context, urisList)) {
+                    uploadFileResponse.value =
+                        Resource.error("Failed to send message - File is larger than 4 MB.", null)
+                    return@withContext
+                }
+
+                val tempMessageUris = urisList.joinToString(" ")
+                val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
+                println("take photo tempMessageContent $tempMessageContent")
+                val tempMessageId = if (isNote.value == true) {
+                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId, true))
+                } else {
+                    messageRepository.saveMessage(
+                        Message(
+                            null,
+                            "",
+                            groupId,
+                            getOwner().domain,
+                            getOwner().clientId,
+                            getOwner().clientId,
+                            tempMessageContent,
+                            Calendar.getInstance().timeInMillis,
+                            Calendar.getInstance().timeInMillis,
+                            getOwner().domain,
+                            getOwner().clientId
+                        )
+                    )
+                }
+                val fileUrls = mutableListOf<String>()
+                val filesSizeInBytes = mutableListOf<Long>()
+                urisList.forEach { uriString ->
+                    val uri = Uri.parse(uriString)
+                    val contentResolver = context.contentResolver
+                    val mimeType = getFileMimeType(context, uri)
+                    val fileName = getFileName(context, uri)
+                    val byteStrings = mutableListOf<ByteString>()
+                    val blockDigestStrings = mutableListOf<String>()
+                    val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
+                    val inputStream = contentResolver.openInputStream(uri)
+                    var fileSize = 0L
+                    var size: Int
+                    size = inputStream?.read(byteArray) ?: 0
+                    val fileDigest = MessageDigest.getInstance("MD5")
+                    while (size > 0) {
+                        val blockDigest = MessageDigest.getInstance("MD5")
+                        blockDigest.update(byteArray, 0, size)
+                        val blockDigestByteArray = blockDigest.digest()
+                        val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
+                        blockDigestStrings.add(blockDigestString)
+                        fileDigest.update(byteArray, 0, size)
+                        byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
+                        fileSize += size
+                        size = inputStream?.read(byteArray) ?: 0
+                        val fileHashByteArray = fileDigest.digest()
+                        val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                        val url = chatRepository.uploadFile(
+                            mimeType,
+                            fileName.replace(" ", "_"),
+                            byteStrings,
+                            blockDigestStrings,
+                            fileHashString
+                        )
+                        fileUrls.add(url)
+                        filesSizeInBytes.add(fileSize)
+                    }
                 }
                 val fileUrlsString = if (appendFileSize) {
-                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }.joinToString(" ")
+                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
+                        .joinToString(" ")
                 } else {
                     fileUrls.joinToString(" ")
                 }
-                if (isRegisteredGroup != null) {
-                    sendMessageToGroup(
-                        groupId,
-                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
-                        isRegisteredGroup,
-                        tempMessageId
-                    )
-                } else {
-                    sendMessageToUser(
-                        receiverPeople!!,
-                        groupId,
-                        if (message != null) "$fileUrlsString $message" else fileUrlsString,
-                        tempMessageId
-                    )
+                val messageContent =
+                    if (message != null) "$fileUrlsString $message" else fileUrlsString
+                withContext(Dispatchers.Main) {
+                    if (isNote.value == true) {
+                        sendNote(messageContent, tempMessageId.toLong())
+                    } else {
+                        println("take photo upload success messageContent $messageContent")
+                        if (isRegisteredGroup != null) {
+                            sendMessageToGroup(
+                                groupId,
+                                messageContent,
+                                isRegisteredGroup,
+                                tempMessageId.toInt()
+                            )
+                        } else {
+                            sendMessageToUser(
+                                receiverPeople!!,
+                                groupId,
+                                messageContent,
+                                tempMessageId.toInt()
+                            )
+                        }
+                    }
                 }
             }
         }
