@@ -66,6 +66,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private var roomId: Long = 0
     private lateinit var domain: String
     private lateinit var clientId: String
+    private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
 
     @ExperimentalMaterialApi
@@ -87,6 +88,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         roomId = intent.getLongExtra(GROUP_ID, 0)
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
+        isNote = intent.getBooleanExtra(IS_NOTE, false)
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
         val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
 
@@ -95,7 +97,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
-        roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
+        if (isNote) {
+            roomViewModel.initNotes(domain, clientId)
+        } else {
+            roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
@@ -306,5 +312,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         const val CLIENT_ID = "client_id"
         const val FRIEND_ID = "remote_id"
         const val FRIEND_DOMAIN = "remote_domain"
+        const val IS_NOTE = "is_note"
     }
 }

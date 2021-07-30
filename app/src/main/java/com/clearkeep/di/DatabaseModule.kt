@@ -42,6 +42,12 @@ class DatabaseModule {
 
     @Singleton
     @Provides
+    fun provideNoteDAO(db: ClearKeepDatabase): NoteDAO {
+        return db.noteDao()
+    }
+
+    @Singleton
+    @Provides
     fun provideGroupDAO(db: ClearKeepDatabase): GroupDAO {
         return db.groupDao()
     }

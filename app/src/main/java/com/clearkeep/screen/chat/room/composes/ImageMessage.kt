@@ -25,7 +25,10 @@ import androidx.compose.ui.unit.sp
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.isTempMessage
 import com.google.accompanist.coil.rememberCoilPainter
+import com.google.accompanist.glide.rememberGlidePainter
+import com.google.accompanist.imageloading.ImageLoadState
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
 @Composable
@@ -38,7 +41,10 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
                 .size(130.dp), imageUris[0], onClickItem
         )
     } else {
-        Column(Modifier.wrapContentSize().padding(12.dp)) {
+        Column(
+            Modifier
+                .wrapContentSize()
+                .padding(12.dp)) {
             println("multi item grid")
             Row(Modifier.wrapContentSize()) {
                 for (i in 0..minOf(imageUris.size, 1)) {
@@ -51,7 +57,10 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
             Row(Modifier.wrapContentSize()) {
                 for (i in 2 until imageUris.size) {
                     if (i == 2 || (i == 3 && imageUris.size <= 4)) {
-                            ImageMessageItem(Modifier.size(110.dp).padding(4.dp), imageUris[i], onClickItem)
+                            ImageMessageItem(
+                                Modifier
+                                    .size(110.dp)
+                                    .padding(4.dp), imageUris[i], onClickItem)
                     } else {
                         Box(
                             Modifier
@@ -92,15 +101,24 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
-    val context = LocalContext.current
-    Image(
-        painter = rememberCoilPainter(uri, context.imageLoader),
-        contentScale = ContentScale.Crop,
-        contentDescription = null,
-        modifier = Modifier
-            .then(modifier)
-            .clip(RoundedCornerShape(16.dp))
-            .aspectRatio(1f)
-            .clickable { onClick(uri) }
-    )
+    val clickableModifier = if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
+    val painter = rememberCoilPainter(uri, context.imageLoader)
+    Box(modifier) {
+        Image(
+            painter = painter,
+            contentScale = ContentScale.Crop,
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+                .aspectRatio(1f)
+                .then(clickableModifier)
+        )
+        when (painter.loadState) {
+            is ImageLoadState.Loading -> {
+                Box(Modifier.fillMaxSize())
+            }
+            else -> {}
+        }
+    }
 }

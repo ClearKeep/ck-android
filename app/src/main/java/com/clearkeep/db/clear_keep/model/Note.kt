@@ -8,4 +8,8 @@ import androidx.room.PrimaryKey
 data class Note (
     @PrimaryKey(autoGenerate = true) val generateId: Long? = null,
     @ColumnInfo(name = "content") val content: String,
+    @ColumnInfo(name = "created_time") val createdTime: Long,
+    @ColumnInfo(name = "owner_domain") val ownerDomain: String,
+    @ColumnInfo(name = "owner_client_id") val ownerClientId: String,
+    @ColumnInfo(name = "isTemp") val isTemp: Boolean = false,
 )

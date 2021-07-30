@@ -17,8 +17,8 @@ fun getImageUriStrings(content: String): List<String> {
         it.value.split(" ")
     }.toMutableList()
     temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    temp.add(tempImageRegex2.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    return temp.flatten()
+    temp.add(tempImageRegex2.findAll(content).map { it.value.split(" ").filter{ isImageMessage(it) } }.toList().flatten())
+    return temp.flatten().map{ it.trim() }.filter { it.isNotBlank() }
 }
 
 fun getFileUriStrings(content: String): List<String> {

@@ -29,7 +29,6 @@ class HomeViewModel @Inject constructor(
     private val roomRepository: GroupRepository,
     private val serverRepository: ServerRepository,
     private val profileRepository: ProfileRepository,
-
     private val environment: Environment,
 
     private val authRepository: AuthRepository,

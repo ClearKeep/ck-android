@@ -53,6 +53,7 @@ fun HomeScreen(
     onNavigateNotificationSetting: () -> Unit,
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit,
+    onNavigateNotes: () -> Unit,
 ) {
     val showJoinServer = homeViewModel.selectingJoinServer.observeAsState()
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
@@ -81,7 +82,8 @@ fun HomeScreen(
                     gotoProfile = {
                         rememberStateSiteMenu.value = true
                     },
-                    onItemClickListener = gotoRoomById
+                    onItemClickListener = gotoRoomById,
+                    onNavigateNotes = onNavigateNotes
                 )
             } else {
                 JoinServerComposable(
@@ -92,7 +94,6 @@ fun HomeScreen(
                 )
             }
         }
-
     }}
     AnimatedVisibility(
         visible = rememberStateSiteMenu.value,
@@ -508,62 +509,66 @@ fun WorkSpaceView(
     gotoSearch: () -> Unit,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
     onItemClickListener: ((Long) -> Unit)?,
-    gotoProfile: () -> Unit
+    gotoProfile: () -> Unit,
+    onNavigateNotes: () -> Unit
 ) {
     val searchKey = remember { mutableStateOf("") }
     val activeServer = homeViewModel.currentServer.observeAsState()
 
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 16.dp, top = 20.dp)
-        ) {
-            Spacer(modifier = Modifier.size(24.dp))
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-                CKHeaderText(
-                    text = activeServer?.value?.serverName ?: "", modifier = Modifier
-                        .weight(0.66f), headerTextType = HeaderTextType.Large
-                )
-                Column(
-                    modifier = Modifier.clickable { gotoProfile.invoke() },
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_hamburger),
-                        null, alignment = Alignment.Center
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-            CKSearchBox(searchKey)
-            Spacer(modifier = Modifier.size(24.dp))
-            NoteView()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+    ) {
+        Spacer(modifier = Modifier.size(24.dp))
+        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            CKHeaderText(
+                text = activeServer?.value?.serverName ?: "", modifier = Modifier
+                    .weight(0.66f), headerTextType = HeaderTextType.Large
+            )
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-
+                modifier = Modifier.clickable { gotoProfile.invoke() },
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.size(24.dp))
-                ChatGroupView(
-                    homeViewModel, createGroupChat = createGroupChat,
-                    onItemClickListener = onItemClickListener
-                )
-                Spacer(modifier = Modifier.size(28.dp))
-                DirectMessagesView(
-                    homeViewModel,
-                    createGroupChat = createGroupChat,
-                    onItemClickListener = onItemClickListener
+                Image(
+                    painter = painterResource(id = R.drawable.ic_hamburger),
+                    null, alignment = Alignment.Center
                 )
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+        CKSearchBox(searchKey)
+        Spacer(modifier = Modifier.size(24.dp))
+        NoteView(onNavigateNotes)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+
+        ) {
+            Spacer(modifier = Modifier.size(24.dp))
+            ChatGroupView(
+                homeViewModel, createGroupChat = createGroupChat,
+                onItemClickListener = onItemClickListener
+            )
+            Spacer(modifier = Modifier.size(28.dp))
+            DirectMessagesView(
+                homeViewModel,
+                createGroupChat = createGroupChat,
+                onItemClickListener = onItemClickListener
+            )
+        }
+    }
 }
 
 @Composable
-fun NoteView() {
-    Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+fun NoteView(onNavigateNotes: () -> Unit) {
+    Row(
+        Modifier.clickable { onNavigateNotes() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Image(
             painterResource(R.drawable.ic_notes),
             contentDescription = null,
