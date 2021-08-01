@@ -5,9 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 
-fun Uri.getFileName(context: Context): String {
+fun Uri.getFileName(context: Context, persistablePermission: Boolean = true): String {
     val contentResolver = context.contentResolver
-    contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    if (persistablePermission) {
+        contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
     val cursor = contentResolver.query(this, null, null, null, null, null)
     if (cursor != null && cursor.moveToFirst()) {
         val fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
@@ -18,9 +20,11 @@ fun Uri.getFileName(context: Context): String {
     return ""
 }
 
-fun Uri.getFileSize(context: Context): Long {
+fun Uri.getFileSize(context: Context, persistablePermission: Boolean = true): Long {
     val contentResolver = context.contentResolver
-    contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    if (persistablePermission) {
+        contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
     val cursor = contentResolver.query(this, null, null, null, null, null)
     if (cursor != null && cursor.moveToFirst()) {
         val fileSize =  cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))

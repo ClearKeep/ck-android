@@ -443,7 +443,7 @@ class RoomViewModel @Inject constructor(
         val imageUris = _imageUriSelected.value
         _imageUriSelected.value = emptyList()
         imageUris?.let {
-            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople)
+            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople, persistablePermission = false)
         }
     }
 
@@ -474,8 +474,10 @@ class RoomViewModel @Inject constructor(
         message: String?,
         isRegisteredGroup: Boolean?,
         receiverPeople: User?,
-        appendFileSize: Boolean = false
+        appendFileSize: Boolean = false,
+        persistablePermission: Boolean = true
     ) {
+        printlnCK("upload files uri list $urisList")
         if (!urisList.isNullOrEmpty()) {
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
@@ -487,7 +489,7 @@ class RoomViewModel @Inject constructor(
                 return
             }
 
-            if (!isValidFileSizes(context, urisList)) {
+            if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
                     Resource.error("Failed to send message - File is larger than 1 GB.", null)
                 return
@@ -531,9 +533,11 @@ class RoomViewModel @Inject constructor(
                 urisList.forEach { uriString ->
                     val uri = Uri.parse(uriString)
                     val contentResolver = context.contentResolver
-                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    val mimeType = getFileMimeType(context, uri)
-                    val fileName = uri.getFileName(context)
+                    if (persistablePermission) {
+                        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    val mimeType = getFileMimeType(context, uri, persistablePermission)
+                    val fileName = uri.getFileName(context, persistablePermission)
                     val byteStrings = mutableListOf<ByteString>()
                     val blockDigestStrings = mutableListOf<String>()
                     val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
@@ -602,11 +606,11 @@ class RoomViewModel @Inject constructor(
     private fun isValidFilesCount(fileUriList: List<String>?) =
         fileUriList != null && fileUriList.size <= FILE_MAX_COUNT
 
-    private fun isValidFileSizes(context: Context, fileUriList: List<String>): Boolean {
+    private fun isValidFileSizes(context: Context, fileUriList: List<String>, persistablePermission: Boolean): Boolean {
         var totalFileSize = 0L
         fileUriList.forEach {
             val uri = Uri.parse(it)
-            totalFileSize += uri.getFileSize(context)
+            totalFileSize += uri.getFileSize(context, persistablePermission)
         }
         if (totalFileSize > FILE_MAX_SIZE) {
             return false
@@ -614,9 +618,11 @@ class RoomViewModel @Inject constructor(
         return true
     }
 
-    private fun getFileMimeType(context: Context, uri: Uri): String {
+    private fun getFileMimeType(context: Context, uri: Uri, persistablePermission: Boolean = true): String {
         val contentResolver = context.contentResolver
-        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        if (persistablePermission) {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
         val mimeType = contentResolver.getType(uri)
         return mimeType ?: ""
     }
