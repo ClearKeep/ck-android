@@ -46,7 +46,7 @@ fun OtpVerifyPasswordScreen(
 
         Spacer(Modifier.height(58.dp))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
-            title = "Enter your OTP", onBackPressed = {
+            title = "Enter your password", onBackPressed = {
                 onBackPress.invoke()
             })
         Spacer(Modifier.height(30.dp))
