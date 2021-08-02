@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.room
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.text.TextUtils
@@ -12,12 +13,15 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.fileSizeRegex
+import com.clearkeep.utilities.files.getFileName
+import com.clearkeep.utilities.files.getFileSize
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -93,6 +97,13 @@ class RoomViewModel @Inject constructor(
         _message.value = message
     }
 
+    fun clearTempMessage() {
+        viewModelScope.launch {
+            messageRepository.clearTempMessage()
+            messageRepository.clearTempNotes()
+        }
+    }
+
     fun joinRoom(
         ownerDomain: String,
         ownerClientId: String,
@@ -113,7 +124,6 @@ class RoomViewModel @Inject constructor(
         this.friendDomain = friendDomain
 
         viewModelScope.launch {
-            messageRepository.clearTempMessage()
             val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
@@ -141,7 +151,6 @@ class RoomViewModel @Inject constructor(
         this.clientId = ownerClientId
         _isNote.value = true
         viewModelScope.launch {
-            messageRepository.clearTempNotes()
             updateNotesFromRemote()
         }
     }
@@ -424,7 +433,7 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
-    private suspend fun uploadImage(
+    private fun uploadImage(
         context: Context,
         groupId: Long = 0L,
         message: String,
@@ -434,11 +443,11 @@ class RoomViewModel @Inject constructor(
         val imageUris = _imageUriSelected.value
         _imageUriSelected.value = emptyList()
         imageUris?.let {
-            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople)
+            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople, persistablePermission = false)
         }
     }
 
-    suspend fun uploadFile(
+    fun uploadFile(
         context: Context, groupId: Long,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
@@ -446,32 +455,62 @@ class RoomViewModel @Inject constructor(
         val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
         _fileUriStaged.value = emptyMap()
         files?.let {
-            uploadFile(it, context, groupId, null, isRegisteredGroup, receiverPeople, appendFileSize = true)
+            uploadFile(
+                it,
+                context,
+                groupId,
+                null,
+                isRegisteredGroup,
+                receiverPeople,
+                appendFileSize = true
+            )
         }
     }
 
-    private suspend fun uploadFile(urisList: List<String>, context: Context, groupId: Long, message: String?, isRegisteredGroup: Boolean?, receiverPeople: User?, appendFileSize: Boolean = false) {
-        withContext(Dispatchers.IO) {
-            if (!urisList.isNullOrEmpty()) {
-                if (!isValidFilesCount(urisList)) {
-                    uploadFileResponse.value = Resource.error(
+    private fun uploadFile(
+        urisList: List<String>,
+        context: Context,
+        groupId: Long,
+        message: String?,
+        isRegisteredGroup: Boolean?,
+        receiverPeople: User?,
+        appendFileSize: Boolean = false,
+        persistablePermission: Boolean = true
+    ) {
+        printlnCK("upload files uri list $urisList")
+        if (!urisList.isNullOrEmpty()) {
+            if (!isValidFilesCount(urisList)) {
+                uploadFileResponse.postValue(
+                    Resource.error(
                         "Failed to send message - Maximum number of attachments in a message reached (10)",
                         null
                     )
-                    return@withContext
-                }
+                )
+                return
+            }
 
-                if (!isValidFileSizes(context, urisList)) {
-                    uploadFileResponse.value =
-                        Resource.error("Failed to send message - File is larger than 4 MB.", null)
-                    return@withContext
-                }
+            if (!isValidFileSizes(context, urisList, persistablePermission)) {
+                uploadFileResponse.value =
+                    Resource.error("Failed to send message - File is larger than 1 GB.", null)
+                return
+            }
 
+            GlobalScope.launch {
                 val tempMessageUris = urisList.joinToString(" ")
-                val tempMessageContent = if (message != null) "$tempMessageUris $message" else tempMessageUris
+                val tempMessageContent =
+                    if (message != null) "$tempMessageUris $message" else tempMessageUris
                 println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
-                    messageRepository.saveNote(Note(null, tempMessageContent, Calendar.getInstance().timeInMillis, getOwner().domain, getOwner().clientId, true))
+                    messageRepository.saveNote(
+                        Note(
+                            null,
+                            tempMessageContent,
+                            Calendar.getInstance().timeInMillis,
+                            getOwner().domain,
+                            getOwner().clientId,
+                            true
+                        )
+                    )
                 } else {
                     messageRepository.saveMessage(
                         Message(
@@ -494,8 +533,11 @@ class RoomViewModel @Inject constructor(
                 urisList.forEach { uriString ->
                     val uri = Uri.parse(uriString)
                     val contentResolver = context.contentResolver
-                    val mimeType = getFileMimeType(context, uri)
-                    val fileName = getFileName(context, uri)
+                    if (persistablePermission) {
+                        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    val mimeType = getFileMimeType(context, uri, persistablePermission)
+                    val fileName = uri.getFileName(context, persistablePermission)
                     val byteStrings = mutableListOf<ByteString>()
                     val blockDigestStrings = mutableListOf<String>()
                     val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
@@ -514,21 +556,21 @@ class RoomViewModel @Inject constructor(
                         byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
                         fileSize += size
                         size = inputStream?.read(byteArray) ?: 0
-                        val fileHashByteArray = fileDigest.digest()
-                        val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                        val url = chatRepository.uploadFile(
-                            mimeType,
-                            fileName.replace(" ", "_"),
-                            byteStrings,
-                            blockDigestStrings,
-                            fileHashString
-                        )
-                        fileUrls.add(url)
-                        filesSizeInBytes.add(fileSize)
                     }
+                    val fileHashByteArray = fileDigest.digest()
+                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
+                    val url = chatRepository.uploadFile(
+                        mimeType,
+                        fileName.replace(" ", "_"),
+                        byteStrings,
+                        blockDigestStrings,
+                        fileHashString
+                    )
+                    fileUrls.add(url)
+                    filesSizeInBytes.add(fileSize)
                 }
                 val fileUrlsString = if (appendFileSize) {
-                    fileUrls.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
+                    fileUrls.filter{ it.isNotBlank() }.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
                         .joinToString(" ")
                 } else {
                     fileUrls.joinToString(" ")
@@ -564,39 +606,25 @@ class RoomViewModel @Inject constructor(
     private fun isValidFilesCount(fileUriList: List<String>?) =
         fileUriList != null && fileUriList.size <= FILE_MAX_COUNT
 
-    private fun isValidFileSizes(context: Context, fileUriList: List<String>): Boolean {
+    private fun isValidFileSizes(context: Context, fileUriList: List<String>, persistablePermission: Boolean): Boolean {
+        var totalFileSize = 0L
         fileUriList.forEach {
-            val fileSize = getFileSize(context, Uri.parse(it))
-            printlnCK("File size $fileSize")
-            if (fileSize > FILE_MAX_SIZE) {
-                return false
-            }
+            val uri = Uri.parse(it)
+            totalFileSize += uri.getFileSize(context, persistablePermission)
+        }
+        if (totalFileSize > FILE_MAX_SIZE) {
+            return false
         }
         return true
     }
 
-    private fun getFileMimeType(context: Context, uri: Uri): String {
+    private fun getFileMimeType(context: Context, uri: Uri, persistablePermission: Boolean = true): String {
         val contentResolver = context.contentResolver
+        if (persistablePermission) {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
         val mimeType = contentResolver.getType(uri)
         return mimeType ?: ""
-    }
-
-    fun getFileName(context: Context, uri: Uri): String {
-        val contentResolver = context.contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-        }
-        return ""
-    }
-
-    private fun getFileSize(context: Context, uri: Uri): Long {
-        val contentResolver = context.contentResolver
-        val cursor = contentResolver.query(uri, null, null, null, null, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            return cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
-        }
-        return 0L
     }
 
     private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
@@ -652,10 +680,15 @@ class RoomViewModel @Inject constructor(
         )
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        printlnCK("Share file cancel onCleared")
+    }
+
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10
-        private const val FILE_MAX_SIZE = 4_000_000 //4MB
+        private const val FILE_MAX_SIZE = 1_000_000_000 //1GB
     }
 }
 

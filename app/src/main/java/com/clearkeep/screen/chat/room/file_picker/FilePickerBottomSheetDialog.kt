@@ -2,6 +2,8 @@ package com.clearkeep.screen.chat.room.file_picker
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.net.Uri
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,6 +30,7 @@ import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.files.getFileName
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
@@ -36,7 +39,10 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
     val context = LocalContext.current
     val addFileContract = object : ActivityResultContracts.OpenDocument() {
         override fun createIntent(context: Context, input: Array<out String>): Intent {
-            return super.createIntent(context, input).addCategory(Intent.CATEGORY_OPENABLE)
+            return super.createIntent(context, input)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .addFlags(FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
     }
     val addFileLauncher =
@@ -78,7 +84,7 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                 itemsIndexed(stagedFiles.value!!.entries.toList()) { _: Int, entry: Map.Entry<Uri, Boolean> ->
                     FilePickerItem(
                         Modifier.padding(vertical = 16.dp),
-                        roomViewModel.getFileName(context, entry.key),
+                        entry.key.getFileName(context),
                         isSelected = stagedFiles.value!![entry.key] ?: false
                     ) {
                         roomViewModel.toggleSelectedFile(entry.key)
