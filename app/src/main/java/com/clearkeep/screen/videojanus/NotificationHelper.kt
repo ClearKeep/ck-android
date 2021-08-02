@@ -49,6 +49,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     intent.putExtra(RoomActivity.GROUP_ID, message.groupId)
     intent.putExtra(RoomActivity.DOMAIN, message.ownerDomain)
     intent.putExtra(RoomActivity.CLIENT_ID, message.ownerClientId)
+    intent.putExtra(RoomActivity.CLEAR_TEMP_MESSAGE, true)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
     val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 

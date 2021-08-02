@@ -89,6 +89,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         domain = intent.getStringExtra(DOMAIN) ?: ""
         clientId = intent.getStringExtra(CLIENT_ID) ?: ""
         isNote = intent.getBooleanExtra(IS_NOTE, false)
+        val clearTempMessage = intent.getBooleanExtra(CLEAR_TEMP_MESSAGE, false)
+        if (clearTempMessage) {
+            roomViewModel.clearTempMessage()
+        }
         val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
         val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
 
@@ -313,5 +317,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         const val FRIEND_ID = "remote_id"
         const val FRIEND_DOMAIN = "remote_domain"
         const val IS_NOTE = "is_note"
+        const val CLEAR_TEMP_MESSAGE = "clear_temp_message"
     }
 }

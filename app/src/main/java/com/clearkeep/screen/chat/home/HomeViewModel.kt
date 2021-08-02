@@ -11,9 +11,7 @@ import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.ProfileRepository
-import com.clearkeep.screen.chat.repo.WorkSpaceRepository
+import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
@@ -29,6 +27,7 @@ class HomeViewModel @Inject constructor(
     private val roomRepository: GroupRepository,
     private val serverRepository: ServerRepository,
     private val profileRepository: ProfileRepository,
+    private val messageRepository: MessageRepository,
     private val environment: Environment,
 
     private val authRepository: AuthRepository,
@@ -56,7 +55,10 @@ class HomeViewModel @Inject constructor(
     val isRefreshing= MutableLiveData(false)
 
     init {
+        printlnCK("Share file cancel HomeViewModel init")
         viewModelScope.launch {
+            messageRepository.clearTempNotes()
+            messageRepository.clearTempMessage()
             roomRepository.fetchGroups()
         }
     }
