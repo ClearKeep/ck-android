@@ -39,8 +39,8 @@ fun ProfileScreen(
         val userName = remember { mutableStateOf(user.userName.toString()) }
         val email = remember { mutableStateOf(user.email.toString()) }
         val phoneNumber = remember { mutableStateOf("") }
-        val authCheckedChange = remember { mutableStateOf(true) }
-
+        val authCheckedChange = remember { mutableStateOf(false) }
+        val otpErrorDialogVisible = remember { mutableStateOf(false) }
         Column(
             Modifier
                 .fillMaxSize()
@@ -100,7 +100,18 @@ fun ProfileScreen(
                             Spacer(Modifier.height(8.dp))
                             ChangePassword(onChangePassword)
                             Spacer(Modifier.height(24.dp))
-                            TwoFaceAuthView (authCheckedChange, onNavigateToOtp)
+                            TwoFaceAuthView(authCheckedChange) {
+                                if (it) {
+                                    if (phoneNumber.value.isNotBlank()) {
+                                        authCheckedChange.value = true
+                                        onNavigateToOtp()
+                                    } else {
+                                        otpErrorDialogVisible.value = true
+                                    }
+                                } else {
+                                    authCheckedChange.value = false
+                                }
+                            }
                             Spacer(Modifier.height(24.dp))
 
                             Column(
@@ -118,10 +129,18 @@ fun ProfileScreen(
                             }
                         }
                     }
-
                 }
 
             }
+        }
+        if (otpErrorDialogVisible.value) {
+            CKAlertDialog(
+                title = "Type in your phone number",
+                text = "You must input your phone number in order to enable this feature.",
+                onDismissButtonClick = {
+                    otpErrorDialogVisible.value = false
+                }
+            )
         }
     }
 }
@@ -251,10 +270,14 @@ fun ChangePassword(onChangePassword: () -> Unit) {
 }
 
 @Composable
-fun TwoFaceAuthView(mutableState: MutableState<Boolean>, onNavigateToOtp: () -> Unit) {
+fun TwoFaceAuthView(
+    mutableState: MutableState<Boolean>,
+    onCheckChange: (Boolean) -> Unit
+) {
     Column() {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText("Two Factors Authentication",
+            CKHeaderText(
+                "Two Factors Authentication",
                 modifier = Modifier.weight(0.66f)
             )
             Column(
@@ -264,12 +287,7 @@ fun TwoFaceAuthView(mutableState: MutableState<Boolean>, onNavigateToOtp: () -> 
             ) {
                 Switch(
                     checked = mutableState.value,
-                    onCheckedChange = {
-                        mutableState.value = it
-                        if (it) {
-                            onNavigateToOtp.invoke()
-                        }
-                    },
+                    onCheckedChange = onCheckChange,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,
                         uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
