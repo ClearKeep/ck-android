@@ -20,10 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
-import com.clearkeep.components.base.ButtonType
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKTopAppBarSample
+import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 
 @Composable
@@ -45,6 +42,7 @@ fun OtpVerifyPasswordScreen(
             )
     ) {
         val currentPassWord = remember { mutableStateOf("") }
+        val confirmPasswordErrorVisible = remember { mutableStateOf(false) }
 
         Spacer(Modifier.height(58.dp))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
@@ -76,10 +74,23 @@ fun OtpVerifyPasswordScreen(
             CKButton(
                 stringResource(R.string.btn_next),
                 onClick = {
-                    onClickNext()
+                    if (currentPassWord.value.isBlank()) {
+                        confirmPasswordErrorVisible.value = true
+                    } else {
+                        onClickNext()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 buttonType = ButtonType.White
+            )
+        }
+        if (confirmPasswordErrorVisible.value) {
+            CKAlertDialog(
+                title = "Password must not be blank",
+                text = "Please check your details and try again",
+                onDismissButtonClick = {
+                    confirmPasswordErrorVisible.value = false
+                }
             )
         }
     }
