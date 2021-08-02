@@ -16,6 +16,9 @@ interface UserPreferenceDAO {
     @Query("SELECT * FROM userpreference WHERE server_domain = :serverDomain AND user_id = :userId")
     suspend fun getPreference(serverDomain: String, userId: String): UserPreference?
 
+    @Query("SELECT * FROM userpreference WHERE server_domain = :serverDomain AND user_id = :userId")
+    fun getPreferenceLiveData(serverDomain: String, userId: String): LiveData<UserPreference>
+
     @Query("UPDATE userpreference SET show_notification_preview = :value WHERE server_domain = :serverDomain AND user_id = :userId")
     suspend fun updateNotificationPreview(serverDomain: String, userId: String, value: Boolean)
 

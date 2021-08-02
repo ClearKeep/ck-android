@@ -20,16 +20,15 @@ class UserPreferenceRepository @Inject constructor(
         userPreferenceDAO.insert(defaultSettings)
     }
 
-    suspend fun getUserPreference(serverDomain: String, userId: String) {
-        userPreferenceDAO.getPreference(serverDomain, userId)
-    }
+    fun getUserPreferenceLiveData(serverDomain: String, userId: String) =
+        userPreferenceDAO.getPreferenceLiveData(serverDomain, userId)
 
     suspend fun updateShowNotificationPreview(
         serverDomain: String,
         userId: String,
         enabled: Boolean
     ) {
-        userPreferenceDAO.updateDoNotDisturb(serverDomain, userId, enabled)
+        userPreferenceDAO.updateNotificationPreview(serverDomain, userId, enabled)
     }
 
     suspend fun updateNotificationSoundVibrate(
