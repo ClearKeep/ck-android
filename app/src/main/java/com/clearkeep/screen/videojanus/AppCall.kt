@@ -98,8 +98,12 @@ object AppCall {
         val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val titleCall = if (isGroup(groupType)) context.resources.getString(R.string.notification_incoming_group)
-        else context.resources.getString(R.string.notification_incoming_peer)
+        val titleCallResource = if (isGroup(groupType)) {
+            if (isAudioMode) R.string.notification_incoming_group else R.string.notification_incoming_video_group
+        } else {
+            if (isAudioMode) R.string.notification_incoming_peer else R.string.notification_incoming_video_peer
+        }
+        val titleCall = context.resources.getString(titleCallResource)
 
         val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_call)
         headsUpLayout.apply {

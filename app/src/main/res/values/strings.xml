@@ -60,6 +60,8 @@
 
     <string name="notification_incoming_peer">Incoming Voice Call</string>
     <string name="notification_incoming_group">Incoming Voice Group Call</string>
+    <string name="notification_incoming_video_peer">Incoming Video Call</string>
+    <string name="notification_incoming_video_group">Incoming Video Group Call</string>
 
     <string name="join_server">Join Server</string>
     <string name="btn_join">Join</string>
