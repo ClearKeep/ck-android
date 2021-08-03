@@ -5,10 +5,12 @@ import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.ChatRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.MessageRepository
+import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -40,6 +42,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var messageRepository: MessageRepository
+
+    @Inject
+    lateinit var userPreferenceRepository: UserPreferenceRepository
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -128,13 +133,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 messageContent,
                 Owner(clientDomain, clientId)
             )
-
+            val userPreference = userPreferenceRepository.getUserPreference(clientDomain, clientId)
             val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
             if (group != null) {
                 showMessagingStyleNotification(
                     context = applicationContext,
                     chatGroup = group,
-                    decryptedMessage
+                    decryptedMessage,
+                    userPreference ?: UserPreference("", "",
+                        showNotificationPreview = true,
+                        notificationSoundVibrate = true,
+                        doNotDisturb = false
+                    )
                 )
             }
         } catch (e: Exception) {
