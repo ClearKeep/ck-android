@@ -11,8 +11,6 @@ data class UserPreference(
     val userId: String,
     @ColumnInfo(name = "show_notification_preview")
     val showNotificationPreview: Boolean,
-    @ColumnInfo(name = "notification_sound_vibrate")
-    val notificationSoundVibrate: Boolean,
     @ColumnInfo(name = "do_not_disturb")
     val doNotDisturb: Boolean
 )
