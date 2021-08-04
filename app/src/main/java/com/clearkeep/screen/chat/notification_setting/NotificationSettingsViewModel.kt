@@ -41,14 +41,6 @@ class NotificationSettingsViewModel @Inject constructor(
         }
     }
 
-    fun toggleSoundAndVibrate(enabled: Boolean) {
-        viewModelScope.launch {
-            val domain = environment.getServer().serverDomain
-            val userId = environment.getServer().profile.userId
-            userPreferenceRepository.updateNotificationSoundVibrate(domain, userId, enabled)
-        }
-    }
-
     fun toggleDoNotDisturb(enabled: Boolean) {
         viewModelScope.launch {
             val domain = environment.getServer().serverDomain

@@ -42,9 +42,9 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
             if (group != null && unreadMessages.isNotEmpty()) {
                 val me = group.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
                 val userPreference = userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
-                showMessageNotificationToSystemBar(context, me, group, unreadMessages, userPreference ?: UserPreference("", "",
+                showMessageNotificationToSystemBar(context, me, group, unreadMessages, userPreference ?: UserPreference(
+                    "", "",
                     showNotificationPreview = true,
-                    notificationSoundVibrate = true,
                     doNotDisturb = false
                 ))
             }

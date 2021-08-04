@@ -140,9 +140,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     context = applicationContext,
                     chatGroup = group,
                     decryptedMessage,
-                    userPreference ?: UserPreference("", "",
+                    userPreference ?: UserPreference(
+                        "", "",
                         showNotificationPreview = true,
-                        notificationSoundVibrate = true,
                         doNotDisturb = false
                     )
                 )

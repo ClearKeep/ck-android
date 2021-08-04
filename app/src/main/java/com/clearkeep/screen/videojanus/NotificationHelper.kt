@@ -104,29 +104,14 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val newNotificationChannel = NotificationChannel(
-                channelId,
-                channelName,
-                if (preference.notificationSoundVibrate) NotificationManager.IMPORTANCE_MAX else NotificationManager.IMPORTANCE_LOW
-            )
             var channel = notificationManager.getNotificationChannel(channelId)
-                ?: newNotificationChannel
-            val shouldResetChannelImportance = !(channel.importance == NotificationManager.IMPORTANCE_MAX && preference.notificationSoundVibrate || channel.importance == NotificationManager.IMPORTANCE_LOW && !preference.notificationSoundVibrate)
-            if (shouldResetChannelImportance) {
-                notificationManager.deleteNotificationChannel(channelId)
-                channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                notificationManager.createNotificationChannel(newNotificationChannel)
-                printlnCK("showHeadsUpMessageWithNoAutoLaunch reset channel importance")
-            } else {
-                channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-                notificationManager.createNotificationChannel(channel)
-                printlnCK("showHeadsUpMessageWithNoAutoLaunch keep old channel")
-            }
-            printlnCK("showHeadsUpMessageWithNoAutoLaunch importance ${channel.importance}")
+                ?: NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_MAX)
+            channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            notificationManager.createNotificationChannel(channel)
         }
 
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
-        val notificationBuilder = builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
+        val notification = builder.setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setCustomContentView(smallLayout)
             .setCustomBigContentView(smallLayout)
             .setCustomHeadsUpContentView(headsUpLayout)
@@ -145,13 +130,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             .setTimeoutAfter(HEADS_UP_APPEAR_DURATION)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(VISIBILITY_PUBLIC)
-
-        if (preference.notificationSoundVibrate) notificationBuilder.setVibrate(
-            longArrayOf(
-                Notification.DEFAULT_VIBRATE.toLong()
-            )
-        )
-        val notification = notificationBuilder.build()
+            .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
+            .build()
 
         if (preference.showNotificationPreview) {
             val target = NotificationTarget(
@@ -233,21 +213,16 @@ fun showMessageNotificationToSystemBar(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var mChannel = notificationManager.getNotificationChannel(channelId)
             if (mChannel == null) {
-                mChannel = createMessageToSystemBarNotificationChannel(
-                    channelId,
-                    channelName,
-                    userPreference,
-                )
-            } else {
-                val shouldResetChannelImportance = !(mChannel.importance == NotificationManager.IMPORTANCE_DEFAULT && userPreference.notificationSoundVibrate || mChannel.importance == NotificationManager.IMPORTANCE_LOW && !userPreference.notificationSoundVibrate)
-                if (shouldResetChannelImportance) {
-                    notificationManager.deleteNotificationChannel(channelId)
-                    mChannel = createMessageToSystemBarNotificationChannel(
-                        channelId, channelName, userPreference
-                    )
-                }
+                val attributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build()
+                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                mChannel =
+                    NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+                mChannel.setSound(notification, attributes)
+                notificationManager.createNotificationChannel(mChannel)
             }
-            printlnCK("showMessageNotificationToSystemBar importance ${mChannel.importance}")
         }
 
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
@@ -271,25 +246,5 @@ fun showMessageNotificationToSystemBar(
 
         val notification: Notification = builder.build()
         notificationManager.notify(notificationId, notification)
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun createMessageToSystemBarNotificationChannel(
-    channelId: String,
-    channelName: String,
-    userPreference: UserPreference
-) : NotificationChannel {
-    val attributes = AudioAttributes.Builder()
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-        .build()
-    val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-    return NotificationChannel(
-            channelId,
-            channelName,
-            if (userPreference.notificationSoundVibrate) NotificationManager.IMPORTANCE_DEFAULT else NotificationManager.IMPORTANCE_LOW
-        ).apply {
-        setSound(notification, attributes)
     }
 }

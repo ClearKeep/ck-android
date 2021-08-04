@@ -8,14 +8,11 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
@@ -48,14 +45,6 @@ fun NotificationSettingScreen(
             checked = userPreference.value?.showNotificationPreview ?: true
         ) {
             notificationSettingsViewModel.toggleShowPreview(it)
-        }
-        Spacer(modifier = Modifier.height(40.dp))
-        CKSetting(
-            modifier = Modifier,
-            name = "Sounds and vibrations",
-            checked = userPreference.value?.notificationSoundVibrate ?: true
-        ) {
-            notificationSettingsViewModel.toggleSoundAndVibrate(it)
         }
         Spacer(modifier = Modifier.height(40.dp))
         CKSetting(

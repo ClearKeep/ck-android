@@ -14,7 +14,6 @@ class UserPreferenceRepository @Inject constructor(
             serverDomain,
             userId,
             showNotificationPreview = true,
-            notificationSoundVibrate = true,
             doNotDisturb = false
         )
         userPreferenceDAO.insert(defaultSettings)
@@ -32,14 +31,6 @@ class UserPreferenceRepository @Inject constructor(
         enabled: Boolean
     ) {
         userPreferenceDAO.updateNotificationPreview(serverDomain, userId, enabled)
-    }
-
-    suspend fun updateNotificationSoundVibrate(
-        serverDomain: String,
-        userId: String,
-        enabled: Boolean
-    ) {
-        userPreferenceDAO.updateNotificationSoundVibrate(serverDomain, userId, enabled)
     }
 
     suspend fun updateDoNotDisturb(serverDomain: String, userId: String, enabled: Boolean) {
