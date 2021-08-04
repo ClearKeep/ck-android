@@ -44,7 +44,7 @@ fun GroupMemberScreen(
                         end = 16.dp
                     ),
                 ) {
-                    itemsIndexed(group.clientList.filter { it.status == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
+                    itemsIndexed(group.clientList.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
                         NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }

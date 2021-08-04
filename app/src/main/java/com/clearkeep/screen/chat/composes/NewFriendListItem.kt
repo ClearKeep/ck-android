@@ -29,6 +29,9 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserStatus
+import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
+import com.clearkeep.screen.chat.home.composes.StatusIndicator
 
 @Composable
 fun NewFriendListItem(
@@ -36,10 +39,10 @@ fun NewFriendListItem(
     user: User,
     description: @Composable ColumnScope.() -> Unit = {},
     action: @Composable RowScope.() -> Unit = {},
-    statusIcon: @Composable (BoxScope.() -> Unit) = { StatusIndicator() }
+    statusIcon: @Composable (BoxScope.() -> Unit) = { StatusIndicator(colorSuccessDefault) }
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarNew(emptyList(), user.userName, statusIcon = statusIcon)
+        CircleAvatarStatus(null, user.userName, size = 64.dp,user.userStatus?:UserStatus.ONLINE.value,16.dp)
         Column(
             Modifier
                 .padding(start = 16.dp)
@@ -56,75 +59,6 @@ fun NewFriendListItem(
         }
         Spacer(Modifier.width(16.dp))
         action()
-    }
-}
-
-@Composable
-fun BoxScope.StatusIndicator() {
-    Box(
-        Modifier
-            .size(16.dp)
-            .background(colorSuccessDefault, CircleShape)
-            .align(Alignment.BottomEnd)
-    )
-
-}
-
-@Composable
-fun GroupMemberItem(modifier: Modifier, user: User) {
-    NewFriendListItem(modifier, user, { StatusText(user) })
-}
-
-@Composable
-fun CircleAvatarNew(
-    url: List<String>,
-    name: String = "",
-    size: Dp = 64.dp,
-    isGroup: Boolean = false,
-    statusIcon: @Composable BoxScope.() -> Unit
-) {
-    if (!url.isNullOrEmpty()) {
-        //
-    }
-    if (isGroup) {
-        Image(
-            imageVector = Icons.Filled.Groups,
-            contentDescription = "",
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(
-                    color = colorTest
-                )
-                .padding(12.dp),
-        )
-    } else {
-        val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
-        Box(
-            modifier = Modifier
-                .size(size)
-        ) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        shape = CircleShape,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                backgroundGradientStart,
-                                backgroundGradientEnd
-                            )
-                        )
-                    )
-                    .size(size),
-            ) {
-                Text(
-                    displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
-                        color = MaterialTheme.colors.onSurface,
-                    ), modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            statusIcon()
-        }
     }
 }
 

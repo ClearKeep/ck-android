@@ -11,6 +11,7 @@ data class UserEntity(
 
     @ColumnInfo(name = "owner_client_id") val ownerClientId: String,
     @ColumnInfo(name = "owner_domain") val ownerDomain: String,
+    @ColumnInfo(name = "user_status") val userStatus: String? = UserStatus.ONLINE.value
 ) {
     override fun toString(): String {
         return "id = $userId, userName = $userName, workspace_domain = $domain"

@@ -12,50 +12,60 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.clearkeep.components.backgroundGradientEnd
-import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.*
+import com.clearkeep.db.clear_keep.model.UserStatus
 
 @Composable
-fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.dp, status: String) {
+fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.dp, status: String,sizeIndicator:Dp=8.dp) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
-
-    Column(Modifier.size(size)) {
-        Column(
-            modifier = Modifier
-                .background(
-                    shape = CircleShape,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            backgroundGradientStart,
-                            backgroundGradientEnd
+    val color= when(status){
+        UserStatus.ONLINE.value->{
+            colorSuccessDefault
+        }
+        UserStatus.OFFLINE.value ->{
+            grayscale3
+        }
+        else ->{
+            errorDefault
+        }
+    }
+    Box(modifier = Modifier
+        .size(size)) {
+        Column(Modifier.size(size)) {
+            Column(
+                modifier = Modifier
+                    .background(
+                        shape = CircleShape,
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                backgroundGradientStart,
+                                backgroundGradientEnd
+                            )
                         )
                     )
+                    .size(size),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
+                        color = MaterialTheme.colors.onSurface,
+                    )
                 )
-                .size(size),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.onSurface,
-                )
-            )
+            }
         }
-        Box(modifier = Modifier.size(10.dp).background(
-            shape = CircleShape,
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    Color.Red,
-                    Color.Red
-                )
-            )
-        ))
+        StatusIndicator(color,sizeIndicator)
     }
+
 }
 
-enum class UserStatus {
-    ONLINE,
-    OFFLINE,
-    BUSY,
-    DEFAULT
+@Composable
+fun BoxScope.StatusIndicator(color: Color, size: Dp=8.dp) {
+    Box(
+        Modifier
+            .size(size)
+            .background(color, CircleShape)
+            .align(Alignment.BottomEnd)
+    )
+
 }

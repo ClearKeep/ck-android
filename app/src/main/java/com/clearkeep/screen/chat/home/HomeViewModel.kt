@@ -1,13 +1,9 @@
 package com.clearkeep.screen.chat.home
 
-import android.widget.Toast
 import androidx.lifecycle.*
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
+import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
@@ -54,6 +50,8 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing= MutableLiveData(false)
 
+    val currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+
     init {
         printlnCK("Share file cancel HomeViewModel init")
         viewModelScope.launch {
@@ -80,7 +78,7 @@ class HomeViewModel @Inject constructor(
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
                         && it.isGroup()
-                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.status == UserStateTypeInGroup.ACTIVE.value
+                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
 
             }
         }
