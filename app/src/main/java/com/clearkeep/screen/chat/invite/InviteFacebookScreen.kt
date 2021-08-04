@@ -45,9 +45,9 @@ fun InviteFacebookScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn {
                 item {
-                    InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "test", ""), isSelected = false) { people: User, isAdd: Boolean -> }
+                    /*InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "test", ""), isSelected = false) { people: User, isAdd: Boolean -> }
                     InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "Alex Mendes", ""), isSelected = false) { people: User, isAdd: Boolean -> }
-                    InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "Barbara Johnson", ""), isSelected = false) { people: User, isAdd: Boolean -> }
+                    InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "Barbara Johnson", ""), isSelected = false) { people: User, isAdd: Boolean -> }*/
                 }
             }
         }

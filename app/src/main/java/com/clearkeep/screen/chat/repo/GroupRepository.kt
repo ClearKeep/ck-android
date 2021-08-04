@@ -402,7 +402,7 @@ class GroupRepository @Inject constructor(
                 userId = it.id,
                 userName = it.displayName,
                 domain = it.workspaceDomain,
-                status = it.status
+                userState = it.status
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {

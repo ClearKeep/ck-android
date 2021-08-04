@@ -3,6 +3,7 @@ package com.clearkeep.screen.chat.home.composes
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -25,22 +26,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.db.clear_keep.model.Profile
+import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.profile.LogoutConfirmDialog
 
@@ -160,6 +158,7 @@ fun SiteMenuScreen(
 fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    val statusUse = homeViewModel.currentStatus.observeAsState()
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatarSite(url = "", name = profile?.userName ?: "", status = "")
@@ -170,10 +169,27 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 color = primaryDefault
             )
             Row(modifier = Modifier.clickable { expanded = true }, verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Online",
-                    style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
-                )
+                when(statusUse.value){
+                    UserStatus.ONLINE.value->{
+                        Text(
+                            text = UserStatus.ONLINE.value,
+                            style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
+                        )
+                    }
+                    UserStatus.OFFLINE.value->{
+                        Text(
+                            text = UserStatus.OFFLINE.value,
+                            style = TextStyle(color = grayscale3, fontSize = 14.sp)
+                        )
+                    }
+                    else ->{
+                        Text(
+                            text = UserStatus.BUSY.value,
+                            style = TextStyle(color = errorDefault, fontSize = 14.sp)
+                        )
+                    }
+                }
+
                 Box(modifier = Modifier.padding(horizontal = 8.dp)) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_chev_down),
@@ -183,7 +199,10 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 }
             }
 
-            StatusDropdown(expanded, onDismiss = { expanded = false })
+            StatusDropdown(expanded, onDismiss = { expanded = false },{
+                expanded = false
+                homeViewModel.currentStatus.postValue(it.value)
+            })
 
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
@@ -193,9 +212,12 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                     width = Dimension.fillToConstraints
                 })
                 IconButton(
-                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) }, Modifier.size(18.dp).constrainAs(image) {
-                        end.linkTo(parent.end)
-                    }
+                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) },
+                    Modifier
+                        .size(18.dp)
+                        .constrainAs(image) {
+                            end.linkTo(parent.end)
+                        }
                 ) {
                     Icon(
                         Icons.Filled.ContentCopy,
@@ -269,7 +291,7 @@ fun ItemSiteSetting(
 }
 
 @Composable
-fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit) {
+fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit,statusChoose: (UserStatus)->Unit) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
@@ -277,9 +299,21 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit) {
             .width(165.dp)
             .background(Color.White, RoundedCornerShape(8.dp))
     ) {
-        StatusItem(onClick = {}, colorSuccessDefault, "Online")
-        StatusItem(onClick = {}, grayscale3, "Offline")
-        StatusItem(onClick = {}, errorDefault, "Busy")
+        StatusItem(
+            onClick = { statusChoose.invoke(UserStatus.ONLINE) },
+            colorSuccessDefault,
+            UserStatus.ONLINE.value
+        )
+        StatusItem(
+            onClick = { statusChoose.invoke(UserStatus.OFFLINE) },
+            grayscale3,
+            UserStatus.OFFLINE.value
+        )
+        StatusItem(
+            onClick = { statusChoose.invoke(UserStatus.BUSY) },
+            errorDefault,
+            UserStatus.BUSY.value
+        )
     }
 }
 
@@ -304,3 +338,4 @@ private fun copyProfileLinkToClipBoard(context: Context, label: String, text: St
     clipboard.setPrimaryClip(clip)
     Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
 }
+

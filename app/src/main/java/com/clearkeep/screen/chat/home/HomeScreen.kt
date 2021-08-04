@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,7 +45,7 @@ fun HomeScreen(
     gotoSearch: () -> Unit,
     createGroupChat: ((isDirectGroup: Boolean) -> Unit),
     gotoRoomById: ((idRoom: Long) -> Unit),
-    onlogOut: () -> Unit,
+    onLogout: () -> Unit,
     onJoinServer: (serverUrl: String) -> Unit,
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
@@ -60,41 +59,44 @@ fun HomeScreen(
     val profile = homeViewModel.profile.observeAsState()
     val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
 
-    SwipeRefresh(state = rememberSwipeRefreshState(swipeRefreshState.value == true), onRefresh = { homeViewModel.onPullToRefresh() }) {
-    Row(
-        Modifier
-            .fillMaxSize()
-    ) {
-        Box(
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(swipeRefreshState.value == true),
+        onRefresh = { homeViewModel.onPullToRefresh() }) {
+        Row(
             Modifier
-                .width(84.dp)
+                .fillMaxSize()
         ) {
-            LeftMenu(homeViewModel)
-        }
-        Column(
-            Modifier.fillMaxSize()
-        ) {
-            if (showJoinServer.value == false) {
-                WorkSpaceView(
-                    homeViewModel,
-                    gotoSearch,
-                    createGroupChat,
-                    gotoProfile = {
-                        rememberStateSiteMenu.value = true
-                    },
-                    onItemClickListener = gotoRoomById,
-                    onNavigateNotes = onNavigateNotes
-                )
-            } else {
-                JoinServerComposable(
-                    onJoinServer = onJoinServer,
-                    gotoProfile = {
-                        rememberStateSiteMenu.value = true
-                    },
-                )
+            Box(
+                Modifier
+                    .width(84.dp)
+            ) {
+                LeftMenu(homeViewModel)
+            }
+            Column(
+                Modifier.fillMaxSize()
+            ) {
+                if (showJoinServer.value == false) {
+                    WorkSpaceView(
+                        homeViewModel,
+                        gotoSearch,
+                        createGroupChat,
+                        gotoProfile = {
+                            rememberStateSiteMenu.value = true
+                        },
+                        onItemClickListener = gotoRoomById,
+                        onNavigateNotes = onNavigateNotes
+                    )
+                } else {
+                    JoinServerComposable(
+                        onJoinServer = onJoinServer,
+                        gotoProfile = {
+                            rememberStateSiteMenu.value = true
+                        },
+                    )
+                }
             }
         }
-    }}
+    }
     AnimatedVisibility(
         visible = rememberStateSiteMenu.value,
         enter = slideInHorizontally(
@@ -125,8 +127,8 @@ fun HomeScreen(
                     },
                     onLogout = {
                         rememberStateSiteMenu.value = false
-                        onlogOut.invoke()
-                    } ,
+                        onLogout.invoke()
+                    },
                     onNavigateServerSetting = onNavigateServerSetting,
                     onNavigateAccountSetting = onNavigateAccountSetting,
                     onNavigateNotificationSetting = onNavigateNotificationSetting,
@@ -187,7 +189,10 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .clickable { mainViewModel.selectChannel(server) },
                                 ) {
-                                    CircleAvatarWorkSpace(server, server.isActive && selectingJoinServer.value != true)
+                                    CircleAvatarWorkSpace(
+                                        server,
+                                        server.isActive && selectingJoinServer.value != true
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(36.dp))
                             }
@@ -247,11 +252,13 @@ fun ItemListDirectMessage(
                 onItemClickListener?.invoke(chatGroup.groupId)
             }
     ) {
-        val roomName = if (chatGroup.isGroup()) chatGroup.groupName else {
-            chatGroup.clientList.firstOrNull { client ->
-                client.userId != clintId
-            }?.userName ?: ""
-        }
+        val roomName = chatGroup.clientList.firstOrNull { client ->
+            client.userId != clintId
+        }?.userName ?: ""
+
+        val userStatus = chatGroup.clientList.firstOrNull { client ->
+            client.userId != clintId
+        }?.userStatus ?: ""
 
         Row(
             modifier = Modifier.padding(top = 16.dp),
@@ -362,7 +369,11 @@ fun ChatGroupView(
                 chatGroups.value?.let { item ->
                     Column {
                         item.forEach { chatGroup ->
-                            ChatGroupItemView(modifier = Modifier.padding(start = 15.dp),chatGroup = chatGroup, onItemClickListener = onItemClickListener)
+                            ChatGroupItemView(
+                                modifier = Modifier.padding(start = 15.dp),
+                                chatGroup = chatGroup,
+                                onItemClickListener = onItemClickListener
+                            )
                         }
                     }
                 }
@@ -491,15 +502,18 @@ fun JoinServerComposable(
         CKButton(
             stringResource(R.string.btn_join),
             onClick = {
-                      if (rememberServerUrl.value.isNotBlank()) {
-                          onJoinServer(rememberServerUrl.value)
-                      }
+                if (rememberServerUrl.value.isNotBlank()) {
+                    onJoinServer(rememberServerUrl.value)
+                }
             },
         )
         Spacer(modifier = Modifier.size(9.dp))
-        Text(stringResource(R.string.join_server_tips), style = MaterialTheme.typography.caption.copy(
-            color = MaterialTheme.colors.onSecondary
-        ))
+        Text(
+            stringResource(R.string.join_server_tips),
+            style = MaterialTheme.typography.caption.copy(
+                color = MaterialTheme.colors.onSecondary
+            )
+        )
     }
 }
 

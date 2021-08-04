@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 gotoRoomById = {
                                     navigateToRoomScreen(it)
                                 },
-                                onlogOut = {
+                                onLogout = {
                                     logout()
                                 },
                                 onJoinServer = {
