@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
+import com.clearkeep.screen.chat.otp.OtpActivity
 
 
 @AndroidEntryPoint
@@ -49,12 +50,20 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
             },
             onCopyToClipBoard = {
                 copyProfileLinkToClipBoard("profile link", profileViewModel.getProfileLink())
+            },
+            onNavigateToOtp = {
+                navigateToOtp()
             }
         )
     }
 
     private fun navigateToChangePassword() {
         val intent = Intent(this, ChangePasswordActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToOtp() {
+        val intent = Intent(this, OtpActivity::class.java)
         startActivity(intent)
     }
 

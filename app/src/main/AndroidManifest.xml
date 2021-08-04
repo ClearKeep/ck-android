@@ -177,6 +177,10 @@
             android:name=".screen.chat.change_pass_word.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
+        <activity
+            android:name=".screen.chat.otp.OtpActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
