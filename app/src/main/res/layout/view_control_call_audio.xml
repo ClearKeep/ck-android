@@ -51,8 +51,8 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tib_drawable_off="@drawable/ic_button_mute_on"
-        app:tib_drawable_on="@drawable/ic_bottom_mic_off" />
+        app:tib_drawable_off="@drawable/ic_voice_call_mute_on"
+        app:tib_drawable_on="@drawable/ic_voice_call_mute_off" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleFaceTime"
@@ -63,8 +63,8 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/toggleMute"
         app:layout_constraintTop_toTopOf="@+id/toggleMute"
-        app:tib_drawable_off="@drawable/ic_button_video_on"
-        app:tib_drawable_on="@drawable/ic_button_video_on" />
+        app:tib_drawable_off="@drawable/ic_voice_call_video_off"
+        app:tib_drawable_on="@drawable/ic_voice_call_video_off" />
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleSpeaker"
@@ -75,7 +75,7 @@
         android:checked="false"
         app:layout_constraintStart_toEndOf="@+id/toggleFaceTime"
         app:layout_constraintTop_toTopOf="@+id/toggleFaceTime"
-        app:tib_drawable_off="@drawable/ic_button_audio_off"
-        app:tib_drawable_on="@drawable/ic_button_audio_on" />
+        app:tib_drawable_off="@drawable/ic_voice_call_speaker_off"
+        app:tib_drawable_on="@drawable/ic_voice_call_speaker_on" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
