@@ -42,11 +42,17 @@ import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageBackground
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnecting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.viewConnecting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallView
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.android.synthetic.main.view_control_call_video.view.*
@@ -238,11 +244,27 @@ class InCallPeerToPeerActivity : BaseActivity() {
     ) {
         if (isInPictureInPictureMode) {
             controlCallVideoView.visibility = View.GONE
+            controlCallAudioView.visibility = View.GONE
+            imgEndWaiting.visibility = View.GONE
+            tvEndButtonDescription.visibility = View.GONE
+            tvVideoTimeCall.visibility = View.GONE
+            tvUserName.visibility = View.GONE
             localRender.visibility = View.GONE
+            imgVideoCallBack.visibility = View.GONE
+            imgWaitingBack.visibility = View.GONE
         } else {
-            controlCallVideoView.visibility = View.VISIBLE
             localRender.visibility = View.VISIBLE
-
+            imgEndWaiting.visibility = View.VISIBLE
+            tvVideoTimeCall.visibility = View.VISIBLE
+            tvEndButtonDescription.visibility = View.VISIBLE
+            tvUserName.visibility = View.VISIBLE
+            imgVideoCallBack.visibility = View.VISIBLE
+            imgWaitingBack.visibility = View.VISIBLE
+            if (!mIsAudioMode) {
+                controlCallVideoView.visibility = View.VISIBLE
+            } else {
+                controlCallAudioView.visibility = View.VISIBLE
+            }
         }
     }
 

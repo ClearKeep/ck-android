@@ -304,11 +304,25 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
             includeToolbar.gone()
             controlCallVideoView.gone()
+            controlCallAudioView.gone()
+            imgEndWaiting.gone()
+            tvEndButtonDescription.gone()
+
+            if (mIsMuteVideo) {
+
+            } else {
+
+            }
         } else {
             // Restore the full-screen UI.
             includeToolbar.visible()
-            if (!mIsAudioMode)
+            imgEndWaiting.visible()
+            tvEndButtonDescription.visible()
+            if (!mIsAudioMode) {
                 controlCallVideoView.visible()
+            } else {
+                controlCallAudioView.visible()
+            }
         }
     }
 
