@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -123,19 +124,10 @@ fun SendBottomCompose(
                     .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
             ) {
                 CKTextInputFieldChat(
-                    if (isNote.value == true) "Write your note here" else "Enter message...",
+                    stringResource(R.string.message_input_hint),
                     msgState,
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.None,
-                    trailingIcon = {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_icon),
-                                contentDescription = null,
-                                tint = MaterialTheme.colors.surface
-                            )
-                        }
-                    },
                     onChangeMessage = {
                         roomViewModel.setMessage(it)
                     }
