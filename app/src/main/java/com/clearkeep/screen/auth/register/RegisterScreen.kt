@@ -80,7 +80,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
-                    "Display Name",
+                    stringResource(R.string.display_name),
                     displayName,
                     error = displayNameError.value,
                     singleLine = true,
@@ -108,7 +108,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
-                    "Confirm Password",
+                    stringResource(R.string.confirm_password),
                     confirmPassword,
                     keyboardType = KeyboardType.Password,
                     error = confirmPassError.value,
