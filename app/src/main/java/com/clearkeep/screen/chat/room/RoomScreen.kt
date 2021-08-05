@@ -26,7 +26,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.TopBoxCallingStatus
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
@@ -131,13 +130,6 @@ fun RoomScreen(
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    val remember = AppCall.listenerCallingState.observeAsState()
-                    remember.value?.let {
-                        if (it.isCalling)
-                            TopBoxCallingStatus(
-                                callingStateData = it,
-                                onClick = { isCallPeer -> onCallingClick(isCallPeer) })
-                    }
                     ToolbarMessage(
                         modifier = Modifier,
                         groupName,
