@@ -11,8 +11,9 @@ import com.clearkeep.db.clear_keep.model.*
     ChatGroup::class,
     UserEntity::class,
     Server::class,
-    Note::class
-], version = 9, exportSchema = false)
+    Note::class,
+    UserPreference::class
+], version = 10, exportSchema = false)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
     abstract fun serverDao(): ServerDAO
@@ -20,4 +21,5 @@ abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDAO
     abstract fun groupDao(): GroupDAO
     abstract fun userDao(): UserDao
+    abstract fun userPreferenceDao(): UserPreferenceDAO
 }
