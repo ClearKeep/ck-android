@@ -91,7 +91,7 @@ fun ChangePassWordScreen(
             )
             Spacer(Modifier.height(24.dp))
             CKTextInputField(
-                placeholder = "Confirm Password",
+                placeholder = stringResource(R.string.confirm_password),
                 textValue = confirmPassWord,
                 keyboardType = KeyboardType.Password,
                 singleLine = true,

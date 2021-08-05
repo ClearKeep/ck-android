@@ -219,7 +219,7 @@ fun LoginScreen(
 
                 Spacer(Modifier.height(16.dp))
                 CKButton(
-                    stringResource(R.string.btn_register),
+                    stringResource(R.string.sign_up),
                     onClick = onRegisterPress,
                     enabled = !isLoading,
                     modifier = Modifier
