@@ -20,6 +20,8 @@
     <string name="error_username_or_password">Username or password is invalid</string>
     <string name="empty_conversation_history">Start a conversation by clicking Chat or Create Room</string>
     <string name="advance_server_settings">Advanced Server Settings</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="display_name">Display Name</string>
 
     <string name="bottom_nav_single">Chat</string>
     <string name="bottom_nav_group">Contact</string>
@@ -60,6 +62,8 @@
 
     <string name="notification_incoming_peer">Incoming Voice Call</string>
     <string name="notification_incoming_group">Incoming Voice Group Call</string>
+    <string name="notification_incoming_video_peer">Incoming Video Call</string>
+    <string name="notification_incoming_video_group">Incoming Video Group Call</string>
 
     <string name="join_server">Join Server</string>
     <string name="btn_join">Join</string>

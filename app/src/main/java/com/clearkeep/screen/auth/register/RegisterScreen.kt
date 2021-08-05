@@ -64,7 +64,7 @@ fun RegisterScreen(
                     text = stringResource(R.string.sign_up_fill_information),
                     color = grayscaleBlack
                 )
-
+                Spacer(Modifier.height(24.dp))
                 CKTextInputField(
                     "Email",
                     email,
@@ -80,7 +80,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
-                    "Display name",
+                    stringResource(R.string.display_name),
                     displayName,
                     error = displayNameError.value,
                     singleLine = true,
@@ -108,7 +108,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
-                    "Confirm password",
+                    stringResource(R.string.confirm_password),
                     confirmPassword,
                     keyboardType = KeyboardType.Password,
                     error = confirmPassError.value,
