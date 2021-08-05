@@ -15,13 +15,11 @@ import notification.NotifyOuterClass
 import javax.inject.Inject
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.repo.ChatRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.PeopleRepository
+import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.services.utils.MessageChannelSubscriber
 import com.clearkeep.services.utils.NotificationChannelSubscriber
@@ -47,6 +45,9 @@ class ChatService : Service(),
 
     @Inject
     lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var userPreferenceRepository: UserPreferenceRepository
 
     @Inject
     lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
@@ -206,10 +207,17 @@ class ChatService : Service(),
             group?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
+                    val userPreference = userPreferenceRepository.getUserPreference(currentServer.serverDomain, currentServer.profile.userId) ?: UserPreference(
+                        "",
+                        "",
+                        true,
+                        false
+                    )
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
                         message,
+                        userPreference
                     )
                 }
             }

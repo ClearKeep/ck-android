@@ -10,6 +10,7 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.SignalKeyRepository
+import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
@@ -32,7 +33,8 @@ class AuthRepository @Inject constructor(
     private val userManager: AppStorage,
     private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
-    private val signalKeyRepository: SignalKeyRepository
+    private val signalKeyRepository: SignalKeyRepository,
+    private val userPreferenceRepository: UserPreferenceRepository
 ) {
     suspend fun register(displayName: String, password: String, email: String, domain: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
         printlnCK("register: $displayName, password = $password, domain = $domain")
@@ -93,6 +95,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
                 return@withContext Resource.success(response)
             } else {
                 printlnCK("login failed: ${response.baseResponse.errors.message}")

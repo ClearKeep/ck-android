@@ -4,8 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.MessageRepository
+import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
@@ -20,6 +22,9 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var groupRepository: GroupRepository
+
+    @Inject
+    lateinit var userPreferenceRepository: UserPreferenceRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val groupId = intent.getLongExtra(EXTRA_GROUP_ID, 0)
@@ -36,7 +41,12 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
             val group = groupRepository.getGroupByID(groupId, ownerDomain, ownerClientId)
             if (group != null && unreadMessages.isNotEmpty()) {
                 val me = group.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
-                showMessageNotificationToSystemBar(context, me, group, unreadMessages)
+                val userPreference = userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
+                showMessageNotificationToSystemBar(context, me, group, unreadMessages, userPreference ?: UserPreference(
+                    "", "",
+                    showNotificationPreview = true,
+                    doNotDisturb = false
+                ))
             }
         }
     }

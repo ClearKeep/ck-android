@@ -8,13 +8,11 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
@@ -23,18 +21,39 @@ import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
+import com.clearkeep.screen.chat.notification_setting.NotificationSettingsViewModel
 
 
 @Composable
-fun NotificationSettingScreen(onCloseView: () -> Unit) {
-    Column(Modifier.padding(horizontal = 16.dp).fillMaxSize()) {
+fun NotificationSettingScreen(
+    notificationSettingsViewModel: NotificationSettingsViewModel,
+    onCloseView: () -> Unit
+) {
+    val userPreference = notificationSettingsViewModel.userPreference.observeAsState()
+
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxSize()
+    ) {
         HeaderNotificationSetting(onCloseView)
         Spacer(modifier = Modifier.height(26.dp))
-        CKSetting(modifier = Modifier, name = "Show previews", description = "Tips: Show message previews in alerts and banners when you are not using app", checked = mutableStateOf(false))
+        CKSetting(
+            modifier = Modifier,
+            name = "Show previews",
+            description = "Tips: Show message previews in alerts and banners when you are not using app",
+            checked = userPreference.value?.showNotificationPreview ?: true
+        ) {
+            notificationSettingsViewModel.toggleShowPreview(it)
+        }
         Spacer(modifier = Modifier.height(40.dp))
-        CKSetting(modifier = Modifier, name = "Sounds and vibrations", checked = mutableStateOf(false))
-        Spacer(modifier = Modifier.height(40.dp))
-        CKSetting(modifier = Modifier, name = "Do not disturb", checked = mutableStateOf(false))
+        CKSetting(
+            modifier = Modifier,
+            name = "Do not disturb",
+            checked = userPreference.value?.doNotDisturb ?: false
+        ) {
+            notificationSettingsViewModel.toggleDoNotDisturb(it)
+        }
     }
 }
 
@@ -64,10 +83,17 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
 }
 
 @Composable
-private fun CKSetting(modifier: Modifier, name: String, description: String = "", checked: MutableState<Boolean>) {
+private fun CKSetting(
+    modifier: Modifier,
+    name: String,
+    description: String = "",
+    checked: Boolean,
+    onCheckChange: (Boolean) -> Unit
+) {
     Column(modifier) {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText(name,
+            CKHeaderText(
+                name,
                 modifier = Modifier.weight(0.66f)
             )
             Column(
@@ -76,10 +102,11 @@ private fun CKSetting(modifier: Modifier, name: String, description: String = ""
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Switch(
-                    checked = checked.value,
-                    onCheckedChange = { checked.value = it },
-                    colors = SwitchDefaults.colors(checkedThumbColor = primaryDefault,checkedTrackColor = primaryDefault,
-                        uncheckedThumbColor = grayscale3,uncheckedTrackColor = grayscale3
+                    checked = checked,
+                    onCheckedChange = onCheckChange,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,
+                        uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
                     ),
                     modifier = Modifier
                         .width(64.dp)
