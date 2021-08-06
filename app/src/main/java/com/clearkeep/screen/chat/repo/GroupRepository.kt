@@ -143,15 +143,15 @@ class GroupRepository @Inject constructor(
                     .setDisplayName(environment.getServer().profile.userName)
                     .build()
 
-                val request = GroupOuterClass.RemoveMemberRequest.newBuilder()
-                    .setRemovedMemberInfo(memberInfo)
-                    .setRemovingMemberInfo(removing)
+                val request = GroupOuterClass.LeaveGroupRequest.newBuilder()
+                    .setLeaveMember(memberInfo)
+                    .setLeaveMemberBy(removing)
                     .setGroupId(groupId)
                     .build()
 
                 val response =
-                    dynamicAPIProvider.provideGroupBlockingStub().removeMember(request)
-                printlnCK("removeMemberInGroup: ${response.groupId} ${response.groupName}")
+                    dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
+                printlnCK("removeMemberInGroup: ${response.success}")
                 return@withContext true
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
@@ -204,14 +204,15 @@ class GroupRepository @Inject constructor(
                 .build()
 
             val request = GroupOuterClass.LeaveGroupRequest.newBuilder()
-                .setMemberInfo(memberInfo)
+                .setLeaveMember(memberInfo)
+                .setLeaveMemberBy(memberInfo)
                 .setGroupId(groupId)
                 .build()
 
             val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
-            if (response.groupId > 0) {
+            if (response.success) {
                 removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
-                printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.groupName}")
+                printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.success}")
                 return@withContext true
             }
             return@withContext false

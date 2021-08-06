@@ -67,6 +67,19 @@ class PeopleRepository @Inject constructor(
         }
     }
 
+    suspend fun deleteFriend(clientId: String) {
+        try {
+            val result = peopleDao.deleteFriend(clientId)
+            if (result > 0) {
+                printlnCK("deleteFriend: clientId: ${clientId}")
+            } else {
+                printlnCK("deleteFriend: clientId: ${clientId} fail")
+            }
+        } catch (e: Exception) {
+            printlnCK("updatePeople:Exception $e")
+        }
+    }
+
     suspend fun insertFriend(friend: User, owner: Owner) {
         val oldUser = peopleDao.getFriend(friend.userId, friend.domain, ownerDomain = owner.domain, ownerClientId = owner.clientId)
         if (oldUser == null) {

@@ -7,10 +7,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.ChatRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -46,6 +43,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var userPreferenceRepository: UserPreferenceRepository
 
+    @Inject
+    lateinit var peopleRepository: PeopleRepository
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         printlnCK("onMessageReceived: ${remoteMessage.data}")
@@ -68,7 +68,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "new_message" -> {
                         handleNewMessage(remoteMessage)
                     }
-                    "old_member","new_member" -> {
+                    "member_leave","new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
                 }
@@ -160,16 +160,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val clientId = data["client_id"] ?: ""
             val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
-            val removedMember = data["removed_member_id"] ?: ""
+            val removedMember = data["leave_member"] ?: ""
             printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain")
-            groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
-            if (removedMember.isNotEmpty())
+                groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
+            if (removedMember.isNotEmpty()) {
                 groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
+                peopleRepository.deleteFriend(removedMember)
+            }
             val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
             updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
             sendBroadcast(updateGroupIntent)
-        }catch (e:Exception){
-
+        } catch (e: Exception) {
+            printlnCK("handlerRequestAddRemoteMember Exception ${e.message}")
         }
     }
 
