@@ -99,6 +99,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnUser = turnConfigJsonObject.getString("user")
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
+        val currentUserName = if (isGroup(groupType)) "" else groupName.replace(fromClientName ?: "", "").replace(",", "")
 
         val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
         AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
@@ -106,7 +107,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             fromClientName, avatar,
             turnUrl, turnUser, turnPass,
             webRtcGroupId, webRtcUrl,
-            stunUrl)
+            stunUrl, currentUserName)
     }
 
     private suspend fun handleNewMessage(remoteMessage: RemoteMessage) {

@@ -106,6 +106,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private val remoteRenders: MutableMap<BigInteger, RemoteInfo> = HashMap()
 
     private var endCallReceiver: BroadcastReceiver? = null
+    private var ourCameraView: RelativeLayout? = null
+    private var ourCameraViewWidth = 0
+    private var ourCameraViewHeight = 0
+    private var ourCameraViewMarginStart = 0
+    private var ourCameraViewMarginTop = 0
 
     private var switchVideoReceiver: BroadcastReceiver? = null
 
@@ -191,6 +196,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (!TextUtils.isEmpty(groupName)) {
             includeToolbar.title.text = groupName
         }
+        pipCallName.text = mGroupName
 
         runDelayToHideBottomButton()
         initWaitingCallView()
@@ -304,11 +310,33 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             // Hide the full-screen UI (controls, etc.) while in picture-in-picture mode.
             includeToolbar.gone()
             controlCallVideoView.gone()
+            controlCallAudioView.gone()
+            imgEndWaiting.gone()
+            tvEndButtonDescription.gone()
+            if (mIsMuteVideo) {
+                pipInfo.visible()
+                ourCameraView?.gone()
+            } else {
+                ourCameraView?.layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
+            }
         } else {
             // Restore the full-screen UI.
             includeToolbar.visible()
-            if (!mIsAudioMode)
+            imgEndWaiting.visible()
+            tvEndButtonDescription.visible()
+            pipInfo.gone()
+            if (!mIsAudioMode) {
                 controlCallVideoView.visible()
+                ourCameraView?.visible()
+                if (!mIsMuteVideo) {
+                    ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
+                        leftMargin = ourCameraViewMarginStart
+                        topMargin = ourCameraViewMarginTop
+                    }
+                }
+            } else {
+                controlCallAudioView.visible()
+            }
         }
     }
 
@@ -706,9 +734,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        val view = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: ""
-            , localSurfacePosition)
-        binding.surfaceRootContainer.addView(view)
+        ourCameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
+        ourCameraViewHeight = localSurfacePosition.height
+        ourCameraViewWidth = localSurfacePosition.width
+        ourCameraViewMarginStart = localSurfacePosition.marginStart
+        ourCameraViewMarginTop = localSurfacePosition.marginTop
+        binding.surfaceRootContainer.addView(ourCameraView)
 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
