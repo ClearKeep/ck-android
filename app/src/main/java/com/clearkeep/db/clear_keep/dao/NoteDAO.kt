@@ -24,4 +24,7 @@ interface NoteDAO {
 
     @Query("DELETE FROM note WHERE isTemp=1")
     suspend fun deleteTempNotes()
+
+    @Query("DELETE FROM note WHERE generateId = :generateId")
+    suspend fun deleteNote(generateId: Long)
 }

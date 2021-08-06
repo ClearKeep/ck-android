@@ -3,6 +3,7 @@ package com.clearkeep.screen.chat.room.composes
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -11,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,14 +27,15 @@ import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable
-fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit) {
+fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit, onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
     Column(
         Modifier
             .fillMaxWidth()
-            .wrapContentHeight(), horizontalAlignment = Alignment.End
+            .wrapContentHeight(),
+        horizontalAlignment = Alignment.End
     ) {
         Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp))
         Text(
@@ -51,6 +54,14 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                 CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
             Spacer(Modifier.width(18.dp))
             Card(
+                Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
+                    detectTapGestures(
+                        onLongPress = {
+                            printlnCK("Long press on message ${messageDisplayInfo.message.message}")
+                            onLongClick(messageDisplayInfo)
+                        }
+                    )
+                },
                 backgroundColor = grayscale2,
                 shape = messageDisplayInfo.cornerShape,
             ) {
@@ -72,8 +83,17 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                         Row(
                             Modifier
                                 .align(Alignment.End)
-                                .wrapContentHeight()) {
-                            ClickableLinkContent(messageContent)
+                                .wrapContentHeight()
+                                .pointerInput(messageDisplayInfo.message.hashCode()) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            onLongClick(messageDisplayInfo)
+                                        }
+                                    )
+                                }) {
+                            ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                onLongClick(messageDisplayInfo)
+                            }
                         }
                     }
                 }

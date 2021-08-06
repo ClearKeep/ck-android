@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.room
 
+import android.content.Context
+import android.os.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -19,18 +21,22 @@ import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.screen.chat.room.composes.ToolbarMessage
-import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import android.os.Handler
-import android.os.Looper
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
+import com.clearkeep.screen.videojanus.AppCall
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -50,6 +56,7 @@ fun RoomScreen(
     val group = roomViewModel.group.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
+    val isMessageClickDialogVisible = remember { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
     val context = LocalContext.current
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -162,6 +169,16 @@ fun RoomScreen(
                                     roomViewModel.setImageDetailList(uris)
                                     roomViewModel.setImageDetailSenderName(senderName)
                                     navHostController.navigate("photo_detail")
+                                },
+                                onLongClick = {
+                                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+                                    } else {
+                                        vibrator.vibrate(100)
+                                    }
+                                    roomViewModel.setSelectedMessage(it)
+                                    isMessageClickDialogVisible.value = true
                                 }
                             )
                         }
@@ -253,6 +270,9 @@ fun RoomScreen(
         }, onTakePhoto = {
             roomViewModel.addImage()
         })
+        MessageClickDialog(roomViewModel, isMessageClickDialogVisible.value, onDismiss = {
+            isMessageClickDialogVisible.value = false
+        })
         val response = uploadFileResponse.value
         if (response?.status == Status.ERROR) {
             CKAlertDialog(
@@ -271,7 +291,66 @@ fun RoomScreen(
                 }
             )
         }
+    }
+}
 
+@ExperimentalComposeUiApi
+@Composable
+fun MessageClickDialog(
+    roomViewModel: RoomViewModel,
+    isOpen: Boolean,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+
+    if (isOpen) {
+        Box {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(colorDialogScrim)
+                    .clickable {
+                        onDismiss()
+                    })
+            Column(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 10.dp)
+            ) {
+                Column(
+                    Modifier
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White)
+                ) {
+                    Text(
+                        "Copy",
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                roomViewModel.copySelectedMessage(context)
+                                Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
+                                onDismiss()
+                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Box {
+                    Text(
+                        "Cancel", modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White)
+                            .align(Alignment.Center)
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .clickable {
+                                onDismiss()
+                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                    )
+                }
+                Spacer(Modifier.height(14.dp))
+            }
+        }
     }
 }
 
