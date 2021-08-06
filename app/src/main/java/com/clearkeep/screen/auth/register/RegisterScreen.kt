@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKButton
@@ -62,7 +63,8 @@ fun RegisterScreen(
             ) {
                 Text(
                     text = stringResource(R.string.sign_up_fill_information),
-                    color = grayscaleBlack
+                    color = grayscaleBlack,
+                    textAlign = TextAlign.Justify
                 )
                 Spacer(Modifier.height(24.dp))
                 CKTextInputField(
