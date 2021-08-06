@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
@@ -8,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -19,7 +21,7 @@ import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.*
 
 @Composable
-fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit) {
+fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit, onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
     Column {
@@ -78,6 +80,14 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Card(
+                                Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            printlnCK("Long press on message ${messageDisplayInfo.message.message}")
+                                            onLongClick(messageDisplayInfo)
+                                        }
+                                    )
+                                },
                                 backgroundColor = primaryDefault,
                                 shape = messageDisplayInfo.cornerShape,
                             ) {
@@ -97,7 +107,9 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                     val messageContent = getMessageContent(message)
                                     if (messageContent.isNotBlank()) {
                                         Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
-                                            ClickableLinkContent(messageContent)
+                                            ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                                onLongClick(messageDisplayInfo)
+                                            }
                                         }
                                     }
                                 }

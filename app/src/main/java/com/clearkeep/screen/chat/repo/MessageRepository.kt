@@ -291,6 +291,10 @@ class MessageRepository @Inject constructor(
         noteDAO.updateNotes(note)
     }
 
+    suspend fun deleteNote(generatedId: Long) {
+        noteDAO.deleteNote(generatedId)
+    }
+
     suspend fun saveMessage(message: Message) : Int {
         return messageDAO.insert(message).toInt()
     }
