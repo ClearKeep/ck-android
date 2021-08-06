@@ -13,9 +13,11 @@ import android.media.MediaPlayer
 import android.os.*
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -41,6 +43,7 @@ import com.clearkeep.screen.videojanus.common.CallStateView
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
@@ -49,6 +52,7 @@ import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnect
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvEndButtonDescription
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
@@ -82,6 +86,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private lateinit var mOwnerClientId: String
     private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
+    private lateinit var mCurrentUsername: String
     private var mIsGroupCall: Boolean = false
 
     @Inject
@@ -120,6 +125,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
+        mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
         callViewModel.mIsAudioMode.postValue(mIsAudioMode)
 
         initViews()
@@ -166,6 +172,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             setMirror(true)
         }
 
+        pipCallNamePeer.text = mCurrentUsername
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
         avatarInConversation =
@@ -252,6 +259,21 @@ class InCallPeerToPeerActivity : BaseActivity() {
             localRender.visibility = View.GONE
             imgVideoCallBack.visibility = View.GONE
             imgWaitingBack.visibility = View.GONE
+            if (mIsMuteVideo) {
+                pipInfoPeer.visible()
+            } else {
+                remoteRender.visibility = View.GONE
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(containerCall)
+                constraintSet.connect(R.id.localRender, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
+                constraintSet.connect(R.id.localRender, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
+                constraintSet.connect(R.id.localRender, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+                constraintSet.connect(R.id.localRender, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
+//                localRender?.layoutParams = ConstraintLayout.LayoutParams(0, 0)
+                constraintSet.constrainDefaultHeight(R.id.localRender, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
+                constraintSet.constrainDefaultWidth(R.id.localRender, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
+                constraintSet.applyTo(containerCall)
+            }
         } else {
             localRender.visibility = View.VISIBLE
             imgEndWaiting.visibility = View.VISIBLE
@@ -260,8 +282,23 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvUserName.visibility = View.VISIBLE
             imgVideoCallBack.visibility = View.VISIBLE
             imgWaitingBack.visibility = View.VISIBLE
+            pipInfoPeer.gone()
             if (!mIsAudioMode) {
                 controlCallVideoView.visibility = View.VISIBLE
+                remoteRender.visibility = View.VISIBLE
+                if (mIsMuteVideo) {
+                } else {
+                    val constraintSet = ConstraintSet()
+                    localRender?.layoutParams = ConstraintLayout.LayoutParams(20, 200)
+                    constraintSet.clone(containerCall)
+                    constraintSet.connect(R.id.localRender, ConstraintSet.BOTTOM, R.id.controlCallVideoView, ConstraintSet.TOP)
+                    constraintSet.connect(R.id.localRender, ConstraintSet.END, R.id.remoteRender, ConstraintSet.END)
+                }
+//                    ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
+//                        leftMargin = ourCameraViewMarginStart
+//                        topMargin = ourCameraViewMarginTop
+//                    }
+//                }
             } else {
                 controlCallAudioView.visibility = View.VISIBLE
             }

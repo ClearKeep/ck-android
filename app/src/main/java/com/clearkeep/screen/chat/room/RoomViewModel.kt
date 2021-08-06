@@ -680,6 +680,10 @@ class RoomViewModel @Inject constructor(
         )
     }
 
+    fun getUserName() : String {
+        return environment.getServer().profile.userName ?: ""
+    }
+
     override fun onCleared() {
         super.onCleared()
         printlnCK("Share file cancel onCleared")

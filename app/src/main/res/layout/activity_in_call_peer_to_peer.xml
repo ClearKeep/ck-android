@@ -8,6 +8,30 @@
     android:background="?attr/appCallBackgroundColor"
     tools:background="@color/appCallBackground">
 
+    <FrameLayout
+        android:id="@+id/pipInfoPeer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:elevation="1dp"
+        android:background="@drawable/ic_bg_gradient"
+        android:visibility="gone"
+        tools:visibility="gone">
+        <TextView
+            android:id="@+id/pipCallNamePeer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            tools:text="Group A"/>
+    </FrameLayout>
+
     <org.webrtc.SurfaceViewRenderer
         android:id="@+id/remoteRender"
         android:layout_width="match_parent"
