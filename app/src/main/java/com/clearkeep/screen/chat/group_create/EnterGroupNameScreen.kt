@@ -94,7 +94,7 @@ fun EnterGroupNameScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CKButton(
-                    stringResource(R.string.btn_next),
+                    stringResource(R.string.create),
                     onClick = {
                         if (groupName.value.trim().isNotEmpty()) {
                             createGroupViewModel.createGroup(groupName.value.trim(),onError = {

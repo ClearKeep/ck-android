@@ -23,6 +23,7 @@
     <string name="message_input_hint">Type something here</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="display_name">Display Name</string>
+    <string name="create">Create</string>
 
     <string name="bottom_nav_single">Chat</string>
     <string name="bottom_nav_group">Contact</string>
