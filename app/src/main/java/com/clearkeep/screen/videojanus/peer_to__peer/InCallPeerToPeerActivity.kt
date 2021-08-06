@@ -293,6 +293,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        handleBackPressed()
+    }
+
     private fun getOwnerServer(): Owner {
         return Owner(mOwnerDomain, mOwnerClientId)
     }
@@ -349,22 +353,20 @@ class InCallPeerToPeerActivity : BaseActivity() {
         })
 
         imgWaitingBack.setOnClickListener {
-            if (hasSupportPIP()) {
-                enterPIPMode()
-            } else {
-                hangup()
-                finishAndReleaseResource()
-            }
+            handleBackPressed()
         }
         imgVideoCallBack.setOnClickListener {
-            if (hasSupportPIP()) {
-                enterPIPMode()
-            } else {
-                hangup()
-                finishAndReleaseResource()
-            }
+            handleBackPressed()
         }
+    }
 
+    private fun handleBackPressed() {
+        if (hasSupportPIP()) {
+            enterPIPMode()
+        } else {
+            hangup()
+            finishAndReleaseResource()
+        }
     }
 
     private fun initWaitingCallView() {

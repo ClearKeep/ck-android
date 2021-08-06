@@ -340,18 +340,17 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
     }
 
+    override fun onBackPressed() {
+        handleBackPressed()
+    }
+
     fun onAction() {
         imgEndWaiting.setOnClickListener {
             hangup()
             finishAndReleaseResource()
         }
         includeToolbar.imgBack.setOnClickListener {
-            if (hasSupportPIP()) {
-                enterPIPMode()
-            } else {
-                hangup()
-                finishAndReleaseResource()
-            }
+            handleBackPressed()
         }
 
         controlCallAudioView.toggleSpeaker.setOnClickListener {
@@ -406,6 +405,15 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         imgEndWaiting.setOnClickListener {
+            hangup()
+            finishAndReleaseResource()
+        }
+    }
+
+    private fun handleBackPressed() {
+        if (hasSupportPIP()) {
+            enterPIPMode()
+        } else {
             hangup()
             finishAndReleaseResource()
         }
