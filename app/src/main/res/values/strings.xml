@@ -24,6 +24,10 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="display_name">Display Name</string>
     <string name="create">Create</string>
+    <string name="server">Server</string>
+    <string name="notification">Notification</string>
+    <string name="invite">Invite</string>
+    <string name="blocked">Blocked</string>
 
     <string name="bottom_nav_single">Chat</string>
     <string name="bottom_nav_group">Contact</string>

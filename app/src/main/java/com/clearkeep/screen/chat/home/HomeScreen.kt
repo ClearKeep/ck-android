@@ -200,39 +200,6 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                     AddWorkspace(mainViewModel)
                 }
             }
-
-            Column(
-                modifier = Modifier
-                    .height(98.dp)
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            //todo disable dark mode
-                            colors = listOf(
-                                if (isSystemInDarkTheme()) grayscale1 else backgroundGradientStart,
-                                if (isSystemInDarkTheme()) grayscale5 else backgroundGradientEnd
-                            )
-                        )
-                    ),
-
-                ) {
-                Column(
-                    Modifier
-                        .height(98.dp)
-                        .fillMaxWidth()
-                        .background(
-                            color = grayscaleOverlay,
-                        ), horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_button_settings),
-                        null,
-                        Modifier.size(42.dp),
-                        alignment = Alignment.Center
-                    )
-                }
-            }
         }
     }
 
