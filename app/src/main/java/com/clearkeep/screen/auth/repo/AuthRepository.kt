@@ -144,6 +144,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -191,6 +192,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -241,6 +243,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
