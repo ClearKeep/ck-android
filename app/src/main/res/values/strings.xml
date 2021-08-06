@@ -2,7 +2,7 @@
     <string name="title_app">ClearKeep</string>
     <string name="logout">Logout</string>
     <string name="profile">Profile</string>
-    <string name="btn_login">Log in</string>
+    <string name="btn_login">Log In</string>
     <string name="btn_login_google">Sign In with Google</string>
     <string name="btn_login_microsoft">Sign In with Office 365</string>
     <string name="btn_login_facebook">Sign In with Facebook</string>
@@ -73,6 +73,7 @@
     <string name="join_server_tips">Tip: Ask your server admin to get the url to the server</string>
     <string name="btn_next">Next</string>
     <string name="btn_add">Add</string>
+    <string name="use_custom_server">Please enter your server URL to enter custom server</string>
     <string name="create_group_search">Search users in this server</string>
     <string name="invite_url_placeholder">172.18.1....Phan0a88</string>
 </resources>

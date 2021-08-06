@@ -48,7 +48,6 @@ fun LoginScreen(
     val password = remember { mutableStateOf("") }
     val emailError = loginViewModel.emailError.observeAsState()
     val passError = loginViewModel.passError.observeAsState()
-    val usingCustomerServer= loginViewModel.urlCustomServer.observeAsState()
 
     val image = painterResource(R.drawable.ic_logo)
 
@@ -77,7 +76,7 @@ fun LoginScreen(
                 Image(image, contentDescription = "")
             }
 
-            ViewUsedCustomServer(usingCustomerServer)
+            ViewUsedCustomServer(loginViewModel.customDomain.isNotEmpty() && loginViewModel.isCustomServer)
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 CKTextInputField(
                     stringResource(R.string.tv_email),
@@ -235,9 +234,9 @@ fun LoginScreen(
 }
 
 @Composable
-fun ViewUsedCustomServer(rememberObserver: State<String?>){
-    if (rememberObserver.value?.isNotEmpty()==true) {
-        Spacer(modifier = Modifier.height(8.dp)) 
+fun ViewUsedCustomServer(shouldShow: Boolean){
+    if (shouldShow) {
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
             Modifier
                 .fillMaxWidth()
