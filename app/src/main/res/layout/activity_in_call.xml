@@ -198,4 +198,23 @@
             android:layout_height="wrap_content"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/pipInfo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/ic_bg_gradient"
+        android:visibility="gone"
+        tools:visibility="gone">
+        <TextView
+            android:id="@+id/pipCallName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:textColor="@android:color/white"
+            tools:text="Group A"/>
+    </FrameLayout>
 </RelativeLayout>

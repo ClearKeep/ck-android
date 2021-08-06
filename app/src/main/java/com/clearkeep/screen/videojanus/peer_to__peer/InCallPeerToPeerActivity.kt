@@ -13,14 +13,17 @@ import android.media.MediaPlayer
 import android.os.*
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
@@ -41,12 +44,20 @@ import com.clearkeep.screen.videojanus.common.CallStateView
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageBackground
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnecting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvEndButtonDescription
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
+import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.viewConnecting
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallView
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.android.synthetic.main.view_control_call_video.view.*
@@ -76,6 +87,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private lateinit var mOwnerClientId: String
     private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
+    private lateinit var mCurrentUsername: String
+    private lateinit var mCurrentUserAvatar: String
     private var mIsGroupCall: Boolean = false
 
     @Inject
@@ -114,6 +127,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
+        mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
+        mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
+        //TODO: Remove test hardcode
+        mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.mIsAudioMode.postValue(mIsAudioMode)
 
         initViews()
@@ -160,6 +177,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             setMirror(true)
         }
 
+        pipCallNamePeer.text = mCurrentUsername
         avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         //todo avatarInConversation hardcode test
         avatarInConversation =
@@ -238,11 +256,40 @@ class InCallPeerToPeerActivity : BaseActivity() {
     ) {
         if (isInPictureInPictureMode) {
             controlCallVideoView.visibility = View.GONE
-            localRender.visibility = View.GONE
+            controlCallAudioView.visibility = View.GONE
+            imgEndWaiting.visibility = View.GONE
+            tvEndButtonDescription.visibility = View.GONE
+            tvVideoTimeCall.visibility = View.GONE
+            tvUserName.visibility = View.GONE
+            remoteRender.visibility = View.GONE
+            imgVideoCallBack.visibility = View.GONE
+            imgWaitingBack.visibility = View.GONE
+            if (mIsMuteVideo) {
+                pipInfoPeer.visible()
+                localRender.gone()
+            } else {
+                remoteRender.visibility = View.GONE
+                setLocalViewFullScreen()
+            }
         } else {
-            controlCallVideoView.visibility = View.VISIBLE
-            localRender.visibility = View.VISIBLE
-
+            remoteRender.visibility = View.VISIBLE
+            imgEndWaiting.visibility = View.VISIBLE
+            tvVideoTimeCall.visibility = View.VISIBLE
+            tvEndButtonDescription.visibility = View.VISIBLE
+            tvUserName.visibility = View.VISIBLE
+            imgVideoCallBack.visibility = View.VISIBLE
+            imgWaitingBack.visibility = View.VISIBLE
+            pipInfoPeer.gone()
+            if (!mIsAudioMode || callViewModel.mIsAudioMode.value == false) {
+                controlCallVideoView.visibility = View.VISIBLE
+                localRender.visible()
+                if (mIsMuteVideo) {
+                } else {
+                    setLocalFixScreen()
+                }
+            } else {
+                controlCallAudioView.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -367,6 +414,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
                 })
                 .into(imgThumb2)
+
+            Glide.with(this)
+                .load(mCurrentUserAvatar)
+                .circleCrop()
+                .into(pipCallAvatar)
+
         } else {
             tvStateCall.text = "Calling Group"
             imgThumb2.visibility = View.GONE
