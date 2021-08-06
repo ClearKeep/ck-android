@@ -21,4 +21,7 @@ interface UserDao {
 
     @Query("SELECT * FROM userentity WHERE owner_domain = :ownerDomain AND owner_client_id = :ownerClientId")
     fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<UserEntity>>
+
+    @Query("DELETE  FROM userentity WHERE  user_id = :ownerId")
+    suspend fun deleteFriend(ownerId: String): Int
 }
