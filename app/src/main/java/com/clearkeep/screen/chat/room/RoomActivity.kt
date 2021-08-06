@@ -258,7 +258,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         AppCall.call(
             this, isAudioMode, null,
             group.groupId.toString(), group.groupType, roomName,
-            domain, clientId, roomName, "", false, currentUserName = roomViewModel.getUserName()
+            domain, clientId, roomName, "", false, currentUserName = roomViewModel.getUserName(), currentUserAvatar = roomViewModel.getUserAvatarUrl()
         )
     }
 

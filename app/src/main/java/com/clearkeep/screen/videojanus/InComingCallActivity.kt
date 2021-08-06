@@ -211,6 +211,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 val stunUrl = intent.getStringExtra(EXTRA_STUN_URL) ?: ""
                 val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID) ?: ""
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
+                val currentUserName = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
+                val currentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
                 finishAndRemoveFromTask()
                 AppCall.call(this, mIsAudioMode, mToken,
                     mGroupId, mGroupType, mGroupName,
@@ -218,7 +220,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                     mUserNameInConversation, mAvatarInConversation, true,
                         turnUrl = turnUrl, turnUser = turnUserName, turnPass = turnPassword,
                     webRtcGroupId = webRtcGroupId, webRtcUrl = webRtcUrl,
-                        stunUrl = stunUrl
+                        stunUrl = stunUrl, currentUserName = currentUserName, currentUserAvatar = currentUserAvatar
                 )
             }
         }

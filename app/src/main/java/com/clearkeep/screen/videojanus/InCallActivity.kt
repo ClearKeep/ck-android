@@ -315,6 +315,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             tvEndButtonDescription.gone()
             if (mIsMuteVideo) {
                 pipInfo.visible()
+                ourCameraView?.gone()
             } else {
                 ourCameraView?.layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
             }
@@ -326,6 +327,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             pipInfo.gone()
             if (!mIsAudioMode) {
                 controlCallVideoView.visible()
+                ourCameraView?.visible()
                 if (!mIsMuteVideo) {
                     ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
                         leftMargin = ourCameraViewMarginStart

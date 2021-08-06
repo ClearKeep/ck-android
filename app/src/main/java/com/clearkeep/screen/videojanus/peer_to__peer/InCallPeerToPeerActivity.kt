@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
@@ -87,6 +88,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
     private lateinit var mCurrentUsername: String
+    private lateinit var mCurrentUserAvatar: String
     private var mIsGroupCall: Boolean = false
 
     @Inject
@@ -126,6 +128,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
+        mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
+        //TODO: Remove test hardcode
+        mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.mIsAudioMode.postValue(mIsAudioMode)
 
         initViews()
@@ -256,26 +261,18 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvEndButtonDescription.visibility = View.GONE
             tvVideoTimeCall.visibility = View.GONE
             tvUserName.visibility = View.GONE
-            localRender.visibility = View.GONE
+            remoteRender.visibility = View.GONE
             imgVideoCallBack.visibility = View.GONE
             imgWaitingBack.visibility = View.GONE
             if (mIsMuteVideo) {
                 pipInfoPeer.visible()
+                localRender.gone()
             } else {
                 remoteRender.visibility = View.GONE
-                val constraintSet = ConstraintSet()
-                constraintSet.clone(containerCall)
-                constraintSet.connect(R.id.localRender, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START)
-                constraintSet.connect(R.id.localRender, ConstraintSet.END, ConstraintSet.PARENT_ID, ConstraintSet.END)
-                constraintSet.connect(R.id.localRender, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
-                constraintSet.connect(R.id.localRender, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM)
-//                localRender?.layoutParams = ConstraintLayout.LayoutParams(0, 0)
-                constraintSet.constrainDefaultHeight(R.id.localRender, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
-                constraintSet.constrainDefaultWidth(R.id.localRender, ConstraintSet.MATCH_CONSTRAINT_SPREAD)
-                constraintSet.applyTo(containerCall)
+                setLocalViewFullScreen()
             }
         } else {
-            localRender.visibility = View.VISIBLE
+            remoteRender.visibility = View.VISIBLE
             imgEndWaiting.visibility = View.VISIBLE
             tvVideoTimeCall.visibility = View.VISIBLE
             tvEndButtonDescription.visibility = View.VISIBLE
@@ -283,22 +280,13 @@ class InCallPeerToPeerActivity : BaseActivity() {
             imgVideoCallBack.visibility = View.VISIBLE
             imgWaitingBack.visibility = View.VISIBLE
             pipInfoPeer.gone()
-            if (!mIsAudioMode) {
+            if (!mIsAudioMode || callViewModel.mIsAudioMode.value == false) {
                 controlCallVideoView.visibility = View.VISIBLE
-                remoteRender.visibility = View.VISIBLE
+                localRender.visible()
                 if (mIsMuteVideo) {
                 } else {
-                    val constraintSet = ConstraintSet()
-                    localRender?.layoutParams = ConstraintLayout.LayoutParams(20, 200)
-                    constraintSet.clone(containerCall)
-                    constraintSet.connect(R.id.localRender, ConstraintSet.BOTTOM, R.id.controlCallVideoView, ConstraintSet.TOP)
-                    constraintSet.connect(R.id.localRender, ConstraintSet.END, R.id.remoteRender, ConstraintSet.END)
+                    setLocalFixScreen()
                 }
-//                    ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
-//                        leftMargin = ourCameraViewMarginStart
-//                        topMargin = ourCameraViewMarginTop
-//                    }
-//                }
             } else {
                 controlCallAudioView.visibility = View.VISIBLE
             }
@@ -426,6 +414,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
                 })
                 .into(imgThumb2)
+
+            Glide.with(this)
+                .load(mCurrentUserAvatar)
+                .circleCrop()
+                .into(pipCallAvatar)
+
         } else {
             tvStateCall.text = "Calling Group"
             imgThumb2.visibility = View.GONE
