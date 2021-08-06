@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.room
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -9,9 +11,11 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
+import com.clearkeep.utilities.getMessageContent
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
@@ -91,6 +95,10 @@ class RoomViewModel @Inject constructor(
         get() = _listUserStatus
 
     val listPeerAvatars = MutableLiveData<List<String>>()
+
+    private var _selectedMessage : MessageDisplayInfo? = null
+    val selectedMessage : MessageDisplayInfo?
+        get() = _selectedMessage
 
     init {
         getStatusUserInGroup()
@@ -427,6 +435,22 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    fun deleteSelectedMessage() {
+        viewModelScope.launch {
+            if (isNote.value == true) {
+                messageRepository.deleteNote((selectedMessage?.message?.generateId ?: 0).toLong())
+            }
+        }
+    }
+
+    fun copySelectedMessage(context: Context) {
+        val clipboard: ClipboardManager =
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip =
+            ClipData.newPlainText("", getMessageContent(selectedMessage?.message?.message ?: ""))
+        clipboard.setPrimaryClip(clip)
+    }
+
     private fun setJoiningGroup(group: ChatGroup) {
         _group.value = group
         chatRepository.setJoiningRoomId(group.groupId)
@@ -687,6 +711,10 @@ class RoomViewModel @Inject constructor(
 
     fun getUserAvatarUrl() : String {
         return ""
+    }
+
+    fun setSelectedMessage(selectedMessage: MessageDisplayInfo) {
+        _selectedMessage = selectedMessage
     }
 
     override fun onCleared() {
