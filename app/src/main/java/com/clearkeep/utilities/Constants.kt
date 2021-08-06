@@ -30,6 +30,7 @@ const val EXTRA_STUN_URL = "stun_url"
 const val EXTRA_WEB_RTC_GROUP_ID = "webrtc_group"
 const val EXTRA_WEB_RTC_URL = "webrtc_url"
 const val EXTRA_CURRENT_USERNAME = "current_username"
+const val EXTRA_CURRENT_USER_AVATAR = "current_user_avatar"
 
 const val ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED = "ck.action.end.service.call"
 const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
