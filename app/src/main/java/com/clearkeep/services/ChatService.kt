@@ -82,8 +82,6 @@ class ChatService : Service(),
         } else {
             isShouldRecreateChannel = true
         }
-
-
         registerNetworkChange()
     }
 
@@ -131,6 +129,7 @@ class ChatService : Service(),
             messageSubscriber.subscribeAndListen()
             notificationSubscriber.subscribeAndListen()
         }
+
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
