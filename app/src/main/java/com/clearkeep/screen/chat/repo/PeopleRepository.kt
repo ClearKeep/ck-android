@@ -131,4 +131,48 @@ class PeopleRepository @Inject constructor(
             domain = userEntity.domain
         )
     }
+
+    suspend fun sendPing(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val request = UserOuterClass.PingRequest.newBuilder().build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().pingRequest(request)
+            printlnCK("pingRequest ${response.success}")
+            return@withContext response.success
+        } catch (e: Exception) {
+            printlnCK("sendPing: $e")
+            return@withContext false
+        }
+    }
+
+     suspend fun updateStatus(status:String?) : Boolean= withContext(Dispatchers.IO){
+        printlnCK("updateStatus")
+        try {
+            val request = UserOuterClass.SetUserStatusRequest.newBuilder().setStatus(status).build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().updateStatus(request)
+            return@withContext response.success
+        } catch (e: Exception) {
+            printlnCK("updateStatus: $e")
+            return@withContext false
+        }
+    }
+
+     suspend fun getListClientStatus(list: List<User>):List<User>? = withContext(Dispatchers.IO){
+        try {
+            val listMemberInfoRequest= list.map {
+                UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId).setWorkspaceDomain(it.domain).build()
+            }
+            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().getClientsStatus(request)
+            list.map { user->
+                user.userStatus= response.lstClientList.find {
+                    user.userId ==it.clientId
+                }?.status
+                printlnCK("getListClientStatus: ${user.userId}  ${user.userStatus} ")
+            }
+            return@withContext list
+        } catch (e: Exception) {
+            printlnCK("updateStatus: $e")
+            return@withContext null
+        }
+    }
 }

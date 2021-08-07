@@ -25,7 +25,9 @@ fun GroupMemberScreen(
     navHostController: NavHostController,
 ) {
     val groupState = roomViewModel.group.observeAsState()
-    groupState?.value?.let { group ->
+    val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
+
+    groupState.value?.let { group ->
         Surface(
             color = MaterialTheme.colors.background
         ) {
@@ -45,6 +47,9 @@ fun GroupMemberScreen(
                     ),
                 ) {
                     itemsIndexed(group.clientList.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
+                        friend.userStatus = listUserStatusState.value?.find {
+                            it.userId == friend.userId
+                        }?.userStatus
                         NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }
