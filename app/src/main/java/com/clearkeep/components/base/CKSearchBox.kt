@@ -19,16 +19,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.clearkeep.R
 import com.clearkeep.components.*
 
 @Composable
 fun CKSearchBox(
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
+    placeholder: String = stringResource(R.string.search)
 ) {
     val shape = MaterialTheme.shapes.large
     val focusManager = LocalFocusManager.current
@@ -49,7 +52,7 @@ fun CKSearchBox(
                 onValueChange = { textValue.value = it },
                 placeholder = {
                     Text(
-                        "Search", style = MaterialTheme.typography.body1.copy(
+                        placeholder, style = MaterialTheme.typography.body1.copy(
                             color = MaterialTheme.colors.onSecondary,
                             fontWeight = FontWeight.Normal
                         )
