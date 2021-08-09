@@ -3,7 +3,6 @@ package com.clearkeep.screen.chat.home.composes
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -25,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKHeaderText
@@ -112,17 +111,16 @@ fun SiteMenuScreen(
                             }
                             Spacer(modifier = Modifier.size(16.dp))
                             HeaderSite(profile, homeViewModel)
-                            Spacer(modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Divider(color = grayscale3)
+                            SettingGeneral(onNavigateAccountSetting)
                             Divider(color = grayscale3)
                             SettingServer(
-                                "CK Development",
                                 onNavigateServerSetting,
                                 onNavigateNotificationSetting,
                                 onNavigateInvite,
                                 onNavigateBannedUser
                             )
-                            Divider(color = grayscale3)
-                            SettingGeneral(onLogout, onNavigateAccountSetting)
                         }
                     }
 
@@ -139,7 +137,7 @@ fun SiteMenuScreen(
                             tint = errorDefault
                         )
                         Text(
-                            text = "Leave Server", modifier = Modifier
+                            text = stringResource(R.string.logout), modifier = Modifier
                                 .padding(start = 16.dp), style = TextStyle(
                                 color = errorDefault ?: MaterialTheme.colors.onBackground,
                                 fontSize = 14.sp,
@@ -232,40 +230,37 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
 
 @Composable
 fun SettingServer(
-    serverName: String,
     onNavigateServerSetting: () -> Unit,
     onNavigateNotificationSetting: () -> Unit,
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit
-    ) {
+) {
     Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
         CKHeaderText(
             text = "Server Setting",
             headerTextType = HeaderTextType.Normal,
             color = grayscale2
         )
-        ItemSiteSetting("Server", R.drawable.ic_adjustment, {
+        ItemSiteSetting(stringResource(R.string.server), R.drawable.ic_adjustment, {
             onNavigateServerSetting()
         })
-        ItemSiteSetting("Notification", R.drawable.ic_server_notification, {
+        ItemSiteSetting(stringResource(R.string.notification), R.drawable.ic_server_notification, {
             onNavigateNotificationSetting()
         })
-        ItemSiteSetting("Invite", R.drawable.ic_user_plus, {
+        ItemSiteSetting(stringResource(R.string.invite), R.drawable.ic_user_plus, {
             onNavigateInvite()
         })
-        ItemSiteSetting("Banned", R.drawable.ic_user_off, {
+        ItemSiteSetting(stringResource(R.string.blocked), R.drawable.ic_user_off, {
             onNavigateBannedUser()
         })
-        ItemSiteSetting("Leave $serverName", R.drawable.ic_logout)
     }
 }
 
 @Composable
 fun SettingGeneral(
-    onLogout: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
 ) {
-    Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
+    Column() {
         ItemSiteSetting("Profile", R.drawable.ic_user, onNavigateAccountSetting)
     }
 }

@@ -113,7 +113,7 @@ fun CustomServerScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Please enter your server URL and Port to enter custom server",
+                            text = stringResource(R.string.use_custom_server),
                             style = MaterialTheme.typography.body1.copy(
                                 color = grayscaleOffWhite,
                                 fontSize = 16.sp,
