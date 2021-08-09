@@ -178,11 +178,15 @@ fun showMessageNotificationToSystemBar(
 
         for (message in messages) {
             val people = participants.find { it.userId == message.senderId }
+            val messageContent =
+                if (userPreference.showNotificationPreview) message.message else "You have new message"
+            val username =
+                if (userPreference.showNotificationPreview) people?.userName else ""
             messagingStyle.addMessage(
                 NotificationCompat.MessagingStyle.Message(
-                    message.message,
+                    messageContent,
                     message.createdTime,
-                    Person.Builder().setName(people?.userName ?: "unknown").setKey(message.senderId)
+                    Person.Builder().setName(username).setKey(message.senderId)
                         .build()
                 )
             )
