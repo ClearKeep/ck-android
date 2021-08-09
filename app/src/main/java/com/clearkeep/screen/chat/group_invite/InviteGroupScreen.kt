@@ -102,7 +102,7 @@ fun InviteGroupScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    CKSearchBox(textSearch)
+                    CKSearchBox(textSearch, placeholder = if (isCreateDirectGroup) stringResource(R.string.search) else stringResource(R.string.create_group_search))
                 }
                 Row(
                     modifier = Modifier
@@ -165,7 +165,7 @@ fun InviteGroupScreen(
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     CKTextInputField(
-                                        "Please copy url ....",
+                                        stringResource(R.string.invite_url_placeholder),
                                         textValue = urlOtherServer,
                                         keyboardType = KeyboardType.Text,
                                         singleLine = true,

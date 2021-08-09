@@ -73,4 +73,6 @@
     <string name="join_server_tips">Tip: Ask your server admin to get the url to the server</string>
     <string name="btn_next">Next</string>
     <string name="btn_add">Add</string>
+    <string name="create_group_search">Search users in this server</string>
+    <string name="invite_url_placeholder">172.18.1....Phan0a88</string>
 </resources>
