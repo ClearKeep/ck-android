@@ -233,8 +233,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToForgotActivity() {
-        startActivity(Intent(this, ForgotActivity::class.java))
+        val intent = Intent(this, ForgotActivity::class.java)
+        intent.putExtra(ForgotActivity.EXTRA_DOMAIN, loginViewModel.getDomain())
+        startActivity(intent)
     }
+
     private fun navigateToAdvanceSetting(navController: NavController){
         navController.navigate("advance_setting")
     }
