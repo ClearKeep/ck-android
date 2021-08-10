@@ -7,6 +7,7 @@ import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.printlnCK
+import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notify_push.NotifyPushOuterClass
@@ -58,13 +59,47 @@ class ProfileRepository @Inject constructor(
                 .setDisplayName(displayName)
                 .setPhoneNumber(phoneNumber)
                 .build()
-            val userGrpc = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val userGrpc = apiProvider.provideUserBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val response = userGrpc.updateProfile(request)
             printlnCK("updateProfile success? ${response.success} errors? ${response.errors}")
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("updateProfile error: $e")
             return@withContext false
+        }
+    }
+
+    suspend fun uploadAvatar(
+        owner: Owner,
+        mimeType: String,
+        fileName: String,
+        byteStrings: List<ByteString>,
+        fileHash: String
+    ) : String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val server = serverRepository.getServerByOwner(owner) ?: return@withContext ""
+                val request = UserOuterClass.UploadAvatarRequest.newBuilder()
+                    .setFileName(fileName)
+                    .setFileContentType(mimeType)
+                    .setFileData(byteStrings[0])
+                    .setFileHash(fileHash)
+                    .build()
+
+                val response =
+                    apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey)).uploadAvatar(request)
+
+                return@withContext response.fileUrl
+            } catch (e: Exception) {
+                printlnCK("uploadFileToGroup $e")
+                return@withContext ""
+            }
         }
     }
 }
