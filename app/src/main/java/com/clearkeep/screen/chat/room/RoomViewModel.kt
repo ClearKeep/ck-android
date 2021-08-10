@@ -239,7 +239,7 @@ class RoomViewModel @Inject constructor(
                 val user = environment.getServer().profile
                 val group = groupRepository.createGroupFromAPI(
                         user.userId,
-                        "${user.getDisplayName()},${receiverPeople.userName}",
+                        "${user ?: ""},${receiverPeople.userName}",
                         mutableListOf(getUser(), receiverPeople),
                         false
                 )
@@ -407,7 +407,7 @@ class RoomViewModel @Inject constructor(
 
     private fun getUser(): User {
         val server = environment.getServer()
-        return User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain)
+        return User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain)
     }
 
     fun getCurrentUser(): User {

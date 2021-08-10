@@ -117,7 +117,7 @@ fun HomeScreen(
 
         ) {
             profile?.value?.let {
-                printlnCK("profile = ${it.getDisplayName()}")
+                printlnCK("profile = ${it.userName}")
                 SiteMenuScreen(
                     homeViewModel,
                     it,

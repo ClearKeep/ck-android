@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.repo
 
+import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
@@ -9,6 +10,7 @@ import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notify_push.NotifyPushOuterClass
+import user.UserOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,6 +47,23 @@ class ProfileRepository @Inject constructor(
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
+            return@withContext false
+        }
+    }
+
+    suspend fun updateProfile(owner: Owner, displayName: String, phoneNumber: String) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
+            val request = UserOuterClass.UpdateProfileRequest.newBuilder()
+                .setDisplayName(displayName)
+                .setPhoneNumber(phoneNumber)
+                .build()
+            val userGrpc = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val response = userGrpc.updateProfile(request)
+            printlnCK("updateProfile success? ${response.success} errors? ${response.errors}")
+            return@withContext response.success
+        } catch (e: Exception) {
+            printlnCK("updateProfile error: $e")
             return@withContext false
         }
     }

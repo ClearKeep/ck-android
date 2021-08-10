@@ -8,10 +8,6 @@ data class Profile(
     @ColumnInfo(name = "user_id") val userId: String,
     @ColumnInfo(name = "user_name") val userName: String?,
     @ColumnInfo(name = "email") val email: String?,
-    @ColumnInfo(name = "first_name") val firstName: String?,
-    @ColumnInfo(name = "last_name") val lastName: String?,
-) {
-    fun getDisplayName() : String {
-        return userName ?: (firstName ?: "" + (lastName ?: ""))
-    }
-}
+    @ColumnInfo(name = "phone_number") val phoneNumber: String?,
+    @ColumnInfo(name = "avatar") val avatar: String?,
+)
