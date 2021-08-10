@@ -16,6 +16,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.NotificationManagerCompat
@@ -107,10 +108,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private var endCallReceiver: BroadcastReceiver? = null
     private var ourCameraView: RelativeLayout? = null
-    private var ourCameraViewWidth = 0
-    private var ourCameraViewHeight = 0
-    private var ourCameraViewMarginStart = 0
-    private var ourCameraViewMarginTop = 0
 
     private var switchVideoReceiver: BroadcastReceiver? = null
 
@@ -313,12 +310,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             controlCallAudioView.gone()
             imgEndWaiting.gone()
             tvEndButtonDescription.gone()
-            if (mIsMuteVideo) {
-                pipInfo.visible()
-                ourCameraView?.gone()
-            } else {
-                ourCameraView?.layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
-            }
+            pipInfo.visible()
+            ourCameraView?.gone()
         } else {
             // Restore the full-screen UI.
             includeToolbar.visible()
@@ -328,12 +321,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             if (!mIsAudioMode) {
                 controlCallVideoView.visible()
                 ourCameraView?.visible()
-                if (!mIsMuteVideo) {
-                    ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
-                        leftMargin = ourCameraViewMarginStart
-                        topMargin = ourCameraViewMarginTop
-                    }
-                }
             } else {
                 controlCallAudioView.visible()
             }
@@ -743,10 +730,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
         ourCameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
-        ourCameraViewHeight = localSurfacePosition.height
-        ourCameraViewWidth = localSurfacePosition.width
-        ourCameraViewMarginStart = localSurfacePosition.marginStart
-        ourCameraViewMarginTop = localSurfacePosition.marginTop
         binding.surfaceRootContainer.addView(ourCameraView)
 
         // add remote streams
