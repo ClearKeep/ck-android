@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.isValidEmail
 
 @Composable
 fun ForgotScreen(
@@ -63,7 +64,7 @@ fun ForgotScreen(
             CKButton(
                 stringResource(R.string.btn_reset_password),
                 onClick = {
-                    if (email.value.isNotBlank() && isValidEmail(email.value)) {
+                    if (email.value.isValidEmail()) {
                         onForgotPressed(email.value)
                     } else {
                         if (email.value.isBlank()) {
@@ -89,8 +90,4 @@ fun ForgotScreen(
             }
         }
     }
-}
-
-private fun isValidEmail(email: String): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
