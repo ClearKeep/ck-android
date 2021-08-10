@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.profile
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.BuildConfig
@@ -62,7 +64,10 @@ fun ProfileScreen(
                                 .padding(horizontal = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            HeaderProfile(onCloseView)
+                            HeaderProfile(
+                                onClickSave = {
+                                    profileViewModel.updateProfileDetail(userName.value, phoneNumber.value)
+                            }, onCloseView)
                             Row(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
@@ -90,7 +95,7 @@ fun ProfileScreen(
                             Spacer(Modifier.height(16.dp))
                             ItemInformationView("Email", email, enable = false)
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber)
+                            ItemInformationView("Phone Number", phoneNumber, keyboardType = KeyboardType.Phone)
                             Spacer(Modifier.height(8.dp))
                             CopyLink(
                                 onCopied = {
@@ -146,7 +151,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun HeaderProfile(onCloseView: () -> Unit) {
+fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -173,6 +178,7 @@ fun HeaderProfile(onCloseView: () -> Unit) {
                 CKTextButton(
                     title = "Save",
                     onClick = {
+                        onClickSave.invoke()
                     },
                     fontSize = 16.sp,
                     textButtonType = TextButtonType.Blue
@@ -187,7 +193,7 @@ fun HeaderProfile(onCloseView: () -> Unit) {
 
 
 @Composable
-fun ItemInformationView(header: String, textValue: MutableState<String>, enable: Boolean = true) {
+fun ItemInformationView(header: String, textValue: MutableState<String>, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text) {
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -213,7 +219,9 @@ fun ItemInformationView(header: String, textValue: MutableState<String>, enable:
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = if (enable) grayscaleBlack else grayscale3,
                     fontWeight = FontWeight.Normal
-                ), enabled = enable
+                ),
+                enabled = enable,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
             )
         }
     }
