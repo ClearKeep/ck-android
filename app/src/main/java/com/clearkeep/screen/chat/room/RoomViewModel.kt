@@ -13,8 +13,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.utilities.fileSizeRegex
-import com.clearkeep.utilities.files.getFileName
-import com.clearkeep.utilities.files.getFileSize
+import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
 import com.clearkeep.utilities.network.Resource
@@ -618,21 +617,6 @@ class RoomViewModel @Inject constructor(
         return true
     }
 
-    private fun getFileMimeType(context: Context, uri: Uri, persistablePermission: Boolean = true): String {
-        val contentResolver = context.contentResolver
-        if (persistablePermission) {
-            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        val mimeType = contentResolver.getType(uri)
-        return mimeType ?: ""
-    }
-
-    private fun byteArrayToMd5HashString(byteArray: ByteArray): String {
-        val bigInt = BigInteger(1, byteArray)
-        val hashString = bigInt.toString(16)
-        return String.format("%32s", hashString).replace(' ', '0')
-    }
-
     fun addStagedFileUri(uri: Uri) {
         val stagedList = mutableMapOf<Uri, Boolean>()
         stagedList.putAll(_fileUriStaged.value ?: emptyMap())
@@ -667,17 +651,6 @@ class RoomViewModel @Inject constructor(
 
     fun setImageDetailSenderName(senderName: String) {
         _imageDetailSenderName.value = senderName
-    }
-
-    private fun generatePhotoUri(context: Context): Uri {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
-        val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
-        return FileProvider.getUriForFile(
-            context.applicationContext,
-            BuildConfig.APPLICATION_ID + ".provider",
-            file
-        )
     }
 
     fun getUserName() : String {
