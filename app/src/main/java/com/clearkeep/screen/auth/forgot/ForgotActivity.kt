@@ -12,8 +12,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
@@ -21,7 +23,6 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class ForgotActivity : AppCompatActivity() {
@@ -55,12 +56,14 @@ class ForgotActivity : AppCompatActivity() {
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf("") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
+        val emailState = remember { mutableStateOf("") }
 
         val onForgotPressed: (String) -> Unit = { email ->
             lifecycleScope.launch {
                 val res = forgotViewModel.recoverPassword(email)
                 if (res.status == Status.SUCCESS) {
                     setShowReminderDialog(true)
+                    emailState.value = email
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(res.message ?: "unknown")
                 }
@@ -97,7 +100,7 @@ class ForgotActivity : AppCompatActivity() {
                     }
                 }
             }
-            ReminderDialog(showReminder)
+            ReminderDialog(showReminder, emailState.value)
             ErrorDialog(showDialog, setShowDialog)
         }
     }
@@ -106,8 +109,8 @@ class ForgotActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                title = "Error",
-                text = showDialog,
+                title = stringResource(R.string.reset_password_error_title),
+                text = stringResource(R.string.pls_check_again),
                 onDismissButtonClick = {
                     setShowDialog("")
                 },
@@ -116,11 +119,11 @@ class ForgotActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun ReminderDialog(showReminder: Boolean) {
+    fun ReminderDialog(showReminder: Boolean, email: String) {
         if (showReminder) {
             CKAlertDialog(
-                title = "A verification link has been sent to ",
-                text = "To complete reset, please open verification link in your email.",
+                title = stringResource(R.string.reset_password_success_title, email),
+                text = stringResource(R.string.reset_password_description),
                 onDismissButtonClick = {
                     finish()
                 },
