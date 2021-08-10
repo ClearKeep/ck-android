@@ -35,6 +35,10 @@ class ForgotActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val domain = intent.getStringExtra(EXTRA_DOMAIN)
+        forgotViewModel.setDomain(domain ?: "")
+
         setContent {
             MyApp()
         }
@@ -115,13 +119,17 @@ class ForgotActivity : AppCompatActivity() {
     fun ReminderDialog(showReminder: Boolean) {
         if (showReminder) {
             CKAlertDialog(
-                title = "Email is sent successfully",
-                text = "Please check your email to reset password",
+                title = "A verification link has been sent to ",
+                text = "To complete reset, please open verification link in your email.",
                 onDismissButtonClick = {
                     finish()
                 },
             )
         }
+    }
+
+    companion object {
+        const val EXTRA_DOMAIN = "domain"
     }
 }
 
