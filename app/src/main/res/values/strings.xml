@@ -83,4 +83,5 @@
     <string name="take_photo">Take a photo</string>
     <string name="albums">Albums</string>
     <string name="cancel">Cancel</string>
+    <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
 </resources>

@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.otp.OtpActivity
 import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
+import com.clearkeep.utilities.printlnCK
 
 
 @AndroidEntryPoint
@@ -49,7 +50,9 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
                     }
                     composable("pick_avatar") {
                         ImagePickerScreen (profileViewModel.imageUriSelected.map { listOf(it) }, navController, onSetSelectedImages = {
-                            profileViewModel.setSelectedImage(it[0])
+                            if (it.isNotEmpty()) {
+                                profileViewModel.setSelectedImage(it[0])
+                            }
                         })
                     }
                 }
@@ -64,7 +67,9 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
             navController,
             profileViewModel = profileViewModel,
             onCloseView = {
-                finish()
+                if (!profileViewModel.hasUnsavedChanges()) {
+                    finish()
+                }
             },
             onChangePassword = {
                 navigateToChangePassword()
