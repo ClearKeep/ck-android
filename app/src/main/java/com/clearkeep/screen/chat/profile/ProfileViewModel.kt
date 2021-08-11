@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
@@ -19,16 +20,15 @@ import javax.inject.Inject
 
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    serverRepository: ServerRepository
 ): ViewModel() {
 
-    val profile: LiveData<Profile?> = liveData(viewModelScope.coroutineContext + IO) {
-        val profile = environment.getServer().profile
-        _username.postValue(profile.userName)
-        _email.postValue(profile.email)
-        _phoneNumber.postValue(profile.phoneNumber)
-
-        emit(profile)
+    val profile: LiveData<Profile?> = serverRepository.getDefaultServerProfileAsState().map {
+        _username.postValue(it.userName)
+        _email.postValue(it.email)
+        _phoneNumber.postValue(it.phoneNumber)
+        it
     }
 
     private var _currentPhotoUri: Uri? = null
@@ -112,22 +112,22 @@ class ProfileViewModel @Inject constructor(
 
             GlobalScope.launch {
                 val avatarUrl = uploadAvatarImage(avatarToUpload, context)
-                profileRepository.updateProfile(
-                    Owner(server.serverDomain, server.profile.userId),
-                    displayName,
-                    phoneNumber,
-                    avatarUrl
-                )
+                if (profile.value != null) {
+                    profileRepository.updateProfile(
+                        Owner(server.serverDomain, server.profile.userId),
+                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl)
+                    )
+                }
             }
         } else {
             //Update normal data only
             viewModelScope.launch {
-                profileRepository.updateProfile(
-                    Owner(server.serverDomain, server.profile.userId),
-                    displayName,
-                    phoneNumber,
-                    null
-                )
+                if (profile.value != null) {
+                    profileRepository.updateProfile(
+                        Owner(server.serverDomain, server.profile.userId),
+                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber)
+                    )
+                }
             }
         }
     }
