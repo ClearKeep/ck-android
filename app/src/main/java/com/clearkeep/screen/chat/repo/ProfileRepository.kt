@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.repo
 
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
@@ -60,16 +61,14 @@ class ProfileRepository @Inject constructor(
 
     suspend fun updateProfile(
         owner: Owner,
-        displayName: String,
-        phoneNumber: String,
-        avatarUrl: String?
+        profile: Profile
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
             val requestBuilder = UserOuterClass.UpdateProfileRequest.newBuilder()
-                .setDisplayName(displayName)
-                .setPhoneNumber(phoneNumber)
-            if (avatarUrl != null) requestBuilder.avatar = avatarUrl
+                .setDisplayName(profile.userName)
+                .setPhoneNumber(profile.phoneNumber)
+            if (profile.avatar != null) requestBuilder.avatar = profile.avatar
             val request = requestBuilder.build()
             val userGrpc = apiProvider.provideUserBlockingStub(
                 ParamAPI(
@@ -80,6 +79,9 @@ class ProfileRepository @Inject constructor(
             )
             val response = userGrpc.updateProfile(request)
             printlnCK("updateProfile success? ${response.success} errors? ${response.errors}")
+            if (response.success) {
+                serverRepository.updateDefaultServerProfile(profile)
+            }
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("updateProfile error: $e")

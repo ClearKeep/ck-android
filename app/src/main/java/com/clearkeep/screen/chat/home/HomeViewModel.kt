@@ -34,7 +34,7 @@ class HomeViewModel @Inject constructor(
     private val workSpaceRepository: WorkSpaceRepository
     ): ViewModel() {
 
-    var profile = serverRepository.profile
+    var profile = serverRepository.getDefaultServerProfileAsState()
 
     var currentServer = serverRepository.activeServer
 

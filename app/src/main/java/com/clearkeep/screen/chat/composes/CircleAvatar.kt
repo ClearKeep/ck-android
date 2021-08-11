@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
+import coil.request.CachePolicy
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
@@ -49,7 +50,10 @@ fun CircleAvatar(
                 rememberCoilPainter(
                     request = url[0],
                     imageLoader = context.imageLoader,
-                    previewPlaceholder = R.drawable.ic_cross
+                    previewPlaceholder = R.drawable.ic_cross,
+                    requestBuilder = {
+                        memoryCachePolicy(CachePolicy.DISABLED)
+                    }
                 ),
                 null,
                 contentScale = ContentScale.Crop,
