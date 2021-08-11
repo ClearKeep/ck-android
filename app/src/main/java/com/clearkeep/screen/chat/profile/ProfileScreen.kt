@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.profile
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -47,6 +49,10 @@ fun ProfileScreen(
     val profile = profileViewModel.profile.observeAsState()
     val context = LocalContext.current
 
+    BackHandler {
+        onCloseView()
+    }
+
     profile?.value?.let { user ->
         val userName = profileViewModel.username.observeAsState()
         val email = profileViewModel.email.observeAsState()
@@ -54,7 +60,9 @@ fun ProfileScreen(
         val authCheckedChange = remember { mutableStateOf(false) }
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
         val pickAvatarDialogVisible = remember { mutableStateOf(false) }
+        val unsavedChangesDialogVisible = profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
+        val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
 
         Column(
             Modifier
@@ -79,14 +87,32 @@ fun ProfileScreen(
                         ) {
                             HeaderProfile(
                                 onClickSave = {
-                                    profileViewModel.updateProfileDetail(context, userName.value ?: "", phoneNumber.value ?: "")
-                            }, onCloseView)
+                                    profileViewModel.updateProfileDetail(
+                                        context,
+                                        userName.value ?: "",
+                                        phoneNumber.value ?: ""
+                                    )
+                                },
+                                onCloseView = {
+                                    onCloseView()
+                                }
+                            )
                             Row(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CircleAvatar(
-                                    if (user.avatar != null) listOf(user.avatar) else emptyList(),
+                                    when {
+                                        selectedAvatar.value != null -> {
+                                            listOf(selectedAvatar.value!!)
+                                        }
+                                        user.avatar != null -> {
+                                            listOf(user.avatar)
+                                        }
+                                        else -> {
+                                            emptyList()
+                                        }
+                                    },
                                     user.userName ?: "",
                                     size = 72.dp,
                                     modifier = Modifier.clickable {
@@ -179,6 +205,21 @@ fun ProfileScreen(
                 onDismissButtonClick = {
                     profileViewModel.uploadAvatarResponse.value = null
                 },
+            )
+        }
+        if (unsavedChangesDialogVisible.value == true) {
+            CKAlertDialog(
+                title = stringResource(R.string.profile_unsaved_change_warning),
+                dismissTitle = "Stay on this page",
+                confirmTitle = "Leave this page",
+                onDismissButtonClick = {
+                    profileViewModel.unsavedChangeDialogVisible.value = false
+                },
+                onConfirmButtonClick = {
+                    profileViewModel.unsavedChangeDialogVisible.value = false
+                    profileViewModel.undoProfileChanges()
+                    onCloseView()
+                }
             )
         }
 

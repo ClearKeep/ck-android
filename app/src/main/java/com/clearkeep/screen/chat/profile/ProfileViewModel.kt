@@ -23,10 +23,16 @@ class ProfileViewModel @Inject constructor(
 ): ViewModel() {
 
     val profile: LiveData<Profile?> = liveData(viewModelScope.coroutineContext + IO) {
-        emit(environment.getServer().profile)
+        val profile = environment.getServer().profile
+        _username.postValue(profile.userName)
+        _email.postValue(profile.email)
+        _phoneNumber.postValue(profile.phoneNumber)
+
+        emit(profile)
     }
 
     private var _currentPhotoUri: Uri? = null
+    private var isAvatarChanged = false
 
     private val _imageUriSelected = MutableLiveData<String>()
     val imageUriSelected: LiveData<String>
@@ -45,6 +51,8 @@ class ProfileViewModel @Inject constructor(
     private val _phoneNumber = MutableLiveData<String>()
     val phoneNumber: LiveData<String>
         get() = _phoneNumber
+
+    val unsavedChangeDialogVisible = MutableLiveData<Boolean>()
 
     fun getProfileLink(): String {
         val server = environment.getServer()
@@ -71,32 +79,44 @@ class ProfileViewModel @Inject constructor(
 
     fun setSelectedImage(uris: String) {
         _imageUriSelected.value = uris
+        isAvatarChanged = true
     }
 
     fun setTakePhoto() {
         _imageUriSelected.value = _currentPhotoUri.toString()
         _currentPhotoUri = null
+        isAvatarChanged = true
     }
 
     fun updateProfileDetail(context: Context, displayName: String, phoneNumber: String) {
-        val avatarToUpload = _imageUriSelected.value
+        isAvatarChanged = false
+        val avatarToUpload = imageUriSelected.value
         val server = environment.getServer()
+
+        if (!isValidUsername(displayName)) {
+            uploadAvatarResponse.value =
+                Resource.error("You can’t leave Username blank", null)
+            undoProfileChanges()
+            return
+        }
+
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
                 printlnCK("uploadAvatar exceed file size limit")
                 uploadAvatarResponse.value =
-                    Resource.error("Failed to upload avatar - File is larger than 4 MB", null)
+                    Resource.error("Failed to upload avatar - File is larger than 5 MB", null)
+                undoProfileChanges()
                 return
             }
 
             GlobalScope.launch {
-                uploadAvatarImage(avatarToUpload, context)
+                val avatarUrl = uploadAvatarImage(avatarToUpload, context)
                 profileRepository.updateProfile(
                     Owner(server.serverDomain, server.profile.userId),
                     displayName,
                     phoneNumber,
-                    avatarToUpload
+                    avatarUrl
                 )
             }
         } else {
@@ -112,10 +132,25 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) {
-        //TODO: Save temp profile avatar
-        val fileUrls = mutableListOf<String>()
-        val filesSizeInBytes = mutableListOf<Long>()
+    fun hasUnsavedChanges() : Boolean {
+        val usernameChanged = _username.value != profile.value?.userName
+        val emailChanged = _email.value != profile.value?.email
+        val phoneNumberChanged = _phoneNumber.value != profile.value?.phoneNumber
+
+        val hasUnsavedChange = usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
+        unsavedChangeDialogVisible.value = hasUnsavedChange
+        return hasUnsavedChange
+    }
+
+    fun undoProfileChanges() {
+        val oldProfile = profile.value
+        _phoneNumber.value = oldProfile?.phoneNumber
+        _email.value = oldProfile?.email
+        _username.value = oldProfile?.userName
+        _imageUriSelected.value = null
+    }
+
+    private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) : String {
         val uri = Uri.parse(avatarToUpload)
         val contentResolver = context.contentResolver
         val mimeType = getFileMimeType(context, uri, false)
@@ -142,15 +177,13 @@ class ProfileViewModel @Inject constructor(
         val fileHashByteArray = fileDigest.digest()
         val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
         val server = environment.getServer()
-        val url = profileRepository.uploadAvatar(
+        return profileRepository.uploadAvatar(
             Owner(server.serverDomain, server.profile.userId),
             mimeType,
             fileName.replace(" ", "_"),
             byteStrings,
             fileHashString
         )
-        fileUrls.add(url)
-        filesSizeInBytes.add(fileSize)
     }
 
     fun getPhotoUri(context: Context): Uri {
@@ -166,6 +199,8 @@ class ProfileViewModel @Inject constructor(
     ): Boolean {
         return uri.getFileSize(context, false) <= AVATAR_MAX_SIZE
     }
+
+    private fun isValidUsername(username: String?) : Boolean = !username.isNullOrEmpty()
 
     companion object {
         private const val AVATAR_MAX_SIZE = 4_000_000 //4MB
