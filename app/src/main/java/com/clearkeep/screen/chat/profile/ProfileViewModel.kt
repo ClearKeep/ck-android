@@ -148,6 +148,7 @@ class ProfileViewModel @Inject constructor(
         _email.value = oldProfile?.email
         _username.value = oldProfile?.userName
         _imageUriSelected.value = null
+        isAvatarChanged = false
     }
 
     private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) : String {
