@@ -52,6 +52,7 @@ import java.util.*
 fun ImagePickerScreen(
     imageUriSelected: LiveData<List<String>>,
     navController: NavController,
+    onlyPickOne: Boolean = false,
     onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
@@ -74,15 +75,17 @@ fun ImagePickerScreen(
                     }
                 },
                 actions = {
-                    Text(
-                        "Upload (${urisSelected?.size ?: 0})",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable {
-                                onSetSelectedImages(urisSelected)
-                                navController.popBackStack()
-                            }
-                    )
+                    if (!onlyPickOne) {
+                        Text(
+                            "Upload (${urisSelected?.size ?: 0})",
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .clickable {
+                                    onSetSelectedImages(urisSelected)
+                                    navController.popBackStack()
+                                }
+                        )
+                    }
                 })
             Box(Modifier.padding(16.dp)) {
                 LazyVerticalGrid(cells = GridCells.Fixed(2)) {
@@ -92,8 +95,14 @@ fun ImagePickerScreen(
                             it.toString(),
                             urisSelected.contains(it.toString())
                         ) { uri: String, isSelected: Boolean ->
-                            if (isSelected)
-                                urisSelected.add(uri) else urisSelected.remove(uri)
+                            when {
+                                onlyPickOne -> {
+                                    onSetSelectedImages(listOf(uri))
+                                    navController.popBackStack()
+                                }
+                                isSelected -> urisSelected.add(uri)
+                                else -> urisSelected.remove(uri)
+                            }
                         }
                     }
                 }

@@ -49,7 +49,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
                         MainComposable(navController)
                     }
                     composable("pick_avatar") {
-                        ImagePickerScreen (profileViewModel.imageUriSelected.map { listOf(it) }, navController, onSetSelectedImages = {
+                        ImagePickerScreen (profileViewModel.imageUriSelected.map { listOf(it) }, navController, onlyPickOne = true, onSetSelectedImages = {
                             if (it.isNotEmpty()) {
                                 profileViewModel.setSelectedImage(it[0])
                             }
