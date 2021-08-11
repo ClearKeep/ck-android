@@ -12,22 +12,30 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.navigate
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
+import com.clearkeep.screen.chat.room.UploadPhotoDialog
+import com.clearkeep.utilities.network.Status
 
+@ExperimentalComposeUiApi
 @Composable
 fun ProfileScreen(
+    navController: NavController,
     profileViewModel: ProfileViewModel,
     onCloseView: () -> Unit,
     onChangePassword: () -> Unit,
@@ -37,12 +45,17 @@ fun ProfileScreen(
     val versionName = BuildConfig.VERSION_NAME
     val env = BuildConfig.FLAVOR
     val profile = profileViewModel.profile.observeAsState()
+    val context = LocalContext.current
+
     profile?.value?.let { user ->
-        val userName = remember { mutableStateOf(user.userName.toString()) }
-        val email = remember { mutableStateOf(user.email.toString()) }
-        val phoneNumber = remember { mutableStateOf("") }
+        val userName = profileViewModel.username.observeAsState()
+        val email = profileViewModel.email.observeAsState()
+        val phoneNumber = profileViewModel.phoneNumber.observeAsState()
         val authCheckedChange = remember { mutableStateOf(false) }
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
+        val pickAvatarDialogVisible = remember { mutableStateOf(false) }
+        val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
+
         Column(
             Modifier
                 .fillMaxSize()
@@ -66,13 +79,20 @@ fun ProfileScreen(
                         ) {
                             HeaderProfile(
                                 onClickSave = {
-                                    profileViewModel.updateProfileDetail(userName.value, phoneNumber.value)
+                                    profileViewModel.updateProfileDetail(context, userName.value ?: "", phoneNumber.value ?: "")
                             }, onCloseView)
                             Row(
                                 Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                CircleAvatar(emptyList(), user.userName ?: "", size = 72.dp)
+                                CircleAvatar(
+                                    if (user.avatar != null) listOf(user.avatar) else emptyList(),
+                                    user.userName ?: "",
+                                    size = 72.dp,
+                                    modifier = Modifier.clickable {
+                                        pickAvatarDialogVisible.value = true
+                                    }
+                                )
                                 Column(
                                     Modifier.padding(start = 16.dp),
                                     verticalArrangement = Arrangement.Center
@@ -91,11 +111,17 @@ fun ProfileScreen(
                                 }
                             }
                             Spacer(Modifier.height(20.dp))
-                            ItemInformationView("Username", userName)
+                            ItemInformationView("Username", userName.value ?: "") {
+                                profileViewModel.setUsername(it)
+                            }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Email", email, enable = false)
+                            ItemInformationView("Email", email.value ?: "", enable = false) {
+                                profileViewModel.setEmail(it)
+                            }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber, keyboardType = KeyboardType.Phone)
+                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone) {
+                                profileViewModel.setPhoneNumber(it)
+                            }
                             Spacer(Modifier.height(8.dp))
                             CopyLink(
                                 onCopied = {
@@ -107,7 +133,7 @@ fun ProfileScreen(
                             Spacer(Modifier.height(24.dp))
                             TwoFaceAuthView(authCheckedChange) {
                                 if (it) {
-                                    if (phoneNumber.value.isNotBlank()) {
+                                    if (phoneNumber.value?.isNotBlank() == true) {
                                         authCheckedChange.value = true
                                         onNavigateToOtp()
                                     } else {
@@ -147,6 +173,24 @@ fun ProfileScreen(
                 }
             )
         }
+        if (uploadAvatarResponse.value != null && uploadAvatarResponse.value?.status == Status.ERROR) {
+            CKAlertDialog(
+                title = uploadAvatarResponse.value!!.message ?: "",
+                onDismissButtonClick = {
+                    profileViewModel.uploadAvatarResponse.value = null
+                },
+            )
+        }
+
+        UploadPhotoDialog(
+            isOpen = pickAvatarDialogVisible.value,
+            getPhotoUri = { profileViewModel.getPhotoUri(context) },
+            onDismiss = { pickAvatarDialogVisible.value = false },
+            onNavigateToAlbums = { navController.navigate("pick_avatar") },
+            onTakePhoto = {
+                profileViewModel.setTakePhoto()
+            }
+        )
     }
 }
 
@@ -193,7 +237,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 
 
 @Composable
-fun ItemInformationView(header: String, textValue: MutableState<String>, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text) {
+fun ItemInformationView(header: String, textValue: String, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -204,8 +248,8 @@ fun ItemInformationView(header: String, textValue: MutableState<String>, enable:
         )
         Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, grayscale5)) {
             TextField(
-                value = textValue.value,
-                onValueChange = { textValue.value = it },
+                value = textValue,
+                onValueChange = onValueChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .width(55.dp),
@@ -221,6 +265,7 @@ fun ItemInformationView(header: String, textValue: MutableState<String>, enable:
                     fontWeight = FontWeight.Normal
                 ),
                 enabled = enable,
+                maxLines = 1,
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
             )
         }
