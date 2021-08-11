@@ -25,7 +25,8 @@ fun CircleAvatar(
         url: List<String>,
         name: String = "",
         size: Dp = 48.dp,
-        isGroup: Boolean = false
+        isGroup: Boolean = false,
+        modifier: Modifier = Modifier
 ) {
     if (!url.isNullOrEmpty()) {
         //
@@ -37,7 +38,7 @@ fun CircleAvatar(
             contentDescription = "",
             modifier = Modifier.size(size).clip(CircleShape).background(
                 color = colorTest
-            ).padding(12.dp),
+            ).padding(12.dp).then(modifier),
         )
     } else {
         val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
@@ -45,6 +46,7 @@ fun CircleAvatar(
             shape = CircleShape,
             modifier = Modifier
                 .size(size)
+                .then(modifier)
         ) {
             Column(
                 modifier = Modifier.background(

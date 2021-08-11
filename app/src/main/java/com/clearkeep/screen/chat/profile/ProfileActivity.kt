@@ -14,8 +14,15 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.otp.OtpActivity
+import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
 
 
 @AndroidEntryPoint
@@ -27,20 +34,34 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    @ExperimentalComposeUiApi
+    @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         setContent {
             CKSimpleTheme {
-                MainComposable()
+                val navController = rememberNavController()
+                NavHost(navController, startDestination = "profile"){
+                    composable("profile"){
+                        MainComposable(navController)
+                    }
+                    composable("pick_avatar") {
+                        ImagePickerScreen (profileViewModel.imageUriSelected.map { listOf(it) }, navController, onSetSelectedImages = {
+                            profileViewModel.setSelectedImage(it[0])
+                        })
+                    }
+                }
             }
         }
     }
 
+    @ExperimentalComposeUiApi
     @Composable
-    private fun MainComposable() {
+    private fun MainComposable(navController: NavController) {
         ProfileScreen(
+            navController,
             profileViewModel = profileViewModel,
             onCloseView = {
                 finish()
