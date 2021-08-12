@@ -212,20 +212,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun logOut() {
-        /*viewModelScope.launch {
-            _isLogOutProcessing.value = true
-            val servers = serverRepository.getServers()
-            servers.forEach { server ->
-                authRepository.logoutFromAPI(server)
-            }
-            clearDatabase()
-            _isLogOutCompleted.value = true
-        }*/
-        leaveServer()
-    }
-
-    private fun leaveServer() {
+    fun leaveServer() {
 
         viewModelScope.launch {
 

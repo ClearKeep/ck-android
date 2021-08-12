@@ -31,7 +31,6 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
@@ -46,7 +45,7 @@ fun HomeScreen(
     gotoSearch: () -> Unit,
     createGroupChat: ((isDirectGroup: Boolean) -> Unit),
     gotoRoomById: ((idRoom: Long) -> Unit),
-    onLogout: () -> Unit,
+    onLeaveServer: () -> Unit,
     onJoinServer: (serverUrl: String) -> Unit,
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
@@ -126,9 +125,9 @@ fun HomeScreen(
                     closeSiteMenu = {
                         rememberStateSiteMenu.value = false
                     },
-                    onLogout = {
+                    onLeaveServer = {
                         rememberStateSiteMenu.value = false
-                        onLogout.invoke()
+                        onLeaveServer.invoke()
                     },
                     onNavigateServerSetting = onNavigateServerSetting,
                     onNavigateAccountSetting = onNavigateAccountSetting,
