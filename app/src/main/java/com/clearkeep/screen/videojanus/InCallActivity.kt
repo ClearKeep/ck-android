@@ -107,7 +107,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private val remoteRenders: MutableMap<BigInteger, RemoteInfo> = HashMap()
 
     private var endCallReceiver: BroadcastReceiver? = null
-    private var ourCameraView: RelativeLayout? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
 
@@ -310,16 +309,16 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             imgEndWaiting.gone()
             tvEndButtonDescription.gone()
             pipInfo.visible()
-            ourCameraView?.gone()
+            surfaceRootContainer.gone()
         } else {
             // Restore the full-screen UI.
             includeToolbar.visible()
             imgEndWaiting.visible()
             tvEndButtonDescription.visible()
             pipInfo.gone()
+            surfaceRootContainer.visible()
             if (!mIsAudioMode) {
                 controlCallVideoView.visible()
-                ourCameraView?.visible()
             } else {
                 controlCallAudioView.visible()
             }
@@ -730,8 +729,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        ourCameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
-        binding.surfaceRootContainer.addView(ourCameraView)
+        val cameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
+        binding.surfaceRootContainer.addView(cameraView)
 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
