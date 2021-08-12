@@ -130,7 +130,8 @@ fun SendBottomCompose(
                     imeAction = ImeAction.None,
                     onChangeMessage = {
                         roomViewModel.setMessage(it)
-                    }
+                    },
+                    maxLines = 3
                 )
             }
             IconButton(
