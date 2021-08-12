@@ -2,6 +2,7 @@ package com.clearkeep.screen.videojanus.peer_to__peer
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.media.MediaPlayer
 import android.os.*
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -112,6 +114,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_call_peer_to_peer)
+    //    allowOnLockScreen()
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
@@ -163,7 +166,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         remoteRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setEnableHardwareScaler(true)
-            setMirror(true)
+          //  setMirror(true)
         }
         localRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
@@ -198,6 +201,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
                 val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
                 startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                callViewModel.onSpeakChange(mIsSpeaker)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
                 val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
@@ -211,6 +215,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                     val webRtcGroupId = result.groupRtcId
                     val webRtcUrl = result.groupRtcUrl
                     startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+                    callViewModel.onSpeakChange(mIsSpeaker)
                 } else {
                     runOnUiThread {
 
@@ -325,6 +330,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             }
             this.bottomToggleSwitchCamera.setOnClickListener {
                 callViewModel.onCameraChange((it as ToggleButton).isChecked)
+                localRender.setMirror(it.isChecked)
             }
             this.bottomImgEndCall.setOnClickListener {
                 hangup()
@@ -352,6 +358,20 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
         imgVideoCallBack.setOnClickListener {
             handleBackPressed()
+        }
+    }
+
+    private fun allowOnLockScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            keyguardManager.requestDismissKeyguard(this, null)
+        } else {
+            this.window.addFlags(
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
         }
     }
 

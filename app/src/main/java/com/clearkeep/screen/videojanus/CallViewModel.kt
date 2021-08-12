@@ -160,7 +160,6 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     }
 
     private fun setSpeakerphoneOn(isOn: Boolean) {
-        printlnCK("setSpeakerphoneOn, isOn = $isOn")
         try {
             val audioManager: AudioManager = mContext.get()?.getSystemService(AppCompatActivity.AUDIO_SERVICE) as AudioManager
             audioManager.mode = AudioManager.MODE_IN_CALL

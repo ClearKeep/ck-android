@@ -122,6 +122,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="true"
+            android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
@@ -129,6 +130,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="true"
+            android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity

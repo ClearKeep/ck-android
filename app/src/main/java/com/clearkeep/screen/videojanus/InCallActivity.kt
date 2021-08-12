@@ -368,6 +368,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         controlCallVideoView.bottomToggleSwitchCamera.setOnClickListener {
             peerConnectionClient?.switchCamera()
+            mLocalSurfaceRenderer.setMirror(controlCallVideoView.bottomToggleSwitchCamera.isChecked)
         }
 
         controlCallVideoView.bottomImgEndCall.setOnClickListener {
@@ -682,7 +683,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
             val remoteRender = SurfaceViewRenderer(this)
             remoteRender.init(rootEglBase.eglBaseContext, null)
-            remoteRender.setMirror(true)
+           // remoteRender.setMirror(true)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
             remoteRenders[connection.handleId] = RemoteInfo(
                 connection.display,
