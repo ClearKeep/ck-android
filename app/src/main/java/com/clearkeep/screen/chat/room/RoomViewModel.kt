@@ -21,6 +21,7 @@ import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -92,6 +93,14 @@ class RoomViewModel @Inject constructor(
     val imageDetailSenderName : LiveData<String>
         get() = _imageDetailSenderName
 
+    private val _listUserStatus = MutableLiveData<List<User>>()
+    val listUserStatus: LiveData<List<User>>
+        get() = _listUserStatus
+
+    init {
+        getStatusUserInDirectGroup()
+    }
+
     fun setMessage(message: String) {
         _message.value = message
     }
@@ -138,6 +147,18 @@ class RoomViewModel @Inject constructor(
             }
         }
     }
+
+    fun getStatusUserInDirectGroup() {
+        viewModelScope.launch {
+            group.asFlow().collect {
+                val listClient = group.value?.clientList
+                _listUserStatus.postValue(listClient?.let { listClient ->
+                    peopleRepository.getListClientStatus(listClient)
+                })
+            }
+        }
+    }
+
 
     fun initNotes(
         ownerDomain: String,

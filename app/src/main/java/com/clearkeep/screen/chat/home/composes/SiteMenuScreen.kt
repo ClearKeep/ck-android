@@ -59,7 +59,7 @@ fun SiteMenuScreen(
         modifier = Modifier
             .background(grayscaleOverlay)
             .focusable()
-            .clickable(enabled = true, onClick = { null })
+            .clickable(enabled = true, onClick = {  })
     ) {
         Row(
             Modifier.background(
@@ -139,7 +139,7 @@ fun SiteMenuScreen(
                         Text(
                             text = stringResource(R.string.logout), modifier = Modifier
                                 .padding(start = 16.dp), style = TextStyle(
-                                color = errorDefault ?: MaterialTheme.colors.onBackground,
+                                color = errorDefault,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -159,10 +159,10 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val statusUse = homeViewModel.currentStatus.observeAsState()
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarSite(url = profile.avatar, name = profile?.userName ?: "", status = "", cacheKey = profile.updatedAt.toString())
+        CircleAvatarSite(url = profile.avatar, name = profile.userName ?: "", status = "", cacheKey = profile.updatedAt.toString())
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             CKHeaderText(
-                text = profile?.userName ?: "",
+                text = profile.userName ?: "",
                 headerTextType = HeaderTextType.Normal,
                 color = primaryDefault
             )
@@ -199,7 +199,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
 
             StatusDropdown(expanded, onDismiss = { expanded = false },{
                 expanded = false
-                homeViewModel.currentStatus.postValue(it.value)
+                homeViewModel.setUserStatus(it)
             })
 
             ConstraintLayout(Modifier.fillMaxWidth()) {
@@ -298,11 +298,6 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit,statusChoose: (UserS
             onClick = { statusChoose.invoke(UserStatus.ONLINE) },
             colorSuccessDefault,
             UserStatus.ONLINE.value
-        )
-        StatusItem(
-            onClick = { statusChoose.invoke(UserStatus.OFFLINE) },
-            grayscale3,
-            UserStatus.OFFLINE.value
         )
         StatusItem(
             onClick = { statusChoose.invoke(UserStatus.BUSY) },

@@ -157,6 +157,7 @@ fun RoomInfoScreen(
                                 R.drawable.ic_user,
                                 textColor = grayscale1,
                                 onClickAction = {
+                                    roomViewModel.getStatusUserInDirectGroup()
                                     navHostController.navigate("member_group_screen")
                                 })
                         }

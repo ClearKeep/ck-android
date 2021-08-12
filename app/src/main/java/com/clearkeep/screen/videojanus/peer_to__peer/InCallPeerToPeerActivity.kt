@@ -13,27 +13,22 @@ import android.media.MediaPlayer
 import android.os.*
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RelativeLayout
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.VideoCallRepository
-import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.BaseActivity
@@ -228,7 +223,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 delay(CALL_WAIT_TIME_OUT)
                 if (callViewModel.mCurrentCallState.value != CallState.ANSWERED) {
                     runOnUiThread {
-                        updateCallStatus(CallState.CALL_NOT_READY)
+                        callViewModel.mCurrentCallState.postValue(CallState.CALL_NOT_READY)
                     }
                 }
             }
@@ -329,7 +324,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 switchToVideoMode()
             }
             this.bottomToggleSwitchCamera.setOnClickListener {
-                callViewModel.onCameraChane((it as ToggleButton).isChecked)
+                callViewModel.onCameraChange((it as ToggleButton).isChecked)
             }
             this.bottomImgEndCall.setOnClickListener {
                 hangup()
@@ -585,6 +580,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private var listenerOnPublisherJoined = fun() {
         runOnUiThread {
+            callViewModel.onFaceTimeChange(!mIsMuteVideo)
             if (!isFromComingCall)
                 Handler(mainLooper).postDelayed({
                     viewConnecting.gone()
@@ -638,7 +634,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         printlnCK("registerSwitchVideoReceiver")
         switchVideoReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_CALL_SWITCH_VIDEO, 0).toString()
+                val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
                 if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
                     callViewModel.mIsAudioMode.postValue(false)
@@ -646,10 +642,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 }
             }
         }
-        registerReceiver(
-            switchVideoReceiver,
-            IntentFilter(ACTION_CALL_SWITCH_VIDEO)
-        )
+        registerReceiver(switchVideoReceiver, IntentFilter(ACTION_CALL_SWITCH_VIDEO))
     }
 
     private fun unRegisterSwitchVideoReceiver() {

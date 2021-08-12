@@ -15,6 +15,8 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -31,7 +33,8 @@ class HomeViewModel @Inject constructor(
     private val storage: UserPreferencesStorage,
     private val clearKeepDatabase: ClearKeepDatabase,
     private val signalKeyDatabase: SignalKeyDatabase,
-    private val workSpaceRepository: WorkSpaceRepository
+    private val workSpaceRepository: WorkSpaceRepository,
+    private val peopleRepository: PeopleRepository
     ): ViewModel() {
 
     var profile = serverRepository.getDefaultServerProfileAsState()
@@ -50,7 +53,13 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing= MutableLiveData(false)
 
-    val currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+    private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+    val currentStatus: LiveData<String>
+
+    get() = _currentStatus
+    private val _listUserStatus = MutableLiveData<List<User>>()
+    val listUserStatus: LiveData<List<User>>
+        get() = _listUserStatus
 
     init {
         printlnCK("Share file cancel HomeViewModel init")
@@ -59,6 +68,8 @@ class HomeViewModel @Inject constructor(
             messageRepository.clearTempMessage()
             roomRepository.fetchGroups()
         }
+        getStatusUserInDirectGroup()
+        sendPing()
     }
 
     fun onPullToRefresh(){
@@ -113,6 +124,40 @@ class HomeViewModel @Inject constructor(
             }
         }
         emitSource(result)
+    }
+
+    private fun getStatusUserInDirectGroup() {
+        viewModelScope.launch {
+            groups.asFlow().collect {
+                val listUserRequest = arrayListOf<User>()
+                it.forEach { group ->
+                    if (!group.isGroup()) {
+                        val user = group.clientList.firstOrNull { client ->
+                            client.userId != getClientIdOfActiveServer()
+                        }
+                        if (user != null) {
+                            listUserRequest.add(user)
+                        }
+                    }
+                }
+                _listUserStatus.postValue(peopleRepository.getListClientStatus(listUserRequest))
+            }
+        }
+    }
+
+    private fun sendPing() {
+        viewModelScope.launch {
+            delay(30*1000)
+            peopleRepository.sendPing()
+            sendPing()
+        }
+    }
+
+    fun setUserStatus(status: UserStatus) {
+        viewModelScope.launch {
+           val result= peopleRepository.updateStatus(status.value)
+            if (result) _currentStatus.postValue(status.value)
+        }
     }
 
     fun prepare() {

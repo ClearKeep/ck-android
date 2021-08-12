@@ -1,8 +1,7 @@
 package com.clearkeep.screen.auth.forgot
 
-import android.content.Context
 import android.text.TextUtils
-import android.widget.Toast
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.isValidEmail
 
 @Composable
 fun ForgotScreen(
@@ -28,8 +28,10 @@ fun ForgotScreen(
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
-    val context = LocalContext.current
     val email = remember { mutableStateOf("") }
+    val isEmptyEmail = remember { mutableStateOf(false) }
+    val isInvalidEmailFormat = remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(80.dp))
         CKTopAppBarSample(title = stringResource(R.string.forgot_password), onBackPressed = { onBackPress() })
@@ -62,26 +64,30 @@ fun ForgotScreen(
             CKButton(
                 stringResource(R.string.btn_reset_password),
                 onClick = {
-                    if (validateInput(context, email.value))
+                    if (email.value.isValidEmail()) {
                         onForgotPressed(email.value)
+                    } else {
+                        if (email.value.isBlank()) {
+                            isEmptyEmail.value = true
+                        } else {
+                            isInvalidEmailFormat.value = true
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading,
                 buttonType = ButtonType.White
             )
+            if (isEmptyEmail.value || isInvalidEmailFormat.value) {
+                CKAlertDialog(
+                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else "Please enter a valid email address.",
+                    text = stringResource(R.string.pls_check_again),
+                    onDismissButtonClick = {
+                        isEmptyEmail.value = false
+                        isInvalidEmailFormat.value = false
+                    }
+                )
+            }
         }
     }
-}
-
-private fun validateInput(context: Context, email: String): Boolean {
-    var error: String? = null
-    when {
-        TextUtils.isEmpty(email) -> {
-            error = "Email must not be blank "
-        }
-    }
-    if (error != null) {
-        Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-    }
-    return error == null
 }
