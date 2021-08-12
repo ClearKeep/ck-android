@@ -37,6 +37,7 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
@@ -63,6 +64,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     @Inject
     lateinit var serverRepository: ServerRepository
+
+    private var isInComingCall = true
 
     private val endCallReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -102,6 +105,15 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         initViews()
 
         registerEndCallReceiver()
+        GlobalScope.launch {
+            delay(CALL_WAIT_TIME_OUT)
+            if (isInComingCall) {
+                if (!mIsGroupCall) {
+                    cancelCallAPI(mGroupId.toInt())
+                }
+                finishAndRemoveFromTask()
+            }
+        }
     }
 
     private fun registerEndCallReceiver() {
@@ -199,12 +211,14 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(view: View) {
         when (view.id) {
             R.id.imgEnd -> {
+                isInComingCall = false
                 if (!mIsGroupCall) {
                     cancelCallAPI(mGroupId.toInt())
                 }
                 finishAndRemoveFromTask()
             }
             R.id.imgAnswer -> {
+                isInComingCall = false
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
@@ -240,5 +254,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         GlobalScope.launch {
             videoCallRepository.cancelCall(groupId, Owner(mDomain, mOwnerId))
         }
+    }
+    companion object {
+        private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
     }
 }

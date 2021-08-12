@@ -143,7 +143,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         listenerOnPublisherJoined?.invoke()
     }
 
-    override fun onCameraChane(isOn: Boolean) {
+    override fun onCameraChange(isOn: Boolean) {
         peerConnectionClient.switchCamera()
     }
 

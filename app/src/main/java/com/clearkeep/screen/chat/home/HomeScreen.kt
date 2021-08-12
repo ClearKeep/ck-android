@@ -30,6 +30,8 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
@@ -209,6 +211,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 fun ItemListDirectMessage(
     modifier: Modifier,
     chatGroup: ChatGroup,
+    listUserStatus: List<User>?,
     clintId: String,
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
@@ -218,19 +221,19 @@ fun ItemListDirectMessage(
                 onItemClickListener?.invoke(chatGroup.groupId)
             }
     ) {
-        val roomName = chatGroup.clientList.firstOrNull { client ->
+        val partnerUser= chatGroup.clientList.firstOrNull { client ->
             client.userId != clintId
-        }?.userName ?: ""
-
-        val userStatus = chatGroup.clientList.firstOrNull { client ->
-            client.userId != clintId
+        }
+        val roomName = partnerUser?.userName ?: ""
+        val userStatus = listUserStatus?.firstOrNull { client ->
+             client.userId==partnerUser?.userId
         }?.userStatus ?: ""
 
         Row(
             modifier = Modifier.padding(top = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleAvatarStatus(url = "", name = roomName, status = "")
+            CircleAvatarStatus(url = "", name = roomName, status = userStatus)
             Text(
                 text = roomName, modifier = Modifier
                     .fillMaxWidth()
@@ -244,7 +247,6 @@ fun ItemListDirectMessage(
         }
     }
 }
-
 
 @Composable
 fun ChatGroupItemView(
@@ -279,7 +281,7 @@ fun ChatGroupView(
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
     val chatGroups = viewModel.chatGroups.observeAsState()
-    val rememberitemGroup = remember { mutableStateOf(true) }
+    val rememberItemGroup = remember { mutableStateOf(true) }
     Column(
         modifier = Modifier.wrapContentHeight()
     ) {
@@ -289,7 +291,7 @@ fun ChatGroupView(
                     .weight(0.66f), verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(modifier = Modifier.clickable {
-                    rememberitemGroup.value = !rememberitemGroup.value
+                    rememberItemGroup.value = !rememberItemGroup.value
                 }, verticalAlignment = Alignment.CenterVertically) {
                     CKHeaderText(
                         text = "Group Chat (${chatGroups.value?.size})",
@@ -319,7 +321,7 @@ fun ChatGroupView(
         }
         Column() {
             AnimatedVisibility(
-                visible = rememberitemGroup.value,
+                visible = rememberItemGroup.value,
                 modifier = Modifier.padding(top = 4.dp),
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
@@ -355,7 +357,7 @@ fun DirectMessagesView(
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
-    val chatGroupDummy = viewModel.directGroups.observeAsState()
+    val chatGroup = viewModel.directGroups.observeAsState()
     val rememberItemGroup = remember { mutableStateOf(true) }
     Column(modifier = Modifier.wrapContentHeight()) {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -370,7 +372,7 @@ fun DirectMessagesView(
                         }, verticalAlignment = Alignment.CenterVertically
                 ) {
                     CKHeaderText(
-                        text = "Direct Messages (${chatGroupDummy.value?.size})",
+                        text = "Direct Messages (${chatGroup.value?.size})",
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
                     Box(modifier = Modifier.padding(8.dp)) {
@@ -409,12 +411,14 @@ fun DirectMessagesView(
                 )
 
             ) {
-                chatGroupDummy.value?.let { item ->
+                chatGroup.value?.let { item ->
+                    val listUserStatus=viewModel.listUserStatus.observeAsState()
                     Column {
                         item.forEach { chatGroup ->
                             ItemListDirectMessage(
                                 modifier = Modifier.padding(start = 16.dp),
                                 chatGroup,
+                                listUserStatus.value,
                                 viewModel.getClientIdOfActiveServer(),
                                 onItemClickListener
                             )
@@ -503,7 +507,7 @@ fun WorkSpaceView(
         Spacer(modifier = Modifier.size(24.dp))
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
-                text = activeServer?.value?.serverName ?: "", modifier = Modifier
+                text = activeServer.value?.serverName ?: "", modifier = Modifier
                     .weight(0.66f), headerTextType = HeaderTextType.Large
             )
             Column(
