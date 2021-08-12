@@ -92,18 +92,18 @@ object AppCall {
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
         dismissIntent.putExtra(EXTRA_OWNER_DOMAIN, ownerDomain)
         dismissIntent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
-        val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_ONE_SHOT)
 
         val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true, currentUserName, currentUserAvatar)
         val pendingWaitIntent = PendingIntent.getActivity(context, 0, waitIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.FLAG_ONE_SHOT)
 
         val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId,
             userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false, currentUserName, currentUserAvatar)
         val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+            PendingIntent.FLAG_ONE_SHOT)
 
         val titleCallResource = if (isGroup(groupType)) {
             if (isAudioMode) R.string.notification_incoming_group else R.string.notification_incoming_video_group
@@ -175,6 +175,7 @@ object AppCall {
                                          webRtcGroupId: String, webRtcUrl: String,
                                          stunUrl: String, isWaitingScreen: Boolean, currentUserName: String, currentUserAvatar: String): Intent {
         val intent = if (isWaitingScreen) {
+            printlnCK("createIncomingCallIntent")
             Intent(context, InComingCallActivity::class.java)
         } else {
              if (isGroup(groupType)) {
