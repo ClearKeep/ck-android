@@ -3,6 +3,7 @@ package com.clearkeep.db.clear_keep.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
+import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 
 @Dao
@@ -24,6 +25,9 @@ interface ServerDAO {
 
     @Query("UPDATE server SET is_active = CASE server_domain WHEN :domain THEN 1 ELSE 0 END")
     suspend fun setDefaultServerByDomain(domain: String)
+
+    @Query("UPDATE server SET owner = :profile WHERE server_domain = :domain")
+    suspend fun updateDefaultServerProfile(domain: String, profile: Profile)
 
     @Query("SELECT * FROM server")
     suspend fun getServers(): List<Server>

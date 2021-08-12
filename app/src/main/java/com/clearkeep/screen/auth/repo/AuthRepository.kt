@@ -21,6 +21,7 @@ import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
 import user.UserOuterClass
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -305,8 +306,9 @@ class AuthRepository @Inject constructor(
                 userId = response.id,
                 userName = response.displayName,
                 email = response.email,
-                firstName = response.firstName,
-                lastName = response.lastName
+                phoneNumber = response.phoneNumber,
+                avatar = response.avatar,
+                updatedAt = Calendar.getInstance().timeInMillis
             )
         } catch (e: Exception) {
             printlnCK("getProfileWithGrpc: $e")
