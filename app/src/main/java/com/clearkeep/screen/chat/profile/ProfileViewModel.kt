@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
+import java.util.*
 import javax.inject.Inject
 
 class ProfileViewModel @Inject constructor(
@@ -70,7 +71,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun setPhoneNumber(phoneNumber: String) {
-        _phoneNumber.value = phoneNumber
+        _phoneNumber.value = phoneNumber.filter { it.isDigit() }
     }
 
     fun setUsername(username: String) {
@@ -99,7 +100,6 @@ class ProfileViewModel @Inject constructor(
             undoProfileChanges()
             return
         }
-
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
@@ -115,7 +115,7 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl)
+                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
                     )
                 }
             }

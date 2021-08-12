@@ -55,6 +55,6 @@ class ServerRepository @Inject constructor(
     }
 
     suspend fun updateDefaultServerProfile(profile: Profile) {
-        serverDAO.updateDefaultServerProfile(profile.copy(updatedAt = Calendar.getInstance().timeInMillis))
+        serverDAO.updateDefaultServerProfile(profile)
     }
 }
