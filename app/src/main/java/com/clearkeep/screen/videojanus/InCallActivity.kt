@@ -207,12 +207,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             tvCallStateVideo.text = "Connecting"
             tvCallState.text = "Connecting"
             tvConnecting.visible()
-
-        }else{
+        } else {
             tvCallStateVideo.text = "Calling Group"
             tvCallState.text = "Calling Group"
             tvConnecting.gone()
-
         }
         Glide.with(this)
             .load(avatarInConversation)
@@ -221,7 +219,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
             .into(imageConnecting)
     }
-
 
     private fun runDelayToHideBottomButton() {
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
@@ -269,13 +266,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     return@launch
                 }
             }
-                delay(CALL_WAIT_TIME_OUT)
-                if (remoteRenders.isEmpty()) {
-                    runOnUiThread {
-                        updateCallStatus(CallState.CALL_NOT_READY)
-                    }
+            delay(CALL_WAIT_TIME_OUT)
+            if (remoteRenders.isEmpty()) {
+                runOnUiThread {
+                    updateCallStatus(CallState.CALL_NOT_READY)
                 }
-
+            }
         }
     }
 
@@ -585,7 +581,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         stopRingBackTone()
         stopBusySignalSound()
         Log.e("antx","finishAndReleaseResource ${!isFromComingCall} ,mCurrentCallState : $mCurrentCallState   ${mCurrentCallState==CallState.CALLING}")
-        if (!isFromComingCall&& mCurrentCallState==CallState.CALLING) {
+        if (!isFromComingCall && (mCurrentCallState == CallState.CALLING || mCurrentCallState == CallState.CALL_NOT_READY)) {
             cancelCallAPI()
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -833,7 +829,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         printlnCK("registerSwitchVideoReceiver")
         switchVideoReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_CALL_SWITCH_VIDEO, 0).toString()
+                val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
                 if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
                     mIsAudioMode = false

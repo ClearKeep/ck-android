@@ -147,7 +147,7 @@ class HomeViewModel @Inject constructor(
 
     private fun sendPing() {
         viewModelScope.launch {
-            delay(5*1000)
+            delay(30*1000)
             peopleRepository.sendPing()
             sendPing()
         }

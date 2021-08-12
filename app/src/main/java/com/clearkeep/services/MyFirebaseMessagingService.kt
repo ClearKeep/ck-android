@@ -71,6 +71,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "member_leave","new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
+                    CALL_TYPE_VIDEO -> {
+                        val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
+                        val groupId = remoteMessage.data["group_id"]
+                        switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, groupId)
+                        sendBroadcast(switchIntent)
+                    }
+
                 }
             }
         }
