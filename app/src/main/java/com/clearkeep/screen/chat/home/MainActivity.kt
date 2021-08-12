@@ -87,8 +87,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 gotoRoomById = {
                                     navigateToRoomScreen(it)
                                 },
-                                onLogout = {
-                                    logout()
+                                onLeaveServer = {
+                                    leaveServer()
                                 },
                                 onJoinServer = {
                                     navigateToJoinServer(it)
@@ -221,8 +221,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    private fun logout() {
-        homeViewModel.logOut()
+    private fun leaveServer() {
+        homeViewModel.leaveServer()
     }
 
     private fun navigateToProfileScreen() {

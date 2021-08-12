@@ -420,25 +420,3 @@ fun TwoFaceAuthView(
     }
 
 }
-
-@Composable
-fun LogoutConfirmDialog(
-    showReminder: Boolean,
-    setShowDialog: (Boolean) -> Unit,
-    onLogout: () -> Unit,
-) {
-    if (showReminder) {
-        CKAlertDialog(
-            title = "Logout",
-            text = "Do you want to log out?",
-            onDismissButtonClick = {
-                setShowDialog(false)
-            },
-            dismissTitle = "Cancel",
-            onConfirmButtonClick = {
-                setShowDialog(false)
-                onLogout.invoke()
-            },
-        )
-    }
-}
