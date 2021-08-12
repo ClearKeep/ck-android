@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository
     ): ViewModel() {
 
-    var profile = serverRepository.profile
+    var profile = serverRepository.getDefaultServerProfileAsState()
 
     var currentServer = serverRepository.activeServer
 
@@ -287,7 +287,7 @@ class HomeViewModel @Inject constructor(
 
     fun getProfileLink() : String {
         val server = environment.getServer()
-        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.getDisplayName(), domain = server.serverDomain))
+        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain))
     }
 }
 

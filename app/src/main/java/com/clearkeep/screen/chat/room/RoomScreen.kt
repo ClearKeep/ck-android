@@ -41,9 +41,11 @@ import android.os.Looper
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.FileProvider
 import androidx.core.os.postDelayed
 import com.clearkeep.BuildConfig
+import com.clearkeep.R
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -249,7 +251,9 @@ fun RoomScreen(
                 }
             }
         }
-        UploadPhotoDialog(roomViewModel, isUploadPhotoDialogVisible.value, onDismiss = {
+        UploadPhotoDialog(isUploadPhotoDialogVisible.value, getPhotoUri = {
+            roomViewModel.getPhotoUri(context)
+        }, onDismiss = {
             isUploadPhotoDialogVisible.value = false
         }, onNavigateToAlbums = {
             isUploadPhotoDialogVisible.value = false
@@ -265,130 +269,6 @@ fun RoomScreen(
                 },
                 title = response.message ?: "",
             )
-        }
-    }
-}
-
-@ExperimentalComposeUiApi
-@Composable
-fun UploadPhotoDialog(
-    roomViewModel: RoomViewModel,
-    isOpen: Boolean,
-    onDismiss: () -> Unit,
-    onNavigateToAlbums: () -> Unit,
-    onTakePhoto: () -> Unit
-) {
-    val context = LocalContext.current
-
-    val requestStoragePermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            onNavigateToAlbums()
-        } else {
-            onDismiss()
-        }
-    }
-
-    val takePhotoLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isSuccessful: Boolean ->
-            if (isSuccessful) {
-                onTakePhoto()
-                onDismiss()
-            }
-        }
-
-    val requestCameraPermissionLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                takePhotoLauncher.launch(roomViewModel.getPhotoUri(context))
-            } else {
-                onDismiss()
-            }
-        }
-
-    if (isOpen) {
-        Box {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(colorDialogScrim)
-                    .clickable {
-                        onDismiss()
-                    })
-            Column(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Column(
-                    Modifier
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.White)
-                ) {
-                    Text(
-                        "Take a photo",
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .clickable {
-                                if (isCameraPermissionGranted(context)) {
-                                    takePhotoLauncher.launch(roomViewModel.getPhotoUri(context))
-                                } else {
-                                    requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                }
-                            }, textAlign = TextAlign.Center, color = colorLightBlue
-                    )
-                    Divider(color = separatorDarkNonOpaque)
-                    Text(
-                        "Albums",
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .clickable {
-                                if (isFilePermissionGranted(context)) {
-                                    onNavigateToAlbums()
-                                } else {
-                                    requestStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                                }
-                            }, textAlign = TextAlign.Center, color = tintsRedLight
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                Box {
-                    Text(
-                        "Cancel", modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White)
-                            .align(Alignment.Center)
-                            .padding(16.dp)
-                            .fillMaxWidth()
-                            .clickable {
-                                onDismiss()
-                            }, textAlign = TextAlign.Center, color = colorLightBlue
-                    )
-                }
-                Spacer(Modifier.height(14.dp))
-            }
-        }
-    }
-}
-
-private fun isFilePermissionGranted(context: Context): Boolean {
-    return isPermissionGranted(context, Manifest.permission.READ_EXTERNAL_STORAGE)
-}
-
-private fun isCameraPermissionGranted(context: Context): Boolean {
-    return isPermissionGranted(context, Manifest.permission.CAMERA)
-}
-
-private fun isPermissionGranted(context: Context, permission: String): Boolean {
-    return when (PackageManager.PERMISSION_GRANTED) {
-        ContextCompat.checkSelfPermission(context, permission) -> {
-            true
-        }
-        else -> {
-            false
         }
     }
 }

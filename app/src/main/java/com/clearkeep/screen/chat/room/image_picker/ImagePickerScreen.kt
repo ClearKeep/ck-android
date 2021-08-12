@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import coil.imageLoader
 import com.clearkeep.R
@@ -49,18 +50,20 @@ import java.util.*
 @ExperimentalFoundationApi
 @Composable
 fun ImagePickerScreen(
-    roomViewModel: RoomViewModel,
-    navController: NavController
+    imageUriSelected: LiveData<List<String>>,
+    navController: NavController,
+    onlyPickOne: Boolean = false,
+    insetEnabled: Boolean = true,
+    onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
-    val urisSelected = remember { roomViewModel.imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
+    val urisSelected = remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
 
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
-    CKSimpleInsetTheme {
-        Column(Modifier.navigationBarsPadding()) {
-            printlnCK((roomViewModel.imageUriSelected.value?.size ?: 0).toString())
+    CKSimpleInsetTheme(insetEnabled) {
+        Column(if (insetEnabled) Modifier.navigationBarsPadding() else Modifier) {
             Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
             CKTopAppBar(
                 {},
@@ -73,15 +76,17 @@ fun ImagePickerScreen(
                     }
                 },
                 actions = {
-                    Text(
-                        "Upload (${urisSelected?.size ?: 0})",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable {
-                                roomViewModel.setSelectedImages(urisSelected)
-                                navController.popBackStack()
-                            }
-                    )
+                    if (!onlyPickOne) {
+                        Text(
+                            "Upload (${urisSelected?.size ?: 0})",
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .clickable {
+                                    onSetSelectedImages(urisSelected)
+                                    navController.popBackStack()
+                                }
+                        )
+                    }
                 })
             Box(Modifier.padding(16.dp)) {
                 LazyVerticalGrid(cells = GridCells.Fixed(2)) {
@@ -89,10 +94,16 @@ fun ImagePickerScreen(
                         ImageItem(
                             Modifier.fillParentMaxWidth(0.5f),
                             it.toString(),
-                            urisSelected?.contains(it.toString())
+                            urisSelected.contains(it.toString())
                         ) { uri: String, isSelected: Boolean ->
-                            if (isSelected)
-                                urisSelected.add(uri) else urisSelected.remove(uri)
+                            when {
+                                onlyPickOne -> {
+                                    onSetSelectedImages(listOf(uri))
+                                    navController.popBackStack()
+                                }
+                                isSelected -> urisSelected.add(uri)
+                                else -> urisSelected.remove(uri)
+                            }
                         }
                     }
                 }
