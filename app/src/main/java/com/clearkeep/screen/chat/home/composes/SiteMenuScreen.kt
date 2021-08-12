@@ -34,19 +34,19 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
-import com.clearkeep.screen.chat.profile.LogoutConfirmDialog
 
 @Composable
 fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
     profile: Profile,
     closeSiteMenu: (() -> Unit),
-    onLogout: (()->Unit),
+    onLeaveServer: (()->Unit),
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
     onNavigateNotificationSetting: () -> Unit,
@@ -127,7 +127,7 @@ fun SiteMenuScreen(
                     Row(modifier = Modifier
                         .padding(top = 38.dp, bottom = 38.dp)
                         .align(Alignment.BottomCenter)
-                        .clickable { onLogout() },
+                        .clickable { setShowReminderDialog(true) },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -137,7 +137,7 @@ fun SiteMenuScreen(
                             tint = errorDefault
                         )
                         Text(
-                            text = stringResource(R.string.logout), modifier = Modifier
+                            text = stringResource(R.string.leave_server), modifier = Modifier
                                 .padding(start = 16.dp), style = TextStyle(
                                 color = errorDefault,
                                 fontSize = 14.sp,
@@ -148,7 +148,7 @@ fun SiteMenuScreen(
                 }
             }
         }
-        LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
+        LeaveServerConfirmDialog(showReminder, setShowReminderDialog, onLeaveServer)
     }
 }
 
@@ -319,6 +319,29 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
             Spacer(Modifier.width(7.dp))
             Text(text, color = Color.Black)
         }
+    }
+}
+
+@Composable
+fun LeaveServerConfirmDialog(
+    showReminder: Boolean,
+    setShowDialog: (Boolean) -> Unit,
+    onLeaveServer: () -> Unit,
+) {
+    if (showReminder) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(R.string.leave_server_dialog),
+            dismissTitle = stringResource(R.string.cancel),
+            confirmTitle = stringResource(R.string.leave),
+            onDismissButtonClick = {
+                setShowDialog(false)
+            },
+            onConfirmButtonClick = {
+                setShowDialog(false)
+                onLeaveServer.invoke()
+            },
+        )
     }
 }
 

@@ -1,6 +1,6 @@
 <resources>
     <string name="title_app">ClearKeep</string>
-    <string name="logout">Logout</string>
+    <string name="leave_server">Leave server</string>
     <string name="profile">Profile</string>
     <string name="btn_login">Log In</string>
     <string name="btn_login_google">Sign In with Google</string>
@@ -20,7 +20,7 @@
     <string name="error_username_or_password">Username or password is invalid</string>
     <string name="empty_conversation_history">Start a conversation by clicking Chat or Create Room</string>
     <string name="advance_server_settings">Advanced Server Settings</string>
-    <string name="message_input_hint">Type something here</string>
+    <string name="message_input_hint">Type Something Here</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="display_name">Display Name</string>
     <string name="create">Create</string>
@@ -85,8 +85,11 @@
     <string name="reset_password_description">To complete reset, please open verification link in your email.</string>
     <string name="reset_password_error_title">Sorry. We couldn\'t find your account</string>
     <string name="reset_password_success_title">A verification link has been sent to %1$s</string>
+    <string name="warning">Warning</string>
+    <string name="leave_server_dialog">Are you sure you would like to leave server?</string>
+    <string name="cancel">Cancel</string>
+    <string name="leave">Leave</string>
     <string name="take_photo">Take a photo</string>
     <string name="albums">Albums</string>
-    <string name="cancel">Cancel</string>
     <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
 </resources>
