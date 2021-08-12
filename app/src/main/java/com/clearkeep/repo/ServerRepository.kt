@@ -1,11 +1,14 @@
 package com.clearkeep.repo
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.ServerDAO
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.Environment
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,5 +48,13 @@ class ServerRepository @Inject constructor(
 
     suspend fun deleteServer(serverId: Int) : Int{
         return serverDAO.deleteServer(serverId)
+    }
+
+    fun getDefaultServerProfileAsState() = serverDAO.getDefaultServerAsState().map {
+        it.profile
+    }
+
+    suspend fun updateServerProfile(domain: String, profile: Profile) {
+        serverDAO.updateDefaultServerProfile(domain, profile)
     }
 }
