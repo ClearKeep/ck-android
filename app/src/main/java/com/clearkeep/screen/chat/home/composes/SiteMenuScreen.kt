@@ -159,7 +159,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val statusUse = homeViewModel.currentStatus.observeAsState()
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarSite(url = profile.avatar, name = profile?.userName ?: "", status = "")
+        CircleAvatarSite(url = profile.avatar, name = profile?.userName ?: "", status = "", cacheKey = profile.updatedAt.toString())
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             CKHeaderText(
                 text = profile?.userName ?: "",

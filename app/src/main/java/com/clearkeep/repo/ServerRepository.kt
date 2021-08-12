@@ -8,6 +8,7 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.Environment
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,6 +55,6 @@ class ServerRepository @Inject constructor(
     }
 
     suspend fun updateDefaultServerProfile(profile: Profile) {
-        serverDAO.updateDefaultServerProfile(profile)
+        serverDAO.updateDefaultServerProfile(profile.copy(updatedAt = Calendar.getInstance().timeInMillis))
     }
 }

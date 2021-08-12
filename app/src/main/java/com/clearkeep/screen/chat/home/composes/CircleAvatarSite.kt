@@ -17,23 +17,26 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
+import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.coil.rememberCoilPainter
+import okhttp3.Cache
 
 @Composable
-fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: String) {
+fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: String, cacheKey: String = "") {
     val context = LocalContext.current
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
 
     Column(Modifier.size(size)) {
         if (!url.isNullOrEmpty()) {
+            printlnCK("CircleAvatarSite $cacheKey") // Force recomposition when cache key changes
             Image(
                 rememberCoilPainter(
-                    request = url,
-                    imageLoader = context.imageLoader,
+                    request = "$url?cache=$cacheKey", //Force reload when cache key changes
                     previewPlaceholder = R.drawable.ic_cross,
                     requestBuilder = {
                         memoryCachePolicy(CachePolicy.DISABLED)

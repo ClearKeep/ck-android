@@ -24,6 +24,7 @@ import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.colorTest
+import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
@@ -32,7 +33,8 @@ fun CircleAvatar(
         name: String = "",
         size: Dp = 48.dp,
         isGroup: Boolean = false,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        cacheKey: String = ""
 ) {
     val context = LocalContext.current
     if (isGroup) {
@@ -48,12 +50,9 @@ fun CircleAvatar(
         if (url.isNotEmpty() && url[0].isNotBlank()) {
             Image(
                 rememberCoilPainter(
-                    request = url[0],
+                    request = "${url[0]}?cache=$cacheKey", // Force recomposition when cache key changes
                     imageLoader = context.imageLoader,
                     previewPlaceholder = R.drawable.ic_cross,
-                    requestBuilder = {
-                        memoryCachePolicy(CachePolicy.DISABLED)
-                    }
                 ),
                 null,
                 contentScale = ContentScale.Crop,
