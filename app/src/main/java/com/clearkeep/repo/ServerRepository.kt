@@ -54,7 +54,7 @@ class ServerRepository @Inject constructor(
         it.profile
     }
 
-    suspend fun updateDefaultServerProfile(profile: Profile) {
-        serverDAO.updateDefaultServerProfile(profile)
+    suspend fun updateServerProfile(domain: String, profile: Profile) {
+        serverDAO.updateDefaultServerProfile(domain, profile)
     }
 }

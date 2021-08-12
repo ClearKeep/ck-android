@@ -26,8 +26,8 @@ interface ServerDAO {
     @Query("UPDATE server SET is_active = CASE server_domain WHEN :domain THEN 1 ELSE 0 END")
     suspend fun setDefaultServerByDomain(domain: String)
 
-    @Query("UPDATE server SET owner = :profile WHERE is_active = 1")
-    suspend fun updateDefaultServerProfile(profile: Profile)
+    @Query("UPDATE server SET owner = :profile WHERE server_domain = :domain")
+    suspend fun updateDefaultServerProfile(domain: String, profile: Profile)
 
     @Query("SELECT * FROM server")
     suspend fun getServers(): List<Server>
