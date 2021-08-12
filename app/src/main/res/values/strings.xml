@@ -89,6 +89,7 @@
     <string name="leave_server_dialog">Are you sure you would like to leave server?</string>
     <string name="cancel">Cancel</string>
     <string name="leave">Leave</string>
+    <string name="search_people">Search people</string>
     <string name="take_photo">Take a photo</string>
     <string name="albums">Albums</string>
     <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
