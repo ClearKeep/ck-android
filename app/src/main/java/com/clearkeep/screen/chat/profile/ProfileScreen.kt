@@ -3,6 +3,7 @@ package com.clearkeep.screen.chat.profile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -17,9 +18,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -146,7 +149,7 @@ fun ProfileScreen(
                                 profileViewModel.setEmail(it)
                             }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone) {
+                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Number) {
                                 profileViewModel.setPhoneNumber(it)
                             }
                             Spacer(Modifier.height(8.dp))
@@ -278,8 +281,10 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 }
 
 
+@ExperimentalComposeUiApi
 @Composable
 fun ItemInformationView(header: String, textValue: String, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -307,8 +312,11 @@ fun ItemInformationView(header: String, textValue: String, enable: Boolean = tru
                     fontWeight = FontWeight.Normal
                 ),
                 enabled = enable,
-                maxLines = 1,
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {keyboardController?.hide()}
+                )
             )
         }
     }

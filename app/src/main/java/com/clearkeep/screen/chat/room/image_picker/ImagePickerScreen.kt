@@ -53,6 +53,7 @@ fun ImagePickerScreen(
     imageUriSelected: LiveData<List<String>>,
     navController: NavController,
     onlyPickOne: Boolean = false,
+    insetEnabled: Boolean = true,
     onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
@@ -61,8 +62,8 @@ fun ImagePickerScreen(
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
-    CKSimpleInsetTheme {
-        Column(Modifier.navigationBarsPadding()) {
+    CKSimpleInsetTheme(insetEnabled) {
+        Column(if (insetEnabled) Modifier.navigationBarsPadding() else Modifier) {
             Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
             CKTopAppBar(
                 {},
