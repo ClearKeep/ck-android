@@ -1,7 +1,7 @@
 package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,9 +16,9 @@ import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.iterator
 import com.bumptech.glide.Glide
@@ -169,6 +169,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         requestCallPermissions()
         updateCallStatus(mCurrentCallState)
         dispatchCallStatus(true)
+
+        createInCallNotification(this, InCallActivity::class.java)
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -288,6 +290,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     override fun onDestroy() {
+        dismissInCallNotification(this)
         super.onDestroy()
         dispatchCallStatus(false)
         if (chronometerTimeCall.visibility == View.VISIBLE) {
@@ -570,6 +573,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun hangup() {
+        dismissInCallNotification(this)
         callScope.cancel()
         mWebSocketChannel?.close()
         peerConnectionClient?.close()

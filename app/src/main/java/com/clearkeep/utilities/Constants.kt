@@ -58,6 +58,10 @@ const val MESSAGE_HEADS_UP_NOTIFICATION_ID = 100
 const val MESSAGE_CHANNEL_ID = "message_channel_id_ck"
 const val MESSAGE_CHANNEL_NAME = "message_channel_name_ck"
 
+const val CALL_CHANNEL_ID = "channel_call"
+const val CALL_CHANNEL_NAME = "Calls"
+const val CALL_NOTIFICATION_ID = 1
+
 const val ACTION_MESSAGE_CANCEL = "ck.action_message_cancel"
 const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 

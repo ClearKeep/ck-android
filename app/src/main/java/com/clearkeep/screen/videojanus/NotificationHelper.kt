@@ -12,8 +12,10 @@ import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
+import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.utilities.*
 import androidx.core.app.Person
@@ -251,4 +253,40 @@ fun showMessageNotificationToSystemBar(
         val notification: Notification = builder.build()
         notificationManager.notify(notificationId, notification)
     }
+}
+
+fun createInCallNotification(context: Context, activityToLaunchOnClick: Class<*>) {
+    val intent = Intent(context, activityToLaunchOnClick)
+    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+    val pendingIntent =
+        PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+    val channelId = CALL_CHANNEL_ID
+    val channelName = CALL_CHANNEL_NAME
+    val notification = NotificationCompat.Builder(context, channelId)
+        .setContentTitle(context.getString(R.string.notification_return_call_title))
+        .setContentText(context.getString(R.string.notification_return_call_content))
+        .setSmallIcon(R.drawable.ic_logo)
+        .setContentIntent(pendingIntent)
+        .setOngoing(true)
+        .build()
+
+    val notificationManager =
+        context.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel =
+            notificationManager.getNotificationChannel(channelId) ?: NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_LOW
+            )
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    notificationManager.notify(1, notification)
+}
+
+fun dismissInCallNotification(context: Context) {
+    NotificationManagerCompat.from(context).cancel(null, CALL_NOTIFICATION_ID)
 }
