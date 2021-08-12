@@ -85,4 +85,8 @@
     <string name="reset_password_description">To complete reset, please open verification link in your email.</string>
     <string name="reset_password_error_title">Sorry. We couldn\'t find your account</string>
     <string name="reset_password_success_title">A verification link has been sent to %1$s</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="albums">Albums</string>
+    <string name="cancel">Cancel</string>
+    <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
 </resources>

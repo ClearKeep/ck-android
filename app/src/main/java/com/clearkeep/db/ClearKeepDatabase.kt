@@ -2,6 +2,9 @@ package com.clearkeep.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
+import com.clearkeep.db.clear_keep.converter.ProfileConverter
 import com.clearkeep.db.clear_keep.dao.*
 import com.clearkeep.db.clear_keep.model.*
 
@@ -13,7 +16,8 @@ import com.clearkeep.db.clear_keep.model.*
     Server::class,
     Note::class,
     UserPreference::class
-], version = 10, exportSchema = false)
+], version = 11, exportSchema = false)
+@TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
     abstract fun serverDao(): ServerDAO

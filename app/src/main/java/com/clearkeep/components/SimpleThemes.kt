@@ -73,14 +73,20 @@ fun CKSimpleTheme(
 }
 
 @Composable
-fun CKSimpleInsetTheme(children: @Composable () -> Unit) {
+fun CKSimpleInsetTheme(enabled: Boolean = true, children: @Composable () -> Unit) {
     val systemUiController = rememberSystemUiController()
-    SideEffect {
-        systemUiController.setStatusBarColor(Color.Transparent, true)
+    if (enabled) {
+        SideEffect {
+            systemUiController.setStatusBarColor(Color.Transparent, true)
+        }
     }
 
     CKSimpleTheme {
-        ProvideWindowInsets {
+        if (enabled) {
+            ProvideWindowInsets {
+                children()
+            }
+        } else {
             children()
         }
     }
