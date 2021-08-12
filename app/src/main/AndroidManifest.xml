@@ -38,7 +38,8 @@
             android:enabled="true"
             android:exported="false"></service>
 
-        <activity android:name="com.microsoft.identity.client.BrowserTabActivity">
+        <activity android:name="com.microsoft.identity.client.BrowserTabActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -51,17 +52,21 @@
         </activity>
         <activity
             android:name=".screen.chat.contact_search.SearchUserActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".screen.chat.group_create.CreateGroupActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.clearkeep.screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".screen.splash.SplashActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar">
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -73,37 +78,46 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/btn_login"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".screen.auth.register.RegisterActivity"
             android:label="@string/btn_register"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".screen.auth.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.clearkeep.screen.chat.home.MainActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
         <activity
             android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name="com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name="com.clearkeep.screen.chat.invite.InviteActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name="com.clearkeep.screen.chat.banned_users.BannedUserActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:screenOrientation="portrait"/>
 
         <service
             android:name=".services.MyFirebaseMessagingService"
