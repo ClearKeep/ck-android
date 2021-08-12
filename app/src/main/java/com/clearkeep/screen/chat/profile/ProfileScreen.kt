@@ -117,7 +117,8 @@ fun ProfileScreen(
                                     size = 72.dp,
                                     modifier = Modifier.clickable {
                                         pickAvatarDialogVisible.value = true
-                                    }
+                                    },
+                                    cacheKey = user.updatedAt.toString()
                                 )
                                 Column(
                                     Modifier.padding(start = 16.dp),

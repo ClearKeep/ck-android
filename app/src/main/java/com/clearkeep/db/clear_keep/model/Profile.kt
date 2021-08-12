@@ -10,4 +10,5 @@ data class Profile(
     @ColumnInfo(name = "email") val email: String?,
     @ColumnInfo(name = "phone_number") val phoneNumber: String?,
     @ColumnInfo(name = "avatar") val avatar: String?,
+    @ColumnInfo(name = "updated_at") val updatedAt: Long
 )
