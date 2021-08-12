@@ -2,6 +2,9 @@ package com.clearkeep.screen.videojanus.peer_to__peer
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -18,6 +21,7 @@ import android.view.WindowManager
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -32,10 +36,7 @@ import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
-import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.screen.videojanus.BaseActivity
-import com.clearkeep.screen.videojanus.CallViewModel
-import com.clearkeep.screen.videojanus.CallingStateData
+import com.clearkeep.screen.videojanus.*
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.CallStateView
 import com.clearkeep.utilities.*
@@ -148,6 +149,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         })
         onClickControlCall()
         dispatchCallStatus(true)
+        createInCallNotification(this, InCallPeerToPeerActivity::class.java)
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -246,6 +248,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        dismissInCallNotification(this)
         dispatchCallStatus(false)
         super.onDestroy()
     }
@@ -560,6 +563,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun hangup() {
+        dismissInCallNotification(this)
         callScope.cancel()
     }
 
