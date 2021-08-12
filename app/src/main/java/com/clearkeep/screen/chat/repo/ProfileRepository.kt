@@ -80,7 +80,7 @@ class ProfileRepository @Inject constructor(
             val response = userGrpc.updateProfile(request)
             printlnCK("updateProfile success? ${response.success} errors? ${response.errors}")
             if (response.success) {
-                serverRepository.updateDefaultServerProfile(profile)
+                serverRepository.updateServerProfile(owner.domain, profile)
             }
             return@withContext response.success
         } catch (e: Exception) {
