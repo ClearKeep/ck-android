@@ -20,10 +20,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleBlack
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun RegisterScreen(
@@ -63,10 +70,10 @@ fun RegisterScreen(
                     .background(Color.White)
                     .padding(horizontal = 16.dp, vertical = 24.dp)
             ) {
-                Text(
+                CKText(
                     text = stringResource(R.string.sign_up_fill_information),
                     color = grayscaleBlack,
-                    textAlign = TextAlign.Justify
+                    textAlign = TextAlign.Justify,
                 )
                 Spacer(Modifier.height(24.dp))
                 CKTextInputField(
@@ -159,5 +166,35 @@ fun RegisterScreen(
             }
         }
         Spacer(Modifier.height(28.dp))
+    }
+}
+
+@Composable
+@Preview(fontScale = 1.00f, device = Devices.PIXEL_4_XL)
+fun ScalableTextPreview() {
+    Row(Modifier.fillMaxSize()) {
+        Text(
+            text = "em", //Default text size converted to em
+            color = grayscaleBlack,
+            textAlign = TextAlign.Justify,
+            fontSize = defaultNonScalableTextSize()
+        )
+        Text(
+            text = "em", //Default text size
+            color = grayscaleBlack,
+            textAlign = TextAlign.Justify,
+        )
+        Text(
+            text = "em", //Default text size in sp
+            color = grayscaleBlack,
+            textAlign = TextAlign.Justify,
+            fontSize = 14.sp
+        )
+        Text(
+            text = "em", //14 dp converted to em
+            color = grayscaleBlack,
+            textAlign = TextAlign.Justify,
+            fontSize = 14.dp.toNonScalableTextSize()
+        )
     }
 }
