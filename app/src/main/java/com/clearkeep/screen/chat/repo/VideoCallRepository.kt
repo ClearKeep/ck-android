@@ -63,6 +63,28 @@ class VideoCallRepository @Inject constructor(
             return@withContext false
         }
     }
+    suspend fun busyCall(groupId: Int, owner: Owner) : Boolean = withContext(Dispatchers.IO) {
+        printlnCK("cancelCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
+        val server = serverRepository.getServer(owner.domain, owner.clientId)
+        if (server == null) {
+            printlnCK("cancelCall: Can not find server: ${owner.domain} + ${owner.clientId}")
+            return@withContext false
+        }
+        try {
+            val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
+                .setGroupId(groupId.toLong())
+                .setUpdateType(CALL_UPDATE_TYPE_BUSY)
+                .build()
+            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+            val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
+            val success = videoCallGrpc.updateCall(request).success
+            printlnCK("cancelCall, success = $success")
+            return@withContext success
+        } catch (e: Exception) {
+            printlnCK("cancelCall: $e")
+            return@withContext false
+        }
+    }
 
     suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("switchAudioToVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")

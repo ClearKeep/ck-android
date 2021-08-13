@@ -514,6 +514,19 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
     }
 
+    private fun showOpenCameraDialog() {
+        val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Requesting to video call ?")
+            .setPositiveButton("Ok") { _, _ ->
+                configMedia(isSpeaker = true, isMuteVideo = false)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+            }
+            .setCancelable(false)
+            .create()
+            .show()
+    }
+
     private fun updateUIByStateAndMode() {
         if (mCurrentCallState == CallState.ANSWERED) {
             groupAudioWaiting.gone()
@@ -850,6 +863,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     mIsAudioMode = false
                     configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
                     updateUIByStateAndMode()
+                    showOpenCameraDialog()
                 }
             }
         }
