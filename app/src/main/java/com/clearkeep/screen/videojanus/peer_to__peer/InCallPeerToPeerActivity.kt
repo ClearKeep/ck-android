@@ -336,14 +336,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 localRender.setMirror(it.isChecked)
             }
             this.bottomImgEndCall.setOnClickListener {
-                hangup()
-                finishAndReleaseResource()
+                endCall()
             }
         }
 
         imgEndWaiting.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
+            endCall()
         }
         callViewModel.mIsAudioMode.observe(this, {
             if (it == false && mIsAudioMode) {
@@ -382,8 +380,17 @@ class InCallPeerToPeerActivity : BaseActivity() {
         if (hasSupportPIP()) {
             enterPIPMode()
         } else {
-            hangup()
-            finishAndReleaseResource()
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Warning")
+                .setMessage("Are you sure you would like to leave call?")
+                .setPositiveButton("Leave") { _,_ ->
+                    endCall()
+                }
+                .setNegativeButton("Cancel") { _,_ ->
+
+                }
+                .create()
+                .show()
         }
     }
 
@@ -507,13 +514,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 playBusySignalSound()
                 GlobalScope.launch {
                     delay(3 * 1000)
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
             CallState.ENDED -> {
-                hangup()
-                finishAndReleaseResource()
+                endCall()
             }
             CallState.ANSWERED -> {
                 stopRingBackTone()
@@ -636,8 +641,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
                 printlnCK("receive a end call event with group id = $groupId")
                 if (mGroupId == groupId) {
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
         }
@@ -645,6 +649,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
             endCallReceiver,
             IntentFilter(ACTION_CALL_CANCEL)
         )
+    }
+
+    private fun endCall() {
+        hangup()
+        finishAndReleaseResource()
     }
 
     private fun unRegisterEndCallReceiver() {

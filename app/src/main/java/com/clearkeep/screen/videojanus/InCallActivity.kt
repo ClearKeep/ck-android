@@ -18,12 +18,16 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.res.stringResource
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.iterator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.R
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Owner
@@ -331,8 +335,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     fun onAction() {
         imgEndWaiting.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
+            endCall()
         }
         includeToolbar.imgBack.setOnClickListener {
             handleBackPressed()
@@ -374,9 +377,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         controlCallVideoView.bottomImgEndCall.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
-
+            endCall()
         }
         surfaceRootContainer.setOnClickListener {
             if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED)
@@ -391,8 +392,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         imgEndWaiting.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
+            endCall()
         }
     }
 
@@ -400,8 +400,17 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (hasSupportPIP()) {
             enterPIPMode()
         } else {
-            hangup()
-            finishAndReleaseResource()
+            Builder(this)
+                .setTitle("Warning")
+                .setMessage("Are you sure you would like to leave call?")
+                .setPositiveButton("Leave") { _,_ ->
+                    endCall()
+                }
+                .setNegativeButton("Cancel") { _,_ ->
+
+                }
+                .create()
+                .show()
         }
     }
 
@@ -474,15 +483,13 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 playBusySignalSound()
                 GlobalScope.launch {
                     delay(3 * 1000)
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
 
             CallState.ENDED -> {
                 tvCallState.text = getString(R.string.text_end)
-                hangup()
-                finishAndReleaseResource()
+                endCall()
             }
             CallState.ANSWERED -> {
                 tvCallState.text = getString(R.string.text_started)
@@ -811,8 +818,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
                 printlnCK("receive a end call event with group id = $groupId")
                 if (mGroupId == groupId) {
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
         }
@@ -820,6 +826,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             endCallReceiver,
             IntentFilter(ACTION_CALL_CANCEL)
         )
+    }
+
+    private fun endCall() {
+        hangup()
+        finishAndReleaseResource()
     }
 
     private fun unRegisterEndCallReceiver() {
