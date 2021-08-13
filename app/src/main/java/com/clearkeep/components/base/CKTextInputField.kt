@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.screen.chat.profile.ProfileViewModel
 
 @Composable
@@ -116,7 +117,8 @@ fun CKTextInputField(
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = grayscaleBlack,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    fontSize = defaultNonScalableTextSize()
                 ),
                 visualTransformation = if (isPasswordType) {
                     if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
