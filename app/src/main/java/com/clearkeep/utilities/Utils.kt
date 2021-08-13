@@ -14,6 +14,12 @@ import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
 import com.clearkeep.db.clear_keep.model.ProtoResponse
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.clearkeep.screen.splash.SplashActivity
 import com.google.gson.Gson
 import io.grpc.StatusRuntimeException
@@ -193,3 +199,20 @@ fun isValidServerUrl(url: String): Boolean {
 }
 
 val errorRegex = "\\{.+\\}".toRegex()
+
+@Composable
+fun Int.toNonScalableTextSize(): TextUnit {
+    return (this.toFloat() / 4).em
+}
+
+@Composable
+fun Dp.toNonScalableTextSize(): TextUnit {
+    return with(LocalDensity.current) {
+        this@toNonScalableTextSize.toPx().em * 0.0856
+    }
+}
+
+@Composable
+fun defaultNonScalableTextSize(): TextUnit {
+    return 14.dp.toNonScalableTextSize()
+}
