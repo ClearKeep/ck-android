@@ -64,6 +64,9 @@ class RegisterViewModel @Inject constructor(
         if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             isValid = false
+        } else if (password.length !in 6..12) {
+            _passError.value = context.getString(R.string.password_length_invalid)
+            isValid = false
         }
         if (confirmPassword.isBlank()) {
             _confirmPassError.value = context.getString(R.string.confirm_password_empty)
