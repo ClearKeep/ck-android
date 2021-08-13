@@ -46,6 +46,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var peopleRepository: PeopleRepository
 
+    @Inject
+    lateinit var videoCallRepository: VideoCallRepository
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         printlnCK("onMessageReceived: ${remoteMessage.data}")
@@ -60,10 +63,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             if (server != null) {
                 when (remoteMessage.data["notify_type"]) {
                     "request_call" -> {
-                        handleRequestCall(remoteMessage)
+                        printlnCK("isCalling : ${AppCall.listenerCallingState.value?.isCalling} ${AppCall.listenerCallingState.value}")
+                           handleRequestCall(remoteMessage)
                     }
                     "cancel_request_call" -> {
                         handleCancelCall(remoteMessage)
+                    }
+                    "busy_request_call" ->{
+                        handleBusyCall(remoteMessage)
                     }
                     "new_message" -> {
                         handleNewMessage(remoteMessage)
@@ -83,7 +90,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-    private fun handleRequestCall(remoteMessage: RemoteMessage) {
+    private suspend fun handleRequestCall(remoteMessage: RemoteMessage) {
         val clientId = remoteMessage.data["client_id"] ?: ""
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val groupId = remoteMessage.data["group_id"]
@@ -107,14 +114,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
         val currentUserName = if (isGroup(groupType)) "" else groupName.replace(fromClientName ?: "", "").replace(",", "")
-
-        val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-        AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
-            clientDomain, clientId,
-            fromClientName, avatar,
-            turnUrl, turnUser, turnPass,
-            webRtcGroupId, webRtcUrl,
-            stunUrl, currentUserName)
+        if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
+            val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
+            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
+                clientDomain, clientId,
+                fromClientName, avatar,
+                turnUrl, turnUser, turnPass,
+                webRtcGroupId, webRtcUrl,
+                stunUrl, currentUserName)
+        }else {
+            groupId?.let { videoCallRepository.busyCall(it.toInt(), Owner(clientDomain, clientId)) }
+        }
     }
 
     private suspend fun handleNewMessage(remoteMessage: RemoteMessage) {
@@ -198,6 +208,22 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             sendBroadcast(endIntent)
         }
     }
+
+    private suspend fun handleBusyCall(remoteMessage: RemoteMessage) {
+        val groupId = remoteMessage.data["group_id"]
+        val clientId = remoteMessage.data["client_id"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        if (groupId.isNullOrBlank()) {
+            return
+        }
+        val group = groupRepository.getGroupByID(groupId.toLong(), clientDomain, clientId)
+        if (group != null) {
+            val endIntent = Intent(ACTION_CALL_BUSY)
+            endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
+            sendBroadcast(endIntent)
+        }
+    }
+
 
     override fun onNewToken(token: String) {
         Log.w(TAG, "onNewToken: $token")

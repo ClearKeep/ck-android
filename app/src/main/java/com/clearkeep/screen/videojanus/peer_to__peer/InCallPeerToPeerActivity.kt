@@ -97,6 +97,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     // surface and render
     private var endCallReceiver: BroadcastReceiver? = null
+    private var busyCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
 
@@ -116,6 +117,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_call_peer_to_peer)
     //    allowOnLockScreen()
+        isInPeerCall = true
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
@@ -161,6 +163,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         controlCallVideoView.apply {
             bottomToggleFaceTime?.isChecked = mIsMuteVideo
         }
+        callViewModel.onSpeakChange(mIsSpeaker)
         callViewModel.onFaceTimeChange(!isMuteVideo)
     }
 
@@ -168,7 +171,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         remoteRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setEnableHardwareScaler(true)
-          //  setMirror(true)
+            setMirror(true)
         }
         localRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
@@ -581,6 +584,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private fun finishAndReleaseResource() {
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
+        isInPeerCall = false
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
         stopRingBackTone()
@@ -635,6 +639,19 @@ class InCallPeerToPeerActivity : BaseActivity() {
             .show()
     }
 
+    private fun showOpenCameraDialog() {
+        val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Requesting to video call ?")
+            .setPositiveButton("Ok") { _, _ ->
+                configMedia(isSpeaker = true, isMuteVideo = false)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+            }
+            .setCancelable(false)
+            .create()
+            .show()
+    }
+
     private fun registerEndCallReceiver() {
         endCallReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -645,9 +662,30 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 }
             }
         }
+
+        busyCallReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
+                printlnCK("busyCallReceiver: groupId : $groupId")
+                if (mGroupId == groupId) {
+                    stopRingBackTone()
+                    playBusySignalSound()
+                    GlobalScope.launch {
+                        delay(3 * 1000)
+                        hangup()
+                        finishAndReleaseResource()
+                    }
+                }
+            }
+        }
+
         registerReceiver(
             endCallReceiver,
             IntentFilter(ACTION_CALL_CANCEL)
+        )
+        registerReceiver(
+            busyCallReceiver,
+            IntentFilter(ACTION_CALL_BUSY)
         )
     }
 
@@ -661,6 +699,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
             unregisterReceiver(endCallReceiver)
             endCallReceiver = null
         }
+        if (busyCallReceiver != null) {
+            unregisterReceiver(busyCallReceiver)
+            busyCallReceiver = null
+        }
     }
 
     private fun registerSwitchVideoReceiver() {
@@ -669,12 +711,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
                 if (mGroupId == groupId && mIsAudioMode) {
-                    printlnCK("switch group $groupId to video mode")
                     callViewModel.mIsAudioMode.postValue(false)
                     configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
-                }
+                    showOpenCameraDialog()
             }
-        }
+        }}
         registerReceiver(switchVideoReceiver, IntentFilter(ACTION_CALL_SWITCH_VIDEO))
     }
 
@@ -726,6 +767,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     companion object {
+        private var isInPeerCall = false
         private const val CALL_WAIT_TIME_OUT: Long = 60 * 1000
     }
 

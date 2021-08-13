@@ -36,6 +36,7 @@ const val ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED = "ck.action.end.service.c
 const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
 
 const val ACTION_CALL_CANCEL = "ck.action.end.call"
+const val ACTION_CALL_BUSY = "ck.action.busy.call"
 const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
 const val EXTRA_CALL_CANCEL_GROUP_TYPE = "call_cancel_group_type"
 
@@ -68,3 +69,4 @@ const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 const val CALL_TYPE_AUDIO = "audio"
 const val CALL_TYPE_VIDEO = "video"
 const val CALL_UPDATE_TYPE_CANCEL = "cancel_request_call"
+const val CALL_UPDATE_TYPE_BUSY = "busy_request_call"
