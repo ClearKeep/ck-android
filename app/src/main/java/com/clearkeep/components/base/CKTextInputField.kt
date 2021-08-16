@@ -11,7 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -95,7 +97,8 @@ fun CKTextInputField(
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
                                 color = grayscale3,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
+                                fontSize = defaultNonScalableTextSize()
                             )
                         )
                     }
@@ -138,9 +141,13 @@ fun CKTextInputField(
                             painter = if (!passwordVisibility.value) painterResource(R.drawable.ic_eye) else painterResource(R.drawable.ic_eye_cross),
                             contentDescription = "",
                             tint = pickledBlueWood,
-                            modifier = Modifier.clickable(
-                                onClick = { passwordVisibility.value = !passwordVisibility.value }
-                            )
+                            modifier = Modifier
+                                .clickable(
+                                    onClick = {
+                                        passwordVisibility.value = !passwordVisibility.value
+                                    }
+                                )
+                                .size(dimensionResource(R.dimen._24sdp)),
                         )
                     }
                 },

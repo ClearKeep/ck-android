@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -72,7 +74,9 @@ fun ChangePassWordScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        Modifier.size(dimensionResource(R.dimen._24sdp)),
+                        contentScale = ContentScale.FillBounds
                     )
                 }
             )
@@ -85,7 +89,9 @@ fun ChangePassWordScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        Modifier.size(dimensionResource(R.dimen._24sdp)),
+                        contentScale = ContentScale.FillBounds
                     )
                 }
             )
@@ -98,7 +104,9 @@ fun ChangePassWordScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        Modifier.size(dimensionResource(R.dimen._24sdp)),
+                        contentScale = ContentScale.FillBounds
                     )
                 }
             )
