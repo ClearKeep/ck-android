@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,6 +35,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
+import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -70,7 +72,7 @@ fun HomeScreen(
         ) {
             Box(
                 Modifier
-                    .width(84.dp)
+                    .width(84.sdp())
             ) {
                 LeftMenu(homeViewModel)
             }
@@ -172,9 +174,9 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
             Column(
                 modifier = Modifier
                     .weight(1.0f, true)
-                    .padding(top = 20.dp)
+                    .padding(top = 20.sdp())
                     .background(
-                        shape = RoundedCornerShape(topEnd = 30.dp),
+                        shape = RoundedCornerShape(topEnd = 30..sdp()),
                         brush = Brush.horizontalGradient(
                             //todo disable dark mode
                             colors = listOf(
@@ -189,15 +191,15 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                         .fillMaxSize()
                         .background(
                             color = grayscaleOverlay,
-                            shape = RoundedCornerShape(topEnd = 30.dp),
+                            shape = RoundedCornerShape(topEnd = 30.sdp()),
                         ), horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         contentPadding = PaddingValues(
-                            top = 20.dp,
-                            end = 10.dp,
-                            start = 10.dp,
+                            top = 20.sdp(),
+                            end = 10.sdp(),
+                            start = 10.sdp(),
                         ),
                     ) {
                         itemsIndexed(serverList) { _, server ->
@@ -218,7 +220,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                                         server.isActive && selectingJoinServer.value != true
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(36.dp))
+                                Spacer(modifier = Modifier.height(36.sdp()))
                             }
                         }
                     }
@@ -256,17 +258,17 @@ fun ItemListDirectMessage(
         }?.avatar ?: ""
 
         Row(
-            modifier = Modifier.padding(top = 16.dp),
+            modifier = Modifier.padding(top = 16.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
             Text(
                 text = roomName, modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp),
+                    .padding(start = 16.sdp()),
                 maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
-                    fontSize = 14.sp,
+                    fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Bold
                 )
             )
@@ -286,13 +288,13 @@ fun ChatGroupItemView(
                 onItemClickListener?.invoke(chatGroup.groupId)
             },
     ) {
-        Row(modifier = Modifier.padding(top = 16.dp)) {
+        Row(modifier = Modifier.padding(top = 16.sdp())) {
             Text(
                 text = chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
-                    fontSize = 14.sp,
+                    fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Bold
                 )
             )
@@ -324,11 +326,12 @@ fun ChatGroupView(
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
 
-                    Box(modifier = Modifier.padding(8.dp)) {
+                    Box(modifier = Modifier.padding(8.sdp())) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_chev_down),
                             null,
-                            alignment = Alignment.Center
+                            alignment = Alignment.Center,
+                            modifier = Modifier.size(18.sdp())
                         )
                     }
                 }
@@ -337,18 +340,19 @@ fun ChatGroupView(
                 .clickable {
                     createGroupChat.invoke(false)
                 }
-                .size(24.dp)) {
+                .size(24.sdp())) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_plus),
                     null,
-                    alignment = Alignment.Center
+                    alignment = Alignment.Center,
+                    modifier = Modifier.size(20.sdp())
                 )
             }
         }
         Column() {
             AnimatedVisibility(
                 visible = rememberItemGroup.value,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.sdp()),
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
                     animationSpec = tween(300, easing = LinearOutSlowInEasing)
@@ -364,7 +368,7 @@ fun ChatGroupView(
                     Column {
                         item.forEach { chatGroup ->
                             ChatGroupItemView(
-                                modifier = Modifier.padding(start = 15.dp),
+                                modifier = Modifier.padding(start = 15.sdp()),
                                 chatGroup = chatGroup,
                                 onItemClickListener = onItemClickListener
                             )
@@ -401,11 +405,13 @@ fun DirectMessagesView(
                         text = "Direct Messages (${chatGroup.value?.size})",
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
-                    Box(modifier = Modifier.padding(8.dp)) {
+                    Box(modifier = Modifier.padding(8.sdp())) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_chev_down),
                             null,
-                            alignment = Alignment.Center
+                            alignment = Alignment.Center,
+                            modifier = Modifier.size(20.sdp()),
+                            contentScale = ContentScale.FillBounds
                         )
                     }
                 }
@@ -414,18 +420,20 @@ fun DirectMessagesView(
                 .clickable {
                     createGroupChat.invoke(true)
                 }
-                .size(24.dp)) {
+                .size(24.sdp())) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_plus),
                     null,
-                    alignment = Alignment.Center
+                    alignment = Alignment.Center,
+                    modifier = Modifier.size(20.sdp()),
+                    contentScale = ContentScale.FillBounds
                 )
             }
         }
         Column() {
             AnimatedVisibility(
                 visible = rememberItemGroup.value,
-                modifier = Modifier.padding(bottom = 20.dp),
+                modifier = Modifier.padding(bottom = 20.sdp()),
                 enter = expandIn(
                     expandFrom = Alignment.BottomStart, initialSize = { IntSize(50, 50) },
                     animationSpec = tween(300, easing = LinearOutSlowInEasing)
@@ -442,7 +450,7 @@ fun DirectMessagesView(
                     Column {
                         item.forEach { chatGroup ->
                             ItemListDirectMessage(
-                                modifier = Modifier.padding(start = 16.dp),
+                                modifier = Modifier.padding(start = 16.sdp()),
                                 chatGroup,
                                 listUserStatus.value,
                                 viewModel.getClientIdOfActiveServer(),
@@ -470,9 +478,9 @@ fun JoinServerComposable(
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+                .padding(start = 24.sdp(), end = 16.sdp(), top = 20.sdp())
         ) {
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(24.sdp()))
             Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                 CKHeaderText(
                     text = stringResource(R.string.join_server), modifier = Modifier
@@ -487,24 +495,24 @@ fun JoinServerComposable(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_hamburger),
-                        null, alignment = Alignment.Center
+                        null, alignment = Alignment.Center, contentScale = ContentScale.FillBounds
                     )
                 }
             }
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(25.sdp()))
             Text(
                 stringResource(R.string.join_server_caption),
                 style = MaterialTheme.typography.body2
             )
-            Spacer(modifier = Modifier.size(21.dp))
+            Spacer(modifier = Modifier.size(21.sdp()))
             CKTextInputField(
                 "Server URL",
                 rememberServerUrl,
                 keyboardType = KeyboardType.Text,
                 singleLine = true,
             )
-            Spacer(modifier = Modifier.size(14.dp))
+            Spacer(modifier = Modifier.size(14.sdp()))
             CKButton(
                 stringResource(R.string.btn_join),
                 onClick = {
@@ -512,7 +520,7 @@ fun JoinServerComposable(
                 },
                 enabled = rememberServerUrl.value.isNotBlank() && !isLoading
             )
-            Spacer(modifier = Modifier.size(9.dp))
+            Spacer(modifier = Modifier.size(9.sdp()))
             Text(
                 stringResource(R.string.join_server_tips),
                 style = MaterialTheme.typography.caption.copy(
@@ -538,9 +546,9 @@ fun WorkSpaceView(
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+            .padding(start = 24.sdp(), end = 16.sdp(), top = 20.sdp())
     ) {
-        Spacer(modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.size(24.sdp()))
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
                 text = activeServer.value?.serverName ?: "", modifier = Modifier
@@ -553,14 +561,16 @@ fun WorkSpaceView(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_hamburger),
-                    null, alignment = Alignment.Center
+                    null, alignment = Alignment.Center,
+                    modifier = Modifier.size(dimensionResource(24.sdp())),
+                    contentScale = ContentScale.FillBounds
                 )
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.sdp()))
         CKSearchBox(searchKey)
-        Spacer(modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.size(24.sdp()))
         NoteView(onNavigateNotes)
         Column(
             modifier = Modifier
@@ -568,12 +578,12 @@ fun WorkSpaceView(
                 .verticalScroll(rememberScrollState())
 
         ) {
-            Spacer(modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.size(24.sdp()))
             ChatGroupView(
                 homeViewModel, createGroupChat = createGroupChat,
                 onItemClickListener = onItemClickListener
             )
-            Spacer(modifier = Modifier.size(28.dp))
+            Spacer(modifier = Modifier.size(28.sdp()))
             DirectMessagesView(
                 homeViewModel,
                 createGroupChat = createGroupChat,
@@ -592,10 +602,12 @@ fun NoteView(onNavigateNotes: () -> Unit) {
         Image(
             painterResource(R.drawable.ic_notes),
             contentDescription = null,
+            modifier = Modifier.size(dimensionResource(R.dimen._20sdp)),
+            contentScale = ContentScale.FillBounds
         )
         CKHeaderText(
             text = stringResource(R.string.notes),
-            modifier = Modifier.padding(start = 10.dp),
+            modifier = Modifier.padding(start = 10.sdp()),
             headerTextType = HeaderTextType.Normal,
             color = grayscale2,
         )
@@ -609,11 +621,11 @@ fun AddWorkspace(mainViewModel: HomeViewModel) {
     if (showJoinServer.value == true) {
         Column(
             modifier = Modifier
-                .size(42.dp)
+                .size(42.sdp())
                 .background(color = Color.Transparent)
                 .border(
                     BorderStroke(1.5.dp, primaryDefault),
-                    shape = RoundedCornerShape(4.dp)
+                    shape = RoundedCornerShape(4.sdp())
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -632,10 +644,10 @@ fun AddWorkspaceButton(mainViewModel: HomeViewModel) {
         painter = painterResource(R.drawable.ic_add_server),
         contentDescription = "",
         alignment = Alignment.Center,
-        contentScale = ContentScale.Fit,
+        contentScale = ContentScale.FillBounds,
         modifier = Modifier.clickable(
             onClick = { mainViewModel.showJoinServer() }
-        )
+        ).size(42.sdp())
     )
 }
 

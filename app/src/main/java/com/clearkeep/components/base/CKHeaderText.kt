@@ -20,7 +20,7 @@ fun CKHeaderText(
     color: Color = grayscaleBlack
 ) {
     //todo disable dark mode
-    Text(
+    CKText(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(

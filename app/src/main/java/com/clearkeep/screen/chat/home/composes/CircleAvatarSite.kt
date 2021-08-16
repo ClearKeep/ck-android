@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.imageLoader
@@ -22,12 +23,13 @@ import coil.request.CachePolicy
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.base.CKText
 import com.clearkeep.utilities.printlnCK
 import com.google.accompanist.coil.rememberCoilPainter
 import okhttp3.Cache
 
 @Composable
-fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: String, cacheKey: String = "") {
+fun CircleAvatarSite(url: String?, name: String, size: Dp = dimensionResource(R.dimen._56sdp), status: String, cacheKey: String = "") {
     val context = LocalContext.current
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
 
@@ -64,13 +66,13 @@ fun CircleAvatarSite(url: String?, name: String, size: Dp = 56.dp, status: Strin
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
+                CKText(
                     displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
                         color = MaterialTheme.colors.onSurface,
                     )
                 )
             }
-            Box(modifier = Modifier.size(10.dp).background(
+            Box(modifier = Modifier.size(dimensionResource(R.dimen._10sdp)).background(
                 shape = CircleShape,
                 brush = Brush.horizontalGradient(
                     colors = listOf(
