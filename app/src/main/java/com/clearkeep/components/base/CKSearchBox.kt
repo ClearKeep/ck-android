@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.focus.isFocused
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
 
 @Composable
 fun CKSearchBox(
@@ -42,7 +44,7 @@ fun CKSearchBox(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
-                BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
+                BorderStroke(dimensionResource(R.dimen._1sdp), MaterialTheme.colors.secondaryVariant)
             } else null,
             color = Color.Transparent,
             elevation = 0.dp
@@ -51,7 +53,7 @@ fun CKSearchBox(
                 value = textValue.value,
                 onValueChange = { textValue.value = it },
                 placeholder = {
-                    Text(
+                    CKText(
                         placeholder, style = MaterialTheme.typography.body1.copy(
                             color = MaterialTheme.colors.onSecondary,
                             fontWeight = FontWeight.Normal
@@ -74,6 +76,7 @@ fun CKSearchBox(
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = MaterialTheme.colors.secondaryVariant,
+                    fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ),
                 modifier = modifier
@@ -85,6 +88,7 @@ fun CKSearchBox(
                     Icon(
                         Icons.Filled.Search,
                         contentDescription = "",
+                        Modifier.size(dimensionResource(R.dimen._24sdp))
                     )
                 },
                 trailingIcon = {
@@ -93,7 +97,7 @@ fun CKSearchBox(
                             contentDescription = "",
                             modifier = Modifier.clickable {
                                 textValue.value = ""
-                            })
+                            }.size(dimensionResource(R.dimen._24sdp)))
                     }
                 },
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),

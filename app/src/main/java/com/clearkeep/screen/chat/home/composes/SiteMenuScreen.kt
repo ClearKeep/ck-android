@@ -22,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -36,10 +38,13 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun SiteMenuScreen(
@@ -75,16 +80,16 @@ fun SiteMenuScreen(
         ) {
             Box(
                 Modifier
-                    .width(108.dp)
+                    .width(108.sdp())
             ) {
             }
             Card(
                 Modifier
                     .fillMaxSize()
-                    .padding(top = 20.dp, bottom = 20.dp),
+                    .padding(top = 20.sdp(), bottom = 20.sdp()),
                 backgroundColor = Color.White,
-                shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
-                elevation = 8.dp
+                shape = RoundedCornerShape(topStart = 30.sdp(), bottomStart = 30.sdp()),
+                elevation = 8.sdp()
             ) {
                 ConstraintLayout {
                     val (scrollContent, leaveServerButton) = createRefs()
@@ -99,7 +104,7 @@ fun SiteMenuScreen(
                         Column(
                             Modifier
                                 .fillMaxSize()
-                                .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 20.dp)
+                                .padding(start = 16.sdp(), top = 24.sdp(), end = 16.sdp(), bottom = 20.sdp())
                                 .verticalScroll(rememberScrollState())
                         ) {
                             Row(
@@ -108,18 +113,20 @@ fun SiteMenuScreen(
                                 horizontalArrangement = Arrangement.End,
                             ) {
                                 IconButton(
-                                    onClick = { closeSiteMenu.invoke() }
+                                    onClick = { closeSiteMenu.invoke() },
+                                    Modifier.size(dimensionResource(R.dimen._24sdp))
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Close,
                                         contentDescription = "",
-                                        tint = MaterialTheme.colors.primaryVariant
+                                        tint = MaterialTheme.colors.primaryVariant,
+                                        modifier = Modifier.fillMaxSize()
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.size(16.sdp()))
                             HeaderSite(profile, homeViewModel)
-                            Spacer(modifier = Modifier.size(12.dp))
+                            Spacer(modifier = Modifier.size(12.sdp()))
                             Divider(color = grayscale3)
                             SettingGeneral(onNavigateAccountSetting)
                             Divider(color = grayscale3)
@@ -133,7 +140,7 @@ fun SiteMenuScreen(
                     }
 
                     Row(modifier = Modifier
-                        .padding(top = 8.dp, bottom = 38.dp)
+                        .padding(top = 8.sdp(), bottom = 38.sdp())
                         .wrapContentSize()
                         .constrainAs(leaveServerButton) {
                             start.linkTo(parent.start)
@@ -147,13 +154,14 @@ fun SiteMenuScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_logout),
                             contentDescription = null,
-                            tint = errorDefault
+                            tint = errorDefault,
+                            modifier = Modifier.size(24.sdp())
                         )
                         Text(
                             text = stringResource(R.string.leave_server), modifier = Modifier
-                                .padding(start = 16.dp), style = TextStyle(
+                                .padding(start = 16.sdp()), style = TextStyle(
                                 color = errorDefault,
-                                fontSize = 14.sp,
+                                fontSize = defaultNonScalableTextSize(),
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -173,7 +181,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatarSite(url = profile.avatar, name = profile.userName ?: "", status = "", cacheKey = profile.updatedAt.toString())
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 16.sdp())) {
             CKHeaderText(
                 text = profile.userName ?: "",
                 headerTextType = HeaderTextType.Normal,
@@ -184,28 +192,30 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                     UserStatus.ONLINE.value->{
                         Text(
                             text = UserStatus.ONLINE.value,
-                            style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
+                            style = TextStyle(color = colorSuccessDefault, fontSize = defaultNonScalableTextSize())
                         )
                     }
                     UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
                             text = UserStatus.OFFLINE.value,
-                            style = TextStyle(color = grayscale3, fontSize = 14.sp)
+                            style = TextStyle(color = grayscale3, fontSize = defaultNonScalableTextSize())
                         )
                     }
                     else ->{
                         Text(
                             text = UserStatus.BUSY.value,
-                            style = TextStyle(color = errorDefault, fontSize = 14.sp)
+                            style = TextStyle(color = errorDefault, fontSize = defaultNonScalableTextSize())
                         )
                     }
                 }
 
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                Box(modifier = Modifier.padding(horizontal = 8.sdp())) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_chev_down),
                         null,
-                        alignment = Alignment.Center
+                        alignment = Alignment.Center,
+                        modifier = Modifier.size(12.sdp()),
+                        contentScale = ContentScale.FillBounds
                     )
                 }
             }
@@ -219,13 +229,13 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 val text = createRef()
                 val image = createRef()
                 Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
-                    linkTo(parent.start, image.start, endMargin = 4.dp)
+                    linkTo(parent.start, image.start, endMargin = 4.sdp())
                     width = Dimension.fillToConstraints
                 })
                 IconButton(
                     onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) },
                     Modifier
-                        .size(18.dp)
+                        .size(18.sdp())
                         .constrainAs(image) {
                             end.linkTo(parent.end)
                         }
@@ -248,7 +258,7 @@ fun SettingServer(
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit
 ) {
-    Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
+    Column(Modifier.padding(top = 16.sdp(), bottom = 16.sdp())) {
         CKHeaderText(
             text = "Server Setting",
             headerTextType = HeaderTextType.Normal,
@@ -273,7 +283,7 @@ fun SettingServer(
 fun SettingGeneral(
     onNavigateAccountSetting: () -> Unit,
 ) {
-    Column() {
+    Column {
         ItemSiteSetting("Profile", R.drawable.ic_user, onNavigateAccountSetting)
     }
 }
@@ -286,14 +296,14 @@ fun ItemSiteSetting(
     textColor: Color? = null
 ) {
     Row(modifier = Modifier
-        .padding(top = 16.dp, bottom = 18.dp)
+        .padding(top = 16.sdp(), bottom = 18.sdp())
         .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painter = painterResource(icon), contentDescription = null)
+        Icon(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(24.sdp()))
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
         )
     }
 }
@@ -304,8 +314,8 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit,statusChoose: (UserS
         expanded = expanded,
         onDismissRequest = onDismiss,
         modifier = Modifier
-            .width(165.dp)
-            .background(Color.White, RoundedCornerShape(8.dp))
+            .width(165.sdp())
+            .background(Color.White, RoundedCornerShape(8.sdp()))
     ) {
         StatusItem(
             onClick = { statusChoose.invoke(UserStatus.ONLINE) },
@@ -326,10 +336,10 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier
-                    .size(12.dp)
+                    .size(12.sdp())
                     .clip(CircleShape)
                     .background(color))
-            Spacer(Modifier.width(7.dp))
+            Spacer(Modifier.width(7.sdp()))
             Text(text, color = Color.Black)
         }
     }
