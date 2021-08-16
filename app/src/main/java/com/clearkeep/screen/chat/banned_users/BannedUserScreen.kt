@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,19 +34,19 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
     val text = remember { mutableStateOf("") }
     Column(
         Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.sdp())
             .fillMaxSize()) {
         HeaderBannedUser(onCloseView)
-        Spacer(modifier = Modifier.height(24.dp))
-        CKSearchBox(text, Modifier.clip(RoundedCornerShape(16.dp)).background(grayscale5))
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.sdp()))
+        CKSearchBox(text, Modifier.clip(RoundedCornerShape(16.sdp())).background(grayscale5))
+        Spacer(modifier = Modifier.height(16.sdp()))
         Text("User in Contact", color = grayscale2)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.sdp()))
         LazyColumn {
             item {
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User( "", "Alex Mendes", "","","","","",""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Alissa Baker", "","","","","",""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Barbara Johnson", "","","","","",""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User( "", "Alex Mendes", "","","","","",""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User("", "Alissa Baker", "","","","","",""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User("", "Barbara Johnson", "","","","","",""), {})
             }
         }
     }
@@ -57,7 +58,7 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
         Modifier
             .fillMaxWidth()
     ) {
-        Spacer(Modifier.size(32.dp))
+        Spacer(Modifier.size(32.sdp()))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -71,7 +72,7 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
                 tint = grayscale1,
             )
         }
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(16.sdp()))
         CKHeaderText("Banned User", headerTextType = HeaderTextType.Medium)
     }
 }
@@ -85,7 +86,7 @@ fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: U
             CKButton(
                 "Unbanned",
                 { onAction(user) },
-                Modifier.width(123.dp),
+                Modifier.width(123.sdp()),
                 buttonType = ButtonType.BorderGradient
             )
         }

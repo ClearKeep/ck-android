@@ -218,3 +218,16 @@ fun Dp.toNonScalableTextSize(): TextUnit {
 fun defaultNonScalableTextSize(): TextUnit {
     return dimensionResource(R.dimen._14sdp).toNonScalableTextSize()
 }
+
+@Composable
+fun Int.sdp() : Dp {
+    return when (this) {
+        0 -> 0.dp
+        1,2 -> dimensionResource(R.dimen._1sdp)
+        3,4 -> dimensionResource(R.dimen._2sdp)
+        5,6 -> dimensionResource(R.dimen._3sdp)
+        7,8 -> dimensionResource(R.dimen._4sdp)
+        9,10 -> dimensionResource(R.dimen._5sdp)
+        else -> this.dp
+    }
+}
