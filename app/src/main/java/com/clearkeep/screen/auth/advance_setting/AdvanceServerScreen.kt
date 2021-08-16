@@ -22,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -32,9 +34,12 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.toNonScalableTextSize
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
+
 
 @ExperimentalAnimationApi
 @Composable
@@ -72,9 +77,9 @@ fun CustomServerScreen(
             )
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(58.dp))
+            Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
-                modifier = Modifier.padding(start = 6.dp),
+                modifier = Modifier.padding(start = 6.sdp()),
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
                     loginViewModel.isCustomServer = isCustom
@@ -84,10 +89,10 @@ fun CustomServerScreen(
                     onBackPress()
                 }
             )
-            Spacer(Modifier.height(26.dp))
+            Spacer(Modifier.height(26.sdp()))
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(16.sdp())
                     .clickable {
                         useCustomServerChecked.value = !useCustomServerChecked.value
                         if (!useCustomServerChecked.value) {
@@ -97,19 +102,21 @@ fun CustomServerScreen(
             ) {
                 Image(
                     painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
-                    ""
+                    "",
+                    Modifier.size(32.sdp()),
+                    contentScale = ContentScale.FillBounds
                 )
                 Text(
                     text = "Use Custom Server",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.sdp()),
                     style = MaterialTheme.typography.body1.copy(
                         color = grayscaleOffWhite,
-                        fontSize = 14.sp,
+                        fontSize = defaultNonScalableTextSize(),
                         fontWeight = FontWeight.Bold
                     )
                 )
             }
-            Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
+            Column(Modifier.padding(start = 16.sdp(), end = 16.sdp())) {
                 AnimatedVisibility(
                     visible = useCustomServerChecked.value,
                     enter = expandIn(
@@ -133,17 +140,17 @@ fun CustomServerScreen(
                             text = stringResource(R.string.use_custom_server),
                             style = MaterialTheme.typography.body1.copy(
                                 color = grayscaleOffWhite,
-                                fontSize = 16.sp,
+                                fontSize = 16.sdp().toNonScalableTextSize(),
                                 fontWeight = FontWeight.Normal
                             )
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(20.sdp()))
 
                         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                             Row(
                                 modifier = Modifier
                                     .weight(0.66f)
-                                    .padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
+                                    .padding(end = 16.sdp(), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     "Server URL",
@@ -154,13 +161,13 @@ fun CustomServerScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(58.dp))
+                        Spacer(modifier = Modifier.height(50.sdp()))
 
                         CKButton(
                             "Submit", {
                                 loginViewModel.checkValidServerUrl(rememberServerUrl.value)
                             },
-                            modifier = Modifier.padding(start = 60.dp, end = 66.dp),
+                            modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
                             buttonType = ButtonType.White,
                             enabled = rememberServerUrl.value.isNotBlank() && isLoading.value != true
                         )
