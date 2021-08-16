@@ -10,12 +10,7 @@ class UserPreferenceRepository @Inject constructor(
     private val userPreferenceDAO: UserPreferenceDAO
 ) {
     suspend fun initDefaultUserPreference(serverDomain: String, userId: String) {
-        val defaultSettings = UserPreference(
-            serverDomain,
-            userId,
-            showNotificationPreview = true,
-            doNotDisturb = false
-        )
+        val defaultSettings = UserPreference.getDefaultUserPreference(serverDomain, userId)
         userPreferenceDAO.insert(defaultSettings)
     }
 
@@ -35,5 +30,9 @@ class UserPreferenceRepository @Inject constructor(
 
     suspend fun updateDoNotDisturb(serverDomain: String, userId: String, enabled: Boolean) {
         userPreferenceDAO.updateDoNotDisturb(serverDomain, userId, enabled)
+    }
+
+    suspend fun updateMfa(serverDomain: String, userId: String, enabled: Boolean) {
+        userPreferenceDAO.updateMfa(serverDomain, userId, enabled)
     }
 }

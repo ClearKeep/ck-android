@@ -158,11 +158,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     context = applicationContext,
                     chatGroup = group,
                     decryptedMessage,
-                    userPreference ?: UserPreference(
-                        "", "",
-                        showNotificationPreview = true,
-                        doNotDisturb = false
-                    ),
+                    userPreference ?: UserPreference.getDefaultUserPreference("", ""),
                     avatar
                 )
             }

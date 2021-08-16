@@ -41,6 +41,8 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
+        profileViewModel.getMfaDetail()
+
         setContent {
             CKSimpleTheme {
                 val navController = rememberNavController()
