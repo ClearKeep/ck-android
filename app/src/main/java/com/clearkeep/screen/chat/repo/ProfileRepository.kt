@@ -23,6 +23,7 @@ class ProfileRepository @Inject constructor(
 
     // data
     private val serverRepository: ServerRepository,
+    private val userPreferenceRepository: UserPreferenceRepository,
 
     private val userManager: AppStorage
 ) {
@@ -115,6 +116,20 @@ class ProfileRepository @Inject constructor(
                 printlnCK("uploadAvatar $e")
                 return@withContext ""
             }
+        }
+    }
+
+    suspend fun getMfaSettingsFromAPI(owner: Owner) = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext
+            val request = UserOuterClass.MfaGetStateRequest.newBuilder().build()
+
+            val response = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey)).getMfaState(request)
+            val isMfaEnabled = response.mfaEnable
+            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, isMfaEnabled)
+            printlnCK("getMfaSettingsFromAPI MFA enabled? $isMfaEnabled")
+        } catch (exception: Exception) {
+            printlnCK("getMfaSettingsFromAPI: $exception")
         }
     }
 }

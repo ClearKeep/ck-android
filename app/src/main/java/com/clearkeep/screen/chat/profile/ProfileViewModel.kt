@@ -7,6 +7,7 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
+import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
@@ -22,6 +23,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
     private val profileRepository: ProfileRepository,
+    private val userPreferenceRepository: UserPreferenceRepository,
     serverRepository: ServerRepository
 ): ViewModel() {
 
@@ -31,6 +33,10 @@ class ProfileViewModel @Inject constructor(
         _phoneNumber.postValue(it.phoneNumber)
         it
     }
+
+    private lateinit var _userPreference : LiveData<UserPreference>
+    val userPreference : LiveData<UserPreference>
+        get() = _userPreference
 
     private var _currentPhotoUri: Uri? = null
     private var isAvatarChanged = false
@@ -54,6 +60,14 @@ class ProfileViewModel @Inject constructor(
         get() = _phoneNumber
 
     val unsavedChangeDialogVisible = MutableLiveData<Boolean>()
+
+    fun getMfaDetail() {
+        val server = environment.getServer()
+        viewModelScope.launch {
+            profileRepository.getMfaSettingsFromAPI(Owner(server.serverDomain, server.profile.userId))
+        }
+        _userPreference = userPreferenceRepository.getUserPreferenceLiveData(server.serverDomain, server.profile.userId)
+    }
 
     fun getProfileLink(): String {
         val server = environment.getServer()
@@ -150,6 +164,8 @@ class ProfileViewModel @Inject constructor(
         _imageUriSelected.value = null
         isAvatarChanged = false
     }
+
+    fun canEnableMfa() : Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
 
     private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) : String {
         val uri = Uri.parse(avatarToUpload)
