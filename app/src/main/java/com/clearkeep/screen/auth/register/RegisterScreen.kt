@@ -16,6 +16,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,29 +55,30 @@ fun RegisterScreen(
 
     Column(
         modifier = Modifier
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 20.sdp())
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(28.sdp()))
         Box(contentAlignment = Alignment.TopCenter) {
             Image(image, contentDescription = "")
         }
-        Spacer(Modifier.height(24.dp))
-        Card(shape = RoundedCornerShape(16.dp)) {
+        Spacer(Modifier.height(24.sdp()))
+        Card(shape = RoundedCornerShape(16.sdp())) {
             Column(
                 modifier = Modifier
                     .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
+                    .padding(horizontal = 16.sdp(), vertical = 24.sdp())
             ) {
                 CKText(
                     text = stringResource(R.string.sign_up_fill_information),
                     color = grayscaleBlack,
                     textAlign = TextAlign.Justify,
+                    fontSize = defaultNonScalableTextSize()
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.sdp()))
                 CKTextInputField(
                     "Email",
                     email,
@@ -85,11 +88,13 @@ fun RegisterScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_mail),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds
                         )
                     }
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
                     stringResource(R.string.display_name),
                     displayName,
@@ -98,12 +103,14 @@ fun RegisterScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_user_check),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds
                         )
                     },
                     maxChars = 30
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
                     "Password",
                     password,
@@ -113,12 +120,14 @@ fun RegisterScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds
                         )
                     },
                     allowSpace = false
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
                     stringResource(R.string.confirm_password),
                     confirmPassword,
@@ -128,12 +137,14 @@ fun RegisterScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds
                         )
                     },
                     allowSpace = false
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.sdp())
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         modifier = Modifier
@@ -143,7 +154,8 @@ fun RegisterScreen(
                         CKTextButton(
                             title = "Sign in instead",
                             onClick = onBackPress,
-                            textButtonType = TextButtonType.Blue
+                            textButtonType = TextButtonType.Blue,
+                            fontSize = 12.sdp().toNonScalableTextSize()
                         )
                     }
 
@@ -159,13 +171,13 @@ fun RegisterScreen(
                         },
                         enabled = !isLoading && email.value.isNotBlank() && displayName.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank(),
                         modifier = Modifier
-                            .width(120.dp)
-                            .height(40.dp)
+                            .width(120.sdp())
+                            .height(40.sdp())
                     )
                 }
             }
         }
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(28.sdp()))
     }
 }
 
