@@ -163,7 +163,7 @@ fun ProfileScreen(
                             Spacer(Modifier.height(24.dp))
                             TwoFaceAuthView(authCheckedChange) {
                                 if (it) {
-                                    if (phoneNumber.value?.isNotBlank() == true) {
+                                    if (profileViewModel.canEnableMfa()) {
                                         authCheckedChange.value = true
                                         onNavigateToOtp()
                                     } else {
