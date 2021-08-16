@@ -17,6 +17,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -28,6 +29,8 @@ import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun LoginScreen(
@@ -60,7 +63,10 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (isJoinServer) {
-                Row(Modifier.fillMaxWidth().padding(start = 8.dp)) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = dimensionResource(R.dimen._8sdp))) {
                     IconButton(onClick = { onNavigateBack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -70,14 +76,14 @@ fun LoginScreen(
                     }
                 }
             }
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(dimensionResource(R.dimen._32sdp)))
 
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                 Image(image, contentDescription = "")
             }
 
             ViewUsedCustomServer(loginViewModel.customDomain.isNotEmpty() && loginViewModel.isCustomServer)
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+            Column(modifier = Modifier.padding(horizontal = dimensionResource(R.dimen._20sdp))) {
                 CKTextInputField(
                     stringResource(R.string.tv_email),
                     email,
@@ -90,7 +96,7 @@ fun LoginScreen(
                         )
                     }
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 CKTextInputField(
                     stringResource(R.string.tv_password),
                     password,
@@ -105,7 +111,7 @@ fun LoginScreen(
                     allowSpace = false
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 CKButton(
                     stringResource(R.string.btn_login),
                     onClick = {
@@ -113,12 +119,12 @@ fun LoginScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 5.dp),
+                        .padding(vertical = dimensionResource(R.dimen._5sdp)),
                     enabled = !isLoading,
                     buttonType = ButtonType.White
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
 
                 Box(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -149,9 +155,9 @@ fun LoginScreen(
                     }
                 }
 
-                Spacer(Modifier.height(24.dp))
-                Divider(color = colorResource(R.color.line), thickness = 1.dp)
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
+                Divider(color = colorResource(R.color.line), thickness = dimensionResource(R.dimen._1sdp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -159,10 +165,10 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.social_sign_in),
                         color = Color.White,
-                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
                     )
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
 
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -176,11 +182,11 @@ fun LoginScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 5.dp),
+                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
                         enabled = !isLoading,
                         buttonType = LoginType.Google
                     )
-                    Spacer(Modifier.width(40.dp))
+                    Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
                     CKButtonSignIn(
                         stringResource(R.string.btn_login_microsoft),
                         onClick = {
@@ -188,11 +194,11 @@ fun LoginScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 5.dp),
+                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
                         enabled = !isLoading,
                         buttonType = LoginType.Microsoft
                     )
-                    Spacer(Modifier.width(40.dp))
+                    Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
                     CKButtonSignIn(
                         stringResource(R.string.btn_login_facebook),
                         onClick = {
@@ -200,12 +206,12 @@ fun LoginScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 5.dp),
+                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
                         enabled = !isLoading,
                         buttonType = LoginType.Facebook
                     )
                 }
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen._80sdp)))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
@@ -213,22 +219,22 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.tv_not_account),
                         color = Color.White,
-                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
                 CKButton(
                     stringResource(R.string.sign_up),
                     onClick = onRegisterPress,
                     enabled = !isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
+                        .padding(horizontal = dimensionResource(R.dimen._32sdp)),
                     buttonType = ButtonType.BorderWhite
 
                 )
-                Spacer(Modifier.height(48.dp))
+                Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
             }
         }
     }
@@ -237,11 +243,11 @@ fun LoginScreen(
 @Composable
 fun ViewUsedCustomServer(shouldShow: Boolean){
     if (shouldShow) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen._8sdp)))
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
+                .padding(vertical = dimensionResource(R.dimen._24sdp)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
@@ -253,16 +259,16 @@ fun ViewUsedCustomServer(shouldShow: Boolean){
                     painter = painterResource(id = R.drawable.ic_alert),
                     contentDescription = "",
                     tint = colorWarningLight,
-                    modifier = Modifier.padding(10.dp)
+                    modifier = Modifier.padding(dimensionResource(R.dimen._10sdp))
                 )
                 Text(
                     text = "You are using custom server",
                     color = colorWarningLight,
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
                 )
             }
         }
-    }else{
-        Spacer(Modifier.height(48.dp))
+    } else{
+        Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
     }
 }
