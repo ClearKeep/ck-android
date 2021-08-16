@@ -6,8 +6,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.screen.chat.main.notification_setting.NotificationSettingScreen
-import com.clearkeep.screen.chat.profile.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
