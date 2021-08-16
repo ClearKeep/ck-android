@@ -16,10 +16,12 @@ import android.view.View
 import com.clearkeep.db.clear_keep.model.ProtoResponse
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import com.clearkeep.R
 import com.clearkeep.screen.splash.SplashActivity
 import com.google.gson.Gson
 import io.grpc.StatusRuntimeException
@@ -214,5 +216,5 @@ fun Dp.toNonScalableTextSize(): TextUnit {
 
 @Composable
 fun defaultNonScalableTextSize(): TextUnit {
-    return 14.dp.toNonScalableTextSize()
+    return dimensionResource(R.dimen._14sdp).toNonScalableTextSize()
 }

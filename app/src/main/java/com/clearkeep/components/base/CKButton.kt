@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
 
 private val radius = 20.dp
 private val height = 40.dp
@@ -86,7 +87,7 @@ fun CKButton(
             Text(
                 text = label,
                 style = MaterialTheme.typography.body1.copy(
-                    fontSize = 14.sp
+                    fontSize = defaultNonScalableTextSize()
                 )
             )
         }
