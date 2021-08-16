@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,14 +54,14 @@ fun CKButtonSignIn(
     Row(
         modifier = Modifier.background(
             grayscaleOffWhite, shape = RoundedCornerShape(50),
-        ).clickable { onClick() }.size(56.dp),
+        ).clickable { onClick() }.size(dimensionResource(R.dimen._56sdp)),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row {
             Image(
                 modifier = Modifier
-                    .size(24.dp),
+                    .size(dimensionResource(R.dimen._24sdp)),
                 painter = icon,
                 contentDescription = null
             )
