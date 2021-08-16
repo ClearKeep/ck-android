@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,16 +46,16 @@ fun NewFriendListItem(
         CircleAvatarStatus(
             user.avatar,
             user.userName,
-            size = 64.dp,
+            size = 64.sdp(),
             user.userStatus ?: UserStatus.ONLINE.value,
-            16.dp
+            16.sdp()
         )
         Column(
             Modifier
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
                 .weight(1.0f, true)
         ) {
-            Text(
+            CKText(
                 text = user.userName,
                 style = MaterialTheme.typography.body2.copy(
                     fontWeight = FontWeight.Bold,
@@ -63,12 +64,12 @@ fun NewFriendListItem(
             )
             description()
         }
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(16.sdp()))
         action()
     }
 }
 
 @Composable
 fun StatusText(user: User) {
-    //Text("Online", color = colorSuccessDefault)
+    //CKText("Online", color = colorSuccessDefault)
 }

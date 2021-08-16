@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.main.notification_setting
+package com.clearkeep.screen.chat.notification_setting
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,7 +24,7 @@ import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
-import com.clearkeep.screen.chat.notification_setting.NotificationSettingsViewModel
+import com.clearkeep.utilities.defaultNonScalableTextSize
 
 
 @Composable
@@ -34,11 +36,11 @@ fun NotificationSettingScreen(
 
     Column(
         Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.sdp())
             .fillMaxSize()
     ) {
         HeaderNotificationSetting(onCloseView)
-        Spacer(modifier = Modifier.height(26.dp))
+        Spacer(modifier = Modifier.height(26.sdp()))
         CKSetting(
             modifier = Modifier,
             name = "Show previews",
@@ -47,7 +49,7 @@ fun NotificationSettingScreen(
         ) {
             notificationSettingsViewModel.toggleShowPreview(it)
         }
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(40.sdp()))
         CKSetting(
             modifier = Modifier,
             name = "Do not disturb",
@@ -64,7 +66,7 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
         Modifier
             .fillMaxWidth()
     ) {
-        Spacer(Modifier.size(32.dp))
+        Spacer(Modifier.size(32.sdp()))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -74,11 +76,12 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
                 contentDescription = null, modifier = Modifier
                     .clickable {
                         onCloseView.invoke()
-                    },
+                    }.size(24.sdp()),
+                contentScale = ContentScale.FillBounds,
                 alignment = Alignment.CenterStart
             )
         }
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(16.sdp()))
         CKHeaderText("Notification", headerTextType = HeaderTextType.Medium)
     }
 }
