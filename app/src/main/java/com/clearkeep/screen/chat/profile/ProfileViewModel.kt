@@ -47,6 +47,8 @@ class ProfileViewModel @Inject constructor(
 
     val uploadAvatarResponse = MutableLiveData<Resource<String>>()
 
+    val updateMfaSettingResponse = MutableLiveData<Boolean>()
+
     private val _username = MutableLiveData<String>()
     val username: LiveData<String>
         get() = _username
@@ -107,6 +109,8 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = false
         val avatarToUpload = imageUriSelected.value
         val server = environment.getServer()
+        val isPhoneNumberChanged = phoneNumber != profile.value?.phoneNumber
+        val shouldUpdateMfaSetting = isPhoneNumberChanged && userPreference.value?.mfa == true
 
         if (!isValidUsername(displayName)) {
             uploadAvatarResponse.value =
@@ -131,6 +135,9 @@ class ProfileViewModel @Inject constructor(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
                     )
+                    if (shouldUpdateMfaSetting) {
+                        profileRepository.updateMfaSettings(getOwner(), false)
+                    }
                 }
             }
         } else {
@@ -141,6 +148,9 @@ class ProfileViewModel @Inject constructor(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber)
                     )
+                    if (shouldUpdateMfaSetting) {
+                        profileRepository.updateMfaSettings(getOwner(), false)
+                    }
                 }
             }
         }
@@ -166,6 +176,13 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun canEnableMfa() : Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
+
+    fun updateMfaSettings(enabled: Boolean) {
+        viewModelScope.launch {
+            val isSuccess = profileRepository.updateMfaSettings(getOwner(), enabled)
+            updateMfaSettingResponse.value = isSuccess
+        }
+    }
 
     private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) : String {
         val uri = Uri.parse(avatarToUpload)
@@ -208,6 +225,11 @@ class ProfileViewModel @Inject constructor(
             _currentPhotoUri = generatePhotoUri(context)
         }
         return _currentPhotoUri!!
+    }
+
+    private fun getOwner() : Owner {
+        val server = environment.getServer()
+        return Owner(server.serverDomain, server.profile.userId)
     }
 
     private fun isValidFileSizes(
