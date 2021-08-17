@@ -178,7 +178,12 @@ class ProfileRepository @Inject constructor(
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaValidateOtp(request)
             printlnCK("mfaValidateOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
-            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
+            return@withContext if (response.success) {
+                userPreferenceRepository.updateMfa(owner.domain, owner.clientId, true)
+                Resource.success(null)
+            } else {
+                Resource.error(response.errors.message, null)
+            }
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
