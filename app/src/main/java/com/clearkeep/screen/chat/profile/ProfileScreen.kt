@@ -150,7 +150,7 @@ fun ProfileScreen(
                                 profileViewModel.setEmail(it)
                             }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Number) {
+                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone) {
                                 profileViewModel.setPhoneNumber(it)
                             }
                             Spacer(Modifier.height(8.dp))
@@ -197,6 +197,7 @@ fun ProfileScreen(
             CKAlertDialog(
                 title = "Type in your phone number",
                 text = "You must input your phone number in order to enable this feature.",
+                dismissTitle = stringResource(R.string.close),
                 onDismissButtonClick = {
                     otpErrorDialogVisible.value = false
                 }

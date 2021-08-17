@@ -87,7 +87,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun setPhoneNumber(phoneNumber: String) {
-        _phoneNumber.value = phoneNumber.filter { it.isDigit() }
+        _phoneNumber.value = phoneNumber
     }
 
     fun setUsername(username: String) {

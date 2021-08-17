@@ -66,6 +66,7 @@ class ProfileRepository @Inject constructor(
         profile: Profile
     ): Boolean = withContext(Dispatchers.IO) {
         try {
+            printlnCK("updateProfile $profile")
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
             val requestBuilder = UserOuterClass.UpdateProfileRequest.newBuilder()
                 .setDisplayName(profile.userName?.trim())
@@ -163,10 +164,40 @@ class ProfileRepository @Inject constructor(
                 .build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaValidatePassword(request)
-            printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
+            printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code} next step ${response.nextStep}")
             return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.toString(), null)
         } catch (exception: Exception) {
             printlnCK("mfaValidatePassword: $exception")
+            return@withContext Resource.error(exception.toString(), null)
+        }
+    }
+
+    suspend fun mfaValidateOtp(owner: Owner, otp: String) : Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
+            val request = UserOuterClass.MfaValidateOtpRequest.newBuilder()
+                .setOtp(otp)
+                .build()
+            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val response = stub.mfaValidateOtp(request)
+            printlnCK("mfaValidateOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
+            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
+        } catch (exception: Exception) {
+            printlnCK("mfaValidateOtp: $exception")
+            return@withContext Resource.error(exception.toString(), null)
+        }
+    }
+
+    suspend fun mfaResendOtp(owner: Owner) : Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
+            val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
+            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val response = stub.mfaResendOtp(request)
+            printlnCK("mfaResendOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
+            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
+        } catch (exception: Exception) {
+            printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
         }
     }
