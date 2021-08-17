@@ -60,12 +60,13 @@ fun ProfileScreen(
         val userName = profileViewModel.username.observeAsState()
         val email = profileViewModel.email.observeAsState()
         val phoneNumber = profileViewModel.phoneNumber.observeAsState()
-        val authCheckedChange = remember { mutableStateOf(false) }
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
         val pickAvatarDialogVisible = remember { mutableStateOf(false) }
         val unsavedChangesDialogVisible = profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
+        val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
+        val userPreference = profileViewModel.userPreference.observeAsState()
 
         Column(
             Modifier
@@ -161,16 +162,15 @@ fun ProfileScreen(
                             Spacer(Modifier.height(8.dp))
                             ChangePassword(onChangePassword)
                             Spacer(Modifier.height(24.dp))
-                            TwoFaceAuthView(authCheckedChange) {
+                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
                                 if (it) {
                                     if (profileViewModel.canEnableMfa()) {
-                                        authCheckedChange.value = true
-                                        onNavigateToOtp()
+                                        profileViewModel.updateMfaSettings(it)
                                     } else {
                                         otpErrorDialogVisible.value = true
                                     }
                                 } else {
-                                    authCheckedChange.value = false
+                                    profileViewModel.updateMfaSettings(it)
                                 }
                             }
                             Spacer(Modifier.height(24.dp))
@@ -191,7 +191,6 @@ fun ProfileScreen(
                         }
                     }
                 }
-
             }
         }
         if (otpErrorDialogVisible.value) {
@@ -225,6 +224,10 @@ fun ProfileScreen(
                     onCloseView()
                 }
             )
+        }
+        if (updateMfaResponse.value == true && userPreference.value?.mfa == true) {
+            onNavigateToOtp()
+            profileViewModel.updateMfaSettingResponse.value = null //Prevent response from being handled again
         }
 
         UploadPhotoDialog(
@@ -374,10 +377,10 @@ fun ChangePassword(onChangePassword: () -> Unit) {
 
 @Composable
 fun TwoFaceAuthView(
-    mutableState: MutableState<Boolean>,
+    enabled: Boolean,
     onCheckChange: (Boolean) -> Unit
 ) {
-    Column() {
+    Column {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
                 "Two Factors Authentication",
@@ -389,7 +392,7 @@ fun TwoFaceAuthView(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Switch(
-                    checked = mutableState.value,
+                    checked = enabled,
                     onCheckedChange = onCheckChange,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,

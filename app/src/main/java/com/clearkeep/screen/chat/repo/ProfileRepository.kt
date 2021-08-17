@@ -132,4 +132,25 @@ class ProfileRepository @Inject constructor(
             printlnCK("getMfaSettingsFromAPI: $exception")
         }
     }
+
+    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Boolean = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
+            val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
+            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val response = if (enabled) {
+                stub.enableMfa(request)
+            } else {
+                stub.disableMfa(request)
+            }
+            if (response.success) {
+                userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, enabled)
+            }
+            printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
+            return@withContext response.success
+        } catch (exception: Exception) {
+            printlnCK("updateMfaSettings: $exception")
+            return@withContext false
+        }
+    }
 }
