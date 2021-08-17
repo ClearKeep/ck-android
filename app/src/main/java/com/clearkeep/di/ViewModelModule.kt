@@ -13,6 +13,7 @@ import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.notification_setting.NotificationSettingsViewModel
+import com.clearkeep.screen.chat.otp.OtpViewModel
 import com.clearkeep.screen.chat.settings.ServerSettingViewModel
 import com.clearkeep.screen.videojanus.CallViewModel
 import com.setel.di.factory.ViewModelFactory
@@ -90,6 +91,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(NotificationSettingsViewModel::class)
     abstract fun bindNotificationSettingsViewModel(notificationSettingsViewModel: NotificationSettingsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(OtpViewModel::class)
+    abstract fun bindOtpViewModel(otpViewModel: OtpViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
