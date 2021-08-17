@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.otp
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,9 +10,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -30,12 +33,17 @@ import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.base.ButtonType
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.network.Status
 
 @Composable
-fun EnterOtpScreen(onBackPress: () -> Unit, onClickSave: () -> Unit) {
+fun EnterOtpScreen(otpViewModel: OtpViewModel, onBackPress: () -> Unit, onClickSave: () -> Unit) {
+    val input = remember { mutableStateListOf("", "", "", "") }
+    val verifyOtpResponse = otpViewModel.verifyOtpResponse.observeAsState()
+
     Column(
         Modifier
             .fillMaxSize()
@@ -65,26 +73,43 @@ fun EnterOtpScreen(onBackPress: () -> Unit, onClickSave: () -> Unit) {
                 fontSize = 16.sp
             )
             Spacer(Modifier.height(16.dp))
-            OtpInput()
+            OtpInput(input)
             Spacer(Modifier.height(32.dp))
             Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp, fontWeight = FontWeight.W400)
-            Text("Resend code", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp)
+            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { otpViewModel.requestResendOtp() }, Color.White, 16.sp)
             Spacer(Modifier.height(24.dp))
             CKButton(
                 stringResource(R.string.save),
                 onClick = {
-
+                    otpViewModel.verifyOtp(input.joinToString(""))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 buttonType = ButtonType.White
             )
         }
+
+        when (verifyOtpResponse.value?.status) {
+            Status.ERROR -> {
+                CKAlertDialog(
+                    title = verifyOtpResponse.value!!.message ?: "",
+                    text = "Please check your details and try again",
+                    onDismissButtonClick = {
+                        otpViewModel.verifyOtpResponse.value = null
+                    }
+                )
+            }
+            Status.SUCCESS -> {
+                onClickSave()
+            }
+            else -> {
+
+            }
+        }
     }
 }
 
 @Composable
-fun OtpInput() {
-    val input = remember { mutableStateListOf("", "", "", "") }
+fun OtpInput(input: SnapshotStateList<String>) {
     val focusRequesters = remember { mutableStateListOf(FocusRequester(), FocusRequester(), FocusRequester(), FocusRequester()) }
     Row(
         Modifier
