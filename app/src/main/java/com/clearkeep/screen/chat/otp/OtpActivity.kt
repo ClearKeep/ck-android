@@ -45,7 +45,9 @@ class OtpActivity: AppCompatActivity(), LifecycleObserver {
                         )
                     }
                     composable("enter_otp") {
-                        EnterOtpScreen(onBackPress = {
+                        EnterOtpScreen(
+                        otpViewModel,
+                        onBackPress = {
                             finish()
                         }, onClickSave = {
                             finish()
