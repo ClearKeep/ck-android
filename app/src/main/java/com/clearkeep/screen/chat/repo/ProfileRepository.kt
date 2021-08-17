@@ -145,9 +145,6 @@ class ProfileRepository @Inject constructor(
             } else {
                 stub.disableMfa(request)
             }
-            if (response.success) {
-                userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, enabled)
-            }
             printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
             return@withContext response.success
         } catch (exception: Exception) {

@@ -136,7 +136,10 @@ class ProfileViewModel @Inject constructor(
                         profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
                     )
                     if (shouldUpdateMfaSetting) {
-                        profileRepository.updateMfaSettings(getOwner(), false)
+                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        if (response) {
+                            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, false)
+                        }
                     }
                 }
             }
@@ -149,7 +152,10 @@ class ProfileViewModel @Inject constructor(
                         profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber)
                     )
                     if (shouldUpdateMfaSetting) {
-                        profileRepository.updateMfaSettings(getOwner(), false)
+                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        if (response) {
+                            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, false)
+                        }
                     }
                 }
             }
