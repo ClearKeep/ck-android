@@ -153,7 +153,7 @@ fun ProfileScreen(
                                 profileViewModel.setEmail(it)
                             }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone) {
+                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone, placeholder = "Phone number") {
                                 profileViewModel.setPhoneNumber(it)
                             }
                             Spacer(Modifier.height(8.dp))
@@ -290,7 +290,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 
 @ExperimentalComposeUiApi
 @Composable
-fun ItemInformationView(header: String, textValue: String, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) {
+fun ItemInformationView(header: String, textValue: String, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text, placeholder: String = "", onValueChange: (String) -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -323,7 +323,17 @@ fun ItemInformationView(header: String, textValue: String, enable: Boolean = tru
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {keyboardController?.hide()}
-                )
+                ),
+                placeholder = {
+                    if (placeholder.isNotBlank()) {
+                        Text(
+                            placeholder, style = MaterialTheme.typography.body1.copy(
+                                color = MaterialTheme.colors.onSecondary,
+                                fontWeight = FontWeight.Normal
+                            )
+                        )
+                    }
+                }
             )
         }
     }
