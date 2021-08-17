@@ -36,6 +36,7 @@ import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 
 @ExperimentalComposeUiApi
 @Composable
@@ -67,6 +68,8 @@ fun ProfileScreen(
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
+
+        printlnCK("ProfileScreen userPreference ${userPreference.value?.mfa ?: "null"}")
 
         Column(
             Modifier
@@ -226,7 +229,7 @@ fun ProfileScreen(
                 }
             )
         }
-        if (updateMfaResponse.value == true && userPreference.value?.mfa == true) {
+        if (updateMfaResponse.value == true) {
             onNavigateToOtp()
             profileViewModel.updateMfaSettingResponse.value = null //Prevent response from being handled again
         }

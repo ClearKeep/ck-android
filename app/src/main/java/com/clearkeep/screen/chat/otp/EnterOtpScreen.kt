@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.otp
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -43,6 +44,10 @@ import com.clearkeep.utilities.network.Status
 fun EnterOtpScreen(otpViewModel: OtpViewModel, onBackPress: () -> Unit, onClickSave: () -> Unit) {
     val input = remember { mutableStateListOf("", "", "", "") }
     val verifyOtpResponse = otpViewModel.verifyOtpResponse.observeAsState()
+
+    BackHandler {
+        onBackPress.invoke()
+    }
 
     Column(
         Modifier
