@@ -133,12 +133,12 @@ fun SiteMenuScreen(
                     }
 
                     Row(modifier = Modifier
-                        .padding(top = 38.dp, bottom = 38.dp)
-                        .constrainAs(scrollContent) {
+                        .padding(top = 8.dp, bottom = 38.dp)
+                        .wrapContentSize()
+                        .constrainAs(leaveServerButton) {
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)
                             bottom.linkTo(parent.bottom)
-                            height = Dimension.fillToConstraints
                         }
                         .clickable { setShowReminderDialog(true) },
                         verticalAlignment = Alignment.CenterVertically,
