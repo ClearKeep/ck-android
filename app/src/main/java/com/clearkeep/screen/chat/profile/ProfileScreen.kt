@@ -382,45 +382,12 @@ fun TwoFaceAuthView(
     onCheckChange: (Boolean) -> Unit
 ) {
     Column {
-        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText(
-                "Two Factors Authentication",
-                modifier = Modifier.weight(0.66f)
-            )
-            Column(
-                modifier = Modifier.clickable { },
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Switch(
-                    checked = enabled,
-                    onCheckedChange = onCheckChange,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,
-                        uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
-                    ),
-                    modifier = Modifier
-                        .width(64.dp)
-                        .height(36.dp)
-                )
-            }
-        }
-
-        Text(
-            text = "Give your account more protection", style = MaterialTheme.typography.body1.copy(
-                color = grayscale2,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal
-            )
-        )
-
-        Text(
-            text = "scam and account hacking ", style = MaterialTheme.typography.body1.copy(
-                color = grayscale2,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Normal
-            )
+        CKSetting(
+            modifier = Modifier,
+            name = "Two Factors Authentication",
+            description = "Give your account more protection over scam and account hacking",
+            checked = enabled,
+            onCheckChange = onCheckChange
         )
     }
-
 }

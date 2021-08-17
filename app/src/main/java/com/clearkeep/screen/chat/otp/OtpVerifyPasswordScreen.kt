@@ -48,14 +48,14 @@ fun OtpVerifyPasswordScreen(
         val currentPassWord = remember { mutableStateOf("") }
 
         Spacer(Modifier.height(58.dp))
-        CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
-            title = "Enter your password", onBackPressed = {
+        CKTopAppBarSample(modifier = Modifier.padding(end = 8.dp),
+            title = stringResource(R.string.otp_verify_password_title), onBackPressed = {
                 onBackPress.invoke()
             })
         Spacer(Modifier.height(30.dp))
         Column(Modifier.padding(horizontal = 16.dp)) {
             Text(
-                text = "Please enter your password to enable OTP",
+                text = stringResource(R.string.otp_verify_password_description),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
                 fontSize = 16.sp

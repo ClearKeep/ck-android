@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.CKHeaderText
+import com.clearkeep.components.base.CKSetting
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
@@ -79,49 +80,5 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
         }
         Spacer(modifier = Modifier.size(16.dp))
         CKHeaderText("Notification", headerTextType = HeaderTextType.Medium)
-    }
-}
-
-@Composable
-private fun CKSetting(
-    modifier: Modifier,
-    name: String,
-    description: String = "",
-    checked: Boolean,
-    onCheckChange: (Boolean) -> Unit
-) {
-    Column(modifier) {
-        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText(
-                name,
-                modifier = Modifier.weight(0.66f)
-            )
-            Column(
-                modifier = Modifier.clickable { },
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Switch(
-                    checked = checked,
-                    onCheckedChange = onCheckChange,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = primaryDefault, checkedTrackColor = primaryDefault,
-                        uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
-                    ),
-                    modifier = Modifier
-                        .width(64.dp)
-                        .height(36.dp)
-                )
-            }
-        }
-        if (description.isNotBlank()) {
-            Text(
-                text = description, style = MaterialTheme.typography.body1.copy(
-                    color = grayscale2,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal
-                ), modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        }
     }
 }
