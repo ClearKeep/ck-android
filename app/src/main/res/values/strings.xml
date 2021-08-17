@@ -97,5 +97,7 @@
     <string name="albums">Albums</string>
     <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
     <string name="close">Close</string>
+    <string name="otp_verify_password_title">Enter Your Current Password</string>
+    <string name="otp_verify_password_description">Please enter your password to enable 2FA</string>
     <string name="profile_new_call_warning">You have a call that is currently in-progress. Please end it to start a new call.</string>
 </resources>

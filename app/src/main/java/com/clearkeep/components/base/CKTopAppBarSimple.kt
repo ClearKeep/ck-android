@@ -19,7 +19,7 @@ fun CKTopAppBarSample(
     type: TopAppBarSampleType = TopAppBarSampleType.White
     ) {
     Row(
-        modifier = modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+        modifier = modifier.then(Modifier.padding(vertical = 8.dp, horizontal = 6.dp)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackPressed) {
@@ -34,8 +34,7 @@ fun CKTopAppBarSample(
             Text(
                 text = title,
                 style = MaterialTheme.typography.h5.copy(
-                    color = if (type == TopAppBarSampleType.White) Color.White else Color.Black,
-                    textAlign = TextAlign.Center
+                    color = if (type == TopAppBarSampleType.White) Color.White else Color.Black
                 )
             )
         }
