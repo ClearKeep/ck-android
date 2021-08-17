@@ -7,6 +7,7 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.AppStorage
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
@@ -151,6 +152,22 @@ class ProfileRepository @Inject constructor(
         } catch (exception: Exception) {
             printlnCK("updateMfaSettings: $exception")
             return@withContext false
+        }
+    }
+
+    suspend fun mfaValidatePassword(owner: Owner, password: String) : Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
+            val request = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
+                .setPassword(password)
+                .build()
+            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val response = stub.mfaValidatePassword(request)
+            printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
+            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.toString(), null)
+        } catch (exception: Exception) {
+            printlnCK("mfaValidatePassword: $exception")
+            return@withContext Resource.error(exception.toString(), null)
         }
     }
 }
