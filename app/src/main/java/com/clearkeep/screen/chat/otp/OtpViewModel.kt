@@ -40,14 +40,14 @@ class OtpViewModel @Inject constructor(
 
     fun verifyOtp(otp: String) {
         if (otp.isBlank() || otp.length != 4) {
-            verifyOtpResponse.value = Resource.error("The OTP you’ve entered is incorrect. Please try again.", null)
+            verifyOtpResponse.value = Resource.error("The code you’ve entered is incorrect. Please try again", null)
             return
         }
 
         viewModelScope.launch {
             val response = profileRepository.mfaValidateOtp(getOwner(), otp)
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The OTP you’ve entered is incorrect. Please try again.", null)
+                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
             } else {
                 verifyOtpResponse.value = response
             }
@@ -58,7 +58,7 @@ class OtpViewModel @Inject constructor(
         viewModelScope.launch {
             val response = profileRepository.mfaResendOtp(getOwner())
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The OTP you’ve entered is incorrect. Please try again.", null)
+                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
             } else {
                 verifyOtpResponse.value = response
             }

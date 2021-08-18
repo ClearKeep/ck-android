@@ -31,6 +31,7 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
+import com.clearkeep.screen.chat.otp.EnterOtpScreen
 import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -106,7 +107,13 @@ class LoginActivity : AppCompatActivity() {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
                     ?: return@launch
                 if (res.status == Status.SUCCESS) {
-                    onLoginSuccess()
+                    val shouldRequireOtp = res.data?.accessToken.isNullOrBlank()
+                    if (shouldRequireOtp) {
+                        loginViewModel.setOtpLoginInfo(res.data?.otpHash ?: "", res.data?.sub ?: "")
+                        navController.navigate("otp_confirm")
+                    } else {
+                        onLoginSuccess()
+                    }
                 } else if (res.status == Status.ERROR) {
                     setShowDialog(ErrorMessage(title = "Error",message = res.message.toString()))
                 }
@@ -185,6 +192,15 @@ class LoginActivity : AppCompatActivity() {
                         loginViewModel.isCustomServer,
                         loginViewModel.customDomain
                     )
+                }
+                composable("otp_confirm") {
+                    EnterOtpScreen(
+                        otpResponse = loginViewModel.verifyOtpResponse,
+                        onDismissMessage = { loginViewModel.verifyOtpResponse.value = null },
+                        onClickResend = { /*TODO*/ },
+                        onClickSubmit = { loginViewModel.validateOtp(it) },
+                        onBackPress = { navController.popBackStack() }) {
+                    }
                 }
             }
         }
