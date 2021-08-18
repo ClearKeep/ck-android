@@ -26,10 +26,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
@@ -38,12 +37,13 @@ import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 
 @Composable
-fun EnterOtpScreen(otpViewModel: OtpViewModel, onBackPress: () -> Unit, onClickSave: () -> Unit) {
+fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMessage: () -> Unit, onClickResend: () -> Unit, onClickSubmit: (String) -> Unit, onBackPress: () -> Unit, onClickSave: () -> Unit) {
     val input = remember { mutableStateListOf("", "", "", "") }
-    val verifyOtpResponse = otpViewModel.verifyOtpResponse.observeAsState()
+    val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {
         onBackPress.invoke()
@@ -81,12 +81,12 @@ fun EnterOtpScreen(otpViewModel: OtpViewModel, onBackPress: () -> Unit, onClickS
             OtpInput(input)
             Spacer(Modifier.height(32.dp))
             Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp, fontWeight = FontWeight.W400)
-            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { otpViewModel.requestResendOtp() }, Color.White, 16.sp)
+            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sp)
             Spacer(Modifier.height(24.dp))
             CKButton(
                 stringResource(R.string.save),
                 onClick = {
-                    otpViewModel.verifyOtp(input.joinToString(""))
+                    onClickSubmit.invoke(input.joinToString(""))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 buttonType = ButtonType.White
@@ -96,10 +96,10 @@ fun EnterOtpScreen(otpViewModel: OtpViewModel, onBackPress: () -> Unit, onClickS
         when (verifyOtpResponse.value?.status) {
             Status.ERROR -> {
                 CKAlertDialog(
-                    title = verifyOtpResponse.value!!.message ?: "",
-                    text = "Please check your details and try again",
+                    title = stringResource(R.string.warning),
+                    text = verifyOtpResponse.value!!.message ?: "",
                     onDismissButtonClick = {
-                        otpViewModel.verifyOtpResponse.value = null
+                        onDismissMessage.invoke()
                     }
                 )
             }

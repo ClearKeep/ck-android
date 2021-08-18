@@ -73,31 +73,40 @@ class AuthRepository @Inject constructor(
                 printlnCK("login successfully")
                 val accessToken = response.accessToken
                 val hashKey = response.hashKey
+                val requireAction = response.requireAction
+                printlnCK("login requireAction $requireAction sub ${response.sub} otp hash ${response.otpHash} hash key $hashKey")
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
-                    ?: return@withContext Resource.error("Can not get profile", null)
-                val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.userId),
-                    paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-                )
-                if (!isRegisterKeySuccess) {
-                    return@withContext Resource.error("Can not register key", null)
-                }
-
-                serverRepository.insertServer(
-                    Server(
-                        serverName = response.workspaceName,
-                        serverDomain = domain,
-                        ownerClientId = profile.userId,
-                        serverAvatar = "",
-                        loginTime = getCurrentDateTime().time,
-                        accessKey = accessToken,
-                        hashKey = hashKey,
-                        refreshToken = response.refreshToken,
-                        profile = profile,
+                val requireOtp = accessToken.isNullOrBlank()
+                if (requireOtp) {
+                    return@withContext Resource.success(response)
+                } else {
+                    if (profile == null) {
+                        return@withContext Resource.error("Can not get profile", null)
+                    }
+                    val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
+                        Owner(domain, profile.userId),
+                        paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
                     )
-                )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
-                return@withContext Resource.success(response)
+                    if (!isRegisterKeySuccess) {
+                        return@withContext Resource.error("Can not register key", null)
+                    }
+
+                    serverRepository.insertServer(
+                        Server(
+                            serverName = response.workspaceName,
+                            serverDomain = domain,
+                            ownerClientId = profile.userId,
+                            serverAvatar = "",
+                            loginTime = getCurrentDateTime().time,
+                            accessKey = accessToken,
+                            hashKey = hashKey,
+                            refreshToken = response.refreshToken,
+                            profile = profile,
+                        )
+                    )
+                    userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+                    return@withContext Resource.success(response)
+                }
             } else {
                 printlnCK("login failed: ${response.baseResponse.errors.message}")
                 return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -107,6 +116,7 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
+
     suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
         printlnCK("loginByGoogle: token = $token, domain = $domain")
         try {
@@ -294,6 +304,50 @@ class AuthRepository @Inject constructor(
         } catch (e: Exception) {
             printlnCK("logoutFromAPI error: $e")
             return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun validateOtp(domain: String, otp: String, otpHash: String, userId: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
+        try {
+            val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
+                .setOtpCode(otp)
+                .setOtpHash(otpHash)
+                .setUserId(userId)
+                .build()
+            val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+            val response = stub.validateOtp(request)
+            val accessToken = response.accessToken
+            val hashKey = response.hashKey
+            printlnCK("validateOtp success? ${response.baseResponse.success} error? ${response.baseResponse.errors.message} code ${response.baseResponse.errors.code}")
+            printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
+            val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
+                ?: return@withContext Resource.error("Can not get profile", null)
+            val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
+                Owner(domain, profile.userId),
+                paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
+            )
+            if (!isRegisterKeySuccess) {
+                return@withContext Resource.error("Can not register key", null)
+            }
+
+            serverRepository.insertServer(
+                Server(
+                    serverName = response.workspaceName,
+                    serverDomain = domain,
+                    ownerClientId = profile.userId,
+                    serverAvatar = "",
+                    loginTime = getCurrentDateTime().time,
+                    accessKey = accessToken,
+                    hashKey = hashKey,
+                    refreshToken = response.refreshToken,
+                    profile = profile,
+                )
+            )
+            userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+            return@withContext Resource.success(response)
+        } catch (exception: Exception) {
+            printlnCK("mfaValidateOtp: $exception")
+            return@withContext Resource.error(exception.toString(), null)
         }
     }
 
