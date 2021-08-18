@@ -86,8 +86,16 @@ fun SiteMenuScreen(
                 shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
                 elevation = 8.dp
             ) {
-                Box {
-                    Column {
+                ConstraintLayout {
+                    val (scrollContent, leaveServerButton) = createRefs()
+                    Column(Modifier.constrainAs(scrollContent) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(leaveServerButton.top)
+                        width = Dimension.fillToConstraints
+                        height = Dimension.fillToConstraints
+                    }) {
                         Column(
                             Modifier
                                 .fillMaxSize()
@@ -125,8 +133,13 @@ fun SiteMenuScreen(
                     }
 
                     Row(modifier = Modifier
-                        .padding(top = 38.dp, bottom = 38.dp)
-                        .align(Alignment.BottomCenter)
+                        .padding(top = 8.dp, bottom = 38.dp)
+                        .wrapContentSize()
+                        .constrainAs(leaveServerButton) {
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(parent.bottom)
+                        }
                         .clickable { setShowReminderDialog(true) },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
