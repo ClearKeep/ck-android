@@ -154,6 +154,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val userPreference = userPreferenceRepository.getUserPreference(clientDomain, clientId)
             val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
             if (group != null) {
+                val avatar = peopleRepository.getFriendFromID(fromClientID)?.avatar
                 showMessagingStyleNotification(
                     context = applicationContext,
                     chatGroup = group,
@@ -162,7 +163,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         "", "",
                         showNotificationPreview = true,
                         doNotDisturb = false
-                    )
+                    ),
+                    avatar
                 )
             }
         } catch (e: Exception) {

@@ -39,7 +39,7 @@ class GroupRepository @Inject constructor(
     suspend fun fetchGroups() = withContext(Dispatchers.IO) {
         printlnCK("fetchGroups")
         val server = serverRepository.getServers()
-        server?.forEach { server ->
+        server.forEach { server ->
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             try {

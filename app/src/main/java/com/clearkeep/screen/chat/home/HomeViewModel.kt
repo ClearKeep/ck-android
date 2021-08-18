@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
 
     get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
-    val listUserStatus: LiveData<List<User>>
+    val listUserInfo: LiveData<List<User>>
         get() = _listUserStatus
 
     init {
@@ -107,6 +107,7 @@ class HomeViewModel @Inject constructor(
 
     val directGroups = liveData<List<ChatGroup>> {
         val result = MediatorLiveData<List<ChatGroup>>()
+
         result.addSource(groups) { groupList ->
             val server = environment.getServer()
             result.value = groupList.filter {
@@ -117,6 +118,7 @@ class HomeViewModel @Inject constructor(
         }
         result.addSource(selectingJoinServer) { _ ->
             val server = environment.getServer()
+            getStatusUserInDirectGroup()
             result.value = groups.value?.filter {
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
@@ -140,7 +142,15 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-                _listUserStatus.postValue(peopleRepository.getListClientStatus(listUserRequest))
+                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+                _listUserStatus.postValue(listClientStatus)
+                listClientStatus?.forEach {
+                    currentServer.value?.serverDomain?.let { it1 ->
+                        currentServer.value?.ownerClientId?.let { it2 ->
+                            Owner(it1, it2)
+                        }
+                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
+                }
             }
         }
     }

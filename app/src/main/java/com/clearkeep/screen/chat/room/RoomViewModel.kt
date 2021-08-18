@@ -152,13 +152,16 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             group.asFlow().collect {
                 val listClient = group.value?.clientList
-                _listUserStatus.postValue(listClient?.let { listClient ->
-                    peopleRepository.getListClientStatus(listClient)
-                })
+                val listClientStatus = listClient?.let { it1 ->
+                    peopleRepository.getListClientStatus(it1)
+                }
+                _listUserStatus.postValue(listClientStatus)
+                listClientStatus?.forEach {
+                    peopleRepository.updateAvatarUserEntity(it, getOwner())
+                }
             }
         }
     }
-
 
     fun initNotes(
         ownerDomain: String,

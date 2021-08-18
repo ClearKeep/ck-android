@@ -42,7 +42,13 @@ fun NewFriendListItem(
     statusIcon: @Composable (BoxScope.() -> Unit) = { StatusIndicator(colorSuccessDefault) }
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarStatus(null, user.userName, size = 64.dp,user.userStatus?:UserStatus.ONLINE.value,16.dp)
+        CircleAvatarStatus(
+            user.avatar,
+            user.userName,
+            size = 64.dp,
+            user.userStatus ?: UserStatus.ONLINE.value,
+            16.dp
+        )
         Column(
             Modifier
                 .padding(start = 16.dp)
@@ -64,5 +70,5 @@ fun NewFriendListItem(
 
 @Composable
 fun StatusText(user: User) {
-    Text("Online", color = colorSuccessDefault)
+    //Text("Online", color = colorSuccessDefault)
 }

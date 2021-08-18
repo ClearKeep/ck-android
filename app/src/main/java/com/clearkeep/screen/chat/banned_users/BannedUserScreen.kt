@@ -43,9 +43,9 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn {
             item {
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User( "", "Alex Mendes", ""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Alissa Baker", ""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Barbara Johnson", ""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User( "", "Alex Mendes", "","","","","",""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Alissa Baker", "","","","","",""), {})
+                BannedUserItem(Modifier.padding(vertical = 8.dp), User("", "Barbara Johnson", "","","","","",""), {})
             }
         }
     }

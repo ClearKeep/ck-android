@@ -225,14 +225,17 @@ fun ItemListDirectMessage(
         }
         val roomName = partnerUser?.userName ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
-             client.userId==partnerUser?.userId
+            client.userId == partnerUser?.userId
         }?.userStatus ?: ""
+        val avatar = listUserStatus?.firstOrNull { client ->
+            client.userId == partnerUser?.userId
+        }?.avatar ?: ""
 
         Row(
             modifier = Modifier.padding(top = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircleAvatarStatus(url = "", name = roomName, status = userStatus)
+            CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
             Text(
                 text = roomName, modifier = Modifier
                     .fillMaxWidth()
@@ -410,8 +413,8 @@ fun DirectMessagesView(
                 )
 
             ) {
+                val listUserStatus=viewModel.listUserInfo.observeAsState()
                 chatGroup.value?.let { item ->
-                    val listUserStatus=viewModel.listUserStatus.observeAsState()
                     Column {
                         item.forEach { chatGroup ->
                             ItemListDirectMessage(

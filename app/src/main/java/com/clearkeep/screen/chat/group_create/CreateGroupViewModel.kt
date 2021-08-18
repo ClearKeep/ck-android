@@ -34,7 +34,9 @@ class CreateGroupViewModel @Inject constructor(
                         // clone invited list and add me to list
                         val list = mutableListOf<User>()
                         list.addAll(invitedFriends)
-                        list.add(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain))
+                        list.add(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain,
+                                server.profile.userName,
+                                phoneNumber = server.profile.phoneNumber,avatar = server.profile.avatar,email = server.profile.email))
                         val res = groupRepository.createGroupFromAPI(server.profile.userId, groupName, list, true)
                         if (res != null) {
                                 groupId = res.groupId
