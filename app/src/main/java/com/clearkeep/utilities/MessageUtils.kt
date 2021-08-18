@@ -47,10 +47,10 @@ fun getMessageContent(content: String): String {
 }
 
 val remoteImageRegex =
-    "(https://s3.amazonaws.com/storage.clearkeep.io/[dev|prod].+[a-zA-Z0-9\\/\\_\\-\\.]+(\\.png|\\.jpeg|\\.jpg|\\.gif|\\.PNG|\\.JPEG|\\.JPG|\\.GIF))".toRegex()
+    "(https://s3.amazonaws.com/storage.clearkeep.io/[a-zA-Z0-9\\/\\_\\-\\.]+(\\.png|\\.jpeg|\\.jpg|\\.gif|\\.PNG|\\.JPEG|\\.JPG|\\.GIF))".toRegex()
 
 val remoteFileRegex =
-    "(https://s3.amazonaws.com/storage.clearkeep.io/[dev|prod].+)".toRegex()
+    "(https://s3.amazonaws.com/storage.clearkeep.io/.+)".toRegex()
 
 val tempImageRegex =
     "content://media/external/images/media/\\d+".toRegex()
