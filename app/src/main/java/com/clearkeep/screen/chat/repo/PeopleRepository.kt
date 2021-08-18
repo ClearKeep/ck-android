@@ -35,6 +35,13 @@ class PeopleRepository @Inject constructor(
         return@withContext if (ret != null) convertEntityToUser(ret) else null
     }
 
+    suspend fun getFriendFromID(friendClientId: String) : User? = withContext(Dispatchers.IO) {
+        val ret = peopleDao.getFriendFromUserId(friendClientId)
+        printlnCK("getFriendFromID: ${ret?.avatar}  id: $friendClientId")
+        return@withContext if (ret != null) convertEntityToUser(ret) else null
+    }
+
+
     suspend fun searchUser(userName: String) : List<User>  = withContext(Dispatchers.IO) {
         printlnCK("searchUser: $userName")
         try {
@@ -67,6 +74,15 @@ class PeopleRepository @Inject constructor(
         }
     }
 
+    suspend fun updateAvatarUserEntity(user: User, owner: Owner): UserEntity? {
+        val userEntity = peopleDao.getFriend(user.userId, user.domain, owner.domain, owner.clientId)
+        if (userEntity != null) {
+            userEntity.avatar = user.avatar
+            peopleDao.insert(userEntity)
+        }
+        return userEntity
+    }
+
     suspend fun deleteFriend(clientId: String) {
         try {
             val result = peopleDao.deleteFriend(clientId)
@@ -89,10 +105,15 @@ class PeopleRepository @Inject constructor(
                     userName = friend.userName,
                     domain = friend.domain,
                     ownerDomain = owner.domain,
-                    ownerClientId = owner.clientId
+                    ownerClientId = owner.clientId,
+                    phoneNumber = friend.phoneNumber,
+                    email =  friend.email,
+                    avatar = friend.avatar
+
                 )
             )
         }
+
     }
 
     private suspend fun getFriendsFromAPI() : List<UserEntity>  = withContext(Dispatchers.IO) {
@@ -120,7 +141,8 @@ class PeopleRepository @Inject constructor(
             userName = userInfoResponse.displayName,
             domain = userInfoResponse.workspaceDomain,
             ownerDomain = owner.domain,
-            ownerClientId = owner.clientId
+            ownerClientId = owner.clientId,
+            avatar = oldUser?.avatar
         )
     }
 
@@ -128,7 +150,8 @@ class PeopleRepository @Inject constructor(
         return User(
             userId = userEntity.userId,
             userName = userEntity.userName,
-            domain = userEntity.domain
+            domain = userEntity.domain,
+            avatar = userEntity.avatar
         )
     }
 
@@ -136,7 +159,6 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.PingRequest.newBuilder().build()
             val response = dynamicAPIProvider.provideUserBlockingStub().pingRequest(request)
-            printlnCK("pingRequest ${response.success}")
             return@withContext response.success
         } catch (e: Exception) {
             printlnCK("sendPing: $e")
@@ -158,16 +180,20 @@ class PeopleRepository @Inject constructor(
 
      suspend fun getListClientStatus(list: List<User>):List<User>? = withContext(Dispatchers.IO){
         try {
+            printlnCK("getListClientStatus")
+
             val listMemberInfoRequest= list.map {
                 UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId).setWorkspaceDomain(it.domain).build()
             }
-            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).build()
+            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).setShouldGetProfile(true)
+                .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().getClientsStatus(request)
-            list.map { user->
-                user.userStatus= response.lstClientList.find {
-                    user.userId ==it.clientId
-                }?.status
-                printlnCK("getListClientStatus: ${user.userId}  ${user.userStatus} ")
+            list.map { user ->
+                val newUser = response.lstClientList.find {
+                    user.userId == it.clientId
+                }
+                user.userStatus = newUser?.status
+                user.avatar = newUser?.avatar
             }
             return@withContext list
         } catch (e: Exception) {

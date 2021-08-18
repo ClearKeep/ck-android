@@ -36,17 +36,19 @@ fun showMessagingStyleNotification(
     context: Context,
     chatGroup: ChatGroup,
     message: Message,
-    preference: UserPreference
+    preference: UserPreference,
+    avatar: String? = ""
 ) {
     val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", domain = "")
-    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference)
+    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference,avatar)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
     sender: User,
     message: Message,
-    preference: UserPreference
+    preference: UserPreference,
+    avatar: String? = ""
 ) {
     if (!preference.doNotDisturb) {
         val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
@@ -146,7 +148,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             Glide.with(context.applicationContext)
                 .asBitmap()
                 .circleCrop()
-                .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
+                .load(avatar)
                 .into(target)
         }
 

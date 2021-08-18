@@ -212,11 +212,16 @@ class ChatService : Service(),
                         true,
                         false
                     )
+                    val senderUser = peopleRepository.getFriendFromID(
+                        message.senderId
+                    )
+                    val avatar = senderUser?.avatar
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
                         message,
-                        userPreference
+                        userPreference,
+                        avatar
                     )
                 }
             }

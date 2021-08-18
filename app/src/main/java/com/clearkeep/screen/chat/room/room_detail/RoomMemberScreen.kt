@@ -47,9 +47,11 @@ fun GroupMemberScreen(
                     ),
                 ) {
                     itemsIndexed(group.clientList.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
-                        friend.userStatus = listUserStatusState.value?.find {
+                        val newUser = listUserStatusState.value?.find {
                             it.userId == friend.userId
-                        }?.userStatus
+                        }
+                        friend.userStatus = newUser?.userStatus
+                        friend.avatar = newUser?.avatar
                         NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }
