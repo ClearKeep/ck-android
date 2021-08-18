@@ -12,7 +12,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.screen.chat.profile.ProfileViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -46,7 +45,10 @@ class OtpActivity: AppCompatActivity(), LifecycleObserver {
                     }
                     composable("enter_otp") {
                         EnterOtpScreen(
-                        otpViewModel,
+                            otpViewModel.verifyOtpResponse,
+                            onDismissMessage = { otpViewModel.verifyOtpResponse.value = null },
+                            onClickResend = { otpViewModel.requestResendOtp() },
+                            onClickSubmit = { otpViewModel.verifyOtp(it) },
                         onBackPress = {
                             finish()
                         }, onClickSave = {

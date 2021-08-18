@@ -9,6 +9,7 @@ import com.clearkeep.utilities.BASE_URL
 import com.clearkeep.utilities.PORT
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.facebook.AccessToken
 import com.facebook.login.LoginManager
@@ -19,9 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
 import com.facebook.GraphRequest
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 
@@ -55,6 +54,16 @@ class LoginViewModel @Inject constructor(
     val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
 
     val urlCustomServer= MutableLiveData<String>()
+
+    val verifyOtpResponse = MutableLiveData<Resource<String>>()
+
+    private var otpHash: String = ""
+    private var userId: String = ""
+
+    fun setOtpLoginInfo(otpHash: String, userId: String) {
+        this.otpHash = otpHash
+        this.userId = userId
+    }
 
     fun initGoogleSingIn(context: Context){
         googleSignIn= GoogleSignInOptions
@@ -151,6 +160,22 @@ class LoginViewModel @Inject constructor(
         }
         _isLoading.value = false
         return result
+    }
+
+    fun validateOtp(otp: String) {
+        if (otp.isBlank() || otp.length != 4) {
+            verifyOtpResponse.value = Resource.error("The code you’ve entered is incorrect. Please try again", null)
+            return
+        }
+
+        viewModelScope.launch {
+            val response = authRepo.validateOtp(getDomain(), otp, otpHash, userId)
+            if (response.status == Status.ERROR) {
+                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+            } else {
+                verifyOtpResponse.value = Resource.success(null)
+            }
+        }
     }
 
     fun getDomain(): String {
