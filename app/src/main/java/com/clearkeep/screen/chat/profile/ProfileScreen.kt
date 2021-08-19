@@ -8,11 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -37,7 +34,10 @@ import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+@ExperimentalMaterialApi
 @ExperimentalComposeUiApi
 @Composable
 fun ProfileScreen(
@@ -52,6 +52,7 @@ fun ProfileScreen(
     val env = BuildConfig.FLAVOR
     val profile = profileViewModel.profile.observeAsState()
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     BackHandler {
         onCloseView()
@@ -64,161 +65,190 @@ fun ProfileScreen(
         val countryCode = profileViewModel.countryCode.observeAsState()
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
         val pickAvatarDialogVisible = remember { mutableStateOf(false) }
-        val unsavedChangesDialogVisible = profileViewModel.unsavedChangeDialogVisible.observeAsState()
+        val unsavedChangesDialogVisible =
+            profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
+        val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+        val coroutineScope = rememberCoroutineScope()
 
         printlnCK("ProfileScreen userPreference ${userPreference.value?.mfa ?: "null"}")
 
-        Column(
-            Modifier
-                .fillMaxSize()
+        ModalBottomSheetLayout(
+            sheetContent = {
+                PhoneCountryCodeBottomSheetDialog {
+                    coroutineScope.launch {
+                        profileViewModel.setCountryCode(it)
+                        bottomSheetState.hide()
+                    }
+                }
+            },
+            sheetState = bottomSheetState,
+            sheetBackgroundColor = bottomSheetColor,
+            scrimColor = colorDialogScrim
         ) {
-            Box(
-                modifier = Modifier
+            Column(
+                Modifier
                     .fillMaxSize()
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally
-
                 ) {
-                    profile?.value?.let { user ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            HeaderProfile(
-                                onClickSave = {
-                                    profileViewModel.updateProfileDetail(
-                                        context,
-                                        userName.value ?: "",
-                                        phoneNumber.value ?: "",
-                                        countryCode.value ?: ""
-                                    )
-                                },
-                                onCloseView = {
-                                    onCloseView()
-                                }
-                            )
-                            Row(
-                                Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircleAvatar(
-                                    when {
-                                        selectedAvatar.value != null -> {
-                                            listOf(selectedAvatar.value!!)
-                                        }
-                                        user.avatar != null -> {
-                                            listOf(user.avatar)
-                                        }
-                                        else -> {
-                                            emptyList()
-                                        }
-                                    },
-                                    user.userName ?: "",
-                                    size = 72.dp,
-                                    modifier = Modifier.clickable {
-                                        pickAvatarDialogVisible.value = true
-                                    },
-                                    cacheKey = user.updatedAt.toString()
-                                )
-                                Column(
-                                    Modifier.padding(start = 16.dp),
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    SideBarLabel(
-                                        text = "Change profile picture",
-                                        color = primaryDefault,
-                                        fontSize = 14.sp,
-                                    )
-                                    SideBarLabel(
-                                        text = " Maximum fize size 5MB",
-                                        color = grayscale3,
-                                        modifier = Modifier,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(20.dp))
-                            ItemInformationView("Username") {
-                                ItemInformationInput(textValue = userName.value ?: "") {
-                                    profileViewModel.setUsername(it)
-                                }
-                            }
-                            Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Email") {
-                                ItemInformationInput(
-                                    textValue = email.value ?: "",
-                                    enable = false
-                                ) {
-                                    profileViewModel.setEmail(it)
-                                }
-                            }
-                            Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number") {
-                                ItemInformationInput(
-                                    Modifier
-                                        .weight(1.3f)
-                                        .fillMaxSize(),
-                                    textValue = countryCode.value ?: "",
-                                    keyboardType = KeyboardType.Number,
-                                    prefix = "+"
-                                ) {
-                                    profileViewModel.setCountryCode(it)
-                                }
-                                Spacer(Modifier.width(8.dp))
-                                ItemInformationInput(
-                                    Modifier
-                                        .weight(3f)
-                                        .fillMaxSize(),
-                                    textValue = phoneNumber.value ?: "",
-                                    keyboardType = KeyboardType.Number,
-                                    placeholder = "Phone number"
-                                ) {
-                                    profileViewModel.setPhoneNumber(it)
-                                }
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            CopyLink(
-                                onCopied = {
-                                    onCopyToClipBoard()
-                                }
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            ChangePassword(onChangePassword)
-                            Spacer(Modifier.height(24.dp))
-                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
-                                if (it) {
-                                    if (profileViewModel.canEnableMfa()) {
-                                        profileViewModel.updateMfaSettings(it)
-                                    } else {
-                                        otpErrorDialogVisible.value = true
-                                    }
-                                } else {
-                                    profileViewModel.updateMfaSettings(it)
-                                }
-                            }
-                            Spacer(Modifier.height(24.dp))
-
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        profile?.value?.let { user ->
                             Column(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(end = 8.dp, bottom = 20.dp),
-                                verticalArrangement = Arrangement.Bottom,
-                                horizontalAlignment = Alignment.End
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    "version $versionName (${env.toUpperCase()})",
-                                    style = MaterialTheme.typography.caption.copy(
-                                    )
+                                HeaderProfile(
+                                    onClickSave = {
+                                        profileViewModel.updateProfileDetail(
+                                            context,
+                                            userName.value ?: "",
+                                            phoneNumber.value ?: "",
+                                            countryCode.value ?: ""
+                                        )
+                                    },
+                                    onCloseView = {
+                                        onCloseView()
+                                    }
                                 )
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircleAvatar(
+                                        when {
+                                            selectedAvatar.value != null -> {
+                                                listOf(selectedAvatar.value!!)
+                                            }
+                                            user.avatar != null -> {
+                                                listOf(user.avatar)
+                                            }
+                                            else -> {
+                                                emptyList()
+                                            }
+                                        },
+                                        user.userName ?: "",
+                                        size = 72.dp,
+                                        modifier = Modifier.clickable {
+                                            pickAvatarDialogVisible.value = true
+                                        },
+                                        cacheKey = user.updatedAt.toString()
+                                    )
+                                    Column(
+                                        Modifier.padding(start = 16.dp),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        SideBarLabel(
+                                            text = "Change profile picture",
+                                            color = primaryDefault,
+                                            fontSize = 14.sp,
+                                        )
+                                        SideBarLabel(
+                                            text = " Maximum fize size 5MB",
+                                            color = grayscale3,
+                                            modifier = Modifier,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(20.dp))
+                                ItemInformationView("Username") {
+                                    ItemInformationInput(textValue = userName.value ?: "") {
+                                        profileViewModel.setUsername(it)
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                                ItemInformationView("Email") {
+                                    ItemInformationInput(
+                                        textValue = email.value ?: "",
+                                        enable = false
+                                    ) {
+                                        profileViewModel.setEmail(it)
+                                    }
+                                }
+                                Spacer(Modifier.height(16.dp))
+                                ItemInformationView("Phone Number") {
+                                    Box(
+                                        Modifier
+                                            .weight(1.3f)
+                                            .height(60.dp)
+                                            .fillMaxWidth()
+                                            .background(grayscale5, MaterialTheme.shapes.large)
+                                            .clickable {
+                                                keyboardController?.hide()
+                                                coroutineScope.launch {
+                                                    delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                                                    bottomSheetState.show()
+                                                }
+                                            }) {
+                                            Text("+${countryCode.value}",
+                                                Modifier
+                                                    .padding(start = 12.dp)
+                                                    .align(Alignment.CenterStart)
+                                                    .fillMaxWidth(), style = MaterialTheme.typography.body1.copy(
+                                                color = grayscaleBlack,
+                                                fontWeight = FontWeight.Normal
+                                            ))
+                                        Image(painterResource(R.drawable.ic_chev_down), null, Modifier.align(Alignment.CenterEnd).padding(end = 11.dp))
+                                    }
+                                    Spacer(Modifier.width(8.dp))
+                                    ItemInformationInput(
+                                        Modifier
+                                            .weight(3f)
+                                            .fillMaxSize(),
+                                        textValue = phoneNumber.value ?: "",
+                                        keyboardType = KeyboardType.Number,
+                                        placeholder = "Phone number"
+                                    ) {
+                                        profileViewModel.setPhoneNumber(it)
+                                    }
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                CopyLink(
+                                    onCopied = {
+                                        onCopyToClipBoard()
+                                    }
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                ChangePassword(onChangePassword)
+                                Spacer(Modifier.height(24.dp))
+                                TwoFaceAuthView(userPreference.value?.mfa ?: false) {
+                                    if (it) {
+                                        if (profileViewModel.canEnableMfa()) {
+                                            profileViewModel.updateMfaSettings(it)
+                                        } else {
+                                            otpErrorDialogVisible.value = true
+                                        }
+                                    } else {
+                                        profileViewModel.updateMfaSettings(it)
+                                    }
+                                }
+                                Spacer(Modifier.height(24.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(end = 8.dp, bottom = 20.dp),
+                                    verticalArrangement = Arrangement.Bottom,
+                                    horizontalAlignment = Alignment.End
+                                ) {
+                                    Text(
+                                        "version $versionName (${env.toUpperCase()})",
+                                        style = MaterialTheme.typography.caption.copy(
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -463,7 +493,7 @@ class PrefixTransformation(val prefix: String) : VisualTransformation {
             }
 
             override fun transformedToOriginal(offset: Int): Int {
-                if (offset <= prefixOffset-1) return prefixOffset
+                if (offset <= prefixOffset - 1) return prefixOffset
                 return offset - prefixOffset
             }
         }
@@ -471,3 +501,5 @@ class PrefixTransformation(val prefix: String) : VisualTransformation {
         return TransformedText(AnnotatedString(out), numberOffsetTranslator)
     }
 }
+
+private const val KEYBOARD_HIDE_DELAY_MILLIS = 500L

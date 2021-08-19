@@ -47,6 +47,7 @@ class ProfileViewModel @Inject constructor(
             _countryCode.postValue(countryCode.toString())
             _phoneNumber.postValue(phoneNum)
         } catch(e: Exception) {
+            printlnCK("Profile phone number parse failed $e")
             _phoneNumber.postValue(it.phoneNumber)
         }
         it
@@ -141,13 +142,11 @@ class ProfileViewModel @Inject constructor(
         if (!isValidUsername(displayName)) {
             uploadAvatarResponse.value =
                 Resource.error("You can’t leave Username blank", null)
-            undoProfileChanges()
             return
         }
 
         if (_countryCode.value.isNullOrEmpty()) {
             uploadAvatarResponse.value = Resource.error("Invalid country code", null)
-            undoProfileChanges()
             return
         }
 
@@ -155,7 +154,6 @@ class ProfileViewModel @Inject constructor(
             val numberProto = phoneUtil.parse("+${countryCode}${phoneNumber}", null)
             if (!phoneUtil.isValidNumber(numberProto)) {
                 uploadAvatarResponse.value = Resource.error("Invalid phone number", null)
-                undoProfileChanges()
                 return
             }
         } catch (e: Exception) {
@@ -179,7 +177,6 @@ class ProfileViewModel @Inject constructor(
                 uploadAvatarResponse.value =
                     Resource.error(errorMessage, null)
             }
-            undoProfileChanges()
             return
         }
 
@@ -189,7 +186,7 @@ class ProfileViewModel @Inject constructor(
                 printlnCK("uploadAvatar exceed file size limit")
                 uploadAvatarResponse.value =
                     Resource.error("Failed to upload avatar - File is larger than 5 MB", null)
-                undoProfileChanges()
+                undoAvatarChange()
                 return
             }
 
@@ -230,16 +227,25 @@ class ProfileViewModel @Inject constructor(
     fun hasUnsavedChanges() : Boolean {
         val usernameChanged = _username.value != profile.value?.userName
         val emailChanged = _email.value != profile.value?.email
-        val phoneNumberChanged = _phoneNumber.value != profile.value?.phoneNumber
+        val phoneNumberChanged = "+${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
 
         val hasUnsavedChange = usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
         unsavedChangeDialogVisible.value = hasUnsavedChange
         return hasUnsavedChange
     }
 
+    private fun undoAvatarChange() {
+        _imageUriSelected.value = null
+        isAvatarChanged = false
+    }
+
     fun undoProfileChanges() {
         val oldProfile = profile.value
-        _phoneNumber.value = oldProfile?.phoneNumber
+        val numberProto: PhoneNumber = phoneUtil.parse(oldProfile?.phoneNumber, "")
+        val countryCode = numberProto.countryCode
+        val phoneNum = oldProfile?.phoneNumber?.replace("+$countryCode", "")
+        _countryCode.postValue(countryCode.toString())
+        _phoneNumber.value = phoneNum
         _email.value = oldProfile?.email
         _username.value = oldProfile?.userName
         _imageUriSelected.value = null
