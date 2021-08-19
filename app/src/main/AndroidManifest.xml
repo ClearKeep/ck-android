@@ -97,6 +97,7 @@
         <activity
             android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"/>
 
         <activity
