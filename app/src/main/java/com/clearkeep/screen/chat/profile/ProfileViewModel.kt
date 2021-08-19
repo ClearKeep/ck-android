@@ -10,7 +10,6 @@ import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
-import com.clearkeep.utilities.isValidCountryCode
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.i18n.phonenumbers.CountryCodeToRegionCodeMap
@@ -146,7 +145,7 @@ class ProfileViewModel @Inject constructor(
             return
         }
 
-        if (!isValidCountryCode(_countryCode.value ?: "")) {
+        if (_countryCode.value.isNullOrEmpty()) {
             uploadAvatarResponse.value = Resource.error("Invalid country code", null)
             undoProfileChanges()
             return
