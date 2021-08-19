@@ -21,9 +21,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -61,6 +61,7 @@ fun ProfileScreen(
         val userName = profileViewModel.username.observeAsState()
         val email = profileViewModel.email.observeAsState()
         val phoneNumber = profileViewModel.phoneNumber.observeAsState()
+        val countryCode = profileViewModel.countryCode.observeAsState()
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
         val pickAvatarDialogVisible = remember { mutableStateOf(false) }
         val unsavedChangesDialogVisible = profileViewModel.unsavedChangeDialogVisible.observeAsState()
@@ -97,7 +98,8 @@ fun ProfileScreen(
                                     profileViewModel.updateProfileDetail(
                                         context,
                                         userName.value ?: "",
-                                        phoneNumber.value ?: ""
+                                        phoneNumber.value ?: "",
+                                        countryCode.value ?: ""
                                     )
                                 },
                                 onCloseView = {
@@ -145,16 +147,43 @@ fun ProfileScreen(
                                 }
                             }
                             Spacer(Modifier.height(20.dp))
-                            ItemInformationView("Username", userName.value ?: "") {
-                                profileViewModel.setUsername(it)
+                            ItemInformationView("Username") {
+                                ItemInformationInput(textValue = userName.value ?: "") {
+                                    profileViewModel.setUsername(it)
+                                }
                             }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Email", email.value ?: "", enable = false) {
-                                profileViewModel.setEmail(it)
+                            ItemInformationView("Email") {
+                                ItemInformationInput(
+                                    textValue = email.value ?: "",
+                                    enable = false
+                                ) {
+                                    profileViewModel.setEmail(it)
+                                }
                             }
                             Spacer(Modifier.height(16.dp))
-                            ItemInformationView("Phone Number", phoneNumber.value ?: "", keyboardType = KeyboardType.Phone, placeholder = "Phone number") {
-                                profileViewModel.setPhoneNumber(it)
+                            ItemInformationView("Phone Number") {
+                                ItemInformationInput(
+                                    Modifier
+                                        .weight(1.3f)
+                                        .fillMaxSize(),
+                                    textValue = countryCode.value ?: "",
+                                    keyboardType = KeyboardType.Number,
+                                    prefix = "+"
+                                ) {
+                                    profileViewModel.setCountryCode(it)
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                ItemInformationInput(
+                                    Modifier
+                                        .weight(3f)
+                                        .fillMaxSize(),
+                                    textValue = phoneNumber.value ?: "",
+                                    keyboardType = KeyboardType.Number,
+                                    placeholder = "Phone number"
+                                ) {
+                                    profileViewModel.setPhoneNumber(it)
+                                }
                             }
                             Spacer(Modifier.height(8.dp))
                             CopyLink(
@@ -290,8 +319,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 
 @ExperimentalComposeUiApi
 @Composable
-fun ItemInformationView(header: String, textValue: String, enable: Boolean = true, keyboardType: KeyboardType = KeyboardType.Text, placeholder: String = "", onValueChange: (String) -> Unit) {
-    val keyboardController = LocalSoftwareKeyboardController.current
+fun ItemInformationView(header: String, content: @Composable RowScope.() -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -300,42 +328,61 @@ fun ItemInformationView(header: String, textValue: String, enable: Boolean = tru
                 fontWeight = FontWeight.Normal
             )
         )
-        Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, grayscale5)) {
-            TextField(
-                value = textValue,
-                onValueChange = onValueChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .width(55.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    textColor = if (enable) grayscaleBlack else grayscale3,
-                    cursorColor = if (enable) grayscaleBlack else grayscale3,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = grayscale5
-                ),
-                textStyle = MaterialTheme.typography.body1.copy(
-                    color = if (enable) grayscaleBlack else grayscale3,
-                    fontWeight = FontWeight.Normal
-                ),
-                enabled = enable,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {keyboardController?.hide()}
-                ),
-                placeholder = {
-                    if (placeholder.isNotBlank()) {
-                        Text(
-                            placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = MaterialTheme.colors.onSecondary,
-                                fontWeight = FontWeight.Normal
-                            )
-                        )
-                    }
-                }
-            )
+        Row(Modifier.background(grayscaleOffWhite)) {
+            content()
         }
+    }
+}
+
+@ExperimentalComposeUiApi
+@Composable
+private fun ItemInformationInput(
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    textValue: String,
+    enable: Boolean = true,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    placeholder: String = "",
+    prefix: String = "",
+    onValueChange: (String) -> Unit
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, grayscale5), modifier = modifier) {
+        TextField(
+            value = textValue,
+            onValueChange = onValueChange,
+            colors = TextFieldDefaults.textFieldColors(
+                textColor = if (enable) grayscaleBlack else grayscale3,
+                cursorColor = if (enable) grayscaleBlack else grayscale3,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                backgroundColor = grayscale5
+            ),
+            textStyle = MaterialTheme.typography.body1.copy(
+                color = if (enable) grayscaleBlack else grayscale3,
+                fontWeight = FontWeight.Normal
+            ),
+            enabled = enable,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { keyboardController?.hide() }
+            ),
+            visualTransformation = if (prefix.isNotBlank()) PrefixTransformation(prefix) else VisualTransformation.None,
+            placeholder = {
+                if (placeholder.isNotBlank()) {
+                    Text(
+                        placeholder, style = MaterialTheme.typography.body1.copy(
+                            color = MaterialTheme.colors.onSecondary,
+                            fontWeight = FontWeight.Normal
+                        )
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -402,5 +449,25 @@ fun TwoFaceAuthView(
             checked = enabled,
             onCheckChange = onCheckChange
         )
+    }
+}
+
+class PrefixTransformation(val prefix: String) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val out = prefix + text.text
+        val prefixOffset = prefix.length
+
+        val numberOffsetTranslator = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                return offset + prefixOffset
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                if (offset <= prefixOffset-1) return prefixOffset
+                return offset - prefixOffset
+            }
+        }
+
+        return TransformedText(AnnotatedString(out), numberOffsetTranslator)
     }
 }
