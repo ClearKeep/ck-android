@@ -15,6 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -35,6 +36,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    @ExperimentalMaterialApi
     @ExperimentalComposeUiApi
     @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +64,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
+    @ExperimentalMaterialApi
     @ExperimentalComposeUiApi
     @Composable
     private fun MainComposable(navController: NavController) {
