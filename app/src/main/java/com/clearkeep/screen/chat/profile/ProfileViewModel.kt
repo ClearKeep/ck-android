@@ -10,15 +10,21 @@ import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
+import com.clearkeep.utilities.isValidCountryCode
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import com.google.i18n.phonenumbers.CountryCodeToRegionCodeMap
+import com.google.i18n.phonenumbers.NumberParseException
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 import javax.inject.Inject
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
 
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
@@ -26,11 +32,24 @@ class ProfileViewModel @Inject constructor(
     private val userPreferenceRepository: UserPreferenceRepository,
     serverRepository: ServerRepository
 ): ViewModel() {
+    private val phoneUtil = PhoneNumberUtil.getInstance()
 
     val profile: LiveData<Profile?> = serverRepository.getDefaultServerProfileAsState().map {
         _username.postValue(it.userName)
         _email.postValue(it.email)
-        _phoneNumber.postValue(it.phoneNumber)
+
+        printlnCK("Profile full phone ${it.phoneNumber}")
+        try {
+            val numberProto: PhoneNumber = phoneUtil.parse(it.phoneNumber, "")
+            val countryCode = numberProto.countryCode
+            printlnCK("Profile country code $countryCode")
+            val phoneNum = it.phoneNumber?.replace("+$countryCode", "")
+            printlnCK("Profile phone num $phoneNum")
+            _countryCode.postValue(countryCode.toString())
+            _phoneNumber.postValue(phoneNum)
+        } catch(e: Exception) {
+            _phoneNumber.postValue(it.phoneNumber)
+        }
         it
     }
 
@@ -61,6 +80,10 @@ class ProfileViewModel @Inject constructor(
     val phoneNumber: LiveData<String>
         get() = _phoneNumber
 
+    private val _countryCode = MutableLiveData<String>()
+    val countryCode: LiveData<String>
+        get() = _countryCode
+
     val unsavedChangeDialogVisible = MutableLiveData<Boolean>()
 
     fun getMfaDetail() {
@@ -87,7 +110,11 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun setPhoneNumber(phoneNumber: String) {
-        _phoneNumber.value = phoneNumber
+        _phoneNumber.value = phoneNumber.filter { it.isDigit() }
+    }
+
+    fun setCountryCode(countryCode: String) {
+        _countryCode.value = countryCode.filter { it.isDigit() }
     }
 
     fun setUsername(username: String) {
@@ -105,7 +132,7 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = true
     }
 
-    fun updateProfileDetail(context: Context, displayName: String, phoneNumber: String) {
+    fun updateProfileDetail(context: Context, displayName: String, phoneNumber: String, countryCode: String) {
         isAvatarChanged = false
         val avatarToUpload = imageUriSelected.value
         val server = environment.getServer()
@@ -118,6 +145,45 @@ class ProfileViewModel @Inject constructor(
             undoProfileChanges()
             return
         }
+
+        if (!isValidCountryCode(_countryCode.value ?: "")) {
+            uploadAvatarResponse.value = Resource.error("Invalid country code", null)
+            undoProfileChanges()
+            return
+        }
+
+        try {
+            val numberProto = phoneUtil.parse("+${countryCode}${phoneNumber}", null)
+            if (!phoneUtil.isValidNumber(numberProto)) {
+                uploadAvatarResponse.value = Resource.error("Invalid phone number", null)
+                undoProfileChanges()
+                return
+            }
+        } catch (e: Exception) {
+            printlnCK("updateProfileDetail error $e")
+            if (e is NumberParseException) {
+                val errorMessage = when (e.errorType) {
+                    NumberParseException.ErrorType.INVALID_COUNTRY_CODE -> {
+                        "Invalid country code"
+                    }
+                    NumberParseException.ErrorType.TOO_LONG -> {
+                        "Too long"
+                    }
+                    NumberParseException.ErrorType.TOO_SHORT_AFTER_IDD -> {
+                        "TOO_SHORT_AFTER_IDD"
+                    }
+                    NumberParseException.ErrorType.TOO_SHORT_NSN -> {
+                        "TOO_SHORT_NSN"
+                    }
+                    else -> "Error!"
+                }
+                uploadAvatarResponse.value =
+                    Resource.error(errorMessage, null)
+            }
+            undoProfileChanges()
+            return
+        }
+
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
@@ -133,7 +199,7 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber, avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
+                        profile.value!!.copy(userName = displayName, phoneNumber = "+${countryCode}${phoneNumber}", avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
@@ -149,7 +215,7 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = phoneNumber)
+                        profile.value!!.copy(userName = displayName, phoneNumber = "+${countryCode}${phoneNumber}")
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
