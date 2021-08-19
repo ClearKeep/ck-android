@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -19,9 +17,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.R
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.utilities.countryCodesToNames
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
@@ -29,15 +30,16 @@ import com.clearkeep.utilities.countryCodesToNames
 fun PhoneCountryCodeBottomSheetDialog(onPick: (countryCode: String) -> Unit) {
     val context = LocalContext.current
     val searchQuery = remember { mutableStateOf("") }
+    val searchResult = remember { mutableStateOf(countryCodesToNames) }
 
     Column(Modifier.padding(start = 12.dp, end = 23.dp)) {
         Spacer(Modifier.height(50.dp))
-        Text(stringResource(com.clearkeep.R.string.country_codes), fontSize = 20.sp)
+        Text(stringResource(R.string.country_codes), fontSize = 20.sp)
         Spacer(Modifier.height(25.dp))
         CKSearchBox(searchQuery)
         Spacer(Modifier.height(60.dp))
         LazyColumn {
-            itemsIndexed(countryCodesToNames) { _: Int, item: Pair<Int, String> ->
+            itemsIndexed(searchResult.value) { _: Int, item: Pair<Int, String> ->
                 PhoneCountryCodeItem(
                     Modifier.padding(vertical = 16.dp),
                     item.second,
@@ -48,6 +50,19 @@ fun PhoneCountryCodeBottomSheetDialog(onPick: (countryCode: String) -> Unit) {
                 Divider(Modifier.height(1.dp), separatorDarkNonOpaque)
             }
         }
+    }
+
+    LaunchedEffect(searchQuery) {
+        snapshotFlow { searchQuery.value }
+            .distinctUntilChanged()
+            .collect { query ->
+                if (query.isBlank()) {
+                    searchResult.value = countryCodesToNames
+                }
+                searchResult.value = countryCodesToNames.filter {
+                    it.second.contains(query, true)
+                }
+            }
     }
 }
 

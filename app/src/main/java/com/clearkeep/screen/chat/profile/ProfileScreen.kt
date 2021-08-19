@@ -35,6 +35,7 @@ import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
@@ -302,6 +303,10 @@ fun ProfileScreen(
                 profileViewModel.setTakePhoto()
             }
         )
+
+        if (!bottomSheetState.isVisible) {
+            keyboardController?.hide()
+        }
     }
 }
 
