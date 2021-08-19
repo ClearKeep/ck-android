@@ -21,6 +21,7 @@ import com.clearkeep.R
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.utilities.countryCodesToNames
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -39,13 +40,15 @@ fun PhoneCountryCodeBottomSheetDialog(onPick: (countryCode: String) -> Unit) {
         CKSearchBox(searchQuery)
         Spacer(Modifier.height(60.dp))
         LazyColumn {
-            itemsIndexed(searchResult.value) { _: Int, item: Pair<Int, String> ->
+            itemsIndexed(searchResult.value) { _: Int, item: Pair<Int?, String> ->
+                val countryCode = if (item.first == null) "" else "+${item.first}"
                 PhoneCountryCodeItem(
                     Modifier.padding(vertical = 16.dp),
                     item.second,
-                    "+${item.first}"
+                    countryCode
                 ) {
-                    onPick.invoke(item.first.toString())
+                    printlnCK("Pick country code $countryCode")
+                    onPick.invoke(countryCode)
                 }
                 Divider(Modifier.height(1.dp), separatorDarkNonOpaque)
             }
@@ -91,7 +94,9 @@ fun PhoneCountryCodeItem(
             code,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
-            modifier = Modifier.align(Alignment.CenterEnd).width(50.dp)
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .width(50.dp)
         )
     }
 }

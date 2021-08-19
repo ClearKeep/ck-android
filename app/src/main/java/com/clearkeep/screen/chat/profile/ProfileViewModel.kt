@@ -44,7 +44,7 @@ class ProfileViewModel @Inject constructor(
             printlnCK("Profile country code $countryCode")
             val phoneNum = it.phoneNumber?.replace("+$countryCode", "")
             printlnCK("Profile phone num $phoneNum")
-            _countryCode.postValue(countryCode.toString())
+            _countryCode.postValue("+$countryCode")
             _phoneNumber.postValue(phoneNum)
         } catch(e: Exception) {
             printlnCK("Profile phone number parse failed $e")
@@ -72,6 +72,10 @@ class ProfileViewModel @Inject constructor(
     val username: LiveData<String>
         get() = _username
 
+    private val _usernameError = MutableLiveData<Boolean>()
+    val usernameError : LiveData<Boolean>
+        get() = _usernameError
+
     private val _email = MutableLiveData<String>()
     val email: LiveData<String>
         get() = _email
@@ -79,6 +83,10 @@ class ProfileViewModel @Inject constructor(
     private val _phoneNumber = MutableLiveData<String>()
     val phoneNumber: LiveData<String>
         get() = _phoneNumber
+
+    private val _phoneNumberError = MutableLiveData<Boolean>()
+    val phoneNumberError : LiveData<Boolean>
+        get() = _phoneNumberError
 
     private val _countryCode = MutableLiveData<String>()
     val countryCode: LiveData<String>
@@ -111,14 +119,17 @@ class ProfileViewModel @Inject constructor(
 
     fun setPhoneNumber(phoneNumber: String) {
         _phoneNumber.value = phoneNumber.filter { it.isDigit() }
+        _phoneNumberError.value = !isValidPhoneNumber(countryCode.value ?: "", phoneNumber)
     }
 
     fun setCountryCode(countryCode: String) {
-        _countryCode.value = countryCode.filter { it.isDigit() }
+        _countryCode.value = if (countryCode.isBlank()) "" else "+${countryCode.filter { it.isDigit() }}"
+        _phoneNumberError.value = !isValidPhoneNumber(countryCode, phoneNumber.value ?: "")
     }
 
     fun setUsername(username: String) {
         _username.value = username
+        _usernameError.value = !isValidUsername(username)
     }
 
     fun setSelectedImage(uris: String) {
@@ -139,46 +150,40 @@ class ProfileViewModel @Inject constructor(
         val isPhoneNumberChanged = phoneNumber != profile.value?.phoneNumber
         val shouldUpdateMfaSetting = isPhoneNumberChanged && userPreference.value?.mfa == true
 
+        var hasError = false
         if (!isValidUsername(displayName)) {
-            uploadAvatarResponse.value =
-                Resource.error("You can’t leave Username blank", null)
-            return
+            hasError = true
         }
 
-        if (_countryCode.value.isNullOrEmpty()) {
-            uploadAvatarResponse.value = Resource.error("Invalid country code", null)
-            return
+        if (!isValidPhoneNumber(countryCode, phoneNumber)) {
+            hasError = true
         }
 
-        try {
-            val numberProto = phoneUtil.parse("+${countryCode}${phoneNumber}", null)
-            if (!phoneUtil.isValidNumber(numberProto)) {
-                uploadAvatarResponse.value = Resource.error("Invalid phone number", null)
-                return
-            }
-        } catch (e: Exception) {
-            printlnCK("updateProfileDetail error $e")
-            if (e is NumberParseException) {
-                val errorMessage = when (e.errorType) {
-                    NumberParseException.ErrorType.INVALID_COUNTRY_CODE -> {
-                        "Invalid country code"
-                    }
-                    NumberParseException.ErrorType.TOO_LONG -> {
-                        "Too long"
-                    }
-                    NumberParseException.ErrorType.TOO_SHORT_AFTER_IDD -> {
-                        "TOO_SHORT_AFTER_IDD"
-                    }
-                    NumberParseException.ErrorType.TOO_SHORT_NSN -> {
-                        "TOO_SHORT_NSN"
-                    }
-                    else -> "Error!"
-                }
-                uploadAvatarResponse.value =
-                    Resource.error(errorMessage, null)
-            }
-            return
-        }
+//        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
+//            hasError = true
+//            _phoneNumberError.value = true
+//        } else {
+//            _phoneNumberError.value = false
+//        }
+
+//        if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
+//            try {
+//                val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
+//                if (!phoneUtil.isValidNumber(numberProto)) {
+//                    hasError = true
+//                    _phoneNumberError.value = true
+//                } else {
+//                    _phoneNumberError.value = false
+//                }
+//            } catch (e: Exception) {
+//                printlnCK("updateProfileDetail error $e")
+//                hasError = true
+//                _phoneNumberError.value = true
+//                printlnCK(e.toString())
+//            }
+//        }
+
+        if (hasError) return
 
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
@@ -195,7 +200,7 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = "+${countryCode}${phoneNumber}", avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
+                        profile.value!!.copy(userName = displayName, phoneNumber = "${countryCode}${phoneNumber}", avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
@@ -211,7 +216,7 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = "+${countryCode}${phoneNumber}")
+                        profile.value!!.copy(userName = displayName, phoneNumber = "${countryCode}${phoneNumber}")
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
@@ -227,7 +232,7 @@ class ProfileViewModel @Inject constructor(
     fun hasUnsavedChanges() : Boolean {
         val usernameChanged = _username.value != profile.value?.userName
         val emailChanged = _email.value != profile.value?.email
-        val phoneNumberChanged = "+${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
+        val phoneNumberChanged = "${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
 
         val hasUnsavedChange = usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
         unsavedChangeDialogVisible.value = hasUnsavedChange
@@ -317,6 +322,26 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun isValidUsername(username: String?) : Boolean = !username.isNullOrEmpty()
+
+    private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
+        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
+            return false
+        }
+
+        if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
+            try {
+                val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
+                if (!phoneUtil.isValidNumber(numberProto)) {
+                    return false
+                }
+            } catch (e: Exception) {
+                printlnCK("updateProfileDetail error $e")
+                printlnCK(e.toString())
+                return false
+            }
+        }
+        return true
+    }
 
     companion object {
         private const val AVATAR_MAX_SIZE = 4_000_000 //4MB

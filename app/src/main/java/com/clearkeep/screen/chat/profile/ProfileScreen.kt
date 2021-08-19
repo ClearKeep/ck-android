@@ -13,6 +13,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -61,8 +62,10 @@ fun ProfileScreen(
 
     profile?.value?.let { user ->
         val userName = profileViewModel.username.observeAsState()
+        val userNameErrorVisible = profileViewModel.usernameError.observeAsState()
         val email = profileViewModel.email.observeAsState()
         val phoneNumber = profileViewModel.phoneNumber.observeAsState()
+        val phoneNumberErrorVisible = profileViewModel.phoneNumberError.observeAsState()
         val countryCode = profileViewModel.countryCode.observeAsState()
         val otpErrorDialogVisible = remember { mutableStateOf(false) }
         val pickAvatarDialogVisible = remember { mutableStateOf(false) }
@@ -165,8 +168,8 @@ fun ProfileScreen(
                                     }
                                 }
                                 Spacer(Modifier.height(20.dp))
-                                ItemInformationView("Username") {
-                                    ItemInformationInput(textValue = userName.value ?: "") {
+                                ItemInformationView("Username", errorText = stringResource(R.string.profile_username_error), errorVisible = userNameErrorVisible.value ?: false) {
+                                    ItemInformationInput(textValue = userName.value ?: "", hasError = userNameErrorVisible.value ?: false) {
                                         profileViewModel.setUsername(it)
                                     }
                                 }
@@ -180,21 +183,23 @@ fun ProfileScreen(
                                     }
                                 }
                                 Spacer(Modifier.height(16.dp))
-                                ItemInformationView("Phone Number") {
+                                ItemInformationView("Phone Number", errorText = stringResource(R.string.profile_phone_number_error), errorVisible = phoneNumberErrorVisible.value ?: false) {
                                     Box(
                                         Modifier
                                             .weight(1.3f)
                                             .height(60.dp)
                                             .fillMaxWidth()
-                                            .background(grayscale5, MaterialTheme.shapes.large)
+                                            .background(if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5, MaterialTheme.shapes.large)
+                                            .clip(MaterialTheme.shapes.large)
                                             .clickable {
                                                 keyboardController?.hide()
                                                 coroutineScope.launch {
                                                     delay(KEYBOARD_HIDE_DELAY_MILLIS)
                                                     bottomSheetState.show()
                                                 }
-                                            }) {
-                                            Text("+${countryCode.value}",
+                                            }.then(if (phoneNumberErrorVisible.value == true) Modifier.border(1.dp, errorDefault, MaterialTheme.shapes.large) else Modifier)) {
+                                            val countryCode = countryCode.value ?: ""
+                                            Text(countryCode,
                                                 Modifier
                                                     .padding(start = 12.dp)
                                                     .align(Alignment.CenterStart)
@@ -209,9 +214,10 @@ fun ProfileScreen(
                                         Modifier
                                             .weight(3f)
                                             .fillMaxSize(),
+                                        hasError = phoneNumberErrorVisible.value ?: false,
                                         textValue = phoneNumber.value ?: "",
                                         keyboardType = KeyboardType.Number,
-                                        placeholder = "Phone number"
+                                        placeholder = "Phone number",
                                     ) {
                                         profileViewModel.setPhoneNumber(it)
                                     }
@@ -354,7 +360,8 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 
 @ExperimentalComposeUiApi
 @Composable
-fun ItemInformationView(header: String, content: @Composable RowScope.() -> Unit) {
+fun ItemInformationView(header: String, errorText: String = "",
+                        errorVisible: Boolean = false, content: @Composable RowScope.() -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -366,6 +373,9 @@ fun ItemInformationView(header: String, content: @Composable RowScope.() -> Unit
         Row(Modifier.background(grayscaleOffWhite)) {
             content()
         }
+        if (errorVisible) {
+            Text(errorText, color = errorDefault, fontSize = 12.sp)
+        }
     }
 }
 
@@ -375,6 +385,7 @@ private fun ItemInformationInput(
     modifier: Modifier = Modifier.fillMaxWidth(),
     textValue: String,
     enable: Boolean = true,
+    hasError: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     placeholder: String = "",
     prefix: String = "",
@@ -382,7 +393,7 @@ private fun ItemInformationInput(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, grayscale5), modifier = modifier) {
+    Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, if (hasError) errorDefault else grayscale5), modifier = modifier) {
         TextField(
             value = textValue,
             onValueChange = onValueChange,
@@ -391,7 +402,7 @@ private fun ItemInformationInput(
                 cursorColor = if (enable) grayscaleBlack else grayscale3,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                backgroundColor = grayscale5
+                backgroundColor = if (hasError) grayscaleOffWhite else grayscale5
             ),
             textStyle = MaterialTheme.typography.body1.copy(
                 color = if (enable) grayscaleBlack else grayscale3,
