@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
 
@@ -31,14 +32,12 @@ fun ToolbarMessage(
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
-    Row(modifier = Modifier
-        .statusBarsHeight(58.dp)
-        .statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.statusBarsHeight(58.dp).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
                 contentDescription = null,
-                tint = Color.White
+                tint = Color.White,
             )
         }
 
@@ -51,7 +50,7 @@ fun ToolbarMessage(
             )
         }
 
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(10.sdp()))
 
         Row(
             modifier = Modifier
@@ -77,9 +76,9 @@ fun ToolbarMessage(
                 IconButton(
                     onClick = onAudioClick,
                     modifier
-                        .padding(8.dp)
-                        .width(36.dp)
-                        .height(36.dp)
+                        .padding(8.sdp())
+                        .width(36.sdp())
+                        .height(36.sdp())
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_icon_call_audio),
@@ -90,9 +89,9 @@ fun ToolbarMessage(
                 IconButton(
                     onClick = onVideoClick,
                     modifier
-                        .padding(8.dp)
-                        .width(36.dp)
-                        .height(36.dp)
+                        .padding(8.sdp())
+                        .width(36.sdp())
+                        .height(36.sdp())
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_icon_call_video),
@@ -100,7 +99,7 @@ fun ToolbarMessage(
                         tint = Color.White
                     )
                 }
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(10.sdp()))
             }
         }
     }

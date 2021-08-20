@@ -23,6 +23,7 @@ import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun RoomInfoScreen(
@@ -40,7 +41,7 @@ fun RoomInfoScreen(
             ) {
                 Row(
                     modifier = Modifier
-                        .padding(end = 8.dp, top = 24.dp)
+                        .padding(end = 8.sdp(), top = 24.sdp())
                         .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -77,7 +78,7 @@ fun RoomInfoScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.sdp()))
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -94,7 +95,7 @@ fun RoomInfoScreen(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.sdp()))
                 Row(Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier
@@ -108,8 +109,7 @@ fun RoomInfoScreen(
                         Image(
                             painter = painterResource(R.drawable.ic_button_call_audio),
                             contentDescription = null, modifier = Modifier
-                                .width(36.dp)
-                                .height(36.dp)
+                                .size(36.sdp())
                         )
                         SideBarLabel(text = "Audio", color = primaryDefault)
                     }
@@ -123,7 +123,8 @@ fun RoomInfoScreen(
                     ) {
                         Image(
                             painter = painterResource(R.drawable.ic_button_video_call),
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(36.sdp())
                         )
                         SideBarLabel(text = "Video", color = primaryDefault)
                     }
@@ -133,7 +134,8 @@ fun RoomInfoScreen(
                     ) {
                         Image(
                             painter = painterResource(R.drawable.ic_button_alert),
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier.size(36.sdp())
                         )
                         SideBarLabel(text = "Mute", color = primaryDefault)
                     }
@@ -141,9 +143,9 @@ fun RoomInfoScreen(
                 }
                 Column(
                     modifier = Modifier
-                        .padding(horizontal = 20.dp)
+                        .padding(horizontal = 20.sdp())
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.sdp()))
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
@@ -205,14 +207,14 @@ fun ItemSiteSetting(
 ) {
     Row(
         modifier = Modifier
-            .padding(top = 16.dp)
+            .padding(top = 16.sdp())
             .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(painter = painterResource(icon), contentDescription = null)
+        Image(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(24.sdp()))
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
         )
     }
 }

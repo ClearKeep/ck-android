@@ -45,8 +45,8 @@ import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
-import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 
 @ExperimentalComposeUiApi
@@ -68,14 +68,14 @@ fun SendBottomCompose(
             if (!values.isNullOrEmpty())
                 Row(
                     Modifier
-                        .padding(horizontal = 14.dp)
+                        .padding(horizontal = 14.sdp())
                         .fillMaxWidth()) {
                     LazyRow {
                         itemsIndexed(values) { _, uri ->
                             ItemImage(uri) {
                                 roomViewModel.removeImage(it)
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.sdp()))
                         }
                     }
                 }
@@ -89,15 +89,15 @@ fun SendBottomCompose(
                     onClickUploadPhoto()
                 },
                 modifier = Modifier
-                    .padding(8.dp)
-                    .size(24.dp),
+                    .padding(8.sdp())
+                    .size(24.sdp()),
                 ) {
 
                 Icon(
                     painterResource(R.drawable.ic_photos),
                     contentDescription = "",
                     tint = grayscale1,
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.fillMaxSize().clickable {
                         onClickUploadPhoto()
                     }
                 )
@@ -108,20 +108,21 @@ fun SendBottomCompose(
                     onClickUploadFile()
                 },
                 modifier = Modifier
-                    .padding(8.dp)
-                    .size(24.dp),
+                    .padding(8.sdp())
+                    .size(24.sdp()),
             ) {
                 Icon(
-                    painterResource(R.drawable.ic_link),
+                    painter = painterResource(R.drawable.ic_link),
                     contentDescription = "",
                     tint = grayscale1,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
+                    .padding(start = 8.sdp(), top = 4.sdp(), bottom = 4.sdp())
             ) {
                 CKTextInputFieldChat(
                     stringResource(R.string.message_input_hint),
@@ -144,16 +145,17 @@ fun SendBottomCompose(
                     }
                 },
                 modifier = Modifier
-                    .padding(8.dp)
-                    .width(24.dp)
-                    .height(24.dp),
+                    .padding(8.sdp())
+                    .width(24.sdp())
+                    .height(24.sdp()),
             ) {
                 Icon(
-                    painterResource(
+                    painter = painterResource(
                         id = R.drawable.ic_send_plane
                     ),
                     contentDescription = "",
                     tint = MaterialTheme.colors.surface,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }
@@ -165,7 +167,7 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
     val context = LocalContext.current
     Box(
         Modifier
-            .size(56.dp)
+            .size(56.sdp())
     ) {
         Image(
             painter = rememberCoilPainter(
@@ -173,19 +175,20 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
                 imageLoader = context.imageLoader,
                 previewPlaceholder = R.drawable.ic_cross
             ), contentDescription = "", contentScale = ContentScale.Crop,
-            modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            modifier = Modifier.clip(RoundedCornerShape(16.sdp()))
 
         )
         Box(
             Modifier
-                .size(16.dp)
+                .size(16.sdp())
                 .clip(CircleShape)
                 .background(primaryDefault, CircleShape)
                 .clickable {
                     onRemove(uri)
                 }
                 .align(Alignment.TopEnd)) {
-            Icon(painter = painterResource(R.drawable.ic_cross), null, tint = grayscaleOffWhite)
+            Icon(painter = painterResource(R.drawable.ic_cross), null, tint = grayscaleOffWhite, modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }
