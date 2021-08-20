@@ -2,10 +2,13 @@ package com.clearkeep.screen.auth.register
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
@@ -19,10 +22,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextButton
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.TextButtonType
+import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleBlack
 
 @Composable
@@ -47,10 +47,12 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .padding(horizontal = 20.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(28.dp))
         Box(contentAlignment = Alignment.TopCenter) {
             Image(image, contentDescription = "")
         }
@@ -154,5 +156,6 @@ fun RegisterScreen(
                 }
             }
         }
+        Spacer(Modifier.height(28.dp))
     }
 }
