@@ -168,8 +168,15 @@ fun ProfileScreen(
                                     }
                                 }
                                 Spacer(Modifier.height(20.dp))
-                                ItemInformationView("Username", errorText = stringResource(R.string.profile_username_error), errorVisible = userNameErrorVisible.value ?: false) {
-                                    ItemInformationInput(textValue = userName.value ?: "", hasError = userNameErrorVisible.value ?: false) {
+                                ItemInformationView(
+                                    "Username",
+                                    errorText = stringResource(R.string.profile_username_error),
+                                    errorVisible = userNameErrorVisible.value ?: false
+                                ) {
+                                    ItemInformationInput(
+                                        textValue = userName.value ?: "",
+                                        hasError = userNameErrorVisible.value ?: false
+                                    ) {
                                         profileViewModel.setUsername(it)
                                     }
                                 }
@@ -183,13 +190,20 @@ fun ProfileScreen(
                                     }
                                 }
                                 Spacer(Modifier.height(16.dp))
-                                ItemInformationView("Phone Number", errorText = stringResource(R.string.profile_phone_number_error), errorVisible = phoneNumberErrorVisible.value ?: false) {
+                                ItemInformationView(
+                                    "Phone Number",
+                                    errorText = stringResource(R.string.profile_phone_number_error),
+                                    errorVisible = phoneNumberErrorVisible.value ?: false
+                                ) {
                                     Box(
                                         Modifier
                                             .weight(1.3f)
                                             .height(60.dp)
                                             .fillMaxWidth()
-                                            .background(if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5, MaterialTheme.shapes.large)
+                                            .background(
+                                                if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5,
+                                                MaterialTheme.shapes.large
+                                            )
                                             .clip(MaterialTheme.shapes.large)
                                             .clickable {
                                                 keyboardController?.hide()
@@ -197,17 +211,34 @@ fun ProfileScreen(
                                                     delay(KEYBOARD_HIDE_DELAY_MILLIS)
                                                     bottomSheetState.show()
                                                 }
-                                            }.then(if (phoneNumberErrorVisible.value == true) Modifier.border(1.dp, errorDefault, MaterialTheme.shapes.large) else Modifier)) {
-                                            val countryCode = countryCode.value ?: ""
-                                            Text(countryCode,
-                                                Modifier
-                                                    .padding(start = 12.dp)
-                                                    .align(Alignment.CenterStart)
-                                                    .fillMaxWidth(), style = MaterialTheme.typography.body1.copy(
+                                            }
+                                            .then(
+                                                if (phoneNumberErrorVisible.value == true) Modifier.border(
+                                                    1.dp,
+                                                    errorDefault,
+                                                    MaterialTheme.shapes.large
+                                                ) else Modifier
+                                            )
+                                    ) {
+                                        val countryCode = countryCode.value ?: ""
+                                        Text(
+                                            countryCode,
+                                            Modifier
+                                                .padding(start = 12.dp)
+                                                .align(Alignment.CenterStart)
+                                                .fillMaxWidth(),
+                                            style = MaterialTheme.typography.body1.copy(
                                                 color = grayscaleBlack,
                                                 fontWeight = FontWeight.Normal
-                                            ))
-                                        Image(painterResource(R.drawable.ic_chev_down), null, Modifier.align(Alignment.CenterEnd).padding(end = 11.dp))
+                                            )
+                                        )
+                                        Image(
+                                            painterResource(R.drawable.ic_chev_down),
+                                            null,
+                                            Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .padding(end = 11.dp)
+                                        )
                                     }
                                     Spacer(Modifier.width(8.dp))
                                     ItemInformationInput(
@@ -297,7 +328,8 @@ fun ProfileScreen(
         }
         if (updateMfaResponse.value == true) {
             onNavigateToOtp()
-            profileViewModel.updateMfaSettingResponse.value = null //Prevent response from being handled again
+            profileViewModel.updateMfaSettingResponse.value =
+                null //Prevent response from being handled again
         }
 
         UploadPhotoDialog(
@@ -360,8 +392,10 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 
 @ExperimentalComposeUiApi
 @Composable
-fun ItemInformationView(header: String, errorText: String = "",
-                        errorVisible: Boolean = false, content: @Composable RowScope.() -> Unit) {
+fun ItemInformationView(
+    header: String, errorText: String = "",
+    errorVisible: Boolean = false, content: @Composable RowScope.() -> Unit
+) {
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
@@ -393,7 +427,11 @@ private fun ItemInformationInput(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Surface(shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, if (hasError) errorDefault else grayscale5), modifier = modifier) {
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, if (hasError) errorDefault else grayscale5),
+        modifier = modifier
+    ) {
         TextField(
             value = textValue,
             onValueChange = onValueChange,
