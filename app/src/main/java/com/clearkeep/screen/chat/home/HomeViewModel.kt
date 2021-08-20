@@ -61,6 +61,8 @@ class HomeViewModel @Inject constructor(
     val listUserInfo: LiveData<List<User>>
         get() = _listUserStatus
 
+    val serverUrlValidateResponse = MutableLiveData<String>()
+
     init {
         printlnCK("Share file cancel HomeViewModel init")
         viewModelScope.launch {
@@ -287,6 +289,16 @@ class HomeViewModel @Inject constructor(
     fun getProfileLink() : String {
         val server = environment.getServer()
         return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain))
+    }
+
+    fun checkValidServerUrl(url: String) {
+        viewModelScope.launch {
+            serverUrlValidateResponse.value = if (serverRepository.getServerByDomain(url) != null) {
+                ""
+            } else {
+                url
+            }
+        }
     }
 }
 
