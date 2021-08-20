@@ -22,5 +22,6 @@ enum class UserStateTypeInGroup(val value: String) {
 enum class UserStatus(val value:String){
     ONLINE("Online"),
     OFFLINE("Offline"),
-    BUSY("Busy")
+    BUSY("Busy"),
+    UNDEFINED("Undefined"),
 }

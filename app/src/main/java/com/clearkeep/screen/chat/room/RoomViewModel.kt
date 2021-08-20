@@ -3,16 +3,12 @@ package com.clearkeep.screen.chat.room
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.OpenableColumns
 import android.text.TextUtils
-import androidx.core.content.FileProvider
 import androidx.lifecycle.*
-import com.clearkeep.BuildConfig
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
-import com.clearkeep.utilities.fileSizeRegex
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
@@ -24,12 +20,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
 import javax.inject.Inject
-import java.math.BigInteger
-import java.text.SimpleDateFormat
 import java.util.*
 
 class RoomViewModel @Inject constructor(
@@ -97,8 +90,10 @@ class RoomViewModel @Inject constructor(
     val listUserStatus: LiveData<List<User>>
         get() = _listUserStatus
 
+    val listPeerAvatars = MutableLiveData<List<String>>()
+
     init {
-        getStatusUserInDirectGroup()
+        getStatusUserInGroup()
     }
 
     fun setMessage(message: String) {
@@ -148,16 +143,25 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun getStatusUserInDirectGroup() {
+    fun getStatusUserInGroup() {
         viewModelScope.launch {
             group.asFlow().collect {
                 val listClient = group.value?.clientList
                 val listClientStatus = listClient?.let { it1 ->
                     peopleRepository.getListClientStatus(it1)
                 }
+
                 _listUserStatus.postValue(listClientStatus)
                 listClientStatus?.forEach {
                     peopleRepository.updateAvatarUserEntity(it, getOwner())
+                }
+                if (group.value?.isGroup() == false) {
+                    val avatars = arrayListOf<String>()
+                    listClientStatus?.forEach {
+                        if (it.userId != getUser().userId)
+                            it.avatar?.let { it1 -> avatars.add(it1) }
+                    }
+                    listPeerAvatars.postValue(avatars)
                 }
             }
         }

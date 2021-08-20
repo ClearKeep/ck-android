@@ -96,4 +96,5 @@
     <string name="take_photo">Take a photo</string>
     <string name="albums">Albums</string>
     <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
+    <string name="profile_new_call_warning">You have a call that is currently in-progress. Please end it to start a new call.</string>
 </resources>

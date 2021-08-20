@@ -59,7 +59,7 @@ fun SiteMenuScreen(
         modifier = Modifier
             .background(grayscaleOverlay)
             .focusable()
-            .clickable(enabled = true, onClick = {  })
+            .clickable(enabled = true, onClick = { })
     ) {
         Row(
             Modifier.background(
@@ -187,7 +187,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                             style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
                         )
                     }
-                    UserStatus.OFFLINE.value->{
+                    UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
                             text = UserStatus.OFFLINE.value,
                             style = TextStyle(color = grayscale3, fontSize = 14.sp)

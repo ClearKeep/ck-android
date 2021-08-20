@@ -23,6 +23,7 @@ import com.google.accompanist.insets.statusBarsPadding
 fun ToolbarMessage(
     modifier: Modifier = Modifier,
     title: String = "",
+    avatars: List<String>? = arrayListOf(),
     isGroup: Boolean = false,
     isNote: Boolean = false,
     onBackClick: () -> Unit,
@@ -30,7 +31,9 @@ fun ToolbarMessage(
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
-    Row(modifier = Modifier.statusBarsHeight(58.dp).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier
+        .statusBarsHeight(58.dp)
+        .statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
@@ -40,10 +43,12 @@ fun ToolbarMessage(
         }
 
         if (!isGroup && !isNote) {
-            CircleAvatar(emptyList(),
+            CircleAvatar(
+                avatars ?: arrayListOf(),
                 name = title,
                 size = 36.dp,
-                isGroup = isGroup)
+                isGroup = isGroup
+            )
         }
 
         Spacer(Modifier.width(10.dp))

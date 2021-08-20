@@ -63,8 +63,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             if (server != null) {
                 when (remoteMessage.data["notify_type"]) {
                     "request_call" -> {
-                        printlnCK("isCalling : ${AppCall.listenerCallingState.value?.isCalling} ${AppCall.listenerCallingState.value}")
-                           handleRequestCall(remoteMessage)
+                        handleRequestCall(remoteMessage)
                     }
                     "cancel_request_call" -> {
                         handleCancelCall(remoteMessage)

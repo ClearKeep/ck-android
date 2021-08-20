@@ -1,27 +1,16 @@
 package com.clearkeep.screen.chat.room
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.clearkeep.components.*
@@ -33,25 +22,18 @@ import com.clearkeep.screen.chat.room.composes.ToolbarMessage
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import android.net.Uri
-import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.FileProvider
 import androidx.core.os.postDelayed
-import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import java.io.File
-import java.text.SimpleDateFormat
 import java.util.*
 
 @ExperimentalMaterialApi
@@ -74,7 +56,8 @@ fun RoomScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
-
+    val isShowDialogCalling = remember { mutableStateOf(false) }
+    val listPeerAvatars = roomViewModel.listPeerAvatars.observeAsState()
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
@@ -135,6 +118,7 @@ fun RoomScreen(
                     ToolbarMessage(
                         modifier = Modifier,
                         groupName,
+                        listPeerAvatars.value,
                         isGroup = group?.isGroup() ?: false,
                         isNote = isNote.value ?: false,
                         onBackClick = {
@@ -146,10 +130,18 @@ fun RoomScreen(
                             }
                         },
                         onAudioClick = {
-                            roomViewModel.requestCall(group?.groupId ?: 0L, true)
+                            if (AppCall.listenerCallingState.value?.isCalling != true) {
+                                roomViewModel.requestCall(group?.groupId ?: 0L, true)
+                            }else{
+                                isShowDialogCalling.value = true
+                            }
                         },
                         onVideoClick = {
-                            roomViewModel.requestCall(group?.groupId ?: 0L, false)
+                            if (AppCall.listenerCallingState.value?.isCalling != true) {
+                                roomViewModel.requestCall(group?.groupId ?: 0L, false)
+                            }else{
+                                isShowDialogCalling.value = true
+                            }
                         })
                     Column(
                         modifier = Modifier
@@ -244,7 +236,7 @@ fun RoomScreen(
                         CircularProgressIndicator(color = Color.Blue)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "creating group...",
+                            text = "",
                             style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -270,6 +262,16 @@ fun RoomScreen(
                 title = response.message ?: "",
             )
         }
+        if (isShowDialogCalling.value) {
+            CKAlertDialog(
+                title = stringResource(R.string.warning),
+                text = stringResource(R.string.profile_new_call_warning),
+                onDismissButtonClick = {
+                    isShowDialogCalling.value = false
+                }
+            )
+        }
+
     }
 }
 
