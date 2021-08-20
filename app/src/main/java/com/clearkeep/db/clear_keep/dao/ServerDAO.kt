@@ -32,6 +32,9 @@ interface ServerDAO {
     @Query("SELECT * FROM server")
     suspend fun getServers(): List<Server>
 
+    @Query("SELECT * FROM server WHERE server_domain = :domain")
+    suspend fun getServerByDomain(domain: String): Server?
+
     @Query("SELECT * FROM server")
     fun getServersAsState(): LiveData<List<Server>>
 
