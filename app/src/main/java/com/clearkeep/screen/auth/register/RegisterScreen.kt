@@ -142,8 +142,8 @@ fun RegisterScreen(
                             onRegisterPressed(
                                 email.value,
                                 displayName.value,
-                                password.value,
-                                confirmPassword.value
+                                password.value.trim(),
+                                confirmPassword.value.trim()
                             )
                         },
                         enabled = !isLoading,

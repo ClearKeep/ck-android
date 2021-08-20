@@ -34,7 +34,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
     val groupState = roomViewModel.group.observeAsState()
     val context = LocalContext.current
 
-    groupState?.value?.let { group ->
+    groupState.value?.let { group ->
         CKSimpleTheme {
             Surface(color = MaterialTheme.colors.background) {
                 Column(
@@ -62,7 +62,8 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                         LazyColumn {
                             itemsIndexed(group.clientList.filter {
                                 it.userState == UserStateTypeInGroup.ACTIVE.value && it != roomViewModel.getCurrentUser()
-                            }) { _, user ->
+                                        && it.userName.toLowerCase().contains(text.value)
+                            }.sortedBy { it.userName.toLowerCase() }) { _, user ->
                                 RemoveMemberItem(itemModifier, user) {
                                     roomViewModel.group.value?.groupId?.let { it1 ->
                                         roomViewModel.removeMember(user,groupId = it1,onSuccess = {

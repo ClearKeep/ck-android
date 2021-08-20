@@ -96,7 +96,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val groupType = remoteMessage.data["group_type"]?: ""
         val groupName = remoteMessage.data["group_name"]?: ""
         val groupCallType = remoteMessage.data["call_type"]
-        val avatar = remoteMessage.data["from_client_avatar"] ?: ""
+        var avatar = remoteMessage.data["from_client_avatar"] ?: ""
         val fromClientName = remoteMessage.data["from_client_name"]
         val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
         val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
@@ -112,6 +112,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnUser = turnConfigJsonObject.getString("user")
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
+        if(!isGroup(groupType)){
+            peopleRepository.getFriendFromID(clientId)?.avatar?.let {
+                avatar=it
+            }
+        }
+
         val currentUserName = if (isGroup(groupType)) "" else groupName.replace(fromClientName ?: "", "").replace(",", "")
         if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName

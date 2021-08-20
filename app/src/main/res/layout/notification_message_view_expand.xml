@@ -11,7 +11,9 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            >
 
             <ImageView
                 android:id="@+id/imageButton"
@@ -50,32 +52,6 @@
             </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
-            <Button
-                android:id="@+id/tvReply"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:text="Reply"
-                android:textColor="@color/primaryDefault"
-                android:textSize="14sp"
-                android:textStyle="normal"
-                android:textFontWeight="600" />
 
-            <Button
-                android:id="@+id/tvMute"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:background="@android:color/transparent"
-                android:text="Mute"
-                android:textColor="@color/primaryDefault"
-                android:textSize="14sp"
-                android:textStyle="normal"
-                android:textFontWeight="600" />
-        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
