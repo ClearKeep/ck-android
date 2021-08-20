@@ -117,8 +117,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 avatar=it
             }
         }
-
-        val currentUserName = if (isGroup(groupType)) "" else groupName.replace(fromClientName ?: "", "").replace(",", "")
+        val currentUserName = if (isGroup(groupType)) "" else {
+            val server = serverRepository.getServer(clientDomain, clientId)
+            server?.profile?.userName ?: ""
+        }
         if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
             AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
