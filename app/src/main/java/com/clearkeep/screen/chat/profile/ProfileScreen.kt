@@ -75,218 +75,200 @@ fun ProfileScreen(
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
-        val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
         val coroutineScope = rememberCoroutineScope()
 
         printlnCK("ProfileScreen userPreference ${userPreference.value?.mfa ?: "null"}")
 
-        ModalBottomSheetLayout(
-            sheetContent = {
-                PhoneCountryCodeBottomSheetDialog {
-                    coroutineScope.launch {
-                        profileViewModel.setCountryCode(it)
-                        bottomSheetState.hide()
-                    }
-                }
-            },
-            sheetState = bottomSheetState,
-            sheetBackgroundColor = bottomSheetColor,
-            scrimColor = colorDialogScrim
+        Column(
+            Modifier
+                .fillMaxSize()
         ) {
-            Column(
-                Modifier
+            Box(
+                modifier = Modifier
                     .fillMaxSize()
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState()),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        profile?.value?.let { user ->
+                    profile?.value?.let { user ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            HeaderProfile(
+                                onClickSave = {
+                                    profileViewModel.updateProfileDetail(
+                                        context,
+                                        userName.value ?: "",
+                                        phoneNumber.value ?: "",
+                                        countryCode.value ?: ""
+                                    )
+                                },
+                                onCloseView = {
+                                    onCloseView()
+                                }
+                            )
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircleAvatar(
+                                    when {
+                                        selectedAvatar.value != null -> {
+                                            listOf(selectedAvatar.value!!)
+                                        }
+                                        user.avatar != null -> {
+                                            listOf(user.avatar)
+                                        }
+                                        else -> {
+                                            emptyList()
+                                        }
+                                    },
+                                    user.userName ?: "",
+                                    size = 72.dp,
+                                    modifier = Modifier.clickable {
+                                        pickAvatarDialogVisible.value = true
+                                    },
+                                    cacheKey = user.updatedAt.toString()
+                                )
+                                Column(
+                                    Modifier.padding(start = 16.dp),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    SideBarLabel(
+                                        text = "Change profile picture",
+                                        color = primaryDefault,
+                                        fontSize = 14.sp,
+                                    )
+                                    SideBarLabel(
+                                        text = " Maximum fize size 5MB",
+                                        color = grayscale3,
+                                        modifier = Modifier,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(20.dp))
+                            ItemInformationView(
+                                "Username",
+                                errorText = stringResource(R.string.profile_username_error),
+                                errorVisible = userNameErrorVisible.value ?: false
+                            ) {
+                                ItemInformationInput(
+                                    textValue = userName.value ?: "",
+                                    hasError = userNameErrorVisible.value ?: false
+                                ) {
+                                    profileViewModel.setUsername(it)
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            ItemInformationView("Email") {
+                                ItemInformationInput(
+                                    textValue = email.value ?: "",
+                                    enable = false
+                                ) {
+                                    profileViewModel.setEmail(it)
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            ItemInformationView(
+                                "Phone Number",
+                                errorText = stringResource(R.string.profile_phone_number_error),
+                                errorVisible = phoneNumberErrorVisible.value ?: false
+                            ) {
+                                Box(
+                                    Modifier
+                                        .weight(1.3f)
+                                        .height(60.dp)
+                                        .fillMaxWidth()
+                                        .background(
+                                            if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5,
+                                            MaterialTheme.shapes.large
+                                        )
+                                        .clip(MaterialTheme.shapes.large)
+                                        .clickable {
+                                            keyboardController?.hide()
+                                            navController.navigate("country_code_picker")
+                                        }
+                                        .then(
+                                            if (phoneNumberErrorVisible.value == true) Modifier.border(
+                                                1.dp,
+                                                errorDefault,
+                                                MaterialTheme.shapes.large
+                                            ) else Modifier
+                                        )
+                                ) {
+                                    val countryCode = countryCode.value ?: ""
+                                    Text(
+                                        countryCode,
+                                        Modifier
+                                            .padding(start = 12.dp)
+                                            .align(Alignment.CenterStart)
+                                            .fillMaxWidth(),
+                                        style = MaterialTheme.typography.body1.copy(
+                                            color = grayscaleBlack,
+                                            fontWeight = FontWeight.Normal
+                                        )
+                                    )
+                                    Image(
+                                        painterResource(R.drawable.ic_chev_down),
+                                        null,
+                                        Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .padding(end = 11.dp)
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                ItemInformationInput(
+                                    Modifier
+                                        .weight(3f)
+                                        .fillMaxSize(),
+                                    hasError = phoneNumberErrorVisible.value ?: false,
+                                    textValue = phoneNumber.value ?: "",
+                                    keyboardType = KeyboardType.Number,
+                                    placeholder = "Phone number",
+                                ) {
+                                    profileViewModel.setPhoneNumber(it)
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            CopyLink(
+                                onCopied = {
+                                    onCopyToClipBoard()
+                                }
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            ChangePassword(onChangePassword)
+                            Spacer(Modifier.height(24.dp))
+                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
+                                if (it) {
+                                    if (profileViewModel.canEnableMfa()) {
+                                        profileViewModel.updateMfaSettings(it)
+                                    } else {
+                                        otpErrorDialogVisible.value = true
+                                    }
+                                } else {
+                                    profileViewModel.updateMfaSettings(it)
+                                }
+                            }
+                            Spacer(Modifier.height(24.dp))
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                    .fillMaxSize()
+                                    .padding(end = 8.dp, bottom = 20.dp),
+                                verticalArrangement = Arrangement.Bottom,
+                                horizontalAlignment = Alignment.End
                             ) {
-                                HeaderProfile(
-                                    onClickSave = {
-                                        profileViewModel.updateProfileDetail(
-                                            context,
-                                            userName.value ?: "",
-                                            phoneNumber.value ?: "",
-                                            countryCode.value ?: ""
-                                        )
-                                    },
-                                    onCloseView = {
-                                        onCloseView()
-                                    }
-                                )
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    CircleAvatar(
-                                        when {
-                                            selectedAvatar.value != null -> {
-                                                listOf(selectedAvatar.value!!)
-                                            }
-                                            user.avatar != null -> {
-                                                listOf(user.avatar)
-                                            }
-                                            else -> {
-                                                emptyList()
-                                            }
-                                        },
-                                        user.userName ?: "",
-                                        size = 72.dp,
-                                        modifier = Modifier.clickable {
-                                            pickAvatarDialogVisible.value = true
-                                        },
-                                        cacheKey = user.updatedAt.toString()
+                                Text(
+                                    "version $versionName (${env.toUpperCase()})",
+                                    style = MaterialTheme.typography.caption.copy(
                                     )
-                                    Column(
-                                        Modifier.padding(start = 16.dp),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        SideBarLabel(
-                                            text = "Change profile picture",
-                                            color = primaryDefault,
-                                            fontSize = 14.sp,
-                                        )
-                                        SideBarLabel(
-                                            text = " Maximum fize size 5MB",
-                                            color = grayscale3,
-                                            modifier = Modifier,
-                                            fontSize = 12.sp
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.height(20.dp))
-                                ItemInformationView(
-                                    "Username",
-                                    errorText = stringResource(R.string.profile_username_error),
-                                    errorVisible = userNameErrorVisible.value ?: false
-                                ) {
-                                    ItemInformationInput(
-                                        textValue = userName.value ?: "",
-                                        hasError = userNameErrorVisible.value ?: false
-                                    ) {
-                                        profileViewModel.setUsername(it)
-                                    }
-                                }
-                                Spacer(Modifier.height(16.dp))
-                                ItemInformationView("Email") {
-                                    ItemInformationInput(
-                                        textValue = email.value ?: "",
-                                        enable = false
-                                    ) {
-                                        profileViewModel.setEmail(it)
-                                    }
-                                }
-                                Spacer(Modifier.height(16.dp))
-                                ItemInformationView(
-                                    "Phone Number",
-                                    errorText = stringResource(R.string.profile_phone_number_error),
-                                    errorVisible = phoneNumberErrorVisible.value ?: false
-                                ) {
-                                    Box(
-                                        Modifier
-                                            .weight(1.3f)
-                                            .height(60.dp)
-                                            .fillMaxWidth()
-                                            .background(
-                                                if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5,
-                                                MaterialTheme.shapes.large
-                                            )
-                                            .clip(MaterialTheme.shapes.large)
-                                            .clickable {
-                                                keyboardController?.hide()
-                                                coroutineScope.launch {
-                                                    delay(KEYBOARD_HIDE_DELAY_MILLIS)
-                                                    bottomSheetState.show()
-                                                }
-                                            }
-                                            .then(
-                                                if (phoneNumberErrorVisible.value == true) Modifier.border(
-                                                    1.dp,
-                                                    errorDefault,
-                                                    MaterialTheme.shapes.large
-                                                ) else Modifier
-                                            )
-                                    ) {
-                                        val countryCode = countryCode.value ?: ""
-                                        Text(
-                                            countryCode,
-                                            Modifier
-                                                .padding(start = 12.dp)
-                                                .align(Alignment.CenterStart)
-                                                .fillMaxWidth(),
-                                            style = MaterialTheme.typography.body1.copy(
-                                                color = grayscaleBlack,
-                                                fontWeight = FontWeight.Normal
-                                            )
-                                        )
-                                        Image(
-                                            painterResource(R.drawable.ic_chev_down),
-                                            null,
-                                            Modifier
-                                                .align(Alignment.CenterEnd)
-                                                .padding(end = 11.dp)
-                                        )
-                                    }
-                                    Spacer(Modifier.width(8.dp))
-                                    ItemInformationInput(
-                                        Modifier
-                                            .weight(3f)
-                                            .fillMaxSize(),
-                                        hasError = phoneNumberErrorVisible.value ?: false,
-                                        textValue = phoneNumber.value ?: "",
-                                        keyboardType = KeyboardType.Number,
-                                        placeholder = "Phone number",
-                                    ) {
-                                        profileViewModel.setPhoneNumber(it)
-                                    }
-                                }
-                                Spacer(Modifier.height(8.dp))
-                                CopyLink(
-                                    onCopied = {
-                                        onCopyToClipBoard()
-                                    }
                                 )
-                                Spacer(Modifier.height(8.dp))
-                                ChangePassword(onChangePassword)
-                                Spacer(Modifier.height(24.dp))
-                                TwoFaceAuthView(userPreference.value?.mfa ?: false) {
-                                    if (it) {
-                                        if (profileViewModel.canEnableMfa()) {
-                                            profileViewModel.updateMfaSettings(it)
-                                        } else {
-                                            otpErrorDialogVisible.value = true
-                                        }
-                                    } else {
-                                        profileViewModel.updateMfaSettings(it)
-                                    }
-                                }
-                                Spacer(Modifier.height(24.dp))
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(end = 8.dp, bottom = 20.dp),
-                                    verticalArrangement = Arrangement.Bottom,
-                                    horizontalAlignment = Alignment.End
-                                ) {
-                                    Text(
-                                        "version $versionName (${env.toUpperCase()})",
-                                        style = MaterialTheme.typography.caption.copy(
-                                        )
-                                    )
-                                }
                             }
                         }
                     }
@@ -341,10 +323,6 @@ fun ProfileScreen(
                 profileViewModel.setTakePhoto()
             }
         )
-
-        if (!bottomSheetState.isVisible) {
-            keyboardController?.hide()
-        }
     }
 }
 

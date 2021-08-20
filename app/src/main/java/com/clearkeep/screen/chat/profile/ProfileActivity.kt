@@ -24,7 +24,6 @@ import androidx.navigation.compose.rememberNavController
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.otp.OtpActivity
 import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
-import com.clearkeep.utilities.printlnCK
 
 
 @AndroidEntryPoint
@@ -58,6 +57,14 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
                                 profileViewModel.setSelectedImage(it[0])
                             }
                         })
+                    }
+                    composable("country_code_picker") {
+                        CountryCodePicker(onPick = {
+                            profileViewModel.setCountryCode(it)
+                            navController.popBackStack()
+                        }) {
+                            navController.popBackStack()
+                        }
                     }
                 }
             }
