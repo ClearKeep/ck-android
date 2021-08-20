@@ -59,15 +59,10 @@ fun CustomServerScreen(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
-                    if (useCustomServerChecked.value
-                        && (rememberServerUrl.value.isBlank())) {
-                        setShowDialog("Please enter server url and port")
-                    } else {
-                        onBackPress(
-                            useCustomServerChecked.value,
-                            rememberServerUrl.value,
-                        )
-                    }
+                    onBackPress(
+                        if (rememberServerUrl.value.isBlank()) false else useCustomServerChecked.value,
+                        rememberServerUrl.value,
+                    )
                 }
             )
             Spacer(Modifier.height(26.dp))
@@ -76,6 +71,9 @@ fun CustomServerScreen(
                     .padding(16.dp)
                     .clickable {
                         useCustomServerChecked.value = !useCustomServerChecked.value
+                        if (!useCustomServerChecked.value) {
+                            rememberServerUrl.value = ""
+                        }
                     }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
@@ -125,7 +123,8 @@ fun CustomServerScreen(
                         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                             Row(
                                 modifier = Modifier
-                                    .weight(0.66f).padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
+                                    .weight(0.66f)
+                                    .padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     "Server URL",
@@ -141,7 +140,7 @@ fun CustomServerScreen(
                         CKButton(
                             "Submit",
                             { if (rememberServerUrl.value.isBlank()) {
-                                setShowDialog("Please enter server url and port")
+                                setShowDialog("Wrong server URL. Please try again.")
                             } else {
                                 onBackPress(
                                     useCustomServerChecked.value,
