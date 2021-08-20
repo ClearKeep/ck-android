@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.room.composes
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Patterns
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.printlnCK
 
 @Composable
 fun ClickableLinkContent(message: String) {
@@ -23,19 +25,20 @@ fun ClickableLinkContent(message: String) {
 
     val annotatedString = buildAnnotatedString {
         var currentIndex = 0
-        URL_REGEX.findAll(message).forEach {
-            val first = it.range.first
-            val last = it.range.last
+        val matcher = Patterns.WEB_URL.matcher(message)
+        while (matcher.find()) {
+            val first = matcher.start()
+            val last = matcher.end()
             if (currentIndex < first) {
                 append(message.substring(currentIndex, first))
             }
-            val link = message.substring(first, last + 1)
+            val link = message.substring(first, last)
             pushStringAnnotation("URL", link)
             withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) {
                 append(link)
             }
             pop()
-            currentIndex = last + 1
+            currentIndex = last
         }
         if (currentIndex == 0) {
             //If there is no link in message
@@ -61,5 +64,3 @@ fun ClickableLinkContent(message: String) {
         }
     )
 }
-
-private val URL_REGEX = "https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9@:%_+.~#?&//=]*)".toRegex()
