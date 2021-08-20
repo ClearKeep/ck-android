@@ -30,7 +30,7 @@ class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
     serverRepository: ServerRepository
-): ViewModel() {
+) : ViewModel() {
     private val phoneUtil = PhoneNumberUtil.getInstance()
 
     val profile: LiveData<Profile?> = serverRepository.getDefaultServerProfileAsState().map {
@@ -46,15 +46,15 @@ class ProfileViewModel @Inject constructor(
             printlnCK("Profile phone num $phoneNum")
             _countryCode.postValue("+$countryCode")
             _phoneNumber.postValue(phoneNum)
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             printlnCK("Profile phone number parse failed $e")
             _phoneNumber.postValue(it.phoneNumber)
         }
         it
     }
 
-    private lateinit var _userPreference : LiveData<UserPreference>
-    val userPreference : LiveData<UserPreference>
+    private lateinit var _userPreference: LiveData<UserPreference>
+    val userPreference: LiveData<UserPreference>
         get() = _userPreference
 
     private var _currentPhotoUri: Uri? = null
@@ -73,7 +73,7 @@ class ProfileViewModel @Inject constructor(
         get() = _username
 
     private val _usernameError = MutableLiveData<Boolean>()
-    val usernameError : LiveData<Boolean>
+    val usernameError: LiveData<Boolean>
         get() = _usernameError
 
     private val _email = MutableLiveData<String>()
@@ -85,7 +85,7 @@ class ProfileViewModel @Inject constructor(
         get() = _phoneNumber
 
     private val _phoneNumberError = MutableLiveData<Boolean>()
-    val phoneNumberError : LiveData<Boolean>
+    val phoneNumberError: LiveData<Boolean>
         get() = _phoneNumberError
 
     private val _countryCode = MutableLiveData<String>()
@@ -97,9 +97,17 @@ class ProfileViewModel @Inject constructor(
     fun getMfaDetail() {
         val server = environment.getServer()
         viewModelScope.launch {
-            profileRepository.getMfaSettingsFromAPI(Owner(server.serverDomain, server.profile.userId))
+            profileRepository.getMfaSettingsFromAPI(
+                Owner(
+                    server.serverDomain,
+                    server.profile.userId
+                )
+            )
         }
-        _userPreference = userPreferenceRepository.getUserPreferenceLiveData(server.serverDomain, server.profile.userId)
+        _userPreference = userPreferenceRepository.getUserPreferenceLiveData(
+            server.serverDomain,
+            server.profile.userId
+        )
     }
 
     fun getProfileLink(): String {
@@ -123,7 +131,8 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun setCountryCode(countryCode: String) {
-        _countryCode.value = if (countryCode.isBlank()) "" else "+${countryCode.filter { it.isDigit() }}"
+        _countryCode.value =
+            if (countryCode.isBlank()) "" else "+${countryCode.filter { it.isDigit() }}"
         _phoneNumberError.value = !isValidPhoneNumber(countryCode, phoneNumber.value ?: "")
     }
 
@@ -143,7 +152,12 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = true
     }
 
-    fun updateProfileDetail(context: Context, displayName: String, phoneNumber: String, countryCode: String) {
+    fun updateProfileDetail(
+        context: Context,
+        displayName: String,
+        phoneNumber: String,
+        countryCode: String
+    ) {
         isAvatarChanged = false
         val avatarToUpload = imageUriSelected.value
         val server = environment.getServer()
@@ -158,30 +172,6 @@ class ProfileViewModel @Inject constructor(
         if (!isValidPhoneNumber(countryCode, phoneNumber)) {
             hasError = true
         }
-
-//        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
-//            hasError = true
-//            _phoneNumberError.value = true
-//        } else {
-//            _phoneNumberError.value = false
-//        }
-
-//        if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
-//            try {
-//                val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
-//                if (!phoneUtil.isValidNumber(numberProto)) {
-//                    hasError = true
-//                    _phoneNumberError.value = true
-//                } else {
-//                    _phoneNumberError.value = false
-//                }
-//            } catch (e: Exception) {
-//                printlnCK("updateProfileDetail error $e")
-//                hasError = true
-//                _phoneNumberError.value = true
-//                printlnCK(e.toString())
-//            }
-//        }
 
         if (hasError) return
 
@@ -200,12 +190,21 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = "${countryCode}${phoneNumber}", avatar = avatarUrl, updatedAt = Calendar.getInstance().timeInMillis)
+                        profile.value!!.copy(
+                            userName = displayName,
+                            phoneNumber = "${countryCode}${phoneNumber}",
+                            avatar = avatarUrl,
+                            updatedAt = Calendar.getInstance().timeInMillis
+                        )
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
                         if (response) {
-                            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, false)
+                            userPreferenceRepository.updateMfa(
+                                server.serverDomain,
+                                server.profile.userId,
+                                false
+                            )
                         }
                     }
                 }
@@ -216,12 +215,19 @@ class ProfileViewModel @Inject constructor(
                 if (profile.value != null) {
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
-                        profile.value!!.copy(userName = displayName, phoneNumber = "${countryCode}${phoneNumber}")
+                        profile.value!!.copy(
+                            userName = displayName,
+                            phoneNumber = "${countryCode}${phoneNumber}"
+                        )
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
                         if (response) {
-                            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, false)
+                            userPreferenceRepository.updateMfa(
+                                server.serverDomain,
+                                server.profile.userId,
+                                false
+                            )
                         }
                     }
                 }
@@ -229,12 +235,14 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun hasUnsavedChanges() : Boolean {
+    fun hasUnsavedChanges(): Boolean {
         val usernameChanged = _username.value != profile.value?.userName
         val emailChanged = _email.value != profile.value?.email
-        val phoneNumberChanged = "${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
+        val phoneNumberChanged =
+            "${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
 
-        val hasUnsavedChange = usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
+        val hasUnsavedChange =
+            usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
         unsavedChangeDialogVisible.value = hasUnsavedChange
         return hasUnsavedChange
     }
@@ -257,7 +265,7 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = false
     }
 
-    fun canEnableMfa() : Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
+    fun canEnableMfa(): Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
 
     fun updateMfaSettings(enabled: Boolean) {
         viewModelScope.launch {
@@ -266,7 +274,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context) : String {
+    private suspend fun uploadAvatarImage(avatarToUpload: String, context: Context): String {
         val uri = Uri.parse(avatarToUpload)
         val contentResolver = context.contentResolver
         val mimeType = getFileMimeType(context, uri, false)
@@ -309,7 +317,7 @@ class ProfileViewModel @Inject constructor(
         return _currentPhotoUri!!
     }
 
-    private fun getOwner() : Owner {
+    private fun getOwner(): Owner {
         val server = environment.getServer()
         return Owner(server.serverDomain, server.profile.userId)
     }
@@ -321,7 +329,7 @@ class ProfileViewModel @Inject constructor(
         return uri.getFileSize(context, false) <= AVATAR_MAX_SIZE
     }
 
-    private fun isValidUsername(username: String?) : Boolean = !username.isNullOrEmpty()
+    private fun isValidUsername(username: String?): Boolean = !username.isNullOrEmpty()
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
         if (countryCode.isBlank() xor phoneNumber.isBlank()) {
