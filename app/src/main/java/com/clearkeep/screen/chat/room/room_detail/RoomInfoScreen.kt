@@ -3,18 +3,13 @@ package com.clearkeep.screen.chat.room.room_detail
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.navigate
@@ -24,7 +19,6 @@ import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.errorDefault
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
-import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
@@ -157,7 +151,7 @@ fun RoomInfoScreen(
                                 R.drawable.ic_user,
                                 textColor = grayscale1,
                                 onClickAction = {
-                                    roomViewModel.getStatusUserInDirectGroup()
+                                    roomViewModel.getStatusUserInGroup()
                                     navHostController.navigate("member_group_screen")
                                 })
                         }

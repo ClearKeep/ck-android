@@ -30,7 +30,7 @@ fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.dp, status: Str
         UserStatus.ONLINE.value->{
             colorSuccessDefault
         }
-        UserStatus.OFFLINE.value ->{
+        UserStatus.OFFLINE.value,UserStatus.UNDEFINED.value ->{
             grayscale3
         }
         else ->{
