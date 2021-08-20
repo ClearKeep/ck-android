@@ -26,6 +26,8 @@ class ServerRepository @Inject constructor(
 
     suspend fun getServers() = serverDAO.getServers()
 
+    suspend fun getServerByDomain(url: String) = serverDAO.getServerByDomain(url)
+
     suspend fun getServer(domain: String, ownerId: String) = serverDAO.getServer(domain, ownerId)
 
     suspend fun getServerByOwner(owner: Owner) = serverDAO.getServer(owner.domain, owner.clientId)

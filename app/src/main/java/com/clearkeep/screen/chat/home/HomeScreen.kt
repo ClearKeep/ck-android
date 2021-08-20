@@ -58,6 +58,7 @@ fun HomeScreen(
     val rememberStateSiteMenu = remember { mutableStateOf(false) }
     val profile = homeViewModel.profile.observeAsState()
     val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
+    val serverUrlValidateResponse = homeViewModel.serverUrlValidateResponse.observeAsState()
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(swipeRefreshState.value == true),
@@ -88,7 +89,9 @@ fun HomeScreen(
                     )
                 } else {
                     JoinServerComposable(
-                        onJoinServer = onJoinServer,
+                        onJoinServer = {
+                            homeViewModel.checkValidServerUrl(it)
+                        },
                         gotoProfile = {
                             rememberStateSiteMenu.value = true
                         },
@@ -137,6 +140,17 @@ fun HomeScreen(
                 )
             }
         }
+    }
+    if (serverUrlValidateResponse.value?.isBlank() == true) {
+        CKAlertDialog(
+            title = "Wrong server URL. Please try again.",
+            onDismissButtonClick = {
+                homeViewModel.serverUrlValidateResponse.value = null
+            }
+        )
+    } else if (serverUrlValidateResponse.value != null) {
+        onJoinServer(serverUrlValidateResponse.value!!)
+        homeViewModel.serverUrlValidateResponse.value = null
     }
 }
 
