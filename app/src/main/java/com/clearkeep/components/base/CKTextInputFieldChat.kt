@@ -26,6 +26,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKTextInputFieldChat(
@@ -55,9 +57,9 @@ fun CKTextInputFieldChat(
             shape = shape,
             border = if (rememberBorderShow.value) {
                 if (isError) {
-                    BorderStroke(1.dp, errorDefault)
+                    BorderStroke(1.sdp(), errorDefault)
                 } else {
-                    BorderStroke(1.dp, grayscaleBlack)
+                    BorderStroke(1.sdp(), grayscaleBlack)
                 }
             } else null,
             color = Color.Transparent,
@@ -104,7 +106,8 @@ fun CKTextInputFieldChat(
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = grayscaleBlack,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    fontSize = defaultNonScalableTextSize()
                 ),
                 visualTransformation = if (isPasswordType) {
                     if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
@@ -125,13 +128,13 @@ fun CKTextInputFieldChat(
             )
         }
         if (isError) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.sdp()))
         }
         if (isError) error?.let {
             Text(
                 it,
                 style = MaterialTheme.typography.body2.copy(color = errorDefault),
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.sdp())
             )
         }
     }

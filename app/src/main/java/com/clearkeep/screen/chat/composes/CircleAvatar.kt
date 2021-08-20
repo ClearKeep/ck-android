@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import coil.imageLoader
 import coil.request.CachePolicy
 import com.clearkeep.R
@@ -25,13 +24,14 @@ import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.colorTest
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
 fun CircleAvatar(
         url: List<String>,
         name: String = "",
-        size: Dp = 48.dp,
+        size: Dp = 48.sdp(),
         isGroup: Boolean = false,
         modifier: Modifier = Modifier,
         cacheKey: String = ""
@@ -41,9 +41,14 @@ fun CircleAvatar(
         Image(
             imageVector = Icons.Filled.Groups,
             contentDescription = "",
-            modifier = Modifier.size(size).clip(CircleShape).background(
-                color = colorTest
-            ).padding(12.dp).then(modifier),
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(
+                    color = colorTest
+                )
+                .padding(12.sdp())
+                .then(modifier),
         )
     } else {
         val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
