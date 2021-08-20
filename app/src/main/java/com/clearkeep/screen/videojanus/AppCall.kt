@@ -134,6 +134,7 @@ object AppCall {
                 notificationManager.createNotificationChannel(channel)
             }
         }
+
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
         builder.setSmallIcon(R.drawable.ic_logo)
             /*.setCustomContentView(headsUpLayout)
@@ -160,7 +161,7 @@ object AppCall {
             Glide.with(context.applicationContext)
                 .asBitmap()
                 .circleCrop()
-                .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
+                .load(avatar)
                 .into(target)
         }
 

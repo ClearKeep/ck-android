@@ -101,8 +101,6 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
             setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
-            setOnClickPendingIntent(R.id.tvMute, pendingDismissIntent)
-            setOnClickPendingIntent(R.id.tvReply, pendingIntent)
         }
 
         val notificationManager =

@@ -19,15 +19,11 @@ import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog.*
-import androidx.compose.foundation.layout.Column
-import androidx.compose.ui.res.stringResource
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.iterator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.R
-import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.databinding.ActivityInCallBinding
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Owner
@@ -122,6 +118,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     var isFromComingCall: Boolean = false
     var avatarInConversation = ""
     var groupName = ""
+    var isShowDialogCamera = false
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -146,6 +143,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         mOwnerClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
+        isShowDialogCamera = !mIsAudioMode
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
 
@@ -515,6 +513,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun showOpenCameraDialog() {
+        isShowDialogCamera = true
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle("Requesting to video call ?")
             .setPositiveButton("Ok") { _, _ ->
@@ -860,10 +859,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
                 if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
+                    if (mIsAudioMode && !isShowDialogCamera)
+                        showOpenCameraDialog()
                     mIsAudioMode = false
                     configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
                     updateUIByStateAndMode()
-                    showOpenCameraDialog()
+
                 }
             }
         }

@@ -108,7 +108,7 @@ fun LoginScreen(
                 CKButton(
                     stringResource(R.string.btn_login),
                     onClick = {
-                        onLoginPressed(email.value, password.value)
+                        onLoginPressed(email.value, password.value.trim())
                     },
                     modifier = Modifier
                         .fillMaxWidth()
