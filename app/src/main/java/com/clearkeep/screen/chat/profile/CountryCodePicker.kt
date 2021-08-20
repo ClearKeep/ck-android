@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.profile
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,12 +30,21 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @Composable
-fun PhoneCountryCodeBottomSheetDialog(onPick: (countryCode: String) -> Unit) {
+fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> Unit) {
     val context = LocalContext.current
     val searchQuery = remember { mutableStateOf("") }
     val searchResult = remember { mutableStateOf(countryCodesToNames) }
 
-    Column(Modifier.padding(start = 12.dp, end = 23.dp)) {
+    Column(Modifier.fillMaxSize().padding(start = 12.dp, end = 23.dp)) {
+        Spacer(Modifier.height(30.dp))
+        Image(
+            painter = painterResource(id = R.drawable.ic_cross),
+            contentDescription = null, modifier = Modifier
+                .clickable {
+                    onCloseView.invoke()
+                },
+            alignment = Alignment.CenterStart
+        )
         Spacer(Modifier.height(50.dp))
         Text(stringResource(R.string.country_codes), fontSize = 20.sp)
         Spacer(Modifier.height(25.dp))

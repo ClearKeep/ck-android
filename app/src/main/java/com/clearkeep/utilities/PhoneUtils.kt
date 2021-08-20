@@ -1,7 +1,6 @@
 package com.clearkeep.utilities
 
 val countryCodesToNames = listOf(
-    null to "Empty",
     1 to "Puerto Rico",
     970 to "Palestine",
     351 to "Portugal",

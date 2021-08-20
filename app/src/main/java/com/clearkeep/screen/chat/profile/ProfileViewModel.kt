@@ -127,13 +127,19 @@ class ProfileViewModel @Inject constructor(
 
     fun setPhoneNumber(phoneNumber: String) {
         _phoneNumber.value = phoneNumber.filter { it.isDigit() }
-        _phoneNumberError.value = !isValidPhoneNumber(countryCode.value ?: "", phoneNumber)
+        if (phoneNumber.isEmpty()) {
+            _phoneNumberError.value = false
+        } else {
+            _phoneNumberError.value = !isValidPhoneNumber(countryCode.value ?: "", phoneNumber)
+        }
     }
 
     fun setCountryCode(countryCode: String) {
         _countryCode.value =
             if (countryCode.isBlank()) "" else "+${countryCode.filter { it.isDigit() }}"
-        _phoneNumberError.value = !isValidPhoneNumber(countryCode, phoneNumber.value ?: "")
+        if (!phoneNumber.value.isNullOrBlank()) {
+            _phoneNumberError.value = !isValidPhoneNumber(countryCode, phoneNumber.value ?: "")
+        }
     }
 
     fun setUsername(username: String) {
@@ -175,6 +181,7 @@ class ProfileViewModel @Inject constructor(
 
         if (hasError) return
 
+        val updatedPhoneNumber = if (phoneNumber.isEmpty()) "" else "${countryCode}${phoneNumber}"
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
@@ -192,7 +199,7 @@ class ProfileViewModel @Inject constructor(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
                             userName = displayName,
-                            phoneNumber = "${countryCode}${phoneNumber}",
+                            phoneNumber = updatedPhoneNumber,
                             avatar = avatarUrl,
                             updatedAt = Calendar.getInstance().timeInMillis
                         )
@@ -217,7 +224,7 @@ class ProfileViewModel @Inject constructor(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
                             userName = displayName,
-                            phoneNumber = "${countryCode}${phoneNumber}"
+                            phoneNumber = updatedPhoneNumber
                         )
                     )
                     if (shouldUpdateMfaSetting) {
@@ -239,7 +246,10 @@ class ProfileViewModel @Inject constructor(
         val usernameChanged = _username.value != profile.value?.userName
         val emailChanged = _email.value != profile.value?.email
         val phoneNumberChanged =
-            "${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
+            if (phoneNumber.value.isNullOrEmpty()) {
+                phoneNumber.value != profile.value?.phoneNumber
+            } else
+                "${countryCode.value}${phoneNumber.value}" != profile.value?.phoneNumber
 
         val hasUnsavedChange =
             usernameChanged || emailChanged || phoneNumberChanged || isAvatarChanged
@@ -332,10 +342,6 @@ class ProfileViewModel @Inject constructor(
     private fun isValidUsername(username: String?): Boolean = !username.isNullOrEmpty()
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
-        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
-            return false
-        }
-
         if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
             try {
                 val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
