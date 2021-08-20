@@ -39,6 +39,8 @@ import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -75,7 +77,7 @@ fun InviteGroupScreen(
                     .weight(0.66f)
             ) {
                 Row(
-                    modifier = Modifier.padding(end = 8.dp, top = 24.dp),
+                    modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
@@ -104,8 +106,8 @@ fun InviteGroupScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-                Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Spacer(modifier = Modifier.height(24.sdp()))
+                Row(modifier = Modifier.padding(horizontal = 16.sdp())) {
                     CKSearchBox(
                         textSearch,
                         placeholder = when {
@@ -117,7 +119,7 @@ fun InviteGroupScreen(
                 }
                 Row(
                     modifier = Modifier
-                        .padding(all = 16.dp)
+                        .padding(all = 16.sdp())
                 ) {
                     if (selectedItem.isNotEmpty()) {
                         SelectedHorizontalBox(selectedItem,
@@ -129,7 +131,7 @@ fun InviteGroupScreen(
                 }
                 Row(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.sdp())
                         .clickable {
                             useCustomServerChecked.value = !useCustomServerChecked.value
                         }, verticalAlignment = Alignment.CenterVertically
@@ -138,19 +140,19 @@ fun InviteGroupScreen(
                         painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
                         ""
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(16.sdp()))
                     Text(
                         text = "Add user from other server",
-                        modifier = Modifier.padding(vertical = 16.dp),
+                        modifier = Modifier.padding(vertical = 16.sdp()),
                         style = MaterialTheme.typography.body1.copy(
                             color = grayscaleBlack,
-                            fontSize = 14.sp,
+                            fontSize = defaultNonScalableTextSize(),
                             fontWeight = FontWeight.Bold
                         )
                     )
                 }
 
-                Column(Modifier.padding(horizontal = 16.dp)) {
+                Column(Modifier.padding(horizontal = 16.sdp())) {
                     AnimatedVisibility(
                         visible = useCustomServerChecked.value,
                         enter = expandIn(
@@ -188,11 +190,11 @@ fun InviteGroupScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.sdp()))
                 friends.value?.let { values ->
                     val listShow = values.filterNot { listMemberInGroup.contains(it) }
                     LazyColumn(
-                        contentPadding = PaddingValues(end = 16.dp, start = 16.dp),
+                        contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
                     ) {
                         itemsIndexed(listShow) { _, friend ->
                             if (isCreateDirectGroup) {
@@ -214,7 +216,7 @@ fun InviteGroupScreen(
             }
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(16.sdp())
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -250,7 +252,7 @@ fun InviteGroupScreen(
                         }
                     },
                     modifier = Modifier
-                        .width(200.dp)
+                        .width(200.sdp())
                 )
             }
         }
@@ -301,7 +303,7 @@ fun InviteGroupScreen(
 @Composable
 fun SelectedHorizontalBox(selectedItem: List<User>, unSelectItem: (people: User) -> Unit) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.sdp()),
     ) {
         itemsIndexed(selectedItem) { _, friend ->
             SelectedFriendBox(people = friend, onRemove = { unSelectItem(it) })

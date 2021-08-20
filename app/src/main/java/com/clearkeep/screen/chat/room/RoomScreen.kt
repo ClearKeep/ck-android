@@ -37,6 +37,7 @@ import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
@@ -251,7 +252,7 @@ fun RoomScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         CircularProgressIndicator(color = Color.Blue)
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.sdp()))
                         Text(
                             text = "",
                             style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)

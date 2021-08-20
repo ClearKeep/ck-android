@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.utilities.defaultNonScalableTextSize
 
 @Composable
 fun CKHeaderText(
@@ -25,6 +26,7 @@ fun CKHeaderText(
         modifier = modifier,
         style = getTypography(headerTextType).copy(
             color = if (isSystemInDarkTheme()) color else color,
+            fontSize = defaultNonScalableTextSize()
         ),
         maxLines = 3,
         overflow = TextOverflow.Ellipsis

@@ -23,11 +23,13 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.*
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavController) {
@@ -46,21 +48,21 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                     HeaderRemoveMember {
                         navController.popBackStack()
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.sdp()))
 
                     Column(
-                        Modifier.padding(horizontal = 16.dp)
+                        Modifier.padding(horizontal = 16.sdp())
                     ) {
                         CKSearchBox(
                             text,
                             Modifier
-                                .background(grayscale5, RoundedCornerShape(16.dp))
+                                .background(grayscale5, RoundedCornerShape(16.sdp()))
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("User in this Group Chat", color = grayscale2)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.sdp()))
+                        CKText("User in this Group Chat", color = grayscale2)
+                        Spacer(modifier = Modifier.height(16.sdp()))
 
-                        val itemModifier = Modifier.padding(vertical = 8.dp)
+                        val itemModifier = Modifier.padding(vertical = 8.sdp())
                         LazyColumn {
                             itemsIndexed(group.clientList.filter {
                                 it.userState == UserStateTypeInGroup.ACTIVE.value && it != roomViewModel.getCurrentUser()
@@ -96,7 +98,7 @@ fun HeaderRemoveMember(onCloseView: () -> Unit) {
         Modifier
             .fillMaxWidth()
     ) {
-        Spacer(Modifier.size(24.dp))
+        Spacer(Modifier.size(24.sdp()))
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
