@@ -128,6 +128,10 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 if (it.isNotEmpty()) {
                     focusRequesters[1].requestFocus()
                 }
+            } else if (it.length == 2) {
+                //Handle delete and type case
+                input[1] = it[1].toString()
+                focusRequesters[1].requestFocus()
             } else if (isValidOtp(it)) {
                 //Handle pasted OTP
                 it.forEachIndexed { index: Int, c : Char ->
@@ -143,6 +147,10 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 } else {
                     focusRequesters[0].requestFocus()
                 }
+            } else if (it.length == 2) {
+                //Handle delete and type case
+                input[2] = it[1].toString()
+                focusRequesters[2].requestFocus()
             }
         }
         OtpInputSquare(input[2], focusRequesters[2]) {
@@ -153,6 +161,10 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 } else {
                     focusRequesters[1].requestFocus()
                 }
+            } else if (it.length == 2) {
+                //Handle delete and type case
+                input[3] = it[1].toString()
+                focusRequesters[3].requestFocus()
             }
         }
         OtpInputSquare(input[3], focusRequesters[3]) {
