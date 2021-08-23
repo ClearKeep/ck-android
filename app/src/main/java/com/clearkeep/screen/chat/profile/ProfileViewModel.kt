@@ -49,6 +49,7 @@ class ProfileViewModel @Inject constructor(
         } catch (e: Exception) {
             printlnCK("Profile phone number parse failed $e")
             _phoneNumber.postValue(it.phoneNumber)
+            _countryCode.postValue("")
         }
         it
     }
@@ -167,7 +168,7 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = false
         val avatarToUpload = imageUriSelected.value
         val server = environment.getServer()
-        val isPhoneNumberChanged = phoneNumber != profile.value?.phoneNumber
+        val isPhoneNumberChanged = (countryCode + phoneNumber) != profile.value?.phoneNumber
         val shouldUpdateMfaSetting = isPhoneNumberChanged && userPreference.value?.mfa == true
 
         var hasError = false
