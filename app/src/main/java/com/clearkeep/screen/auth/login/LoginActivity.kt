@@ -109,7 +109,7 @@ class LoginActivity : AppCompatActivity() {
                 if (res.status == Status.SUCCESS) {
                     val shouldRequireOtp = res.data?.accessToken.isNullOrBlank()
                     if (shouldRequireOtp) {
-                        loginViewModel.setOtpLoginInfo(res.data?.otpHash ?: "", res.data?.sub ?: "")
+                        loginViewModel.setOtpLoginInfo(res.data?.otpHash ?: "", res.data?.sub ?: "", res.data?.hashKey ?: "")
                         navController.navigate("otp_confirm")
                     } else {
                         onLoginSuccess()
@@ -197,9 +197,10 @@ class LoginActivity : AppCompatActivity() {
                     EnterOtpScreen(
                         otpResponse = loginViewModel.verifyOtpResponse,
                         onDismissMessage = { loginViewModel.verifyOtpResponse.value = null },
-                        onClickResend = { /*TODO*/ },
+                        onClickResend = { loginViewModel.requestResendOtp() },
                         onClickSubmit = { loginViewModel.validateOtp(it) },
                         onBackPress = { navController.popBackStack() }) {
+                        onLoginSuccess()
                     }
                 }
             }

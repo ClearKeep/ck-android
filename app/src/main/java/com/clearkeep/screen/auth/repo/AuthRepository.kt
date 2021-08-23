@@ -15,6 +15,7 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import signal.Signal
@@ -66,7 +67,7 @@ class AuthRepository @Inject constructor(
             val request = AuthOuterClass.AuthReq.newBuilder()
                     .setEmail(userName)
                     .setPassword(password)
-                .setWorkspaceDomain(domain)
+                    .setWorkspaceDomain(domain)
                     .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).login(request)
             if (response.baseResponse.success) {
@@ -307,7 +308,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun validateOtp(domain: String, otp: String, otpHash: String, userId: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
+    suspend fun validateOtp(domain: String, otp: String, otpHash: String, userId: String, hashKey: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
         try {
             val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
                 .setOtpCode(otp)
@@ -317,7 +318,6 @@ class AuthRepository @Inject constructor(
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.validateOtp(request)
             val accessToken = response.accessToken
-            val hashKey = response.hashKey
             printlnCK("validateOtp success? ${response.baseResponse.success} error? ${response.baseResponse.errors.message} code ${response.baseResponse.errors.code}")
             printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
             val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
@@ -347,6 +347,24 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.success(response)
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
+            return@withContext Resource.error(exception.toString(), null)
+        }
+    }
+
+    suspend fun mfaResendOtp(domain: String, otpHash: String, userId: String) : Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
+                .setOtpHash(otpHash)
+                .setUserId(userId)
+                .build()
+            val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+            val response = stub.resendOtp(request)
+            printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} requireAction? ${response.requireAction}")
+            return@withContext if (response.otpHash.isNotBlank()) Resource.success(response.otpHash) else Resource.error("", null)
+        } catch (exception: StatusRuntimeException) {
+            return@withContext Resource.error(exception.message ?: "", null)
+        } catch (exception: Exception) {
+            printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
         }
     }

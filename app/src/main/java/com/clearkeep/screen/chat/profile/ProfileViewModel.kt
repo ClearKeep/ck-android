@@ -206,13 +206,6 @@ class ProfileViewModel @Inject constructor(
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
-                        if (response) {
-                            userPreferenceRepository.updateMfa(
-                                server.serverDomain,
-                                server.profile.userId,
-                                false
-                            )
-                        }
                     }
                 }
             }
@@ -229,13 +222,6 @@ class ProfileViewModel @Inject constructor(
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
-                        if (response) {
-                            userPreferenceRepository.updateMfa(
-                                server.serverDomain,
-                                server.profile.userId,
-                                false
-                            )
-                        }
                     }
                 }
             }
@@ -280,7 +266,10 @@ class ProfileViewModel @Inject constructor(
     fun updateMfaSettings(enabled: Boolean) {
         viewModelScope.launch {
             val isSuccess = profileRepository.updateMfaSettings(getOwner(), enabled)
-            updateMfaSettingResponse.value = isSuccess
+            if (enabled || !isSuccess) {
+                //Don't send message to UI when disable success
+                updateMfaSettingResponse.value = isSuccess
+            }
         }
     }
 
