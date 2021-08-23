@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.HeaderTextType
@@ -33,6 +34,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
     val text = remember { mutableStateOf("") }
     val groupState = roomViewModel.group.observeAsState()
     val context = LocalContext.current
+    val removeMemberDialogVisible = remember { mutableStateOf(false) }
 
     groupState.value?.let { group ->
         CKSimpleTheme {
@@ -67,7 +69,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                                 RemoveMemberItem(itemModifier, user) {
                                     roomViewModel.group.value?.groupId?.let { it1 ->
                                         roomViewModel.removeMember(user,groupId = it1,onSuccess = {
-                                            Toast.makeText(context,"Remove member success",Toast.LENGTH_LONG).show()
+                                            removeMemberDialogVisible.value = true
                                         },onError = {
                                             Toast.makeText(context,"Remove member error !",Toast.LENGTH_LONG).show()
                                         })
@@ -79,6 +81,12 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                 }
             }
         }
+    }
+
+    if (removeMemberDialogVisible.value) {
+        CKAlertDialog(title = "Remove member success", onDismissButtonClick = {
+            removeMemberDialogVisible.value = false
+        })
     }
 }
 
