@@ -58,7 +58,8 @@ fun ClickableLinkContent(message: String) {
             annotatedString.getStringAnnotations(tag = "URL", start = offset,
                 end = offset)
                 .firstOrNull()?.let { annotation ->
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(annotation.item))
+                    val validatedUrl = if (annotation.item.contains("http(s)?://".toRegex())) annotation.item else "http://${annotation.item}"
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(validatedUrl))
                     ContextCompat.startActivity(context, intent, null)
                 }
         }
