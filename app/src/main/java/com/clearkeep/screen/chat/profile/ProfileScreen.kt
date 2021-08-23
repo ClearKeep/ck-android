@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -55,6 +56,7 @@ fun ProfileScreen(
     val profile = profileViewModel.profile.observeAsState()
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     BackHandler {
         onCloseView()
@@ -246,6 +248,7 @@ fun ProfileScreen(
                             ChangePassword(onChangePassword)
                             Spacer(Modifier.height(24.dp))
                             TwoFaceAuthView(userPreference.value?.mfa ?: false) {
+                                focusManager.clearFocus()
                                 if (it) {
                                     if (profileViewModel.canEnableMfa()) {
                                         profileViewModel.updateMfaSettings(it)
@@ -506,8 +509,8 @@ fun TwoFaceAuthView(
     Column {
         CKSetting(
             modifier = Modifier,
-            name = "Two Factors Authentication",
-            description = "Give your account more protection over scam and account hacking",
+            name = stringResource(R.string.two_factors_auth),
+            description = stringResource(R.string.two_factors_auth_description),
             checked = enabled,
             onCheckChange = onCheckChange
         )

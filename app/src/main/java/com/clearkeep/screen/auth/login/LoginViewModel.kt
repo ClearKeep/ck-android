@@ -59,10 +59,12 @@ class LoginViewModel @Inject constructor(
 
     private var otpHash: String = ""
     private var userId: String = ""
+    private var hashKey: String = ""
 
-    fun setOtpLoginInfo(otpHash: String, userId: String) {
+    fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
+        this.hashKey = hashKey
     }
 
     fun initGoogleSingIn(context: Context){
@@ -169,11 +171,22 @@ class LoginViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val response = authRepo.validateOtp(getDomain(), otp, otpHash, userId)
+            val response = authRepo.validateOtp(getDomain(), otp, otpHash, userId, hashKey)
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
             } else {
                 verifyOtpResponse.value = Resource.success(null)
+            }
+        }
+    }
+
+    fun requestResendOtp() {
+        viewModelScope.launch {
+            val response = authRepo.mfaResendOtp(getDomain(), otpHash, userId)
+            if (response.status == Status.ERROR) {
+                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+            } else {
+                otpHash = response.data ?: ""
             }
         }
     }
