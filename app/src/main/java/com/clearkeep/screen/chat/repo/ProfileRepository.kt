@@ -10,6 +10,7 @@ import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notify_push.NotifyPushOuterClass
@@ -139,13 +140,26 @@ class ProfileRepository @Inject constructor(
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
             val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
-            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val stub = apiProvider.provideUserBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val response = if (enabled) {
                 stub.enableMfa(request)
             } else {
                 stub.disableMfa(request)
             }
             printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
+            if (response.success && !enabled) {
+                userPreferenceRepository.updateMfa(
+                    server.serverDomain,
+                    server.profile.userId,
+                    false
+                )
+            }
             return@withContext response.success
         } catch (exception: Exception) {
             printlnCK("updateMfaSettings: $exception")
@@ -163,6 +177,9 @@ class ProfileRepository @Inject constructor(
             val response = stub.mfaValidatePassword(request)
             printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code} next step ${response.nextStep}")
             return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.toString(), null)
+        } catch (exception: StatusRuntimeException) {
+            printlnCK("mfaValidatePassword: $exception")
+            return@withContext Resource.error(exception.message ?: "", null)
         } catch (exception: Exception) {
             printlnCK("mfaValidatePassword: $exception")
             return@withContext Resource.error(exception.toString(), null)
@@ -175,7 +192,13 @@ class ProfileRepository @Inject constructor(
             val request = UserOuterClass.MfaValidateOtpRequest.newBuilder()
                 .setOtp(otp)
                 .build()
-            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val stub = apiProvider.provideUserBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val response = stub.mfaValidateOtp(request)
             printlnCK("mfaValidateOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
             return@withContext if (response.success) {
@@ -184,6 +207,8 @@ class ProfileRepository @Inject constructor(
             } else {
                 Resource.error(response.errors.message, null)
             }
+        } catch (exception: StatusRuntimeException) {
+            return@withContext Resource.error(exception.message ?: "", null)
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
@@ -198,6 +223,8 @@ class ProfileRepository @Inject constructor(
             val response = stub.mfaResendOtp(request)
             printlnCK("mfaResendOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
             return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
+        } catch (exception: StatusRuntimeException) {
+            return@withContext Resource.error(exception.message ?: "", null)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)

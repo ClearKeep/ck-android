@@ -59,8 +59,6 @@ class OtpViewModel @Inject constructor(
             val response = profileRepository.mfaResendOtp(getOwner())
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
-            } else {
-                verifyOtpResponse.value = response
             }
         }
     }
