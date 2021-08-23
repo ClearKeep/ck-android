@@ -332,6 +332,9 @@ class ProfileViewModel @Inject constructor(
     private fun isValidUsername(username: String?): Boolean = !username.isNullOrEmpty()
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
+        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
+            return false
+        }
         if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
             try {
                 val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
