@@ -42,7 +42,7 @@ import com.clearkeep.utilities.network.Status
 
 @Composable
 fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMessage: () -> Unit, onClickResend: () -> Unit, onClickSubmit: (String) -> Unit, onBackPress: () -> Unit, onClickSave: () -> Unit) {
-    val input = remember { mutableStateListOf("", "", "", "") }
+    val input = remember { mutableStateListOf(" ", " ", " ", " ") }
     val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {
@@ -84,7 +84,7 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
             Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sp)
             Spacer(Modifier.height(24.dp))
             CKButton(
-                stringResource(R.string.save),
+                stringResource(R.string.verify),
                 onClick = {
                     onClickSubmit.invoke(input.joinToString(""))
                 },
@@ -127,6 +127,8 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 input[0] = it
                 if (it.isNotEmpty()) {
                     focusRequesters[1].requestFocus()
+                } else {
+                    input[0] = " "
                 }
             } else if (it.length == 2) {
                 //Handle delete and type case
@@ -145,6 +147,7 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 if (it.isNotEmpty()) {
                     focusRequesters[2].requestFocus()
                 } else {
+                    input[1] = " "
                     focusRequesters[0].requestFocus()
                 }
             } else if (it.length == 2) {
@@ -159,6 +162,7 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 if (it.isNotEmpty()) {
                     focusRequesters[3].requestFocus()
                 } else {
+                    input[2] = " "
                     focusRequesters[1].requestFocus()
                 }
             } else if (it.length == 2) {
@@ -171,6 +175,7 @@ fun OtpInput(input: SnapshotStateList<String>) {
             if (it.length <= 1) {
                 input[3] = it
                 if (it.isEmpty()) {
+                    input[3] = " "
                     focusRequesters[2].requestFocus()
                 }
             }
@@ -188,7 +193,7 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
         Box(Modifier.size(28.dp).align(Alignment.Center)) {
             BasicTextField(
                 value,
-                onValueChange = onValueChange,
+                onValueChange = { onValueChange(it.trim()) },
                 modifier = Modifier.align(Alignment.Center).fillMaxWidth().focusRequester(focusRequester),
                 singleLine = true,
                 textStyle = TextStyle(fontSize = 20.sp),
