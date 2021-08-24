@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.repo
 
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
+import com.clearkeep.db.clear_keep.model.ProtoResponse
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
@@ -9,7 +10,9 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import com.google.gson.Gson
 import com.google.protobuf.ByteString
+import io.grpc.Metadata
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,6 +32,8 @@ class ProfileRepository @Inject constructor(
 
     private val userManager: AppStorage
 ) {
+    private val errorRegex = "\\{.+\\}".toRegex()
+
     suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {
         printlnCK("registerToken: token = $token")
         val server = serverRepository.getServers()
@@ -136,9 +141,9 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Resource<String> = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
             val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
             val stub = apiProvider.provideUserBlockingStub(
                 ParamAPI(
@@ -160,10 +165,17 @@ class ProfileRepository @Inject constructor(
                     false
                 )
             }
-            return@withContext response.success
+            return@withContext Resource.success("")
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1069 -> "Your account has been locked out due to too many attempts. Please try again later"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (exception: Exception) {
             printlnCK("updateMfaSettings: $exception")
-            return@withContext false
+            return@withContext Resource.error("", null)
         }
     }
 
@@ -178,8 +190,8 @@ class ProfileRepository @Inject constructor(
             printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code} next step ${response.nextStep}")
             return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.toString(), null)
         } catch (exception: StatusRuntimeException) {
-            printlnCK("mfaValidatePassword: $exception")
-            return@withContext Resource.error(exception.message ?: "", null)
+            val parsedError = parseError(exception)
+            return@withContext Resource.error(parsedError.message, null)
         } catch (exception: Exception) {
             printlnCK("mfaValidatePassword: $exception")
             return@withContext Resource.error(exception.toString(), null)
@@ -208,7 +220,13 @@ class ProfileRepository @Inject constructor(
                 Resource.error(response.errors.message, null)
             }
         } catch (exception: StatusRuntimeException) {
-            return@withContext Resource.error(exception.message ?: "", null)
+            val parsedError = parseError(exception)
+            val message = when (parsedError.code) {
+                1071 -> "Authentication failed. Please retry."
+                1068, 1072 -> "Verification code has expired. Please request a new code and retry."
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
@@ -224,10 +242,20 @@ class ProfileRepository @Inject constructor(
             printlnCK("mfaResendOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
             return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
         } catch (exception: StatusRuntimeException) {
-            return@withContext Resource.error(exception.message ?: "", null)
+            val parsedError = parseError(exception)
+            val message = when (parsedError.code) {
+                1069 -> "Your account has been locked out due to too many attempts. Please try again later"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
         }
+    }
+
+    private fun parseError(e: StatusRuntimeException) : ProtoResponse {
+        val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
+        return Gson().fromJson(rawError, ProtoResponse::class.java)
     }
 }
