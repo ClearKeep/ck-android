@@ -343,6 +343,10 @@ class ProfileViewModel @Inject constructor(
         if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
             try {
                 val numberProto = phoneUtil.parse("${countryCode}${phoneNumber}", null)
+                if (countryCode == "+84" && phoneNumber.startsWith("3") && phoneNumber.length == 9) {
+                    //Manual override for Viettel numbers
+                    return true
+                }
                 if (!phoneUtil.isValidNumber(numberProto)) {
                     return false
                 }
