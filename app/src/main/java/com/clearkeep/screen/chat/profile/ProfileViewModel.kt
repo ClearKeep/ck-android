@@ -19,11 +19,11 @@ import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.lang.Exception
 import java.security.MessageDigest
 import java.util.*
 import javax.inject.Inject
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
+import kotlin.Exception
 
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
@@ -251,11 +251,16 @@ class ProfileViewModel @Inject constructor(
 
     fun undoProfileChanges() {
         val oldProfile = profile.value
-        val numberProto: PhoneNumber = phoneUtil.parse(oldProfile?.phoneNumber, "")
-        val countryCode = numberProto.countryCode
-        val phoneNum = oldProfile?.phoneNumber?.replace("+$countryCode", "")
-        _countryCode.postValue(countryCode.toString())
-        _phoneNumber.value = phoneNum
+        try {
+            val numberProto: PhoneNumber = phoneUtil.parse(oldProfile?.phoneNumber, "")
+            val countryCode = numberProto.countryCode
+            val phoneNum = oldProfile?.phoneNumber?.replace("+$countryCode", "")
+            _phoneNumber.value = phoneNum
+            _countryCode.value = "+$countryCode"
+        } catch (e: Exception) {
+            _phoneNumber.value = ""
+            _countryCode.value = ""
+        }
         _email.value = oldProfile?.email
         _username.value = oldProfile?.userName
         _imageUriSelected.value = null
@@ -332,7 +337,7 @@ class ProfileViewModel @Inject constructor(
     private fun isValidUsername(username: String?): Boolean = !username.isNullOrEmpty()
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
-        if (countryCode.isBlank() xor phoneNumber.isBlank()) {
+        if (countryCode.isBlank() && phoneNumber.isNotBlank()) {
             return false
         }
         if (countryCode.isNotBlank() && phoneNumber.isNotBlank()) {
