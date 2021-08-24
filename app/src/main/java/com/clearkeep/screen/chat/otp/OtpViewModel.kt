@@ -40,7 +40,7 @@ class OtpViewModel @Inject constructor(
 
     fun verifyOtp(otp: String) {
         if (otp.isBlank() || otp.length != 4) {
-            verifyOtpResponse.value = Resource.error("The code you’ve entered is incorrect. Please try again", null)
+            verifyOtpResponse.value = Resource.error("Authentication failed. Please retry.", null)
             return
         }
 

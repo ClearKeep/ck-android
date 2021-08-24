@@ -11,6 +11,7 @@ import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.google.i18n.phonenumbers.CountryCodeToRegionCodeMap
 import com.google.i18n.phonenumbers.NumberParseException
@@ -67,7 +68,7 @@ class ProfileViewModel @Inject constructor(
 
     val uploadAvatarResponse = MutableLiveData<Resource<String>>()
 
-    val updateMfaSettingResponse = MutableLiveData<Boolean>()
+    val updateMfaSettingResponse = MutableLiveData<Resource<String>>()
 
     private val _username = MutableLiveData<String>()
     val username: LiveData<String>
@@ -207,6 +208,7 @@ class ProfileViewModel @Inject constructor(
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        updateMfaSettingResponse.value = response
                     }
                 }
             }
@@ -222,7 +224,7 @@ class ProfileViewModel @Inject constructor(
                         )
                     )
                     if (shouldUpdateMfaSetting) {
-                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        updateMfaSettingResponse.value = profileRepository.updateMfaSettings(getOwner(), false)
                     }
                 }
             }
@@ -271,10 +273,10 @@ class ProfileViewModel @Inject constructor(
 
     fun updateMfaSettings(enabled: Boolean) {
         viewModelScope.launch {
-            val isSuccess = profileRepository.updateMfaSettings(getOwner(), enabled)
-            if (enabled || !isSuccess) {
+            val response = profileRepository.updateMfaSettings(getOwner(), enabled)
+            if (enabled || response.status == Status.ERROR) {
                 //Don't send message to UI when disable success
-                updateMfaSettingResponse.value = isSuccess
+                updateMfaSettingResponse.value = response
             }
         }
     }

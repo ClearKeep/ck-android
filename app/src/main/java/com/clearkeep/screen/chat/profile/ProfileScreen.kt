@@ -311,10 +311,17 @@ fun ProfileScreen(
                 }
             )
         }
-        if (updateMfaResponse.value == true) {
+        if (updateMfaResponse.value?.status == Status.SUCCESS) {
             onNavigateToOtp()
             profileViewModel.updateMfaSettingResponse.value =
                 null //Prevent response from being handled again
+        } else if (updateMfaResponse.value?.status == Status.ERROR) {
+            CKAlertDialog(
+                title = updateMfaResponse.value!!.message,
+                onDismissButtonClick = {
+                    profileViewModel.updateMfaSettingResponse.value = null
+                },
+            )
         }
 
         UploadPhotoDialog(
