@@ -80,7 +80,8 @@ fun OtpVerifyPasswordScreen(
                     otpViewModel.verifyPassword(currentPassWord.value)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                buttonType = ButtonType.White
+                buttonType = ButtonType.White,
+                enabled = currentPassWord.value.isNotBlank()
             )
         }
         when (verifyPasswordResponse.value?.status) {

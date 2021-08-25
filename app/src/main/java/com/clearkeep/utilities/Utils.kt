@@ -168,7 +168,12 @@ fun isOdd(num: Int) : Boolean {
 
 fun parseError(e: StatusRuntimeException) : ProtoResponse {
     val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
-    return Gson().fromJson(rawError, ProtoResponse::class.java)
+    return try {
+        Gson().fromJson(rawError, ProtoResponse::class.java)
+    } catch (e: Exception) {
+        println("parseError exception rawError $rawError, exception ${e.message}")
+        ProtoResponse(0, rawError)
+    }
 }
 
 val errorRegex = "\\{.+\\}".toRegex()

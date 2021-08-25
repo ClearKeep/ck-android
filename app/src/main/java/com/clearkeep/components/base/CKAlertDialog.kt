@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -38,11 +39,11 @@ fun CKAlertDialog(
         },
         modifier = modifier,
         title = {
-            Text(title ?: "")
+            Text(title ?: "", textAlign = TextAlign.Justify)
         },
-        text = {
-            Text(text ?: "")
-        },
+        text = if (text.isNullOrBlank()) null else ({
+            Text(text)
+        }),
         shape = shape,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
