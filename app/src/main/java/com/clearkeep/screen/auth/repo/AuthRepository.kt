@@ -52,12 +52,12 @@ class AuthRepository @Inject constructor(
             if (response.baseResponse.success) {
                 return@withContext Resource.success(response)
             } else {
-                printlnCK("register failed: ${response.baseResponse.errors.message}")
-                return@withContext Resource.error(response.baseResponse.errors.message, null)
+                printlnCK("register failed: ${response.baseResponse.error.message}")
+                return@withContext Resource.error(response.baseResponse.error.message, null)
             }
         } catch (e: Exception) {
             printlnCK("register error: $e")
-            return@withContext Resource.error(e.toString(), null)
+            return@withContext Resource.error(e.    toString(), null)
         }
     }
 
@@ -70,7 +70,7 @@ class AuthRepository @Inject constructor(
                     .setWorkspaceDomain(domain)
                     .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).login(request)
-            if (response.baseResponse.success) {
+            if (response.error.isEmpty()) {
                 printlnCK("login successfully")
                 val accessToken = response.accessToken
                 val hashKey = response.hashKey
@@ -109,9 +109,16 @@ class AuthRepository @Inject constructor(
                     return@withContext Resource.success(response)
                 }
             } else {
-                printlnCK("login failed: ${response.baseResponse.errors.message}")
-                return@withContext Resource.error(response.baseResponse.errors.message, null)
+                printlnCK("login failed: ${response.error}")
+                return@withContext Resource.error(response.error, null)
             }
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1001 -> "Login information is not correct. Please try again"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             printlnCK("login error: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -129,7 +136,7 @@ class AuthRepository @Inject constructor(
                 .build()
             val response=paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginGoogle(request)
 
-            if (response.baseResponse.success) {
+            if (response.error.isEmpty()) {
                 printlnCK("login by google successfully")
                 val accessToken = response.accessToken
                 val hashKey = response.hashKey
@@ -159,7 +166,14 @@ class AuthRepository @Inject constructor(
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
-            return@withContext Resource.error(response.baseResponse.errors.message, null)
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1001 -> "Login information is not correct. Please try again"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             printlnCK("login by google error: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -177,7 +191,7 @@ class AuthRepository @Inject constructor(
                 .build()
             val response= paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginFacebook(request)
 
-            if (response.baseResponse.success) {
+            if (response.error.isEmpty()) {
                 printlnCK("login by facebook successfully: $response")
                 val accessToken = response.accessToken
                 val hashKey = response.hashKey
@@ -207,7 +221,14 @@ class AuthRepository @Inject constructor(
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
-            return@withContext Resource.error(response.baseResponse.errors.message, null)
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1001 -> "Login information is not correct. Please try again"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             printlnCK("login by facebook error: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -227,7 +248,7 @@ class AuthRepository @Inject constructor(
                 .setWorkspaceDomain(domain)
                 .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginOffice(request)
-            if (response.baseResponse.success) {
+            if (response.error.isEmpty()) {
                 printlnCK("login by microsoft successfully")
 
                 val accessToken = response.accessToken
@@ -258,7 +279,14 @@ class AuthRepository @Inject constructor(
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
-            return@withContext Resource.error(response.baseResponse.errors.message, null)
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1001 -> "Login information is not correct. Please try again"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             return@withContext Resource.error(e.toString(), null)
         }
@@ -274,7 +302,7 @@ class AuthRepository @Inject constructor(
             if (response.success) {
                 return@withContext Resource.success(response)
             } else {
-                return@withContext Resource.error(response.errors.message, null)
+                return@withContext Resource.error(response.error.message, null)
             }
         } catch (e: Exception) {
             printlnCK("recoverPassword error: $e")
@@ -299,8 +327,8 @@ class AuthRepository @Inject constructor(
                 printlnCK("logoutFromAPI successed")
                 return@withContext Resource.success(response)
             } else {
-                printlnCK("logoutFromAPI failed: ${response.errors.message}")
-                return@withContext Resource.error(response.errors.message, null)
+                printlnCK("logoutFromAPI failed: ${response.error.message}")
+                return@withContext Resource.error(response.error.message, null)
             }
         } catch (e: Exception) {
             printlnCK("logoutFromAPI error: $e")
@@ -318,7 +346,7 @@ class AuthRepository @Inject constructor(
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.validateOtp(request)
             val accessToken = response.accessToken
-            printlnCK("validateOtp success? ${response.baseResponse.success} error? ${response.baseResponse.errors.message} code ${response.baseResponse.errors.code}")
+            printlnCK("validateOtp error? ${response.error}")
             printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
             val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                 ?: return@withContext Resource.error("Can not get profile", null)
@@ -359,7 +387,7 @@ class AuthRepository @Inject constructor(
                 .build()
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.resendOtp(request)
-            printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} requireAction? ${response.requireAction}")
+            printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} success? ${response.success}")
             return@withContext if (response.otpHash.isNotBlank()) Resource.success(response.otpHash) else Resource.error("", null)
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaResendOtp: $exception")
