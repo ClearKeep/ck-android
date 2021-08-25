@@ -74,7 +74,6 @@ fun ProfileScreen(
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
-        val coroutineScope = rememberCoroutineScope()
 
         printlnCK("ProfileScreen userPreference ${userPreference.value?.mfa ?: "null"}")
 
@@ -315,7 +314,8 @@ fun ProfileScreen(
                 null //Prevent response from being handled again
         } else if (updateMfaResponse.value?.status == Status.ERROR) {
             CKAlertDialog(
-                title = updateMfaResponse.value!!.message,
+                title = updateMfaResponse.value?.data?.first ?: "",
+                text = updateMfaResponse.value?.data?.second ?: "",
                 onDismissButtonClick = {
                     profileViewModel.updateMfaSettingResponse.value = null
                 },
@@ -336,6 +336,8 @@ fun ProfileScreen(
 
 @Composable
 fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
+    val focusManager = LocalFocusManager.current
+
     Column(
         Modifier
             .fillMaxWidth()
@@ -362,6 +364,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
                 CKTextButton(
                     title = "Save",
                     onClick = {
+                        focusManager.clearFocus()
                         onClickSave.invoke()
                     },
                     fontSize = 16.sp,

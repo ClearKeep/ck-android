@@ -140,7 +140,7 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Resource<String> = withContext(Dispatchers.IO) {
+    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
             val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
@@ -164,17 +164,17 @@ class ProfileRepository @Inject constructor(
                     false
                 )
             }
-            return@withContext Resource.success("")
+            return@withContext Resource.success("" to "")
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
-                1069 -> "Your account has been locked out due to too many attempts. Please try again later"
-                else -> parsedError.message
+                1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
+                else -> "" to parsedError.message
             }
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error("", message)
         } catch (exception: Exception) {
             printlnCK("updateMfaSettings: $exception")
-            return@withContext Resource.error("", null)
+            return@withContext Resource.error("", "" to exception.toString())
         }
     }
 
@@ -243,7 +243,7 @@ class ProfileRepository @Inject constructor(
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
-                1069 -> "Your account has been locked out due to too many attempts. Please try again later"
+                1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
             return@withContext Resource.error(message, null)

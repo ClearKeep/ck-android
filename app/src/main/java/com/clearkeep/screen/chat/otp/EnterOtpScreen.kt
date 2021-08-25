@@ -89,7 +89,8 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
                     onClickSubmit.invoke(input.joinToString(""))
                 },
                 modifier = Modifier.fillMaxWidth(),
-                buttonType = ButtonType.White
+                buttonType = ButtonType.White,
+                enabled = input.joinToString("").isNotBlank()
             )
         }
 

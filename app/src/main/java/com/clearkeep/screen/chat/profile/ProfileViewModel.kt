@@ -68,7 +68,7 @@ class ProfileViewModel @Inject constructor(
 
     val uploadAvatarResponse = MutableLiveData<Resource<String>>()
 
-    val updateMfaSettingResponse = MutableLiveData<Resource<String>>()
+    val updateMfaSettingResponse = MutableLiveData<Resource<Pair<String, String>>>()
 
     private val _username = MutableLiveData<String>()
     val username: LiveData<String>
