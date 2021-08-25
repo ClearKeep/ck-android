@@ -9,8 +9,8 @@ import javax.inject.Singleton
 class UserPreferenceRepository @Inject constructor(
     private val userPreferenceDAO: UserPreferenceDAO
 ) {
-    suspend fun initDefaultUserPreference(serverDomain: String, userId: String) {
-        val defaultSettings = UserPreference.getDefaultUserPreference(serverDomain, userId)
+    suspend fun initDefaultUserPreference(serverDomain: String, userId: String, isSocialAccount : Boolean = false) {
+        val defaultSettings = UserPreference.getDefaultUserPreference(serverDomain, userId, isSocialAccount)
         userPreferenceDAO.insert(defaultSettings)
     }
 
