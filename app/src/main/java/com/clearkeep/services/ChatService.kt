@@ -206,7 +206,7 @@ class ChatService : Service(),
             group?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
-                    val userPreference = userPreferenceRepository.getUserPreference(domain, ownerClientId) ?: UserPreference.getDefaultUserPreference("", "")
+                    val userPreference = userPreferenceRepository.getUserPreference(domain, ownerClientId) ?: UserPreference.getDefaultUserPreference("", "", false)
                     val senderUser = peopleRepository.getFriendFromID(
                         message.senderId
                     )
