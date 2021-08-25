@@ -269,12 +269,17 @@ class ProfileViewModel @Inject constructor(
         isAvatarChanged = false
     }
 
-    fun canEnableMfa(): Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
+    fun getMfaErrorMessage(): Pair<String, String> {
+        if (userPreference.value?.isSocialAccount == true) {
+            return "2FA is not supported" to "We are so sorry. This function is not supported for your account."
+        }
+        if (profile.value?.phoneNumber.isNullOrEmpty()) {
+            return "Type in your phone number" to "You must input your phone number in order to enable this feature."
+        }
+        return "" to ""
+    }
 
     fun updateMfaSettings(enabled: Boolean) {
-        if (enabled && userPreference.value?.isSocialAccount == true) {
-            updateMfaSettingResponse.value = Resource.error("Cannot turn on MFA for social account", null)
-        }
         viewModelScope.launch {
             val response = profileRepository.updateMfaSettings(getOwner(), enabled)
             if (enabled || response.status == Status.ERROR) {
