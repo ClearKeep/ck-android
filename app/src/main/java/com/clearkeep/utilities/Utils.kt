@@ -13,7 +13,10 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
+import com.clearkeep.db.clear_keep.model.ProtoResponse
 import com.clearkeep.screen.splash.SplashActivity
+import com.google.gson.Gson
+import io.grpc.StatusRuntimeException
 import kotlin.system.exitProcess
 
 fun restartToRoot(context: Context) {
@@ -162,3 +165,10 @@ fun convertSecondsToHMmSs(seconds: Long): String {
 fun isOdd(num: Int) : Boolean {
     return num % 2 != 0
 }
+
+fun parseError(e: StatusRuntimeException) : ProtoResponse {
+    val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
+    return Gson().fromJson(rawError, ProtoResponse::class.java)
+}
+
+val errorRegex = "\\{.+\\}".toRegex()
