@@ -272,6 +272,9 @@ class ProfileViewModel @Inject constructor(
     fun canEnableMfa(): Boolean = !profile.value?.phoneNumber.isNullOrEmpty()
 
     fun updateMfaSettings(enabled: Boolean) {
+        if (enabled && userPreference.value?.isSocialAccount == true) {
+            updateMfaSettingResponse.value = Resource.error("Cannot turn on MFA for social account", null)
+        }
         viewModelScope.launch {
             val response = profileRepository.updateMfaSettings(getOwner(), enabled)
             if (enabled || response.status == Status.ERROR) {

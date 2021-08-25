@@ -105,7 +105,7 @@ class AuthRepository @Inject constructor(
                             profile = profile,
                         )
                     )
-                    userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+                    userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
                     return@withContext Resource.success(response)
                 }
             } else {
@@ -156,7 +156,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -204,7 +204,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -255,7 +255,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.baseResponse.errors.message, null)
@@ -343,7 +343,7 @@ class AuthRepository @Inject constructor(
                     profile = profile,
                 )
             )
-            userPreferenceRepository.initDefaultUserPreference(domain, profile.userId)
+            userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
             return@withContext Resource.success(response)
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
@@ -362,6 +362,7 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} requireAction? ${response.requireAction}")
             return@withContext if (response.otpHash.isNotBlank()) Resource.success(response.otpHash) else Resource.error("", null)
         } catch (exception: StatusRuntimeException) {
+            printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.message ?: "", null)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
