@@ -185,7 +185,7 @@ class PeopleRepository @Inject constructor(
             val listMemberInfoRequest= list.map {
                 UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId).setWorkspaceDomain(it.domain).build()
             }
-            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).setShouldGetProfile(true)
+            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).setShouldGetProfile(false)
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().getClientsStatus(request)
             list.map { user ->
@@ -193,7 +193,7 @@ class PeopleRepository @Inject constructor(
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
-                user.avatar = newUser?.avatar
+               // user.avatar = newUser?.avatar
             }
             return@withContext list
         } catch (e: Exception) {
