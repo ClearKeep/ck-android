@@ -9,6 +9,7 @@ import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import com.google.gson.Gson
 import com.google.protobuf.ByteString
@@ -32,8 +33,6 @@ class ProfileRepository @Inject constructor(
 
     private val userManager: AppStorage
 ) {
-    private val errorRegex = "\\{.+\\}".toRegex()
-
     suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {
         printlnCK("registerToken: token = $token")
         val server = serverRepository.getServers()
@@ -252,10 +251,5 @@ class ProfileRepository @Inject constructor(
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
         }
-    }
-
-    private fun parseError(e: StatusRuntimeException) : ProtoResponse {
-        val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
-        return Gson().fromJson(rawError, ProtoResponse::class.java)
     }
 }
