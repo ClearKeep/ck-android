@@ -36,9 +36,6 @@ import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
 
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
@@ -250,7 +247,7 @@ fun ProfileScreen(
                             TwoFaceAuthView(userPreference.value?.mfa ?: false) {
                                 focusManager.clearFocus()
                                 if (it) {
-                                    if (profileViewModel.canEnableMfa()) {
+                                    if (profileViewModel.getMfaErrorMessage().first.isEmpty()) {
                                         profileViewModel.updateMfaSettings(it)
                                     } else {
                                         otpErrorDialogVisible.value = true
@@ -279,9 +276,10 @@ fun ProfileScreen(
             }
         }
         if (otpErrorDialogVisible.value) {
+            val errorMessage = profileViewModel.getMfaErrorMessage()
             CKAlertDialog(
-                title = "Type in your phone number",
-                text = "You must input your phone number in order to enable this feature.",
+                title = errorMessage.first,
+                text = errorMessage.second,
                 dismissTitle = stringResource(R.string.close),
                 onDismissButtonClick = {
                     otpErrorDialogVisible.value = false
