@@ -53,8 +53,9 @@ fun CKButton(
         modifier = modifier.height(height),
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = getButtonBackgroundColor(buttonType),
+            backgroundColor = if (enabled) getButtonBackgroundColor(buttonType) else getButtonDisabledBackgroundColor(buttonType),
             contentColor = getButtonTextColor(buttonType),
+            disabledContentColor = getDisabledButtonTextColor(buttonType)
         ),
     ) {
         Box(
@@ -95,6 +96,16 @@ private fun getButtonTextColor(buttonType: ButtonType): Color {
     }
 }
 
+private fun getDisabledButtonTextColor(buttonType: ButtonType): Color {
+    return when(buttonType) {
+        ButtonType.White -> primaryDefault
+        ButtonType.Blue -> grayscaleBackground
+        ButtonType.Red -> primaryDefault
+        ButtonType.BorderWhite -> grayscaleOffWhite
+        ButtonType.BorderGradient -> backgroundGradientStart
+    }
+}
+
 private fun getButtonBackgroundColor(buttonType: ButtonType): Color {
     return when(buttonType) {
         ButtonType.White -> grayscaleOffWhite
@@ -102,6 +113,13 @@ private fun getButtonBackgroundColor(buttonType: ButtonType): Color {
         ButtonType.Red -> grayscaleOffWhite
         ButtonType.BorderWhite -> Color.Transparent
         ButtonType.BorderGradient -> Color.Transparent
+    }
+}
+
+private fun getButtonDisabledBackgroundColor(buttonType: ButtonType): Color {
+    return when (buttonType) {
+        ButtonType.White, ButtonType.Red -> Color(0x80FFFFFF)
+        else -> Color.Transparent
     }
 }
 
