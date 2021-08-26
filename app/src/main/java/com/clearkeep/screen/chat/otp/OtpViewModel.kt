@@ -16,7 +16,7 @@ class OtpViewModel @Inject constructor(
     private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
-    val verifyPasswordResponse = MutableLiveData<Resource<String>>()
+    val verifyPasswordResponse = MutableLiveData<Resource<Pair<String, String>>>()
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
 
     fun verifyPassword(password: String) {
