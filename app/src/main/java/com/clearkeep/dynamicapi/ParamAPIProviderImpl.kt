@@ -3,6 +3,7 @@ package com.clearkeep.dynamicapi
 import auth.AuthGrpc
 import com.clearkeep.dynamicapi.channel.ChannelSelector
 import group.GroupGrpc
+import io.grpc.stub.AbstractBlockingStub
 import message.MessageGrpc
 import note.NoteGrpc
 import notification.NotifyGrpc
@@ -10,6 +11,7 @@ import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
+import workspace.WorkspaceGrpc
 import javax.inject.Inject
 /*
 * runtime server
@@ -104,5 +106,13 @@ class ParamAPIProviderImpl @Inject constructor(
                 paramAPI.accessKey,
                 paramAPI.hashKey
             ))
+    }
+
+    override fun provideWorkspaceBlockingStub(paramAPI: ParamAPI): WorkspaceGrpc.WorkspaceBlockingStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideWorkspaceBlockingStub: access and hasl key must not null")
+        }
+        val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
+        return WorkspaceGrpc.newBlockingStub(managedChannel)
     }
 }

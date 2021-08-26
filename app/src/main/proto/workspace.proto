@@ -26,8 +26,6 @@ message WorkspaceInfoResponse {
 message LeaveWorkspaceRequest {
 }
 
-
-
 service Workspace {
     rpc workspace_info(WorkspaceInfoRequest) returns (WorkspaceInfoResponse) {};
     rpc leave_workspace(LeaveWorkspaceRequest) returns (BaseResponse) {};
