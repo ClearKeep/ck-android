@@ -32,6 +32,7 @@ import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
@@ -144,7 +145,7 @@ fun RegisterScreen(
                     },
                     allowSpace = false
                 )
-                Spacer(Modifier.height(24.sdp())
+                Spacer(Modifier.height(24.sdp()))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         modifier = Modifier
@@ -206,7 +207,7 @@ fun ScalableTextPreview() {
             text = "em", //14 dp converted to em
             color = grayscaleBlack,
             textAlign = TextAlign.Justify,
-            fontSize = 14.dp.toNonScalableTextSize()
+            fontSize = 14.sdp().toNonScalableTextSize()
         )
     }
 }

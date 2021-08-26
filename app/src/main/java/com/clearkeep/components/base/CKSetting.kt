@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKSetting(
@@ -43,8 +44,8 @@ fun CKSetting(
                         uncheckedThumbColor = grayscale3, uncheckedTrackColor = grayscale3
                     ),
                     modifier = Modifier
-                        .width(64.dp)
-                        .height(36.dp)
+                        .width(64.sdp())
+                        .height(36.sdp())
                 )
             }
         }

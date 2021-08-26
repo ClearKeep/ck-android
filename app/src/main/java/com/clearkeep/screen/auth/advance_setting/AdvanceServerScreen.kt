@@ -35,6 +35,7 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.network.Status
@@ -150,7 +151,7 @@ fun CustomServerScreen(
                             Row(
                                 modifier = Modifier
                                     .weight(0.66f)
-                                    .padding(end = 16.sdp(), verticalAlignment = Alignment.CenterVertically
+                                    .padding(end = 16.sdp()), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     "Server URL",

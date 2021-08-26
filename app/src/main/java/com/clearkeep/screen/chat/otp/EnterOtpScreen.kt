@@ -38,6 +38,7 @@ import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun EnterOtpScreen(
@@ -70,25 +71,25 @@ fun EnterOtpScreen(
                 )
             )
     ) {
-        Spacer(Modifier.height(58.dp))
-        CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
+        Spacer(Modifier.height(58.sdp()))
+        CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
             title = "Enter Your Code", onBackPressed = {
                 onBackPress.invoke()
             })
-        Spacer(Modifier.height(30.dp))
-        Column(Modifier.padding(horizontal = 16.dp)) {
+        Spacer(Modifier.height(30.sdp()))
+        Column(Modifier.padding(horizontal = 16.sdp())) {
             Text(
                 text = stringResource(R.string.otp_hint),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
                 fontSize = 16.sp
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.sdp()))
             OtpInput(input, focusRequesters)
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(32.sdp()))
             Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp, fontWeight = FontWeight.W400)
             Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sp)
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.verify),
                 onClick = {
@@ -133,7 +134,7 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.sdp()),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         OtpInputSquare(input[0], focusRequesters[0]) {
@@ -201,12 +202,12 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
 fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange: (String) -> Unit) {
     Box(
         Modifier
-            .size(56.dp)
-            .background(Color.White, RoundedCornerShape(8.dp))
+            .size(56.sdp())
+            .background(Color.White, RoundedCornerShape(8.sdp()))
     ) {
-        Box(Modifier.size(28.dp).align(Alignment.Center)) {
+        Box(Modifier.size(28.sdp()).align(Alignment.Center)) {
             Row {
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(8.sdp()))
                 BasicTextField(
                     value,
                     onValueChange = { onValueChange(it.trim()) },

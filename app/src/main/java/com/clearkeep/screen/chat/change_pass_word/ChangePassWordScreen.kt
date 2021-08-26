@@ -25,6 +25,7 @@ import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKTopAppBarSample
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun ChangePassWordScreen(
@@ -47,15 +48,15 @@ fun ChangePassWordScreen(
         val newPassWord = remember { mutableStateOf("") }
         val confirmPassWord = remember { mutableStateOf("") }
 
-        Spacer(Modifier.height(58.dp))
-        CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
+        Spacer(Modifier.height(58.sdp()))
+        CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
             title = stringResource(R.string.enter_new_password), onBackPressed = {
             onBackPress.invoke()
         })
-        Spacer(Modifier.height(26.dp))
+        Spacer(Modifier.height(26.sdp()))
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.sdp())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -65,7 +66,7 @@ fun ChangePassWordScreen(
                 color = grayscaleOffWhite,
                 fontSize = 16.sp
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.sdp()))
             CKTextInputField(
                 placeholder = "Current Password",
                 textValue = currentPassWord,
@@ -80,7 +81,7 @@ fun ChangePassWordScreen(
                     )
                 }
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
                 placeholder = "New Password",
                 textValue = newPassWord,
@@ -95,7 +96,7 @@ fun ChangePassWordScreen(
                     )
                 }
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
                 placeholder = stringResource(R.string.confirm_password),
                 textValue = confirmPassWord,
@@ -110,7 +111,7 @@ fun ChangePassWordScreen(
                     )
                 }
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.save),
                 onClick = {

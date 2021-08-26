@@ -21,6 +21,7 @@ import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isValidEmail
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun ForgotScreen(
@@ -33,13 +34,13 @@ fun ForgotScreen(
     val isInvalidEmailFormat = remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(Modifier.height(80.dp))
+        Spacer(Modifier.height(80.sdp()))
         CKTopAppBarSample(title = stringResource(R.string.forgot_password), onBackPressed = { onBackPress() })
-        Spacer(Modifier.height(26.dp))
+        Spacer(Modifier.height(26.sdp()))
 
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.sdp())
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -49,7 +50,7 @@ fun ForgotScreen(
                 color = grayscaleOffWhite,
                 fontSize = 16.sp
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.sdp()))
             CKTextInputField(
                 "Email",
                 email, singleLine = true,
@@ -60,7 +61,7 @@ fun ForgotScreen(
                     )
                 }
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.btn_reset_password),
                 onClick = {

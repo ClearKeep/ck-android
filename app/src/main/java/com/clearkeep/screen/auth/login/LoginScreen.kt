@@ -30,6 +30,7 @@ import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
@@ -132,7 +133,7 @@ fun LoginScreen(
                         horizontalArrangement = Arrangement.End
                     ) {
                         CKTextButton(
-                            modifier = Modifier.padding(0.dp),
+                            modifier = Modifier.padding(0.sdp()),
                             stringResource(R.string.btn_forgot_password),
                             onClick = onForgotPasswordPress,
                             enabled = !isLoading,
@@ -145,7 +146,7 @@ fun LoginScreen(
                             horizontalArrangement = Arrangement.Start
                         ) {
                             CKTextButton(
-                                modifier = Modifier.padding(0.dp),
+                                modifier = Modifier.padding(0.sdp()),
                                 stringResource(R.string.advance_server_settings),
                                 onClick ={advanceSetting?.invoke()} ,
                                 enabled = !isLoading,

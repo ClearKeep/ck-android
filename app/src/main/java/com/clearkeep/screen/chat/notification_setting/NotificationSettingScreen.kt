@@ -25,6 +25,7 @@ import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 
 @Composable

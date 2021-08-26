@@ -37,13 +37,14 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
             .wrapContentHeight(),
         horizontalAlignment = Alignment.End
     ) {
-        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp))
+        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
         Text(
             text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
             style = MaterialTheme.typography.caption.copy(
                 fontWeight = FontWeight.Medium,
                 color = grayscale3,
-                textAlign = TextAlign.Start
+                textAlign = TextAlign.Start,
+                fontSize = defaultNonScalableTextSize()
             ),
         )
         Row(
@@ -51,8 +52,8 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (isTempMessage(message))
-                CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
-            Spacer(Modifier.width(18.dp))
+                CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
+            Spacer(Modifier.width(18.sdp()))
             Card(
                 Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
                     detectTapGestures(
@@ -68,7 +69,7 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                 Column(horizontalAlignment = Alignment.End) {
                     if (isImageMessage(message)) {
                         ImageMessageContent(
-                            Modifier.padding(24.dp, 16.dp),
+                            Modifier.padding(24.sdp(), 16.sdp()),
                             getImageUriStrings(message)
                         ) {
                             onClickImage.invoke(getImageUriStrings(message), "You")

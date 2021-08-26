@@ -36,6 +36,7 @@ import com.clearkeep.screen.chat.notification_setting.NotificationSettingActivit
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
+import com.clearkeep.utilities.sdp
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
@@ -148,12 +149,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             verticalArrangement = Arrangement.Center
         ) {
             Text("Please try again")
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.sdp()))
             CKButton(
                 "Try again",
                 onClick = {
                 },
-                modifier = Modifier.padding(vertical = 5.dp)
+                modifier = Modifier.padding(vertical = 5.sdp())
             )
         }
     }
@@ -210,7 +211,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         CircularProgressIndicator(color = Color.Blue)
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.sdp()))
                         Text(
                             text = "Leave server...",
                             style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)

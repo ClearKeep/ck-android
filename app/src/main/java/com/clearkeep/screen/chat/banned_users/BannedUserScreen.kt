@@ -28,6 +28,7 @@ import com.clearkeep.screen.chat.composes.FriendListItemAction
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.screen.chat.composes.StatusText
 import com.clearkeep.screen.chat.contact_search.InputSearchBox
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun BannedUserScreen(onCloseView: () -> Unit) {

@@ -63,7 +63,7 @@ fun CKTextInputFieldChat(
                 }
             } else null,
             color = Color.Transparent,
-            elevation = 0.dp
+            elevation = 0.sdp()
         ) {
             TextField(
                 value = textValue.value ?: "",
@@ -82,7 +82,8 @@ fun CKTextInputFieldChat(
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
                                 color = grayscale3,
-                                fontWeight = FontWeight.Normal
+                                fontWeight = FontWeight.Normal,
+                                fontSize = defaultNonScalableTextSize()
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -131,7 +132,7 @@ fun CKTextInputFieldChat(
             Spacer(modifier = Modifier.height(4.sdp()))
         }
         if (isError) error?.let {
-            Text(
+            CKText(
                 it,
                 style = MaterialTheme.typography.body2.copy(color = errorDefault),
                 modifier = Modifier.padding(start = 8.sdp())

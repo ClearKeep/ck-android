@@ -22,6 +22,7 @@ import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
@@ -41,11 +42,11 @@ fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
 
     Column(
         Modifier
-            .padding(28.dp, 8.dp, 54.dp, 8.dp)
+            .padding(28.sdp(), 8.sdp(), 54.sdp(), 8.sdp())
             .then(clickableModifier)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.dp))
-            Spacer(Modifier.width(12.dp))
+            Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.sdp()))
+            Spacer(Modifier.width(12.sdp()))
             Text(fileName, color = grayscaleOffWhite)
         }
         Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sp)

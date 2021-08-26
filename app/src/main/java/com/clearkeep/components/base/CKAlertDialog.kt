@@ -10,6 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.clearkeep.utilities.sdp
 import com.clearkeep.components.colorSuccessDefault
 
 @Composable
@@ -21,7 +22,7 @@ fun CKAlertDialog(
     dismissTitle: String? = null,
     onConfirmButtonClick: (() -> Unit) ? = null,
     onDismissButtonClick: (() -> Unit) ? = null,
-    shape: Shape = RoundedCornerShape(8.dp),
+    shape: Shape = RoundedCornerShape(8.sdp()),
     backgroundColor: Color = Color.White,
     contentColor: Color = Color.Black,
     properties: DialogProperties = DialogProperties()

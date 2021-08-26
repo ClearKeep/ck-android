@@ -36,6 +36,7 @@ import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
@@ -95,7 +96,7 @@ fun ProfileScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = 16.sdp()),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             HeaderProfile(
@@ -128,14 +129,14 @@ fun ProfileScreen(
                                         }
                                     },
                                     user.userName ?: "",
-                                    size = 72.dp,
+                                    size = 72.sdp(),
                                     modifier = Modifier.clickable {
                                         pickAvatarDialogVisible.value = true
                                     },
                                     cacheKey = user.updatedAt.toString()
                                 )
                                 Column(
-                                    Modifier.padding(start = 16.dp),
+                                    Modifier.padding(start = 16.sdp()),
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     SideBarLabel(
@@ -151,7 +152,7 @@ fun ProfileScreen(
                                     )
                                 }
                             }
-                            Spacer(Modifier.height(20.dp))
+                            Spacer(Modifier.height(20.sdp()))
                             ItemInformationView(
                                 "Username",
                                 errorText = stringResource(R.string.profile_username_error),
@@ -164,7 +165,7 @@ fun ProfileScreen(
                                     profileViewModel.setUsername(it)
                                 }
                             }
-                            Spacer(Modifier.height(16.dp))
+                            Spacer(Modifier.height(16.sdp()))
                             ItemInformationView("Email") {
                                 ItemInformationInput(
                                     textValue = email.value ?: "",
@@ -173,7 +174,7 @@ fun ProfileScreen(
                                     profileViewModel.setEmail(it)
                                 }
                             }
-                            Spacer(Modifier.height(16.dp))
+                            Spacer(Modifier.height(16.sdp()))
                             ItemInformationView(
                                 "Phone Number",
                                 errorText = stringResource(R.string.profile_phone_number_error),
@@ -182,7 +183,7 @@ fun ProfileScreen(
                                 Box(
                                     Modifier
                                         .weight(1.3f)
-                                        .height(60.dp)
+                                        .height(60.sdp())
                                         .fillMaxWidth()
                                         .background(
                                             if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5,
@@ -195,7 +196,7 @@ fun ProfileScreen(
                                         }
                                         .then(
                                             if (phoneNumberErrorVisible.value == true) Modifier.border(
-                                                1.dp,
+                                                1.sdp(),
                                                 errorDefault,
                                                 MaterialTheme.shapes.large
                                             ) else Modifier
@@ -205,7 +206,7 @@ fun ProfileScreen(
                                     Text(
                                         countryCode,
                                         Modifier
-                                            .padding(start = 12.dp)
+                                            .padding(start = 12.sdp())
                                             .align(Alignment.CenterStart)
                                             .fillMaxWidth(),
                                         style = MaterialTheme.typography.body1.copy(
@@ -218,10 +219,10 @@ fun ProfileScreen(
                                         null,
                                         Modifier
                                             .align(Alignment.CenterEnd)
-                                            .padding(end = 11.dp)
+                                            .padding(end = 11.sdp())
                                     )
                                 }
-                                Spacer(Modifier.width(8.dp))
+                                Spacer(Modifier.width(8.sdp()))
                                 ItemInformationInput(
                                     Modifier
                                         .weight(3f)
@@ -234,15 +235,15 @@ fun ProfileScreen(
                                     profileViewModel.setPhoneNumber(it)
                                 }
                             }
-                            Spacer(Modifier.height(8.dp))
+                            Spacer(Modifier.height(8.sdp()))
                             CopyLink(
                                 onCopied = {
                                     onCopyToClipBoard()
                                 }
                             )
-                            Spacer(Modifier.height(8.dp))
+                            Spacer(Modifier.height(8.sdp()))
                             ChangePassword(onChangePassword)
-                            Spacer(Modifier.height(24.dp))
+                            Spacer(Modifier.height(24.sdp()))
                             TwoFaceAuthView(userPreference.value?.mfa ?: false) {
                                 focusManager.clearFocus()
                                 if (it) {
@@ -255,11 +256,11 @@ fun ProfileScreen(
                                     profileViewModel.updateMfaSettings(it)
                                 }
                             }
-                            Spacer(Modifier.height(24.dp))
+                            Spacer(Modifier.height(24.sdp()))
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(end = 8.dp, bottom = 20.dp),
+                                    .padding(end = 8.sdp(), bottom = 20.sdp()),
                                 verticalArrangement = Arrangement.Bottom,
                                 horizontalAlignment = Alignment.End
                             ) {
@@ -343,7 +344,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
         Modifier
             .fillMaxWidth()
     ) {
-        Spacer(Modifier.size(32.dp))
+        Spacer(Modifier.size(32.sdp()))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -373,9 +374,9 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
                 )
             }
         }
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(16.sdp()))
         CKHeaderText("Profile Settings", headerTextType = HeaderTextType.Medium)
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(16.sdp()))
     }
 }
 
@@ -419,7 +420,7 @@ private fun ItemInformationInput(
 
     Surface(
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(1.dp, if (hasError) errorDefault else grayscale5),
+        border = BorderStroke(1.sdp(), if (hasError) errorDefault else grayscale5),
         modifier = modifier
     ) {
         TextField(

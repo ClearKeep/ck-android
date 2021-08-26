@@ -25,6 +25,7 @@ import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.utilities.countryCodesToNames
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -36,8 +37,8 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
     val searchQuery = remember { mutableStateOf("") }
     val searchResult = remember { mutableStateOf(countryCodesToNames) }
 
-    Column(Modifier.fillMaxSize().padding(start = 12.dp, end = 23.dp)) {
-        Spacer(Modifier.height(30.dp))
+    Column(Modifier.fillMaxSize().padding(start = 12.sdp(), end = 23.sdp())) {
+        Spacer(Modifier.height(30.sdp()))
         Image(
             painter = painterResource(id = R.drawable.ic_cross),
             contentDescription = null, modifier = Modifier
@@ -46,23 +47,23 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
                 },
             alignment = Alignment.CenterStart
         )
-        Spacer(Modifier.height(50.dp))
+        Spacer(Modifier.height(50.sdp()))
         Text(stringResource(R.string.country_codes), fontSize = 20.sp)
-        Spacer(Modifier.height(25.dp))
+        Spacer(Modifier.height(25.sdp()))
         CKSearchBox(searchQuery)
-        Spacer(Modifier.height(60.dp))
+        Spacer(Modifier.height(60.sdp()))
         LazyColumn {
             itemsIndexed(searchResult.value.sortedBy { it.second }) { _: Int, item: Pair<Int?, String> ->
                 val countryCode = if (item.first == null) "" else "+${item.first}"
                 PhoneCountryCodeItem(
-                    Modifier.padding(vertical = 16.dp),
+                    Modifier.padding(vertical = 16.sdp()),
                     item.second,
                     countryCode
                 ) {
                     printlnCK("Pick country code $countryCode")
                     onPick.invoke(countryCode)
                 }
-                Divider(Modifier.height(1.dp), separatorDarkNonOpaque)
+                Divider(Modifier.height(1.sdp()), separatorDarkNonOpaque)
             }
         }
     }

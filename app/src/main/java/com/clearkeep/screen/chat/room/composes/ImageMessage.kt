@@ -26,6 +26,7 @@ import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
 import com.google.accompanist.imageloading.rememberDrawablePainter
@@ -37,20 +38,20 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
         ImageMessageItem(
             Modifier
                 .then(modifier)
-                .size(130.dp), imageUris[0], onClickItem
+                .size(130.sdp()), imageUris[0], onClickItem
         )
     } else {
         Column(
             Modifier
                 .wrapContentSize()
-                .padding(12.dp)) {
+                .padding(12.sdp())) {
             println("multi item grid")
             Row(Modifier.wrapContentSize()) {
                 for (i in 0..minOf(imageUris.size, 1)) {
                     ImageMessageItem(
                         Modifier
-                            .size(110.dp)
-                            .padding(4.dp), imageUris[i], onClickItem)
+                            .size(110.sdp())
+                            .padding(4.sdp()), imageUris[i], onClickItem)
                 }
             }
             Row(Modifier.wrapContentSize()) {
@@ -58,21 +59,21 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
                     if (i == 2 || (i == 3 && imageUris.size <= 4)) {
                             ImageMessageItem(
                                 Modifier
-                                    .size(110.dp)
-                                    .padding(4.dp), imageUris[i], onClickItem)
+                                    .size(110.sdp())
+                                    .padding(4.sdp()), imageUris[i], onClickItem)
                     } else {
                         Box(
                             Modifier
-                                .size(110.dp)
-                                .clip(RoundedCornerShape(16.dp))
+                                .size(110.sdp())
+                                .clip(RoundedCornerShape(16.sdp()))
                                 .aspectRatio(1f)
-                                .padding(4.dp),
+                                .padding(4.sdp()),
                             contentAlignment = Alignment.Center
                         ) {
                             ImageMessageItem(Modifier.fillMaxSize(), imageUris[i], onClickItem)
                             Box(
                                 Modifier
-                                    .background(Color(0x4D000000), RoundedCornerShape(16.dp))
+                                    .background(Color(0x4D000000), RoundedCornerShape(16.sdp()))
                                     .fillMaxSize(), contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -110,7 +111,7 @@ fun ImageMessageItem(
             contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(16.sdp()))
                 .aspectRatio(1f)
                 .then(clickableModifier)
         )
