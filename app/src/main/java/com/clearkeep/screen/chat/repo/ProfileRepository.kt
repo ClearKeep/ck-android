@@ -192,7 +192,7 @@ class ProfileRepository @Inject constructor(
             printlnCK("mfaValidatePassword: $exception")
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
-                1001 -> "The password is incorrect. Try again" to "Please check your email to activate account"
+                1001 -> "The password is incorrect. Try again" to "Please check your details and try again"
                 1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> "" to parsedError.message
             }
