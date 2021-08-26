@@ -30,11 +30,7 @@ class OtpViewModel @Inject constructor(
 
         viewModelScope.launch {
             val response = profileRepository.mfaValidatePassword(getOwner(), password)
-            if (response.status == Status.ERROR) {
-                verifyPasswordResponse.value = Resource.error("The password is incorrect. Try again", null)
-            } else {
-                verifyPasswordResponse.value = response
-            }
+            verifyPasswordResponse.value = response
         }
     }
 
