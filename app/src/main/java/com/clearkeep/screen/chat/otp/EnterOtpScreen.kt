@@ -150,7 +150,7 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 } else {
                     input[1] = " "
                     focusRequesters[0].requestFocus()
-                }
+               }
             } else if (it.length == 2) {
                 //Handle delete and type case
                 input[2] = it[1].toString()

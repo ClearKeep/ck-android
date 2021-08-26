@@ -224,7 +224,10 @@ class ProfileViewModel @Inject constructor(
                         )
                     )
                     if (shouldUpdateMfaSetting) {
-                        updateMfaSettingResponse.value = profileRepository.updateMfaSettings(getOwner(), false)
+                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        if (response.status == Status.ERROR) {
+                            updateMfaSettingResponse.value = response
+                        }
                     }
                 }
             }
