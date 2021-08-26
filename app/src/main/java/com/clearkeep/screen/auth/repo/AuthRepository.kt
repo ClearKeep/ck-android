@@ -373,6 +373,14 @@ class AuthRepository @Inject constructor(
             )
             userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
             return@withContext Resource.success(response)
+        } catch (exception: StatusRuntimeException) {
+            val parsedError = parseError(exception)
+            val message = when (parsedError.code) {
+                1071 -> "Authentication failed. Please retry."
+                1068, 1072 -> "Verification code has expired. Please request a new code and retry."
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (exception: Exception) {
             printlnCK("mfaValidateOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
@@ -390,8 +398,12 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} success? ${response.success}")
             return@withContext if (response.otpHash.isNotBlank()) Resource.success(response.otpHash) else Resource.error("", null)
         } catch (exception: StatusRuntimeException) {
-            printlnCK("mfaResendOtp: $exception")
-            return@withContext Resource.error(exception.message ?: "", null)
+            val parsedError = parseError(exception)
+            val message = when (parsedError.code) {
+                1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error(exception.toString(), null)
