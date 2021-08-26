@@ -20,6 +20,7 @@ import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun PeopleScreen(
@@ -45,7 +46,7 @@ fun PeopleScreen(
         friends.value?.let { people ->
             LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 30.dp, end = 20.dp, start = 20.dp, bottom = 30.dp),
+                    contentPadding = PaddingValues(top = 30.sdp(), end = 20.sdp(), start = 20.sdp(), bottom = 30.sdp()),
             ) {
                 itemsIndexed(people) { _, friend ->
                     FriendItem(friend, onFriendSelected)
@@ -67,14 +68,14 @@ fun FriendItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(emptyList(), friend.userName)
-            Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
+            Column(modifier = Modifier.padding(start = 20.sdp()).fillMaxWidth()) {
                 Text(text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.sdp()))
+        CKDivider(modifier = Modifier.padding(start = 68.sdp()), thickness = 0.3.dp)
+        Spacer(modifier = Modifier.height(10.sdp()))
     }
 }

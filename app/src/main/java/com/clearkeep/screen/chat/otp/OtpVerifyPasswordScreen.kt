@@ -23,6 +23,7 @@ import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun OtpVerifyPasswordScreen(
@@ -47,20 +48,20 @@ fun OtpVerifyPasswordScreen(
     ) {
         val currentPassWord = remember { mutableStateOf("") }
 
-        Spacer(Modifier.height(58.dp))
-        CKTopAppBarSample(modifier = Modifier.padding(end = 8.dp),
+        Spacer(Modifier.height(58.sdp()))
+        CKTopAppBarSample(modifier = Modifier.padding(end = 8.sdp()),
             title = stringResource(R.string.otp_verify_password_title), onBackPressed = {
                 onBackPress.invoke()
             })
-        Spacer(Modifier.height(30.dp))
-        Column(Modifier.padding(horizontal = 16.dp)) {
+        Spacer(Modifier.height(30.sdp()))
+        Column(Modifier.padding(horizontal = 16.sdp())) {
             Text(
                 text = stringResource(R.string.otp_verify_password_description),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
                 fontSize = 16.sp
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(16.sdp()))
             CKTextInputField(
                 placeholder = "Current Password",
                 textValue = currentPassWord,
@@ -73,7 +74,7 @@ fun OtpVerifyPasswordScreen(
                     )
                 },
             )
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.btn_next),
                 onClick = {

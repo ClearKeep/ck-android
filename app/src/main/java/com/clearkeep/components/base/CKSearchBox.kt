@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKSearchBox(
@@ -47,7 +48,7 @@ fun CKSearchBox(
                 BorderStroke(dimensionResource(R.dimen._1sdp), MaterialTheme.colors.secondaryVariant)
             } else null,
             color = Color.Transparent,
-            elevation = 0.dp
+            elevation = 0.sdp()
         ) {
             TextField(
                 value = textValue.value,

@@ -17,6 +17,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun InsertFriendScreen(
@@ -33,10 +34,10 @@ fun InsertFriendScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.sdp())
         ) {
             Row(
-                modifier = Modifier.padding(start = 5.dp, end = 8.dp, top = 24.dp),
+                modifier = Modifier.padding(start = 5.sdp(), end = 8.sdp(), top = 24.sdp()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
@@ -73,9 +74,9 @@ fun InsertFriendScreen(
                     textButtonType = TextButtonType.Blue
                 )
             }
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(25.sdp()))
             CKHeaderText("New User", headerTextType = HeaderTextType.Medium)
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.sdp()))
             CKTextInputField(
                 "Profile url",
                 link

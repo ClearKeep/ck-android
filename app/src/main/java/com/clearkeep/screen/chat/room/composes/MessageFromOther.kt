@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKText
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
@@ -25,15 +26,15 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
     Column {
-        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.dp else 2.dp ))
+        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp() ))
         Row(
             verticalAlignment = Alignment.Top
         ) {
-            Column(modifier = Modifier.width(26.dp),
+            Column(modifier = Modifier.width(26.sdp()),
                 horizontalAlignment = Alignment.Start
             ) {
                 if (messageDisplayInfo.showAvatarAndName) {
-                    CircleAvatar(emptyList(), messageDisplayInfo.userName, size = 18.dp)
+                    CircleAvatar(emptyList(), messageDisplayInfo.userName, size = 18.sdp())
                 }
             }
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -47,20 +48,22 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                             text = messageDisplayInfo.userName,
                             style = MaterialTheme.typography.body2.copy(
                                 color = colorSuccessDefault,
-                                fontWeight = FontWeight.W600
+                                fontWeight = FontWeight.W600,
+                                fontSize = defaultNonScalableTextSize()
                             ),
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.sdp()))
                         Text(
                             text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
                             style = MaterialTheme.typography.caption.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = grayscale3,
-                                textAlign = TextAlign.Start
+                                textAlign = TextAlign.Start,
+                                fontSize = defaultNonScalableTextSize()
                             ),
                             modifier = Modifier
                                 .weight(1.0f, true)
-                                .padding(start = 4.dp),
+                                .padding(start = 4.sdp()),
                         )
                     }
                 }
@@ -69,12 +72,13 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                         horizontalAlignment = Alignment.Start,
                     ) {
                         if (!messageDisplayInfo.showAvatarAndName) {
-                            Text(
+                            CKText(
                                 text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
                                 style = MaterialTheme.typography.caption.copy(
                                     fontWeight = FontWeight.Medium,
                                     color = grayscale3,
-                                    textAlign = TextAlign.End
+                                    textAlign = TextAlign.End,
+                                    fontSize = defaultNonScalableTextSize()
                                 ),
                             )
                         }
@@ -94,7 +98,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                 Column(horizontalAlignment = Alignment.Start) {
                                     if (isImageMessage(message)) {
                                         ImageMessageContent(
-                                            Modifier.padding(24.dp, 16.dp),
+                                            Modifier.padding(24.sdp(), 16.sdp()),
                                             getImageUriStrings(message)
                                         ) {
                                             onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
@@ -114,9 +118,9 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                     }
                                 }
                             }
-                            Spacer(Modifier.width(18.dp))
+                            Spacer(Modifier.width(18.sdp()))
                             if (isTempMessage(message))
-                                CircularProgressIndicator(Modifier.size(20.dp), grayscale1, 2.dp)
+                                CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
                         }
                     }
                 }

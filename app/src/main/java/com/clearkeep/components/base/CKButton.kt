@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKButton(
@@ -43,12 +44,12 @@ fun CKButton(
         shape = RoundedCornerShape(radius),
         border = if (buttonType == ButtonType.BorderWhite) {
             BorderStroke(
-                2.dp,
+                2.sdp(),
                 grayscaleOffWhite
             )
         } else if (buttonType == ButtonType.BorderGradient) {
             BorderStroke(
-                2.dp, Brush.horizontalGradient(
+                2.sdp(), Brush.horizontalGradient(
                     colors = listOf(
                         backgroundGradientStart,
                         backgroundGradientEnd

@@ -34,6 +34,7 @@ import coil.imageLoader
 import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -83,7 +84,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
                     tint = Color.White
                 )
             }
-            Text(senderName.value ?: "", Modifier.align(Alignment.TopCenter).padding(top = 12.dp), color = Color.White)
+            Text(senderName.value ?: "", Modifier.align(Alignment.TopCenter).padding(top = 12.sdp()), color = Color.White)
             Image(
                 rememberCoilPainter(selectedImageUri.value, context.imageLoader),
                 null,
@@ -108,7 +109,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
         BottomImageList(
             Modifier
                 .fillMaxWidth()
-                .height(68.dp)
+                .height(68.sdp())
                 .constrainAs(imageListId) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
@@ -145,7 +146,7 @@ fun SelectableImageItem(
                 .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
                     onSelect.invoke(uri)
                 }
-                .then(if (isSelected) Modifier.border(1.dp, Color.White) else Modifier)
+                .then(if (isSelected) Modifier.border(1.sdp(), Color.White) else Modifier)
         )
     ) {
         Image(
@@ -171,39 +172,39 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
             Column(
                 Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 10.sdp())
             ) {
                 Column(
                     Modifier
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(14.sdp()))
                         .background(Color.White)
                 ) {
                     Text(
                         "Save",
                         Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(16.sdp())
                             .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
                                 onClickSave.invoke()
                             },
                         textAlign = TextAlign.Center, color = colorLightBlue
                     )
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.sdp()))
                 Box {
                     Text(
                         "Cancel", modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(14.sdp()))
                             .background(Color.White)
                             .align(Alignment.Center)
-                            .padding(16.dp)
+                            .padding(16.sdp())
                             .fillMaxWidth()
                             .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(14.sdp()))
             }
         }
     }
@@ -220,7 +221,7 @@ fun BottomImageList(
     LazyRow(modifier) {
         itemsIndexed(imagesList) { _, uri: String ->
             val isSelected = uri == selectedImageUri
-            SelectableImageItem(Modifier.padding(horizontal = 2.dp), uri, isSelected, onSelect)
+            SelectableImageItem(Modifier.padding(horizontal = 2.sdp()), uri, isSelected, onSelect)
         }
     }
 }
