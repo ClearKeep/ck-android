@@ -9,6 +9,7 @@ import notify_push.NotifyPushGrpc
 import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
 import video_call.VideoCallGrpc
+import workspace.WorkspaceGrpc
 
 interface ParamAPIProvider {
     fun provideSignalKeyDistributionGrpc(paramAPI: ParamAPI): SignalKeyDistributionGrpc.SignalKeyDistributionStub
@@ -34,6 +35,8 @@ interface ParamAPIProvider {
     fun provideNotifyPushBlockingStub(paramAPI: ParamAPI): NotifyPushGrpc.NotifyPushBlockingStub
 
     fun provideVideoCallBlockingStub(paramAPI: ParamAPI): VideoCallGrpc.VideoCallBlockingStub
+
+    fun provideWorkspaceBlockingStub(paramAPI: ParamAPI) : WorkspaceGrpc.WorkspaceBlockingStub
 }
 
 class ParamAPI(
