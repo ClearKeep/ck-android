@@ -20,10 +20,10 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun ClickableLinkContent(message: String, longClickKey: Int, onLongClick: () -> Unit) {
@@ -61,7 +61,7 @@ fun ClickableLinkContent(message: String, longClickKey: Int, onLongClick: () -> 
             color = grayscaleOffWhite
         ),
         modifier = Modifier
-            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .padding(horizontal = 24.sdp(), vertical = 8.sdp())
             .pointerInput(longClickKey) {
                 detectTapGestures(
                     onLongPress = {

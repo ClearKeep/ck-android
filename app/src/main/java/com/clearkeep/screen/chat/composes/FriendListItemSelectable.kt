@@ -11,6 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKRadioButton
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun FriendListItemSelectable(
@@ -25,16 +26,16 @@ fun FriendListItemSelectable(
     ) {
         Row(modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp),
+            .padding(bottom = 16.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
                 emptyList(),
                 friend.userName,
-                size = 64.dp
+                size = 64.sdp()
             )
             Column(modifier = Modifier
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
                 .weight(1.0f, true)) {
                 Text(text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(

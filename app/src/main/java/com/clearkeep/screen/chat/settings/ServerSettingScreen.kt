@@ -17,6 +17,7 @@ import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.components.base.TopAppBarSampleType
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun ServerSettingScreen(
@@ -31,38 +32,38 @@ fun ServerSettingScreen(
             type = TopAppBarSampleType.Black
         )
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.sdp())
         ) {
-            Spacer(modifier = Modifier.height(45.dp))
+            Spacer(modifier = Modifier.height(45.sdp()))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                CircleAvatarWorkSpace(server, false, contentSize = 85.dp)
+                CircleAvatarWorkSpace(server, false, contentSize = 85.sdp())
             }
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(25.sdp()))
             Text("General", style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground
             ))
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.sdp()))
             ServerItem(
                 iconPainter = painterResource(R.drawable.ic_user),
                 title = "Notification",
                 subTitle = "18 Members",
                 onClick = {}
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.sdp()))
             ServerItem(
                 iconPainter = painterResource(R.drawable.ic_server_notification),
                 title = "See Members",
                 subTitle = "Current: On",
                 onClick = {}
             )
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(25.sdp()))
             Text("Details", style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground
             ))
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.sdp()))
             Text("Server Name", style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground
             ))
@@ -122,12 +123,12 @@ fun ServerItem(
                 onClick = onClick
             )
         )
-        Spacer(modifier = Modifier.width(21.dp))
+        Spacer(modifier = Modifier.width(21.sdp()))
         Column {
             Text(title, style = MaterialTheme.typography.h6.copy(
                 color = MaterialTheme.colors.primaryVariant
             ))
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(2.sdp()))
             Text(subTitle, style = MaterialTheme.typography.overline.copy(
                 color = MaterialTheme.colors.onSecondary
             ))

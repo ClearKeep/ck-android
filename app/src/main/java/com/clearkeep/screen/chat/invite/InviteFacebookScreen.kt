@@ -26,6 +26,7 @@ import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.composes.NewFriendListItem
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun InviteFacebookScreen() {
@@ -34,15 +35,15 @@ fun InviteFacebookScreen() {
     Box {
         Column(
             Modifier
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.sdp())
                 .fillMaxSize()) {
             HeaderInviteFacebook {}
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.sdp()))
             CKSearchBox(
                 search,
-                modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(grayscale5)
+                modifier = Modifier.clip(RoundedCornerShape(16.sdp())).background(grayscale5)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.sdp()))
             LazyColumn {
                 item {
                     /*InviteFromFacebookItem(Modifier.padding(vertical = 8.dp), user = User("", "test", ""), isSelected = false) { people: User, isAdd: Boolean -> }
@@ -51,7 +52,7 @@ fun InviteFacebookScreen() {
                 }
             }
         }
-        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp, start = 16.dp, end = 16.dp)) {
+        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 12.sdp(), start = 16.sdp(), end = 16.sdp())) {
             CKButton("Invite Selected", {})
         }
     }
@@ -64,7 +65,7 @@ fun HeaderInviteFacebook(onCloseView: () -> Unit) {
         Modifier
             .fillMaxWidth()
     ) {
-        Spacer(Modifier.size(32.dp))
+        Spacer(Modifier.size(32.sdp()))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -78,7 +79,7 @@ fun HeaderInviteFacebook(onCloseView: () -> Unit) {
                 alignment = Alignment.CenterStart
             )
         }
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(16.sdp()))
         CKHeaderText("Invite user from Facebook", headerTextType = HeaderTextType.Medium)
     }
 }

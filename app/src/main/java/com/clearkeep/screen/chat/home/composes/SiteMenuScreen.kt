@@ -44,6 +44,7 @@ import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
@@ -114,7 +115,7 @@ fun SiteMenuScreen(
                             ) {
                                 IconButton(
                                     onClick = { closeSiteMenu.invoke() },
-                                    Modifier.size(dimensionResource(R.dimen._24sdp))
+                                    Modifier.size(24.sdp())
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Close,
@@ -229,7 +230,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 val text = createRef()
                 val image = createRef()
                 Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
-                    linkTo(parent.start, image.start, endMargin = 4.sdp())
+                    linkTo(parent.start, image.start, endMargin = 4.dp)
                     width = Dimension.fillToConstraints
                 })
                 IconButton(

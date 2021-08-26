@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import com.clearkeep.utilities.sdp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
 import com.clearkeep.components.base.*
@@ -37,11 +37,11 @@ fun EnterGroupNameScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.sdp())
                     .weight(0.66f)
             ) {
                 Row(
-                    modifier = Modifier.padding(end = 8.dp, top = 24.dp),
+                    modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
@@ -67,19 +67,19 @@ fun EnterGroupNameScreen(
                         CKHeaderText("Create group", headerTextType = HeaderTextType.Medium)
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.sdp()))
                 CKHeaderText("Group Name", headerTextType = HeaderTextType.Normal)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.sdp()))
                 CKTextInputField(
                     "Name this group",
                     groupName
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.sdp()))
                 CKHeaderText("User in this group", headerTextType = HeaderTextType.Normal)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.sdp()))
                 friends.let { values ->
                     LazyColumn(
-                        contentPadding = PaddingValues(end = 16.dp),
+                        contentPadding = PaddingValues(end = 16.sdp()),
                     ) {
                         itemsIndexed(values) { _, friend ->
                             FriendListItem(friend)
@@ -89,7 +89,7 @@ fun EnterGroupNameScreen(
             }
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(16.sdp())
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -104,7 +104,7 @@ fun EnterGroupNameScreen(
                         }
                     },
                     modifier = Modifier
-                        .width(200.dp)
+                        .width(200.sdp())
                 )
             }
         }

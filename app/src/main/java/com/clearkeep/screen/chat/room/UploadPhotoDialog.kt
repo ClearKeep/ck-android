@@ -24,10 +24,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.clearkeep.R
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.components.tintsRedLight
+import com.clearkeep.utilities.sdp
 
 @ExperimentalComposeUiApi
 @Composable
@@ -79,18 +81,18 @@ fun UploadPhotoDialog(
             Column(
                 Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 10.sdp())
             ) {
                 Column(
                     Modifier
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedCornerShape(14.sdp()))
                         .background(Color.White)
                 ) {
-                    Text(
+                    CKText(
                         stringResource(R.string.take_photo),
                         Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(16.sdp())
                             .clickable {
                                 if (isCameraPermissionGranted(context)) {
                                     takePhotoLauncher.launch(getPhotoUri())
@@ -100,11 +102,11 @@ fun UploadPhotoDialog(
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                     Divider(color = separatorDarkNonOpaque)
-                    Text(
+                    CKText(
                         stringResource(R.string.albums),
                         Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(16.sdp())
                             .clickable {
                                 if (isFilePermissionGranted(context)) {
                                     onNavigateToAlbums()
@@ -114,21 +116,21 @@ fun UploadPhotoDialog(
                             }, textAlign = TextAlign.Center, color = tintsRedLight
                     )
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.sdp()))
                 Box {
-                    Text(
+                    CKText(
                         stringResource(R.string.cancel), modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(14.sdp()))
                             .background(Color.White)
                             .align(Alignment.Center)
-                            .padding(16.dp)
+                            .padding(16.sdp())
                             .fillMaxWidth()
                             .clickable {
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(14.sdp()))
             }
         }
     }

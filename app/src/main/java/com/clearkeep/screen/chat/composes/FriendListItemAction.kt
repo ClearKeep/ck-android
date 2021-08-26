@@ -15,6 +15,7 @@ import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.colorSuccessDefault
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun FriendListItemAction(
@@ -25,7 +26,7 @@ fun FriendListItemAction(
     Column(
         modifier = Modifier
             .clickable { onAction(friend) }
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.sdp())
     ) {
         Row(
             modifier = Modifier
@@ -35,10 +36,10 @@ fun FriendListItemAction(
             CircleAvatar(
                 emptyList(),
                 friend.userName ?: "",
-                size = 64.dp
+                size = 64.sdp()
             )
             Column(Modifier
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
                 .weight(1.0f, true)
             ) {
                 Text(
@@ -50,11 +51,11 @@ fun FriendListItemAction(
                 )
                 Text("Online", color = colorSuccessDefault)
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(16.sdp()))
             CKButton(
                 actionLabel,
                 {},
-                Modifier.width(123.dp),
+                Modifier.width(123.sdp()),
                 buttonType = ButtonType.BorderGradient
             )
         }

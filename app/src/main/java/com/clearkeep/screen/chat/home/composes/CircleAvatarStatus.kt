@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import coil.request.CachePolicy
-import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKText
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable

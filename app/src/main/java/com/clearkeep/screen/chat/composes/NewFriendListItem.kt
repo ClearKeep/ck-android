@@ -33,6 +33,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.StatusIndicator
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun NewFriendListItem(

@@ -32,7 +32,7 @@ fun ToolbarMessage(
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
-    Row(modifier = Modifier.statusBarsHeight(58.dp).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.statusBarsHeight(58.sdp()).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
@@ -45,7 +45,7 @@ fun ToolbarMessage(
             CircleAvatar(
                 avatars ?: arrayListOf(),
                 name = title,
-                size = 36.dp,
+                size = 36.sdp(),
                 isGroup = isGroup
             )
         }

@@ -36,11 +36,13 @@ import com.clearkeep.R
 import com.clearkeep.components.CKSimpleInsetTheme
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.base.CKRadioButton
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight
@@ -77,10 +79,10 @@ fun ImagePickerScreen(
                 },
                 actions = {
                     if (!onlyPickOne) {
-                        Text(
-                            "Upload (${urisSelected?.size ?: 0})",
+                        CKText(
+                            "Upload (${urisSelected?.size})",
                             modifier = Modifier
-                                .padding(end = 16.dp)
+                                .padding(end = 16.sdp())
                                 .clickable {
                                     onSetSelectedImages(urisSelected)
                                     navController.popBackStack()
@@ -88,7 +90,7 @@ fun ImagePickerScreen(
                         )
                     }
                 })
-            Box(Modifier.padding(16.dp)) {
+            Box(Modifier.padding(16.sdp())) {
                 LazyVerticalGrid(cells = GridCells.Fixed(2)) {
                     items(uris) {
                         ImageItem(
@@ -158,7 +160,7 @@ fun ImageItem(
                 .clickable {
                     onSelect(uri, !isSelected)
                 }
-                .then(if (isSelected) Modifier.border(2.dp, primaryDefault) else Modifier)
+                .then(if (isSelected) Modifier.border(2.sdp(), primaryDefault) else Modifier)
         )
     ) {
         Image(
@@ -170,7 +172,7 @@ fun ImageItem(
         Box(
             Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 12.dp, end = 12.dp)
+                .padding(bottom = 12.sdp(), end = 12.sdp())
         ) {
             Image(
                 painter = painterResource(id = if (isSelected) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),

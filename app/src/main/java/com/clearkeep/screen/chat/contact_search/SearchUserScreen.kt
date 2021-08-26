@@ -17,6 +17,7 @@ import com.clearkeep.components.base.CKDivider
 import com.clearkeep.components.base.CKTopAppBar
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun SearchUserScreen(
@@ -52,7 +53,7 @@ fun SearchUserScreen(
             if (it.isNotEmpty()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxHeight().fillMaxWidth(),
-                    contentPadding = PaddingValues(top = 20.dp, end = 20.dp, start = 20.dp, bottom = 20.dp),
+                    contentPadding = PaddingValues(top = 20.sdp(), end = 20.sdp(), start = 20.sdp(), bottom = 20.sdp()),
                 ) {
                     itemsIndexed(it) { _, friend ->
                         FriendItem(friend, onFinish)
@@ -63,7 +64,7 @@ fun SearchUserScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentWidth(Alignment.CenterHorizontally)
-                        .padding(all = 32.dp)
+                        .padding(all = 32.sdp())
                 )
             }
         }
@@ -82,7 +83,7 @@ fun FriendItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(emptyList(), friend.userName)
-            Column(modifier = Modifier.padding(start = 20.dp).fillMaxWidth()) {
+            Column(modifier = Modifier.padding(start = 20.sdp()).fillMaxWidth()) {
                 Text(text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
@@ -91,8 +92,8 @@ fun FriendItem(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        CKDivider(modifier = Modifier.padding(start = 68.dp), thickness = 0.3.dp)
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.sdp()))
+        CKDivider(modifier = Modifier.padding(start = 68.sdp()), thickness = 0.3.dp)
+        Spacer(modifier = Modifier.height(10.sdp()))
     }
 }

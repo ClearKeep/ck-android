@@ -24,6 +24,7 @@ import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayIn
 import com.clearkeep.screen.chat.room.message_display_generator.convertMessageList
 import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.launch
 
 var mIsNewMessage = true
@@ -83,7 +84,7 @@ private fun MessageListView(
             reverseLayout = true,
             state = listState,
             verticalArrangement = Arrangement.Top,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
+            contentPadding = PaddingValues(start = 16.sdp(), end = 16.sdp()),
         ) {
             groupedMessages.forEach { (date, messages) ->
                 printlnCK("messages ${messages.map { it.message.message }} date $date")
@@ -93,7 +94,7 @@ private fun MessageListView(
                             DateHeader(date)
                         }
                         if (item.isOwner) MessageByMe(item, onClickFile, onClickImage, onLongClick) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
-                        if (index == 0) Spacer(modifier = Modifier.height(20.dp))
+                        if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
                     }
                 }
             }
@@ -109,7 +110,7 @@ private fun MessageListView(
         }
         Row(modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 20.dp),
+            .padding(bottom = 20.sdp()),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -134,7 +135,7 @@ fun DateHeader(date: String) {
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(8.sdp())
     ) {
         Text(date, style = MaterialTheme.typography.body2.copy(
             color = grayscale3,

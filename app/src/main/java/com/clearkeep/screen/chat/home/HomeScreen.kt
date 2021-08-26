@@ -37,6 +37,7 @@ import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.screen.chat.home.composes.SiteMenuScreen
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
@@ -176,7 +177,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                     .weight(1.0f, true)
                     .padding(top = 20.sdp())
                     .background(
-                        shape = RoundedCornerShape(topEnd = 30..sdp()),
+                        shape = RoundedCornerShape(topEnd = 30.sdp()),
                         brush = Brush.horizontalGradient(
                             //todo disable dark mode
                             colors = listOf(
@@ -562,7 +563,7 @@ fun WorkSpaceView(
                 Image(
                     painter = painterResource(id = R.drawable.ic_hamburger),
                     null, alignment = Alignment.Center,
-                    modifier = Modifier.size(dimensionResource(24.sdp())),
+                    modifier = Modifier.size(24.sdp()),
                     contentScale = ContentScale.FillBounds
                 )
             }
@@ -602,7 +603,7 @@ fun NoteView(onNavigateNotes: () -> Unit) {
         Image(
             painterResource(R.drawable.ic_notes),
             contentDescription = null,
-            modifier = Modifier.size(dimensionResource(R.dimen._20sdp)),
+            modifier = Modifier.size(20.sdp()),
             contentScale = ContentScale.FillBounds
         )
         CKHeaderText(
