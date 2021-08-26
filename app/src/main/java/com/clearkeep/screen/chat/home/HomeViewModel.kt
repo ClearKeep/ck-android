@@ -1,5 +1,7 @@
 package com.clearkeep.screen.chat.home
 
+import android.util.Patterns
+import android.webkit.URLUtil
 import androidx.lifecycle.*
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
@@ -293,12 +295,24 @@ class HomeViewModel @Inject constructor(
 
     fun checkValidServerUrl(url: String) {
         viewModelScope.launch {
-            serverUrlValidateResponse.value = if (serverRepository.getServerByDomain(url) != null) {
+            serverUrlValidateResponse.value = if (!isValidServerUrl(url)) {
+                println("checkValidServerUrl local validation invalid")
+                ""
+            } else if (serverRepository.getServerByDomain(url) != null) {
+                println("checkValidServerUrl duplicate server")
+                ""
+            } else if (workSpaceRepository.getWorkspaceInfo(url).isBlank()) {
+                println("checkValidServerUrl invalid server from remote")
                 ""
             } else {
+                println("checkValidServerUrl valid")
                 url
             }
         }
+    }
+
+    private fun isValidServerUrl(url: String): Boolean {
+        return URLUtil.isValidUrl(url)
     }
 }
 
