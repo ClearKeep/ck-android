@@ -178,22 +178,28 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun mfaValidatePassword(owner: Owner, password: String) : Resource<String> = withContext(Dispatchers.IO) {
+    suspend fun mfaValidatePassword(owner: Owner, password: String) : Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", "" to "")
             val request = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
                 .setPassword(password)
                 .build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaValidatePassword(request)
             printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code} next step ${response.nextStep}")
-            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.toString(), null)
+            return@withContext if (response.success) Resource.success("" to "") else Resource.error("", "" to response.errors.toString())
         } catch (exception: StatusRuntimeException) {
+            printlnCK("mfaValidatePassword: $exception")
             val parsedError = parseError(exception)
-            return@withContext Resource.error(parsedError.message, null)
+            val message = when (parsedError.code) {
+                1001 -> "The password is incorrect. Try again" to "Please check your email to activate account"
+                1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
+                else -> "" to parsedError.message
+            }
+            return@withContext Resource.error("", message)
         } catch (exception: Exception) {
             printlnCK("mfaValidatePassword: $exception")
-            return@withContext Resource.error(exception.toString(), null)
+            return@withContext Resource.error("", "" to exception.toString())
         }
     }
 
