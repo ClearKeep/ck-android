@@ -515,12 +515,29 @@ fun TwoFaceAuthView(
     onCheckChange: (Boolean) -> Unit
 ) {
     Column {
-        CKSetting(
-            modifier = Modifier,
-            name = stringResource(R.string.two_factors_auth),
-            description = stringResource(R.string.two_factors_auth_description),
-            checked = enabled,
-            onCheckChange = onCheckChange
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CKHeaderText(
+                stringResource(R.string.two_factors_auth),
+                modifier = Modifier.weight(0.66f)
+            )
+            Column(
+                modifier = Modifier.clickable { },
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                TextButton(onClick = { onCheckChange.invoke(!enabled) }) {
+                    Text(text = if (enabled) "Disable" else "Enable")
+                }
+            }
+        }
+        Text(
+            text = stringResource(R.string.two_factors_auth_description),
+            style = MaterialTheme.typography.body1.copy(
+                color = grayscale2,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal
+            ),
+            modifier = Modifier.fillMaxWidth(0.8f)
         )
     }
 }
