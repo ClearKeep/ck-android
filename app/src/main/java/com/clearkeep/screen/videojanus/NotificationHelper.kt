@@ -161,11 +161,10 @@ fun showMessageNotificationToSystemBar(
     messages: List<Message>,
     userPreference: UserPreference
 ) {
-    if (userPreference.doNotDisturb) {
+    if (!userPreference.doNotDisturb) {
         val channelId = MESSAGE_CHANNEL_ID
         val channelName = MESSAGE_CHANNEL_NAME
         val notificationId = chatGroup.groupId.toInt()
-
         val contentTitle = chatGroup.groupName
         val participants = chatGroup.clientList
         val userName = if (me.userName.isEmpty()) "me" else me.userName
