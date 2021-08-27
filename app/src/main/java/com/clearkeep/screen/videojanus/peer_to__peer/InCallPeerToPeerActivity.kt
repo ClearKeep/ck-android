@@ -2,9 +2,6 @@ package com.clearkeep.screen.videojanus.peer_to__peer
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,7 +18,6 @@ import android.view.WindowManager
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -109,6 +105,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
     var groupName = ""
 
     private var mTimeStarted: Long = 0
+    var isShowedDialogCamera = false
+
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,6 +131,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         //TODO: Remove test hardcode
         mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.mIsAudioMode.postValue(mIsAudioMode)
+        isShowedDialogCamera = !mIsAudioMode
 
         initViews()
 
@@ -640,6 +639,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun showOpenCameraDialog() {
+        isShowedDialogCamera = true
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle("Requesting to video call ?")
             .setPositiveButton("Ok") { _, _ ->
@@ -713,6 +713,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 if (mGroupId == groupId && mIsAudioMode) {
                     callViewModel.mIsAudioMode.postValue(false)
                     configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
+                    if (!isShowedDialogCamera)
                     showOpenCameraDialog()
             }
         }}
