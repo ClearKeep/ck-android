@@ -42,7 +42,6 @@ class WorkSpaceRepository @Inject constructor(
             val response =
                 paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(serverUrl)).workspaceInfo(request)
 
-            printlnCK("getWorkspaceInfo response error? ${response.error}")
             return@withContext if (response.error.isEmpty()) Resource.success("") else Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)

@@ -57,6 +57,7 @@ fun InviteGroupScreen(
     val textSearch = remember { mutableStateOf("") }
     val useCustomServerChecked = remember { mutableStateOf(false) }
     val urlOtherServer = remember { mutableStateOf("") }
+    val addUserFromOtherServerError = remember { mutableStateOf("") }
     val context = LocalContext.current
 
     CKSimpleTheme {
@@ -222,16 +223,23 @@ fun InviteGroupScreen(
                             val people = getPeopleFromLink(urlOtherServer.value)
                             if (people?.userId != inviteGroupViewModel.getClientId()){
                                 if (isCreateDirectGroup) {
-                                    people?.let { onDirectFriendSelected(it) }
+                                    if (people != null) {
+                                        onDirectFriendSelected(people)
+                                    } else {
+                                        addUserFromOtherServerError.value = "Profile link is incorrect."
+                                    }
                                 } else {
                                     if (people != null) {
                                         inviteGroupViewModel.insertFriend(people)
                                         if (selectedItem.find { people == it } == null)
                                             selectedItem.add(people)
                                     }
+                                    else {
+                                        addUserFromOtherServerError.value = "Profile link is incorrect."
+                                    }
                                 }
                             }else {
-                                Toast.makeText(context,"User error !", Toast.LENGTH_SHORT).show()
+                                addUserFromOtherServerError.value = "You can't create conversation with yourself"
                             }
                             urlOtherServer.value = ""
                             useCustomServerChecked.value = false
@@ -255,6 +263,16 @@ fun InviteGroupScreen(
             .collect {
                 inviteGroupViewModel.search(it)
             }
+    }
+
+    if (addUserFromOtherServerError.value.isNotBlank()) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = addUserFromOtherServerError.value,
+            onDismissButtonClick = {
+                addUserFromOtherServerError.value = ""
+            }
+        )
     }
 }
 
