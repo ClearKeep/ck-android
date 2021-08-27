@@ -109,9 +109,6 @@ class ParamAPIProviderImpl @Inject constructor(
     }
 
     override fun provideWorkspaceBlockingStub(paramAPI: ParamAPI): WorkspaceGrpc.WorkspaceBlockingStub {
-        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
-            throw IllegalArgumentException("provideWorkspaceBlockingStub: access and hasl key must not null")
-        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return WorkspaceGrpc.newBlockingStub(managedChannel)
     }

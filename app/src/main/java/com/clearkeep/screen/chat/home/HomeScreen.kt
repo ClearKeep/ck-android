@@ -143,7 +143,8 @@ fun HomeScreen(
     }
     if (serverUrlValidateResponse.value?.isBlank() == true) {
         CKAlertDialog(
-            title = "Wrong server URL. Please try again.",
+            title = stringResource(R.string.error),
+            text = stringResource(R.string.wrong_server_url_error),
             onDismissButtonClick = {
                 homeViewModel.serverUrlValidateResponse.value = null
             }
@@ -488,10 +489,9 @@ fun JoinServerComposable(
         CKButton(
             stringResource(R.string.btn_join),
             onClick = {
-                if (rememberServerUrl.value.isNotBlank()) {
-                    onJoinServer(rememberServerUrl.value)
-                }
+                onJoinServer(rememberServerUrl.value)
             },
+            enabled = rememberServerUrl.value.isNotBlank()
         )
         Spacer(modifier = Modifier.size(9.dp))
         Text(

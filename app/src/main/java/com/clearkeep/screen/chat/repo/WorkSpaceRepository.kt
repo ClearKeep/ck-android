@@ -3,6 +3,7 @@ package com.clearkeep.screen.chat.repo
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import io.grpc.StatusRuntimeException
@@ -29,26 +30,29 @@ class WorkSpaceRepository @Inject constructor(
         }
     }
 
-    suspend fun getWorkspaceInfo(domain: String): String = withContext(Dispatchers.IO) {
+    suspend fun getWorkspaceInfo(currentDomain: String = "", domain: String): Resource<String> = withContext(Dispatchers.IO) {
         try {
             val request = WorkspaceOuterClass
                 .WorkspaceInfoRequest
                 .newBuilder()
                 .setWorkspaceDomain(domain)
                 .build()
+            val serverUrl = if (currentDomain.isEmpty()) domain else currentDomain
+
             val response =
-                paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(domain)).workspaceInfo(request)
+                paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(serverUrl)).workspaceInfo(request)
 
             printlnCK("getWorkspaceInfo response error? ${response.error}")
-            return@withContext response.error
+            return@withContext if (response.error.isEmpty()) Resource.success("") else Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 else -> parsedError.message
             }
-            return@withContext message
+            printlnCK("getWorkspaceInfo response exception? $message")
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
-            return@withContext e.toString()
+            return@withContext Resource.error(e.toString(), null)
         }
     }
 }
