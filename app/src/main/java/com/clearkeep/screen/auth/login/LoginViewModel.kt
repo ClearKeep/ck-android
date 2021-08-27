@@ -1,17 +1,16 @@
 package com.clearkeep.screen.auth.login
 
 import android.content.Context
+import android.util.Patterns
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.utilities.BASE_URL
-import com.clearkeep.utilities.PORT
-import com.clearkeep.utilities.isValidEmail
+import com.clearkeep.screen.chat.repo.WorkSpaceRepository
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 import com.facebook.AccessToken
 import com.facebook.login.LoginManager
 import javax.inject.Inject
@@ -26,7 +25,8 @@ import kotlinx.coroutines.launch
 
 
 class LoginViewModel @Inject constructor(
-    private val authRepo: AuthRepository
+    private val authRepo: AuthRepository,
+    private val workSpaceRepository: WorkSpaceRepository
 ): ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
@@ -57,6 +57,8 @@ class LoginViewModel @Inject constructor(
     val urlCustomServer= MutableLiveData<String>()
 
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
+
+    val serverUrlValidateResponse = MutableLiveData<String>()
 
     private var otpHash: String = ""
     private var userId: String = ""
@@ -192,7 +194,26 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun checkValidServerUrl(url: String) {
+        viewModelScope.launch {
+            if (!isValidServerUrl(url)) {
+                printlnCK("checkValidServerUrl local validation invalid")
+                serverUrlValidateResponse.value = ""
+                return@launch
+            }
+
+            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(domain = url)
+            if (workspaceInfoResponse.status == Status.ERROR) {
+                printlnCK("checkValidServerUrl invalid server from remote")
+                serverUrlValidateResponse.value = ""
+                return@launch
+            }
+
+            serverUrlValidateResponse.value = url
+        }
+    }
+
     fun getDomain(): String {
-        return if (isCustomServer) "$customDomain" else "$BASE_URL:$PORT"
+        return if (isCustomServer) customDomain else "$BASE_URL:$PORT"
     }
 }

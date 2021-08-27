@@ -54,6 +54,7 @@
     <string name="fb_login_protocol_scheme">fb2535496880092217</string>
     <string name="notes">Notes</string>
     <string name="search">Search</string>
+    <string name="error">Error</string>
 
     //profile
     <string name="enter_new_password">Enter Your New Password</string>
@@ -106,4 +107,5 @@
     <string name="profile_new_call_warning">You have a call that is currently in-progress. Please end it to start a new call.</string>
     <string name="two_factors_auth">Two Factors Authentication</string>
     <string name="two_factors_auth_description">Give your account more protection over scam and account hacking</string>
+    <string name="wrong_server_url_error">Wrong server URL. Please try again</string>
 </resources>
