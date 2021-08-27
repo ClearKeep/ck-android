@@ -13,6 +13,9 @@ import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
+import com.clearkeep.utilities.isValidServerUrl
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
@@ -21,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.regex.Pattern
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
@@ -295,24 +299,27 @@ class HomeViewModel @Inject constructor(
 
     fun checkValidServerUrl(url: String) {
         viewModelScope.launch {
-            serverUrlValidateResponse.value = if (!isValidServerUrl(url)) {
-                println("checkValidServerUrl local validation invalid")
-                ""
-            } else if (serverRepository.getServerByDomain(url) != null) {
-                println("checkValidServerUrl duplicate server")
-                ""
-            } else if (workSpaceRepository.getWorkspaceInfo(url).isBlank()) {
-                println("checkValidServerUrl invalid server from remote")
-                ""
-            } else {
-                println("checkValidServerUrl valid")
-                url
+            if (!isValidServerUrl(url)) {
+                printlnCK("checkValidServerUrl local validation invalid")
+                serverUrlValidateResponse.value = ""
+                return@launch
             }
-        }
-    }
 
-    private fun isValidServerUrl(url: String): Boolean {
-        return URLUtil.isValidUrl(url)
+            if (serverRepository.getServerByDomain(url) != null) {
+                printlnCK("checkValidServerUrl duplicate server")
+                serverUrlValidateResponse.value = ""
+                return@launch
+            }
+
+            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(environment.getServer().serverDomain, url)
+            if (workspaceInfoResponse.status == Status.ERROR) {
+                printlnCK("checkValidServerUrl invalid server from remote")
+                serverUrlValidateResponse.value = ""
+                return@launch
+            }
+
+            serverUrlValidateResponse.value = url
+        }
     }
 }
 

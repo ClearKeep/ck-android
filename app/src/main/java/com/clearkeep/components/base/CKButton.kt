@@ -63,10 +63,17 @@ fun CKButton(
                 .fillMaxWidth()
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            backgroundGradientStart,
-                            backgroundGradientEnd
-                        )
+                        colors = if (enabled) {
+                            listOf(
+                                backgroundGradientStart,
+                                backgroundGradientEnd
+                            )
+                        } else {
+                            listOf(
+                                backgroundGradientStartHalfTransparent,
+                                backgroundGradientEndHalfTransparent
+                            )
+                        }
                     )
                 )
                 .then(modifier)

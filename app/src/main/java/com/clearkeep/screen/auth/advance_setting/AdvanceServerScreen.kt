@@ -14,6 +14,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,11 +30,13 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-
+import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.utilities.network.Status
 
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
+    loginViewModel: LoginViewModel,
     onBackPress: (isCustom: Boolean, url: String) -> Unit,
     isCustom: Boolean,
     url: String,
@@ -41,6 +44,8 @@ fun CustomServerScreen(
     val useCustomServerChecked = remember { mutableStateOf(isCustom) }
     val rememberServerUrl = remember { mutableStateOf(url) }
     val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+    val serverUrlValidateResponse = loginViewModel.serverUrlValidateResponse.observeAsState()
+
     Box(
         modifier = Modifier
             .background(
@@ -59,10 +64,7 @@ fun CustomServerScreen(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
-                    onBackPress(
-                        if (rememberServerUrl.value.isBlank()) false else useCustomServerChecked.value,
-                        rememberServerUrl.value,
-                    )
+                    onBackPress(false, "")
                 }
             )
             Spacer(Modifier.height(26.dp))
@@ -138,23 +140,34 @@ fun CustomServerScreen(
                         Spacer(modifier = Modifier.height(58.dp))
 
                         CKButton(
-                            "Submit",
-                            { if (rememberServerUrl.value.isBlank()) {
-                                setShowDialog("Wrong server URL. Please try again.")
-                            } else {
-                                onBackPress(
-                                    useCustomServerChecked.value,
-                                    rememberServerUrl.value,
-                                )
-                            }},
+                            "Submit", {
+                                loginViewModel.checkValidServerUrl(rememberServerUrl.value)
+                            },
                             modifier = Modifier.padding(start = 60.dp, end = 66.dp),
-                            buttonType = if (rememberServerUrl.value.isNotBlank()) ButtonType.White else ButtonType.BorderWhite
+                            buttonType = ButtonType.White,
+                            enabled = rememberServerUrl.value.isNotBlank()
                         )
                     }
                 }
             }
         }
         ErrorDialog(showDialog, setShowDialog)
+    }
+
+    if (!serverUrlValidateResponse.value.isNullOrBlank()) {
+        onBackPress(
+            useCustomServerChecked.value,
+            rememberServerUrl.value,
+        )
+        loginViewModel.serverUrlValidateResponse.value = null
+    } else if (serverUrlValidateResponse.value?.isBlank() == true) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(R.string.wrong_server_url_error),
+            dismissTitle = stringResource(R.string.close),
+            onDismissButtonClick = {
+                loginViewModel.serverUrlValidateResponse.value = null
+            })
     }
 }
 
