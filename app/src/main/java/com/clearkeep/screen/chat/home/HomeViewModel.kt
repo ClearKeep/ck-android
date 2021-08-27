@@ -1,7 +1,5 @@
 package com.clearkeep.screen.chat.home
 
-import android.util.Patterns
-import android.webkit.URLUtil
 import androidx.lifecycle.*
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
@@ -14,7 +12,6 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.FIREBASE_TOKEN
 import com.clearkeep.utilities.isValidServerUrl
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
@@ -24,7 +21,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.regex.Pattern
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
@@ -311,7 +307,7 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
 
-            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(environment.getServer().serverDomain, url)
+            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(url)
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = ""
