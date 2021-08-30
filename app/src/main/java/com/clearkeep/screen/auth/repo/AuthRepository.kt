@@ -116,6 +116,7 @@ class AuthRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1001 -> "Login information is not correct. Please try again"
+                1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
             return@withContext Resource.error(message, null)
