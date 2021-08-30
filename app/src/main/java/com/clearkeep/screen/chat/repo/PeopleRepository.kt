@@ -8,7 +8,10 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserEntity
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import user.UserOuterClass
@@ -193,12 +196,39 @@ class PeopleRepository @Inject constructor(
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
-               // user.avatar = newUser?.avatar
+                // user.avatar = newUser?.avatar
             }
             return@withContext list
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
             return@withContext null
         }
-    }
+     }
+
+    suspend fun getUserInfo(userId: String, userDomain: String): Resource<User> =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = UserOuterClass.GetUserRequest.newBuilder()
+                    .setClientId(userId)
+                    .setWorkspaceDomain(userDomain)
+                    .build()
+
+                val response = dynamicAPIProvider.provideUserBlockingStub().getUserInfo(request)
+
+                printlnCK("getUserInfo response display name ${response.displayName} id ${response.id}")
+
+                return@withContext Resource.success(User(response.id, response.displayName, response.workspaceDomain))
+            } catch (e: StatusRuntimeException) {
+                val rawError = parseError(e)
+                val errorMessage = when (rawError.code) {
+                    1008, 1005 -> "Profile link is incorrect."
+                    else -> rawError.message
+                }
+                printlnCK("getUserInfo exception: $e")
+                return@withContext Resource.error(errorMessage, null)
+            } catch (e: Exception) {
+                printlnCK("getUserInfo exception: $e")
+                return@withContext Resource.error(e.toString(), null)
+            }
+        }
 }

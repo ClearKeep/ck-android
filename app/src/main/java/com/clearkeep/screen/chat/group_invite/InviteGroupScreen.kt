@@ -37,6 +37,8 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -58,6 +60,7 @@ fun InviteGroupScreen(
     val useCustomServerChecked = remember { mutableStateOf(false) }
     val urlOtherServer = remember { mutableStateOf("") }
     val addUserFromOtherServerError = remember { mutableStateOf("") }
+    val checkUserUrlResponse = inviteGroupViewModel.checkUserUrlResponse.observeAsState()
     val context = LocalContext.current
 
     CKSimpleTheme {
@@ -224,26 +227,22 @@ fun InviteGroupScreen(
                             if (people?.userId != inviteGroupViewModel.getClientId()){
                                 if (isCreateDirectGroup) {
                                     if (people != null) {
-                                        onDirectFriendSelected(people)
+                                        inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
                                     } else {
                                         addUserFromOtherServerError.value = "Profile link is incorrect."
                                     }
                                 } else {
                                     if (people != null) {
-                                        inviteGroupViewModel.insertFriend(people)
-                                        if (selectedItem.find { people == it } == null)
-                                            selectedItem.add(people)
-                                    }
-                                    else {
+                                        inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                    } else {
                                         addUserFromOtherServerError.value = "Profile link is incorrect."
                                     }
                                 }
-                            }else {
+                            } else {
                                 addUserFromOtherServerError.value = "You can't create conversation with yourself"
                             }
                             urlOtherServer.value = ""
                             useCustomServerChecked.value = false
-
                         } else {
                             if (selectedItem.size > 0) {
                                 onFriendSelected(selectedItem)
@@ -271,8 +270,31 @@ fun InviteGroupScreen(
             text = addUserFromOtherServerError.value,
             onDismissButtonClick = {
                 addUserFromOtherServerError.value = ""
+                inviteGroupViewModel.checkUserUrlResponse.value = null
             }
         )
+    }
+
+    if (checkUserUrlResponse.value?.status == Status.ERROR) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = checkUserUrlResponse.value!!.message,
+            onDismissButtonClick = {
+                inviteGroupViewModel.checkUserUrlResponse.value = null
+            }
+        )
+    } else if (checkUserUrlResponse.value?.status == Status.SUCCESS) {
+        val people = checkUserUrlResponse.value!!.data
+
+        people?.let { user ->
+            if (isCreateDirectGroup) {
+                onDirectFriendSelected(user)
+            } else {
+                inviteGroupViewModel.insertFriend(user)
+                if (selectedItem.find { people == it } == null)
+                    selectedItem.add(user)
+            }
+        }
     }
 }
 
