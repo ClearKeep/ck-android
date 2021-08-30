@@ -115,7 +115,17 @@ class LoginActivity : AppCompatActivity() {
                         onLoginSuccess()
                     }
                 } else if (res.status == Status.ERROR) {
-                    setShowDialog(ErrorMessage(title = "Error",message = res.message.toString()))
+                    val title = when (res.data?.errorCode) {
+                        1001 -> "Error"
+                        1069 -> "Account is Locked"
+                        else -> "Error"
+                    }
+                    val dismissButtonTitle = when (res.data?.errorCode) {
+                        1001 -> "OK"
+                        1069 -> "Close"
+                        else -> "OK"
+                    }
+                    setShowDialog(ErrorMessage(title = title, message = res.message ?: "", dismissButtonText = dismissButtonTitle))
                 }
             }
         }
@@ -223,6 +233,7 @@ class LoginActivity : AppCompatActivity() {
                     // Change the state to close the dialog
                     setShowDialog(null)
                 },
+                dismissTitle = it.dismissButtonText
             )
         }
 
@@ -359,7 +370,7 @@ class LoginActivity : AppCompatActivity() {
             })
     }
 
-    data class ErrorMessage(val title:String, val message: String)
+    data class ErrorMessage(val title:String, val message: String, val dismissButtonText: String = "OK")
 
     companion object {
         const val IS_JOIN_SERVER = "is_join_server"

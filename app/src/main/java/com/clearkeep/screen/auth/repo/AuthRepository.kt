@@ -1,6 +1,7 @@
 package com.clearkeep.screen.auth.repo
 
 import auth.AuthOuterClass
+import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.db.clear_keep.model.Profile
@@ -61,7 +62,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun login(userName: String, password: String, domain: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    suspend fun login(userName: String, password: String, domain: String) : Resource<LoginResponse> = withContext(Dispatchers.IO) {
         printlnCK("login: $userName, password = $password, domain = $domain")
         try {
             val request = AuthOuterClass.AuthReq.newBuilder()
@@ -79,7 +80,7 @@ class AuthRepository @Inject constructor(
                 val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                 val requireOtp = accessToken.isNullOrBlank()
                 if (requireOtp) {
-                    return@withContext Resource.success(response)
+                    return@withContext Resource.success(LoginResponse(response.accessToken, response.otpHash, response.sub, response.hashKey, 0, response.error))
                 } else {
                     if (profile == null) {
                         return@withContext Resource.error("Can not get profile", null)
@@ -106,7 +107,7 @@ class AuthRepository @Inject constructor(
                         )
                     )
                     userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
-                    return@withContext Resource.success(response)
+                    return@withContext Resource.success(LoginResponse(response.accessToken, response.otpHash, response.sub, response.hashKey, 0, response.error))
                 }
             } else {
                 printlnCK("login failed: ${response.error}")
@@ -114,12 +115,12 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-            val message = when (parsedError.code) {
+            val errorMessage = when (parsedError.code) {
                 1001 -> "Login information is not correct. Please try again"
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error(errorMessage, LoginResponse("", "", "", "", parsedError.code, errorMessage))
         } catch (e: Exception) {
             printlnCK("login error: $e")
             return@withContext Resource.error(e.toString(), null)
