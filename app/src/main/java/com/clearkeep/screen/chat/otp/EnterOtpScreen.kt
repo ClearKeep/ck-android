@@ -15,6 +15,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +44,8 @@ import com.clearkeep.utilities.network.Status
 @Composable
 fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMessage: () -> Unit, onClickResend: () -> Unit, onClickSubmit: (String) -> Unit, onBackPress: () -> Unit, onClickSave: () -> Unit) {
     val input = remember { mutableStateListOf(" ", " ", " ", " ") }
+    val focusRequesters = remember { mutableStateListOf(FocusRequester(), FocusRequester(), FocusRequester(), FocusRequester()) }
+
     val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {
@@ -62,8 +65,6 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
                 )
             )
     ) {
-        val currentPassWord = remember { mutableStateOf("") }
-
         Spacer(Modifier.height(58.dp))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
             title = "Enter Your Code", onBackPressed = {
@@ -78,7 +79,7 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
                 fontSize = 16.sp
             )
             Spacer(Modifier.height(16.dp))
-            OtpInput(input)
+            OtpInput(input, focusRequesters)
             Spacer(Modifier.height(32.dp))
             Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp, fontWeight = FontWeight.W400)
             Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sp)
@@ -96,6 +97,13 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
 
         when (verifyOtpResponse.value?.status) {
             Status.ERROR -> {
+                input[0] = " "
+                input[1] = " "
+                input[2] = " "
+                input[3] = " "
+
+                focusRequesters[0].requestFocus()
+
                 CKAlertDialog(
                     title = stringResource(R.string.warning),
                     text = verifyOtpResponse.value!!.message ?: "",
@@ -116,8 +124,7 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
 }
 
 @Composable
-fun OtpInput(input: SnapshotStateList<String>) {
-    val focusRequesters = remember { mutableStateListOf(FocusRequester(), FocusRequester(), FocusRequester(), FocusRequester()) }
+fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateList<FocusRequester>) {
     Row(
         Modifier
             .fillMaxWidth()
