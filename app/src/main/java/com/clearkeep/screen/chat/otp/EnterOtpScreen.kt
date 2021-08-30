@@ -66,7 +66,7 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
 
         Spacer(Modifier.height(58.dp))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.dp),
-            title = "Enter your OTP", onBackPressed = {
+            title = "Enter Your Code", onBackPressed = {
                 onBackPress.invoke()
             })
         Spacer(Modifier.height(30.dp))
@@ -101,7 +101,8 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
                     text = verifyOtpResponse.value!!.message ?: "",
                     onDismissButtonClick = {
                         onDismissMessage.invoke()
-                    }
+                    },
+                    dismissTitle = stringResource(R.string.close)
                 )
             }
             Status.SUCCESS -> {

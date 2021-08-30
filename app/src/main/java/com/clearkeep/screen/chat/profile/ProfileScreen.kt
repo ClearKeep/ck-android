@@ -319,6 +319,7 @@ fun ProfileScreen(
                 onDismissButtonClick = {
                     profileViewModel.updateMfaSettingResponse.value = null
                 },
+                dismissTitle = stringResource(R.string.close)
             )
         }
 
