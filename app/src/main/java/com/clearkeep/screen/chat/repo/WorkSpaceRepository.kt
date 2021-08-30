@@ -30,7 +30,7 @@ class WorkSpaceRepository @Inject constructor(
         }
     }
 
-    suspend fun getWorkspaceInfo(domain: String): Resource<String> = withContext(Dispatchers.IO) {
+    suspend fun getWorkspaceInfo(currentDomain: String? = null, domain: String): Resource<String> = withContext(Dispatchers.IO) {
         try {
             val request = WorkspaceOuterClass
                 .WorkspaceInfoRequest
@@ -39,7 +39,7 @@ class WorkSpaceRepository @Inject constructor(
                 .build()
 
             val response =
-                paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(domain)).workspaceInfo(request)
+                paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(currentDomain ?: domain)).workspaceInfo(request)
 
             return@withContext if (response.error.isEmpty()) Resource.success("") else Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {

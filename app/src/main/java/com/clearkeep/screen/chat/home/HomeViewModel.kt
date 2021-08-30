@@ -306,8 +306,8 @@ class HomeViewModel @Inject constructor(
                 serverUrlValidateResponse.value = ""
                 return@launch
             }
-
-            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(url)
+            val server = environment.getServer()
+            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = ""
