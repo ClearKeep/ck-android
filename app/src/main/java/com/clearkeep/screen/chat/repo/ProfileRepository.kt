@@ -192,9 +192,9 @@ class ProfileRepository @Inject constructor(
             printlnCK("mfaValidatePassword: $exception")
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
-                1001 -> "The password is incorrect. Try again" to "Please check your details and try again"
-                1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
-                else -> "" to parsedError.message
+                1001 -> "Error" to "The password is incorrect. Try again"
+                1069 -> "Warning" to "Your account has been locked out due to too many attempts. Please try again later!"
+                else -> "Error" to parsedError.message
             }
             return@withContext Resource.error("", message)
         } catch (exception: Exception) {
