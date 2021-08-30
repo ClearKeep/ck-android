@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
@@ -200,14 +201,17 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
             .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Box(Modifier.size(28.dp).align(Alignment.Center)) {
-            BasicTextField(
-                value,
-                onValueChange = { onValueChange(it.trim()) },
-                modifier = Modifier.align(Alignment.Center).fillMaxWidth().focusRequester(focusRequester),
-                singleLine = true,
-                textStyle = TextStyle(fontSize = 20.sp),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
+            Row {
+                Spacer(Modifier.width(8.dp))
+                BasicTextField(
+                    value,
+                    onValueChange = { onValueChange(it.trim()) },
+                    modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth().focusRequester(focusRequester),
+                    singleLine = true,
+                    textStyle = TextStyle(fontSize = 20.sp),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                )
+            }
         }
     }
 }
@@ -221,4 +225,15 @@ private fun isValidOtp(otp: String) : Boolean {
         }
     }
     return true
+}
+
+@Composable
+@Preview
+fun OtpInputSquarePreview() {
+    val focusRequester = FocusRequester()
+    Box {
+        OtpInputSquare("6", focusRequester) {
+
+        }
+    }
 }

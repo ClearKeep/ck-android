@@ -144,7 +144,7 @@ fun ProfileScreen(
                                         fontSize = 14.sp,
                                     )
                                     SideBarLabel(
-                                        text = " Maximum fize size 5MB",
+                                        text = " Maximum file size 5MB",
                                         color = grayscale3,
                                         modifier = Modifier,
                                         fontSize = 12.sp
