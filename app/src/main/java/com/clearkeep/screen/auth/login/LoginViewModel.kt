@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
+import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.BASE_URL
 import com.clearkeep.utilities.PORT
@@ -126,7 +127,7 @@ class LoginViewModel @Inject constructor(
     suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.AuthRes>{
         return authRepo.loginByMicrosoft(accessToken, getDomain())
     }
-    suspend fun login(context: Context, email: String, password: String): Resource<AuthOuterClass.AuthRes>? {
+    suspend fun login(context: Context, email: String, password: String): Resource<LoginResponse>? {
         _emailError.value = ""
         _passError.value = ""
         _isLoading.value = true
