@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.*
 import com.clearkeep.R
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.separatorDarkNonOpaque
@@ -51,7 +52,7 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
         CKSearchBox(searchQuery)
         Spacer(Modifier.height(60.dp))
         LazyColumn {
-            itemsIndexed(searchResult.value) { _: Int, item: Pair<Int?, String> ->
+            itemsIndexed(searchResult.value.sortedBy { it.second }) { _: Int, item: Pair<Int?, String> ->
                 val countryCode = if (item.first == null) "" else "+${item.first}"
                 PhoneCountryCodeItem(
                     Modifier.padding(vertical = 16.dp),
@@ -87,7 +88,7 @@ fun PhoneCountryCodeItem(
     code: String,
     onSelect: () -> Unit
 ) {
-    Box(
+    ConstraintLayout(
         modifier.then(
             Modifier
                 .fillMaxWidth()
@@ -95,19 +96,26 @@ fun PhoneCountryCodeItem(
                     onSelect()
                 })
     ) {
+        val (countryText, codeText) = createRefs()
         Text(
             country,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            modifier = Modifier.align(Alignment.CenterStart)
+            modifier = Modifier.constrainAs(countryText) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+                end.linkTo(codeText.start, 8.dp)
+                width = Dimension.fillToConstraints
+            }
         )
         Text(
             code,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier
-                .align(Alignment.CenterEnd)
                 .width(50.dp)
+                .constrainAs(codeText) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                }
         )
     }
 }
