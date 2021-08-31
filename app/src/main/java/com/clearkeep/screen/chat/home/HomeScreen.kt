@@ -59,6 +59,7 @@ fun HomeScreen(
     val profile = homeViewModel.profile.observeAsState()
     val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
     val serverUrlValidateResponse = homeViewModel.serverUrlValidateResponse.observeAsState()
+    val isServerValidationLoading = homeViewModel.isServerUrlValidateLoading.observeAsState()
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(swipeRefreshState.value == true),
@@ -84,7 +85,9 @@ fun HomeScreen(
                         gotoProfile = {
                             rememberStateSiteMenu.value = true
                         },
-                        onItemClickListener = gotoRoomById,
+                        onItemClickListener = {
+                            gotoRoomById(it)
+                        },
                         onNavigateNotes = onNavigateNotes
                     )
                 } else {
@@ -93,8 +96,10 @@ fun HomeScreen(
                             homeViewModel.checkValidServerUrl(it)
                         },
                         gotoProfile = {
+                            homeViewModel.cancelCheckValidServer()
                             rememberStateSiteMenu.value = true
                         },
+                        isLoading = isServerValidationLoading.value == true
                     )
                 }
             }
@@ -147,7 +152,8 @@ fun HomeScreen(
             text = stringResource(R.string.wrong_server_url_error),
             onDismissButtonClick = {
                 homeViewModel.serverUrlValidateResponse.value = null
-            }
+            },
+            dismissTitle = stringResource(R.string.close)
         )
     } else if (serverUrlValidateResponse.value != null) {
         onJoinServer(serverUrlValidateResponse.value!!)
@@ -202,7 +208,10 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                             ) {
                                 Column(
                                     modifier = Modifier
-                                        .clickable { mainViewModel.selectChannel(server) },
+                                        .clickable {
+                                            mainViewModel.selectChannel(server)
+                                            mainViewModel.cancelCheckValidServer()
+                                        },
                                 ) {
                                     CircleAvatarWorkSpace(
                                         server,
@@ -450,56 +459,67 @@ fun DirectMessagesView(
 @Composable
 fun JoinServerComposable(
     onJoinServer: (serverUrl: String) -> Unit,
-    gotoProfile: () -> Unit
+    gotoProfile: () -> Unit,
+    isLoading: Boolean
 ) {
     val rememberServerUrl = remember { mutableStateOf("") }
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 16.dp, top = 20.dp)
-    ) {
-        Spacer(modifier = Modifier.size(24.dp))
-        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-            CKHeaderText(
-                text = stringResource(R.string.join_server), modifier = Modifier
-                    .weight(0.66f), headerTextType = HeaderTextType.Large
-            )
-            Column(
-                modifier = Modifier.clickable { gotoProfile.invoke() },
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_hamburger),
-                    null, alignment = Alignment.Center
-                )
-            }
+    Box(Modifier.fillMaxSize()) {
+        if (isLoading) {
+            CKCircularProgressIndicator(Modifier.align(Alignment.Center))
         }
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 16.dp, top = 20.dp)
+        ) {
+            Spacer(modifier = Modifier.size(24.dp))
+            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+                CKHeaderText(
+                    text = stringResource(R.string.join_server), modifier = Modifier
+                        .weight(0.66f), headerTextType = HeaderTextType.Large
+                )
+                Column(
+                    modifier = Modifier.clickable {
+                        gotoProfile.invoke()
+                    },
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_hamburger),
+                        null, alignment = Alignment.Center
+                    )
+                }
+            }
 
-        Spacer(Modifier.height(25.dp))
-        Text(stringResource(R.string.join_server_caption), style = MaterialTheme.typography.body2)
-        Spacer(modifier = Modifier.size(21.dp))
-        CKTextInputField(
-            "Server URL",
-            rememberServerUrl,
-            keyboardType = KeyboardType.Text,
-            singleLine = true,
-        )
-        Spacer(modifier = Modifier.size(14.dp))
-        CKButton(
-            stringResource(R.string.btn_join),
-            onClick = {
-                onJoinServer(rememberServerUrl.value)
-            },
-            enabled = rememberServerUrl.value.isNotBlank()
-        )
-        Spacer(modifier = Modifier.size(9.dp))
-        Text(
-            stringResource(R.string.join_server_tips),
-            style = MaterialTheme.typography.caption.copy(
-                color = MaterialTheme.colors.onSecondary
+            Spacer(Modifier.height(25.dp))
+            Text(
+                stringResource(R.string.join_server_caption),
+                style = MaterialTheme.typography.body2
             )
-        )
+            Spacer(modifier = Modifier.size(21.dp))
+            CKTextInputField(
+                "Server URL",
+                rememberServerUrl,
+                keyboardType = KeyboardType.Text,
+                singleLine = true,
+            )
+            Spacer(modifier = Modifier.size(14.dp))
+            CKButton(
+                stringResource(R.string.btn_join),
+                onClick = {
+                    onJoinServer(rememberServerUrl.value)
+                },
+                enabled = rememberServerUrl.value.isNotBlank() && !isLoading
+            )
+            Spacer(modifier = Modifier.size(9.dp))
+            Text(
+                stringResource(R.string.join_server_tips),
+                style = MaterialTheme.typography.caption.copy(
+                    color = MaterialTheme.colors.onSecondary
+                )
+            )
+        }
     }
 }
 

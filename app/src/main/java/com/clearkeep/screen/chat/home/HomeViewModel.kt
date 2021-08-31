@@ -16,11 +16,8 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class HomeViewModel @Inject constructor(
@@ -64,6 +61,12 @@ class HomeViewModel @Inject constructor(
         get() = _listUserStatus
 
     val serverUrlValidateResponse = MutableLiveData<String>()
+
+    private val _isServerUrlValidateLoading = MutableLiveData<Boolean>()
+    val isServerUrlValidateLoading : LiveData<Boolean>
+        get() = _isServerUrlValidateLoading
+
+    private var checkValidServerJob: Job? = null
 
     init {
         printlnCK("Share file cancel HomeViewModel init")
@@ -294,20 +297,26 @@ class HomeViewModel @Inject constructor(
     }
 
     fun checkValidServerUrl(url: String) {
-        viewModelScope.launch {
+        _isServerUrlValidateLoading.value = true
+        checkValidServerJob?.cancel()
+        checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
                 printlnCK("checkValidServerUrl local validation invalid")
                 serverUrlValidateResponse.value = ""
+                _isServerUrlValidateLoading.value = false
                 return@launch
             }
 
             if (serverRepository.getServerByDomain(url) != null) {
                 printlnCK("checkValidServerUrl duplicate server")
                 serverUrlValidateResponse.value = ""
+                _isServerUrlValidateLoading.value = false
                 return@launch
             }
+
             val server = environment.getServer()
             val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
+            _isServerUrlValidateLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = ""
@@ -316,6 +325,11 @@ class HomeViewModel @Inject constructor(
 
             serverUrlValidateResponse.value = url
         }
+    }
+
+    fun cancelCheckValidServer() {
+        _isServerUrlValidateLoading.value = false
+        checkValidServerJob?.cancel()
     }
 }
 
