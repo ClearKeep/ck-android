@@ -139,12 +139,12 @@ fun ProfileScreen(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     SideBarLabel(
-                                        text = "Change profile picture",
+                                        text = stringResource(R.string.profile_avatar_change),
                                         color = primaryDefault,
                                         fontSize = 14.sp,
                                     )
                                     SideBarLabel(
-                                        text = " Maximum file size 5MB",
+                                        text = stringResource(R.string.profile_avatar_max_size),
                                         color = grayscale3,
                                         modifier = Modifier,
                                         fontSize = 12.sp

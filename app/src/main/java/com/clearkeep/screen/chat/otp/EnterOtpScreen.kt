@@ -226,14 +226,3 @@ private fun isValidOtp(otp: String) : Boolean {
     }
     return true
 }
-
-@Composable
-@Preview
-fun OtpInputSquarePreview() {
-    val focusRequester = FocusRequester()
-    Box {
-        OtpInputSquare("6", focusRequester) {
-
-        }
-    }
-}
