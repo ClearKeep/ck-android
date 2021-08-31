@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.advance_setting
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -14,6 +15,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,12 +34,13 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
     loginViewModel: LoginViewModel,
-    onBackPress: (isCustom: Boolean, url: String) -> Unit,
+    onBackPress: () -> Unit,
     isCustom: Boolean,
     url: String,
 ) {
@@ -45,6 +48,16 @@ fun CustomServerScreen(
     val rememberServerUrl = remember { mutableStateOf(url) }
     val (showDialog, setShowDialog) = remember { mutableStateOf("") }
     val serverUrlValidateResponse = loginViewModel.serverUrlValidateResponse.observeAsState()
+    val isLoading = loginViewModel.isLoading.observeAsState()
+
+    BackHandler {
+        printlnCK("Advanced server settings back press")
+        loginViewModel.isCustomServer = false
+        loginViewModel.customDomain = ""
+        loginViewModel.clearLoading()
+        loginViewModel.cancelCheckValidServer()
+        onBackPress()
+    }
 
     Box(
         modifier = Modifier
@@ -64,7 +77,11 @@ fun CustomServerScreen(
                 modifier = Modifier.padding(start = 6.dp),
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
-                    onBackPress(false, "")
+                    loginViewModel.isCustomServer = isCustom
+                    loginViewModel.customDomain = url
+                    loginViewModel.clearLoading()
+                    loginViewModel.cancelCheckValidServer()
+                    onBackPress()
                 }
             )
             Spacer(Modifier.height(26.dp))
@@ -145,21 +162,23 @@ fun CustomServerScreen(
                             },
                             modifier = Modifier.padding(start = 60.dp, end = 66.dp),
                             buttonType = ButtonType.White,
-                            enabled = rememberServerUrl.value.isNotBlank()
+                            enabled = rememberServerUrl.value.isNotBlank() && isLoading.value != true
                         )
                     }
                 }
             }
         }
+        if (isLoading.value == true) {
+            CKCircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
         ErrorDialog(showDialog, setShowDialog)
     }
 
     if (!serverUrlValidateResponse.value.isNullOrBlank()) {
-        onBackPress(
-            useCustomServerChecked.value,
-            rememberServerUrl.value,
-        )
+        loginViewModel.isCustomServer = useCustomServerChecked.value
+        loginViewModel.customDomain = rememberServerUrl.value
         loginViewModel.serverUrlValidateResponse.value = null
+        onBackPress()
     } else if (serverUrlValidateResponse.value?.isBlank() == true) {
         CKAlertDialog(
             title = stringResource(R.string.warning),

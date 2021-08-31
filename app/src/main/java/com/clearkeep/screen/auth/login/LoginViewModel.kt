@@ -20,6 +20,7 @@ import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
 import com.facebook.GraphRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 
@@ -58,6 +59,8 @@ class LoginViewModel @Inject constructor(
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
 
     val serverUrlValidateResponse = MutableLiveData<String>()
+
+    private var checkValidServerJob: Job? = null
 
     private var otpHash: String = ""
     private var userId: String = ""
@@ -194,14 +197,18 @@ class LoginViewModel @Inject constructor(
     }
 
     fun checkValidServerUrl(url: String) {
-        viewModelScope.launch {
+        _isLoading.value = true
+        checkValidServerJob?.cancel()
+        checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
                 printlnCK("checkValidServerUrl local validation invalid")
                 serverUrlValidateResponse.value = ""
+                _isLoading.value = false
                 return@launch
             }
 
             val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(domain = url)
+            _isLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = ""
@@ -210,6 +217,14 @@ class LoginViewModel @Inject constructor(
 
             serverUrlValidateResponse.value = url
         }
+    }
+
+    fun clearLoading() {
+        _isLoading.value = false
+    }
+
+    fun cancelCheckValidServer() {
+        checkValidServerJob?.cancel()
     }
 
     fun getDomain(): String {
