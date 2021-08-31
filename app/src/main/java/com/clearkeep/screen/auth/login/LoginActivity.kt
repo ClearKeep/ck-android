@@ -195,10 +195,8 @@ class LoginActivity : AppCompatActivity() {
                 composable("advance_setting") {
                     CustomServerScreen(
                         loginViewModel,
-                        onBackPress = { isCustom, url ->
-                            loginViewModel.isCustomServer = isCustom
-                            loginViewModel.customDomain = url
-                            onBackPressed()
+                        onBackPress = {
+                            navController.popBackStack()
                         },
                         loginViewModel.isCustomServer,
                         loginViewModel.customDomain
