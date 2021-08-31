@@ -178,7 +178,14 @@ fun parseError(e: StatusRuntimeException) : ProtoResponse {
 
 fun isValidServerUrl(url: String): Boolean {
     val matcher = Patterns.WEB_URL.matcher(url.trim())
-    return !url.contains("http(s)?://".toRegex()) && matcher.find()
+    matcher.find()
+    val match = matcher.group()
+    val port = "\\:\\d{1,5}".toRegex().find(match)?.value ?: ""
+    val portNumber = port.replace(":", "").toIntOrNull()
+    if (port.isNotBlank() && portNumber !in 1..65535) {
+        return false
+    }
+    return !url.contains("http(s)?://".toRegex()) && match == url
 }
 
 val errorRegex = "\\{.+\\}".toRegex()
