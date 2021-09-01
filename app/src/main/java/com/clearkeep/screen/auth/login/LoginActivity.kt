@@ -205,7 +205,14 @@ class LoginActivity : AppCompatActivity() {
                 composable("otp_confirm") {
                     EnterOtpScreen(
                         otpResponse = loginViewModel.verifyOtpResponse,
-                        onDismissMessage = { loginViewModel.verifyOtpResponse.value = null },
+                        onDismissMessage = {
+                            loginViewModel.verifyOtpResponse.value = null
+
+                            if (loginViewModel.isAccountLocked.value == true) {
+                                loginViewModel.resetAccountLock()
+                                navController.popBackStack()
+                            }
+                        },
                         onClickResend = { loginViewModel.requestResendOtp() },
                         onClickSubmit = { loginViewModel.validateOtp(it) },
                         onBackPress = { navController.popBackStack() }) {

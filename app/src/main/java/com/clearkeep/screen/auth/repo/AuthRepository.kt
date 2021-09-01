@@ -115,6 +115,7 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
+            printlnCK("login error: $e")
             val errorMessage = when (parsedError.code) {
                 1001 -> "Login information is not correct. Please try again"
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
@@ -389,7 +390,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun mfaResendOtp(domain: String, otpHash: String, userId: String) : Resource<String> = withContext(Dispatchers.IO) {
+    suspend fun mfaResendOtp(domain: String, otpHash: String, userId: String) : Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
                 .setOtpHash(otpHash)
@@ -398,17 +399,17 @@ class AuthRepository @Inject constructor(
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.resendOtp(request)
             printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} success? ${response.success}")
-            return@withContext if (response.otpHash.isNotBlank()) Resource.success(response.otpHash) else Resource.error("", null)
+            return@withContext if (response.otpHash.isNotBlank()) Resource.success(0 to response.otpHash) else Resource.error("", 0 to "")
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error("", parsedError.code to message)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
-            return@withContext Resource.error(exception.toString(), null)
+            return@withContext Resource.error("", 0 to exception.toString())
         }
     }
 

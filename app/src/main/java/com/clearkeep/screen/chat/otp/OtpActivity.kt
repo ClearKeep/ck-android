@@ -46,14 +46,19 @@ class OtpActivity: AppCompatActivity(), LifecycleObserver {
                     composable("enter_otp") {
                         EnterOtpScreen(
                             otpViewModel.verifyOtpResponse,
-                            onDismissMessage = { otpViewModel.verifyOtpResponse.value = null },
+                            onDismissMessage = {
+                                otpViewModel.verifyOtpResponse.value = null
+
+                                if (otpViewModel.isAccountLocked.value == true) {
+                                    otpViewModel.resetAccountLock()
+                                    finish()
+                                }
+                            },
                             onClickResend = { otpViewModel.requestResendOtp() },
                             onClickSubmit = { otpViewModel.verifyOtp(it) },
-                        onBackPress = {
-                            finish()
-                        }, onClickSave = {
-                            finish()
-                        })
+                            onBackPress = { finish() },
+                            onClickSave = { finish() },
+                        )
                     }
                 }
             }
