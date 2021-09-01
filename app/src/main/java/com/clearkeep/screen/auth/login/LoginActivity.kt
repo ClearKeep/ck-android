@@ -116,12 +116,13 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else if (res.status == Status.ERROR) {
                     val title = when (res.data?.errorCode) {
-                        1001 -> "Error"
+                        1001 -> "Email or Password is incorrect"
+                        1026 -> "Error"
                         1069 -> "Account is Locked"
                         else -> "Error"
                     }
                     val dismissButtonTitle = when (res.data?.errorCode) {
-                        1001 -> "OK"
+                        1001, 1026 -> "OK"
                         1069 -> "Close"
                         else -> "OK"
                     }
