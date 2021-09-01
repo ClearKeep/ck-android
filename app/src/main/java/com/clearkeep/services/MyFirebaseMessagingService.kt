@@ -58,6 +58,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun handleNotification(remoteMessage: RemoteMessage) {
         val clientId = remoteMessage.data["client_id"] ?: ""
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        printlnCK("notification  $clientId")
         GlobalScope.launch {
             val server = serverRepository.getServer(clientDomain, clientId)
             if (server != null) {
