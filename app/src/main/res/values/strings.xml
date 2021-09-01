@@ -48,7 +48,7 @@
     <string name="tv_not_account">Don’t have an account?</string>
     <string name="sign_up">Sign up</string>
     <string name="sign_up_fill_information">Please fill in the information below to complete your sign up</string>
-    <string name="enter_email_reset_pass">Please enter your email to reset your password</string>
+    <string name="enter_email_reset_pass">Please enter your email to reset password</string>
     <string name="forgot_password">Forgot password</string>
     <string name="facebook_app_id">2535496880092217</string>
     <string name="fb_login_protocol_scheme">fb2535496880092217</string>
