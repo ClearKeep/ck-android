@@ -145,7 +145,11 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun setUsername(username: String) {
-        _username.value = username
+        _username.value = if (username.length > 30) {
+            username.substring(0 until USERNAME_MAX_LENGTH)
+        } else {
+            username
+        }
         _usernameError.value = !isValidUsername(username)
     }
 
@@ -200,7 +204,7 @@ class ProfileViewModel @Inject constructor(
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
-                            userName = displayName,
+                            userName = displayName.trim(),
                             phoneNumber = updatedPhoneNumber,
                             avatar = avatarUrl,
                             updatedAt = Calendar.getInstance().timeInMillis
@@ -219,7 +223,7 @@ class ProfileViewModel @Inject constructor(
                     profileRepository.updateProfile(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
-                            userName = displayName,
+                            userName = displayName.trim(),
                             phoneNumber = updatedPhoneNumber
                         )
                     )
@@ -347,7 +351,7 @@ class ProfileViewModel @Inject constructor(
         return uri.getFileSize(context, false) <= AVATAR_MAX_SIZE
     }
 
-    private fun isValidUsername(username: String?): Boolean = !username.isNullOrEmpty()
+    private fun isValidUsername(username: String?): Boolean = !username.isNullOrBlank()
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
         if (countryCode.isBlank() && phoneNumber.isNotBlank()) {
@@ -375,5 +379,6 @@ class ProfileViewModel @Inject constructor(
     companion object {
         private const val AVATAR_MAX_SIZE = 4_000_000 //4MB
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
+        private const val USERNAME_MAX_LENGTH = 30
     }
 }

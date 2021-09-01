@@ -74,7 +74,7 @@ fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMess
         Spacer(Modifier.height(30.dp))
         Column(Modifier.padding(horizontal = 16.dp)) {
             Text(
-                text = "Please input a code that has been sent to your phone",
+                text = stringResource(R.string.otp_hint),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
                 fontSize = 16.sp

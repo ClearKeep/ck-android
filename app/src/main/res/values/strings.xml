@@ -110,4 +110,5 @@
     <string name="wrong_server_url_error">Wrong server URL. Please try again</string>
     <string name="profile_avatar_max_size">Maximum file size 5MB</string>
     <string name="profile_avatar_change">Change profile picture</string>
+    <string name="otp_hint">Please input a code that has been sent to your phone number</string>
 </resources>
