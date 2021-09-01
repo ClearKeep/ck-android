@@ -39,13 +39,17 @@ fun showMessagingStyleNotification(
     preference: UserPreference,
     avatar: String? = ""
 ) {
-    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", domain = "")
+    val sender = if (chatGroup.isGroup()) {
+        chatGroup.groupName
+    } else {
+        chatGroup.clientList.find { it.userId == message.senderId }?.userName ?: "unknown"
+    }
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference,avatar)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
-    sender: User,
+    sender: String,
     message: Message,
     preference: UserPreference,
     avatar: String? = ""
@@ -90,8 +94,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             RemoteViews(context.packageName, R.layout.notification_message_view_expand)
         val messageContent =
             if (preference.showNotificationPreview) message.message else "You have new message"
-        val messageFrom =
-            if (preference.showNotificationPreview) "New message from ${sender.userName}" else ""
+        val messageFrom = "New message from ${sender}"
         smallLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
