@@ -66,6 +66,9 @@ class LoginViewModel @Inject constructor(
     private var userId: String = ""
     private var hashKey: String = ""
 
+    private val _isAccountLocked = MutableLiveData<Boolean>()
+    val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
+
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
@@ -188,12 +191,22 @@ class LoginViewModel @Inject constructor(
     fun requestResendOtp() {
         viewModelScope.launch {
             val response = authRepo.mfaResendOtp(getDomain(), otpHash, userId)
+            val errorCode = response.data?.first
+
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(response.data?.second ?: "The code you’ve entered is incorrect. Please try again", null)
+
+                if (errorCode == 1069) {
+                    _isAccountLocked.value = true
+                }
             } else {
-                otpHash = response.data ?: ""
+                otpHash = response.data?.second ?: ""
             }
         }
+    }
+
+    fun resetAccountLock() {
+        _isAccountLocked.value = false
     }
 
     fun checkValidServerUrl(url: String) {

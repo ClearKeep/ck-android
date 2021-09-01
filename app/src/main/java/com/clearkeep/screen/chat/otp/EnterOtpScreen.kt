@@ -13,9 +13,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
@@ -43,7 +40,14 @@ import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 
 @Composable
-fun EnterOtpScreen(otpResponse: MutableLiveData<Resource<String>>, onDismissMessage: () -> Unit, onClickResend: () -> Unit, onClickSubmit: (String) -> Unit, onBackPress: () -> Unit, onClickSave: () -> Unit) {
+fun EnterOtpScreen(
+    otpResponse: MutableLiveData<Resource<String>>,
+    onDismissMessage: () -> Unit,
+    onClickResend: () -> Unit,
+    onClickSubmit: (String) -> Unit,
+    onBackPress: () -> Unit,
+    onClickSave: () -> Unit,
+) {
     val input = remember { mutableStateListOf(" ", " ", " ", " ") }
     val focusRequesters = remember { mutableStateListOf(FocusRequester(), FocusRequester(), FocusRequester(), FocusRequester()) }
 

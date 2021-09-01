@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.otp
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,6 +19,9 @@ class OtpViewModel @Inject constructor(
 
     val verifyPasswordResponse = MutableLiveData<Resource<Pair<String, String>>>()
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
+
+    private val _isAccountLocked = MutableLiveData<Boolean>()
+    val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
 
     fun verifyPassword(password: String) {
         if (password.isBlank()) {
@@ -53,10 +57,19 @@ class OtpViewModel @Inject constructor(
     fun requestResendOtp() {
         viewModelScope.launch {
             val response = profileRepository.mfaResendOtp(getOwner())
+            val errorCode = response.data?.first
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(response.data?.second ?: "The code you’ve entered is incorrect. Please try again", null)
+
+                if (errorCode == 1069) {
+                    _isAccountLocked.value = true
+                }
             }
         }
+    }
+
+    fun resetAccountLock() {
+        _isAccountLocked.value = false
     }
 
     private fun getOwner() : Owner {
