@@ -238,24 +238,24 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun mfaResendOtp(owner: Owner) : Resource<String> = withContext(Dispatchers.IO) {
+    suspend fun mfaResendOtp(owner: Owner) : Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", 0 to "")
             val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaResendOtp(request)
             printlnCK("mfaResendOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
-            return@withContext if (response.success) Resource.success(null) else Resource.error(response.errors.message, null)
+            return@withContext if (response.success) Resource.success(null) else Resource.error("", 0 to response.errors.message)
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error("", parsedError.code to message)
         } catch (exception: Exception) {
             printlnCK("mfaResendOtp: $exception")
-            return@withContext Resource.error(exception.toString(), null)
+            return@withContext Resource.error("", 0 to exception.toString())
         }
     }
 }
