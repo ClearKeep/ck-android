@@ -35,6 +35,7 @@ fun CKTextInputField(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
+    allowSpace: Boolean = true
 ) {
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
@@ -61,7 +62,13 @@ fun CKTextInputField(
         ) {
             TextField(
                 value = textValue?.value ?: "",
-                onValueChange = { textValue?.value = it },
+                onValueChange = {
+                    if (allowSpace) {
+                        textValue?.value = it
+                    } else {
+                        textValue?.value = it.replace(" ", "")
+                    }
+                },
                 /*label = {
                     if (label.isNotBlank()) {
                         Text(

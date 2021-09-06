@@ -101,7 +101,8 @@ fun LoginScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null
                         )
-                    }
+                    },
+                    allowSpace = false
                 )
 
                 Spacer(Modifier.height(24.dp))

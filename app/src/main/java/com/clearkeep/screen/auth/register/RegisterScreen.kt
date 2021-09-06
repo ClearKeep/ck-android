@@ -108,7 +108,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null
                         )
-                    }
+                    },
+                    allowSpace = false
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
@@ -122,7 +123,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null
                         )
-                    }
+                    },
+                    allowSpace = false
                 )
                 Spacer(Modifier.height(24.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
