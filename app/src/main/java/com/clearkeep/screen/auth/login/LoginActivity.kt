@@ -35,6 +35,7 @@ import com.clearkeep.screen.chat.otp.EnterOtpScreen
 import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.restartToRoot
 import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -366,6 +367,7 @@ class LoginActivity : AppCompatActivity() {
                             val res = loginViewModel.loginByFacebook(
                                 token = AccessToken.getCurrentAccessToken().token,
                             )
+                            loginViewModel.loginFacebookManager.logOut()
                             onSignInResult(res)
                         }
                     }
@@ -375,6 +377,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exception: FacebookException) {
+                    printlnCK("login with FB error $exception")
                     showErrorDiaLog?.invoke(ErrorMessage("Error", exception.message ?: "unknown"))
                 }
             })
