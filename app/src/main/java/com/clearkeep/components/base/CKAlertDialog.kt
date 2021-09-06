@@ -10,6 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
+import com.clearkeep.components.colorSuccessDefault
 
 @Composable
 fun CKAlertDialog(
@@ -56,7 +57,7 @@ fun DialogButton(title: String, onClick: () -> Unit) {
     TextButton(
         onClick = onClick,
         colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colors.surface
+            contentColor = colorSuccessDefault
         ),
     ) {
         Text(title.toUpperCase(),
