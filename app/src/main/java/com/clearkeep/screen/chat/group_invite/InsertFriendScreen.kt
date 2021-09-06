@@ -18,6 +18,7 @@ import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun InsertFriendScreen(
@@ -70,7 +71,7 @@ fun InsertFriendScreen(
                             }
                         }
                     },
-                    fontSize = 16.sp,
+                    fontSize = 16.sdp().toNonScalableTextSize(),
                     textButtonType = TextButtonType.Blue
                 )
             }

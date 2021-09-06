@@ -22,10 +22,12 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
 import com.clearkeep.R
 import com.clearkeep.components.base.CKSearchBox
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.utilities.countryCodesToNames
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -48,7 +50,7 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
             alignment = Alignment.CenterStart
         )
         Spacer(Modifier.height(50.sdp()))
-        Text(stringResource(R.string.country_codes), fontSize = 20.sp)
+        CKText(stringResource(R.string.country_codes), fontSize = 20.sdp().toNonScalableTextSize())
         Spacer(Modifier.height(25.sdp()))
         CKSearchBox(searchQuery)
         Spacer(Modifier.height(60.sdp()))
@@ -98,7 +100,7 @@ fun PhoneCountryCodeItem(
                 })
     ) {
         val (countryText, codeText) = createRefs()
-        Text(
+        CKText(
             country,
             modifier = Modifier.constrainAs(countryText) {
                 top.linkTo(parent.top)
@@ -107,12 +109,12 @@ fun PhoneCountryCodeItem(
                 width = Dimension.fillToConstraints
             }
         )
-        Text(
+        CKText(
             code,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
             modifier = Modifier
-                .width(50.dp)
+                .width(50.sdp())
                 .constrainAs(codeText) {
                     top.linkTo(parent.top)
                     end.linkTo(parent.end)

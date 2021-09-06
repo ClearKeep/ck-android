@@ -201,7 +201,7 @@ fun ScalableTextPreview() {
             text = "em", //Default text size in sp
             color = grayscaleBlack,
             textAlign = TextAlign.Justify,
-            fontSize = 14.sp
+            fontSize = 14.sdp().toNonScalableTextSize()
         )
         Text(
             text = "em", //14 dp converted to em

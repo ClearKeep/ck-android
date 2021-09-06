@@ -229,7 +229,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
                 val image = createRef()
-                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
+                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sdp().toNonScalableTextSize(), modifier = Modifier.constrainAs(text){
                     linkTo(parent.start, image.start, endMargin = 4.dp)
                     width = Dimension.fillToConstraints
                 })

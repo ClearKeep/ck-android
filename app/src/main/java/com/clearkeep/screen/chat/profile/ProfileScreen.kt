@@ -23,8 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.navigate
 import com.clearkeep.BuildConfig
@@ -34,9 +32,11 @@ import com.clearkeep.components.base.*
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
+import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @ExperimentalMaterialApi
 @ExperimentalComposeUiApi
@@ -142,13 +142,13 @@ fun ProfileScreen(
                                     SideBarLabel(
                                         text = stringResource(R.string.profile_avatar_change),
                                         color = primaryDefault,
-                                        fontSize = 14.sp,
+                                        fontSize = defaultNonScalableTextSize(),
                                     )
                                     SideBarLabel(
                                         text = stringResource(R.string.profile_avatar_max_size),
                                         color = grayscale3,
                                         modifier = Modifier,
-                                        fontSize = 12.sp
+                                        fontSize = 12.sdp().toNonScalableTextSize()
                                     )
                                 }
                             }
@@ -211,7 +211,8 @@ fun ProfileScreen(
                                             .fillMaxWidth(),
                                         style = MaterialTheme.typography.body1.copy(
                                             color = grayscaleBlack,
-                                            fontWeight = FontWeight.Normal
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = defaultNonScalableTextSize()
                                         )
                                     )
                                     Image(
@@ -267,6 +268,7 @@ fun ProfileScreen(
                                 Text(
                                     "version $versionName (${env.toUpperCase()})",
                                     style = MaterialTheme.typography.caption.copy(
+                                        fontSize = defaultNonScalableTextSize()
                                     )
                                 )
                             }
@@ -369,7 +371,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
                         focusManager.clearFocus()
                         onClickSave.invoke()
                     },
-                    fontSize = 16.sp,
+                    fontSize = 16.sdp().toNonScalableTextSize(),
                     textButtonType = TextButtonType.Blue
                 )
             }
@@ -391,7 +393,7 @@ fun ItemInformationView(
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
                 color = grayscale1,
-                fontSize = 14.sp,
+                fontSize = defaultNonScalableTextSize(),
                 fontWeight = FontWeight.Normal
             )
         )
@@ -399,7 +401,7 @@ fun ItemInformationView(
             content()
         }
         if (errorVisible) {
-            Text(errorText, color = errorDefault, fontSize = 12.sp)
+            Text(errorText, color = errorDefault, fontSize = 12.sdp().toNonScalableTextSize())
         }
     }
 }
@@ -435,7 +437,8 @@ private fun ItemInformationInput(
             ),
             textStyle = MaterialTheme.typography.body1.copy(
                 color = if (enable) grayscaleBlack else grayscale3,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
+                fontSize = defaultNonScalableTextSize()
             ),
             enabled = enable,
             singleLine = true,
@@ -449,10 +452,11 @@ private fun ItemInformationInput(
             visualTransformation = if (prefix.isNotBlank()) PrefixTransformation(prefix) else VisualTransformation.None,
             placeholder = {
                 if (placeholder.isNotBlank()) {
-                    Text(
+                    CKText(
                         placeholder, style = MaterialTheme.typography.body1.copy(
                             color = MaterialTheme.colors.onSecondary,
-                            fontWeight = FontWeight.Normal
+                            fontWeight = FontWeight.Normal,
+                            fontSize = defaultNonScalableTextSize()
                         )
                     )
                 }
@@ -466,7 +470,7 @@ fun CopyLink(onCopied: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         SideBarLabel(
             text = "Copy profile link", modifier = Modifier
-                .weight(0.66f), fontSize = 14.sp, color = MaterialTheme.colors.primary
+                .weight(0.66f), fontSize = defaultNonScalableTextSize(), color = MaterialTheme.colors.primary
         )
         Column(
             modifier = Modifier.clickable { },
@@ -491,7 +495,7 @@ fun ChangePassword(onChangePassword: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         SideBarLabel(
             text = "Change Password", modifier = Modifier
-                .weight(0.66f), fontSize = 14.sp, color = MaterialTheme.colors.primary
+                .weight(0.66f), fontSize = defaultNonScalableTextSize(), color = MaterialTheme.colors.primary
         )
         Column(
             modifier = Modifier.clickable { },
@@ -528,7 +532,7 @@ fun TwoFaceAuthView(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextButton(onClick = { onCheckChange.invoke(!enabled) }) {
-                    Text(text = if (enabled) "Disable" else "Enable")
+                    CKText(text = if (enabled) "Disable" else "Enable")
                 }
             }
         }
@@ -536,7 +540,7 @@ fun TwoFaceAuthView(
             text = stringResource(R.string.two_factors_auth_description),
             style = MaterialTheme.typography.body1.copy(
                 color = grayscale2,
-                fontSize = 14.sp,
+                fontSize = defaultNonScalableTextSize(),
                 fontWeight = FontWeight.Normal
             ),
             modifier = Modifier.fillMaxWidth(0.8f)
