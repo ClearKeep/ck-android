@@ -47,6 +47,7 @@ import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
 import com.facebook.login.LoginResult
+import com.microsoft.identity.client.exception.MsalServiceException
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -330,8 +331,10 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             override fun onError(exception: MsalException) {
-                showErrorDiaLog?.invoke(ErrorMessage("Error",exception.message ?: "unknown"))
-
+                val isLoginCancelled = exception is MsalServiceException && exception.httpStatusCode == MsalServiceException.DEFAULT_STATUS_CODE
+                if (!isLoginCancelled) {
+                    showErrorDiaLog?.invoke(ErrorMessage("Error",exception.message ?: "unknown"))
+                }
             }
 
             override fun onCancel() {
