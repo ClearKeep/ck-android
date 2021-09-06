@@ -5,32 +5,32 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="vertical"
-    android:paddingVertical="10dp">
+    android:paddingVertical="@dimen/_10sdp">
 
     <TextView
         android:id="@+id/tvFrom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="22dp"
+        android:layout_marginStart="@dimen/_22sdp"
         android:maxLines="1"
         android:textColor="@color/grey3"
-        android:textSize="14sp"
+        android:textSize="@dimen/_14sdp"
         tools:text="New message from Alex" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp">
+        android:layout_marginStart="@dimen/_22sdp"
+        android:layout_marginEnd="@dimen/_22sdp">
         <TextView
             android:id="@+id/tvGroupSenderName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Alex:"
             android:textColor="@color/grey1"
-            android:layout_marginEnd="8dp"
-            android:textSize="16sp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:textSize="@dimen/_16sdp"
             android:textStyle="bold"
             android:visibility="gone"/>
 
@@ -41,7 +41,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/grey1"
-            android:textSize="16sp"
+            android:textSize="@dimen/_16sdp"
             android:textStyle="normal"
             tools:text="Where are you? Pick up the..." />
     </LinearLayout>

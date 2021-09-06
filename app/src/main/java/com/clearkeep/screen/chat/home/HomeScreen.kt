@@ -504,7 +504,9 @@ fun JoinServerComposable(
             Spacer(Modifier.height(25.sdp()))
             Text(
                 stringResource(R.string.join_server_caption),
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body2.copy(
+                    fontSize = defaultNonScalableTextSize()
+                )
             )
             Spacer(modifier = Modifier.size(21.sdp()))
             CKTextInputField(
@@ -525,7 +527,8 @@ fun JoinServerComposable(
             Text(
                 stringResource(R.string.join_server_tips),
                 style = MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.onSecondary
+                    color = MaterialTheme.colors.onSecondary,
+                    fontSize = defaultNonScalableTextSize()
                 )
             )
         }
@@ -646,9 +649,11 @@ fun AddWorkspaceButton(mainViewModel: HomeViewModel) {
         contentDescription = "",
         alignment = Alignment.Center,
         contentScale = ContentScale.FillBounds,
-        modifier = Modifier.clickable(
-            onClick = { mainViewModel.showJoinServer() }
-        ).size(42.sdp())
+        modifier = Modifier
+            .clickable(
+                onClick = { mainViewModel.showJoinServer() }
+            )
+            .size(42.sdp())
     )
 }
 

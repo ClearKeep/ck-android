@@ -39,6 +39,7 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun EnterOtpScreen(
@@ -82,13 +83,13 @@ fun EnterOtpScreen(
                 text = stringResource(R.string.otp_hint),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
-                fontSize = 16.sp
+                fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
             OtpInput(input, focusRequesters)
             Spacer(Modifier.height(32.sdp()))
-            Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sp, fontWeight = FontWeight.W400)
-            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sp)
+            Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sdp().toNonScalableTextSize(), fontWeight = FontWeight.W400)
+            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sdp().toNonScalableTextSize())
             Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.verify),
@@ -213,7 +214,7 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
                     onValueChange = { onValueChange(it.trim()) },
                     modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth().focusRequester(focusRequester),
                     singleLine = true,
-                    textStyle = TextStyle(fontSize = 20.sp),
+                    textStyle = TextStyle(fontSize = 20.sdp().toNonScalableTextSize()),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
             }

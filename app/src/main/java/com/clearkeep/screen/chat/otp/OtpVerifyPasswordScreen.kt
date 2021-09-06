@@ -24,6 +24,7 @@ import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun OtpVerifyPasswordScreen(
@@ -59,7 +60,7 @@ fun OtpVerifyPasswordScreen(
                 text = stringResource(R.string.otp_verify_password_description),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
-                fontSize = 16.sp
+                fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
             CKTextInputField(

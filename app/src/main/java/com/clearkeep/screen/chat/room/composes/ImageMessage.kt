@@ -27,6 +27,7 @@ import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.imageloading.ImageLoadState
 import com.google.accompanist.imageloading.rememberDrawablePainter
@@ -82,7 +83,7 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
                                         .align(Alignment.Center),
                                     color = grayscaleOffWhite,
                                     textAlign = TextAlign.Center,
-                                    fontSize = 28.sp
+                                    fontSize = 28.sdp().toNonScalableTextSize()
                                 )
                             }
 

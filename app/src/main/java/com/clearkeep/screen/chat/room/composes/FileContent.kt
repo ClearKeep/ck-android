@@ -17,12 +17,9 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.grayscale4
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.utilities.fileSizeRegex
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
-import com.clearkeep.utilities.getFileNameFromUrl
-import com.clearkeep.utilities.printlnCK
-import com.clearkeep.utilities.sdp
 
 @Composable
 fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
@@ -49,7 +46,7 @@ fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
             Spacer(Modifier.width(12.sdp()))
             Text(fileName, color = grayscaleOffWhite)
         }
-        Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sp)
+        Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sdp().toNonScalableTextSize())
     }
 }
 
