@@ -95,11 +95,11 @@ class LoginViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         try {
                             mSingleAccountApp?.signOut()
-                        }catch (e:Exception){
+                        } catch (e:Exception){
                             printlnCK(e.message.toString())
                         }
+                        onSuccess.invoke()
                     }
-                    onSuccess.invoke()
                 }
 
                 override fun onError(exception: MsalException?) {
