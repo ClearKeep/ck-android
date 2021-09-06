@@ -26,6 +26,7 @@ import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKTextInputField
 import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun ChangePassWordScreen(
@@ -64,7 +65,7 @@ fun ChangePassWordScreen(
                 text = stringResource(R.string.enter_detail_change_pass),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
-                fontSize = 16.sp
+                fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
             CKTextInputField(

@@ -16,6 +16,7 @@ import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun CKSetting(
@@ -53,7 +54,7 @@ fun CKSetting(
             Text(
                 text = description, style = MaterialTheme.typography.body1.copy(
                     color = grayscale2,
-                    fontSize = 14.sp,
+                    fontSize = 14.sdp().toNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ), modifier = Modifier.fillMaxWidth(0.8f)
             )

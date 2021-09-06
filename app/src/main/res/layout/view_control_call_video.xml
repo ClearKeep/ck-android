@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingVertical="16dp"
+    android:paddingVertical="@dimen/_16sdp"
     android:background="#D9DBE9">
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/bottomToggleMute"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="16dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
+        android:layout_marginStart="@dimen/_16sdp"
         android:checked="false"
         app:layout_constraintEnd_toStartOf="@+id/bottomToggleFaceTime"
         app:layout_constraintHorizontal_bias="0.5"
@@ -23,8 +23,8 @@
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/bottomToggleFaceTime"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
         android:checked="true"
         app:layout_constraintEnd_toStartOf="@+id/bottomToggleSwitchCamera"
         app:layout_constraintHorizontal_bias="0.5"
@@ -35,8 +35,8 @@
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/bottomToggleSwitchCamera"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
         android:checked="true"
         app:layout_constraintEnd_toStartOf="@+id/bottomImgEndCall"
         app:layout_constraintHorizontal_bias="0.5"
@@ -45,11 +45,11 @@
         app:tib_drawable_off="@drawable/ic_bottom_swap_camera"
         app:tib_drawable_on="@drawable/ic_bottom_swap_camera" />
 
-    <androidx.appcompat.widget.AppCompatImageButton
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/bottomImgEndCall"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
+        android:layout_marginEnd="@dimen/_16sdp"
         android:background="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
