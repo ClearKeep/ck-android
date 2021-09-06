@@ -44,7 +44,14 @@ fun showMessagingStyleNotification(
     } else {
         chatGroup.clientList.find { it.userId == message.senderId }?.userName ?: "unknown"
     }
-    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference,avatar)
+
+    val groupSender = if (chatGroup.isGroup()) {
+        chatGroup.clientList.find { it.userId == message.senderId }?.userName ?: "unknown"
+    } else {
+        ""
+    }
+
+    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference, avatar, groupSender)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -52,8 +59,9 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     sender: String,
     message: Message,
     preference: UserPreference,
-    avatar: String? = ""
-) {
+    avatar: String? = "",
+    groupSender: String = "",
+    ) {
     if (!preference.doNotDisturb) {
         val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
         val channelName = MESSAGE_HEADS_UP_CHANNEL_NAME
@@ -103,6 +111,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         headsUpLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
+            if (groupSender.isNotBlank()) setViewVisibility(R.id.tvGroupSenderName, View.VISIBLE)
+            setTextViewText(R.id.tvGroupSenderName, "$groupSender:")
             setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
         }
 
