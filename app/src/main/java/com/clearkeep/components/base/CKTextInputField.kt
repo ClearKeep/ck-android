@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.screen.chat.profile.ProfileViewModel
 
 @Composable
 fun CKTextInputField(
@@ -35,7 +36,8 @@ fun CKTextInputField(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
-    allowSpace: Boolean = true
+    allowSpace: Boolean = true,
+    maxChars: Int? = null
 ) {
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
@@ -63,10 +65,19 @@ fun CKTextInputField(
             TextField(
                 value = textValue?.value ?: "",
                 onValueChange = {
-                    if (allowSpace) {
-                        textValue?.value = it
+                    val trimmedInput = if (maxChars != null) {
+                        if (it.length > maxChars) {
+                            it.substring(0 until maxChars)
+                        } else {
+                            it
+                        }
                     } else {
-                        textValue?.value = it.replace(" ", "")
+                        it
+                    }
+                    if (allowSpace) {
+                        textValue?.value = trimmedInput
+                    } else {
+                        textValue?.value = trimmedInput.replace(" ", "")
                     }
                 },
                 /*label = {
