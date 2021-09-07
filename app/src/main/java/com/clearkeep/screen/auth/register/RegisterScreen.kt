@@ -93,8 +93,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_user_check),
                             contentDescription = null
                         )
-                    }
-
+                    },
+                    maxChars = 30
                 )
                 Spacer(Modifier.height(10.dp))
                 CKTextInputField(
@@ -150,7 +150,7 @@ fun RegisterScreen(
                                 confirmPassword.value.trim()
                             )
                         },
-                        enabled = !isLoading,
+                        enabled = !isLoading && email.value.isNotBlank() && displayName.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank(),
                         modifier = Modifier
                             .width(120.dp)
                             .height(40.dp)

@@ -117,7 +117,7 @@ class AuthRepository @Inject constructor(
             val parsedError = parseError(e)
             printlnCK("login error: $e")
             val errorMessage = when (parsedError.code) {
-                1001 -> "Email or Password is incorrect. Please check your details and try again"
+                1001 -> "Please check your details and try again"
                 1026 -> "Your account has not been activated. Please check the email for the activation link."
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message

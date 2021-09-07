@@ -157,7 +157,7 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Social Sign-in",
+                        text = stringResource(R.string.social_sign_in),
                         color = Color.White,
                         style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     )
