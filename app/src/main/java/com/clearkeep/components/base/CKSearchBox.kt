@@ -34,7 +34,9 @@ import com.clearkeep.utilities.sdp
 fun CKSearchBox(
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
-    placeholder: String = stringResource(R.string.search)
+    placeholder: String = stringResource(R.string.search),
+    maxChars: Int? = null,
+    onImeAction: () -> Unit = {}
 ) {
     val shape = MaterialTheme.shapes.large
     val focusManager = LocalFocusManager.current
@@ -52,7 +54,13 @@ fun CKSearchBox(
         ) {
             TextField(
                 value = textValue.value,
-                onValueChange = { textValue.value = it },
+                onValueChange = {
+                    textValue.value = if (maxChars != null && it.length > maxChars) {
+                        it.substring(0 until maxChars)
+                    } else {
+                        it
+                    }
+                },
                 placeholder = {
                     CKText(
                         placeholder, style = MaterialTheme.typography.body1.copy(
@@ -101,8 +109,14 @@ fun CKSearchBox(
                             }.size(dimensionResource(R.dimen._24sdp)))
                     }
                 },
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done, keyboardType = KeyboardType.Text),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    onImeAction.invoke()
+                }),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Text
+                ),
             )
         }
     }
