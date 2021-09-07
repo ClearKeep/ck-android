@@ -75,12 +75,12 @@ fun ForgotScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading,
+                enabled = !isLoading && email.value.isNotBlank(),
                 buttonType = ButtonType.White
             )
             if (isEmptyEmail.value || isInvalidEmailFormat.value) {
                 CKAlertDialog(
-                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else "Please enter a valid email address.",
+                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else stringResource(R.string.email_invalid),
                     text = stringResource(R.string.pls_check_again),
                     onDismissButtonClick = {
                         isEmptyEmail.value = false
