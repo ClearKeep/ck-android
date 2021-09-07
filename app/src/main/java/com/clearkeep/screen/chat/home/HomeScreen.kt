@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -573,7 +575,25 @@ fun WorkSpaceView(
         }
 
         Spacer(Modifier.height(16.sdp()))
-        CKSearchBox(searchKey)
+        Row(
+            modifier = Modifier
+                .clickable { gotoSearch.invoke() }
+                .background(grayscale5, MaterialTheme.shapes.large)
+                .padding(18.sdp())
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Search, null)
+            Spacer(Modifier.width(28.sdp()))
+            CKText(
+                stringResource(R.string.search),
+                style = MaterialTheme.typography.body1.copy(
+                    color = MaterialTheme.colors.onSecondary,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = defaultNonScalableTextSize()
+                ),
+            )
+        }
         Spacer(modifier = Modifier.size(24.sdp()))
         NoteView(onNavigateNotes)
         Column(

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomActivity
@@ -25,7 +26,7 @@ class SearchUserActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CKTheme {
+            CKSimpleTheme {
                 SearchUserScreen(
                     searchViewModel,
                     onFinish = { people ->
