@@ -120,7 +120,7 @@ fun SearchUserScreen(
                         }
                         itemsIndexed(it) { _, friend ->
                             Spacer(Modifier.height(18.sdp()))
-                            PeopleResultItem(user = friend)
+                            PeopleResultItem(user = friend, query = query.value)
                         }
                         item {
                             Spacer(Modifier.height(26.sdp()))
@@ -136,7 +136,7 @@ fun SearchUserScreen(
                         }
                         itemsIndexed(it) { _, friend ->
                             Spacer(Modifier.height(18.sdp()))
-                            MessageResultItem(user = friend, message = "Hello world!")
+                            MessageResultItem(user = friend, message = "Hello world!", query = query.value)
                         }
                     }
                 } else {
@@ -170,7 +170,7 @@ fun SearchOptionsItem(keyword: String, query: String) {
 }
 
 @Composable
-fun PeopleResultItem(modifier: Modifier = Modifier, user: User) {
+fun PeopleResultItem(modifier: Modifier = Modifier, user: User, query: String) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
@@ -183,8 +183,9 @@ fun PeopleResultItem(modifier: Modifier = Modifier, user: User) {
                 .padding(start = 16.sdp())
                 .weight(1.0f, true)
         ) {
-            CKText(
-                text = user.userName,
+            HighlightedSearchText(
+                user.userName,
+                query,
                 style = MaterialTheme.typography.body2.copy(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colors.onBackground
@@ -197,40 +198,11 @@ fun PeopleResultItem(modifier: Modifier = Modifier, user: User) {
 
 @Composable
 fun GroupResultItem(groupName: String, query: String) {
-    val annotatedString = buildAnnotatedString {
-        var matchIndex = 0
-        printlnCK("================= GroupResultItem groupName $groupName")
-
-        while (matchIndex >= 0) {
-            printlnCK("GroupResultItem matchIndex $matchIndex")
-            val startIndex = if (matchIndex == 0) 0 else matchIndex + 1
-            val newIndex = groupName.indexOf(query, startIndex, true)
-            printlnCK("GroupResultItem newIndex $newIndex")
-            if (newIndex >= 0) {
-                withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
-                    printlnCK("GroupResultItem normal string ${groupName.substring(matchIndex until newIndex)}")
-                    append(groupName.substring(matchIndex until newIndex))
-                }
-                withStyle(SpanStyle(fontWeight = FontWeight.W700)) {
-                    printlnCK("GroupResultItem keyword string $query")
-                    append(query)
-                }
-                matchIndex = newIndex + query.length
-            } else {
-                withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
-                    val startIndex = if (matchIndex == -1) 0 else matchIndex
-                    append(groupName.substring(startIndex until groupName.length))
-                }
-                break
-            }
-        }
-    }
-
-    CKText(annotatedString)
+    HighlightedSearchText(groupName, query)
 }
 
 @Composable
-fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String) {
+fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String, query: String) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
@@ -250,8 +222,9 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
                     color = grayscale2
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
-            CKText(
-                text = message,
+            HighlightedSearchText(
+                message,
+                query,
                 style = MaterialTheme.typography.body2.copy(
                     color = grayscale2
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
@@ -262,45 +235,37 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
 }
 
 @Composable
-fun SearchResultItem(
-//    friend: User,
-//    onFriendSelected: (User) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .padding(start = 16.sdp())
-            .clickable {
-//                onFriendSelected.invoke(chatGroup.groupId)
-            }
-    ) {
-//        val partnerUser= chatGroup.clientList.firstOrNull { client ->
-//            client.userId != clintId
-//        }
-//        val roomName = partnerUser?.userName ?: ""
-//        val userStatus = listUserStatus?.firstOrNull { client ->
-//            client.userId == partnerUser?.userId
-//        }?.userStatus ?: ""
-//        val avatar = listUserStatus?.firstOrNull { client ->
-//            client.userId == partnerUser?.userId
-//        }?.avatar ?: ""
+fun HighlightedSearchText(fullString: String, query: String, style: TextStyle = LocalTextStyle.current, overflow: TextOverflow = TextOverflow.Clip, maxLines: Int = Int.MAX_VALUE) {
+    val annotatedString = buildAnnotatedString {
+        var matchIndex = 0
+        printlnCK("================= GroupResultItem groupName $fullString")
 
-        Row(
-            modifier = Modifier.padding(top = 16.sdp()),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-//            CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
-            Text(
-                text = "Hello", modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.sdp()),
-                maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
-                    color = MaterialTheme.colors.onBackground,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            )
+        while (matchIndex >= 0) {
+            printlnCK("GroupResultItem matchIndex $matchIndex")
+            val startIndex = if (matchIndex == 0) 0 else matchIndex + 1
+            val newIndex = fullString.indexOf(query, startIndex, true)
+            printlnCK("GroupResultItem newIndex $newIndex")
+            if (newIndex >= 0) {
+                withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
+                    printlnCK("GroupResultItem normal string ${fullString.substring(matchIndex until newIndex)}")
+                    append(fullString.substring(matchIndex until newIndex))
+                }
+                withStyle(SpanStyle(fontWeight = FontWeight.W700)) {
+                    printlnCK("GroupResultItem keyword string $query")
+                    append(query)
+                }
+                matchIndex = newIndex + query.length
+            } else {
+                withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
+                    val startIndex = if (matchIndex == -1) 0 else matchIndex
+                    append(fullString.substring(startIndex until fullString.length))
+                }
+                break
+            }
         }
     }
+
+    CKText(annotatedString, style = style, overflow = overflow, maxLines = maxLines)
 }
 
 private const val MAX_SEARCH_LENGTH = 200
