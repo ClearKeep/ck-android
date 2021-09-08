@@ -80,7 +80,8 @@ fun ChangePassWordScreen(
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
                         contentScale = ContentScale.FillBounds
                     )
-                }
+                },
+                allowSpace = false
             )
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
@@ -95,7 +96,8 @@ fun ChangePassWordScreen(
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
                         contentScale = ContentScale.FillBounds
                     )
-                }
+                },
+                allowSpace = false
             )
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
@@ -110,7 +112,8 @@ fun ChangePassWordScreen(
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
                         contentScale = ContentScale.FillBounds
                     )
-                }
+                },
+                allowSpace = false
             )
             Spacer(Modifier.height(24.sdp()))
             CKButton(
