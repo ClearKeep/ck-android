@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.components.CKTheme
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +35,10 @@ class SearchUserActivity : AppCompatActivity() {
                             navigateToRoomScreen(people)
                         }
                         finish()
+                    },
+                    navigateToChatGroup = {
+                        navigateToChatGroup(it)
+                        finish()
                     }
                 )
             }
@@ -44,6 +49,14 @@ class SearchUserActivity : AppCompatActivity() {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.FRIEND_ID, friend.userId)
         intent.putExtra(RoomActivity.FRIEND_DOMAIN, friend.domain)
+        startActivity(intent)
+    }
+
+    private fun navigateToChatGroup(chatGroup: ChatGroup) {
+        val intent = Intent(this, RoomActivity::class.java)
+        intent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
+        intent.putExtra(RoomActivity.DOMAIN, searchViewModel.getDomainOfActiveServer())
+        intent.putExtra(RoomActivity.CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 }
