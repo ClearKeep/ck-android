@@ -162,7 +162,7 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.PingRequest.newBuilder().build()
             val response = dynamicAPIProvider.provideUserBlockingStub().pingRequest(request)
-            return@withContext response.success
+            return@withContext response.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("sendPing: $e")
             return@withContext false
@@ -174,7 +174,7 @@ class PeopleRepository @Inject constructor(
         try {
             val request = UserOuterClass.SetUserStatusRequest.newBuilder().setStatus(status).build()
             val response = dynamicAPIProvider.provideUserBlockingStub().updateStatus(request)
-            return@withContext response.success
+            return@withContext response.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
             return@withContext false

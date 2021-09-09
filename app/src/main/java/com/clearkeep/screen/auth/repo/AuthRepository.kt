@@ -43,22 +43,27 @@ class AuthRepository @Inject constructor(
         printlnCK("register: $displayName, password = $password, domain = $domain")
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
-                    .setDisplayName(displayName)
-                    .setPassword(password)
-                    .setEmail(email)
+                .setDisplayName(displayName)
+                .setPassword(password)
+                .setEmail(email)
                 .setWorkspaceDomain(domain)
-                    .build()
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
-            printlnCK("register failed: ${response.baseResponse.success}")
-            if (response.baseResponse.success) {
+                .build()
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
+            if (response.success) {
                 return@withContext Resource.success(response)
             } else {
-                printlnCK("register failed: ${response.baseResponse.error.message}")
-                return@withContext Resource.error(response.baseResponse.error.message, null)
+                printlnCK("register failed: ${response.error}")
+                return@withContext Resource.error(response.error, null)
             }
+
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = parsedError.message
+            return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             printlnCK("register error: $e")
-            return@withContext Resource.error(e.    toString(), null)
+            return@withContext Resource.error(e.toString(), null)
         }
     }
 
@@ -303,12 +308,18 @@ class AuthRepository @Inject constructor(
                     .setEmail(email)
                     .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).fogotPassword(request)
-            if (response.success) {
+            if (response?.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {
-                return@withContext Resource.error(response.error.message, null)
+                return@withContext Resource.error(response.error, null)
             }
-        } catch (e: Exception) {
+        }
+        catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = parsedError.message
+            return@withContext Resource.error(message, null)
+        }
+        catch (e: Exception) {
             printlnCK("recoverPassword error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
@@ -327,12 +338,12 @@ class AuthRepository @Inject constructor(
                     .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
             val response = authBlockingWithHeader
                     .logout(request)
-            if (response.success) {
+            if (response?.error?.isEmpty() == true) {
                 printlnCK("logoutFromAPI successed")
                 return@withContext Resource.success(response)
             } else {
-                printlnCK("logoutFromAPI failed: ${response.error.message}")
-                return@withContext Resource.error(response.error.message, null)
+                printlnCK("logoutFromAPI failed: ${response.error}")
+                return@withContext Resource.error(response.error, null)
             }
         } catch (e: Exception) {
             printlnCK("logoutFromAPI error: $e")
@@ -458,7 +469,7 @@ class AuthRepository @Inject constructor(
                 .build()
 
             val response = signalGrpc.peerRegisterClientKey(request)
-            if (response?.success != false) {
+            if (response?.error?.isEmpty() == true) {
                 printlnCK("peerRegisterClientKeyWithGrpc, success")
                 return@withContext true
             }

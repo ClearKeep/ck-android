@@ -34,13 +34,13 @@ class MessageChannelSubscriber(
 
         try {
             val res = messageBlockingStub.subscribe(request)
-            if (res.success) {
+            if (res.error.isNullOrEmpty()) {
                 printlnCK("subscribeMessageChannel, success")
                 listenMessageChannel()
             } else {
-                printlnCK("subscribeMessageChannel, ${res.errors}")
+                printlnCK("subscribeMessageChannel, ${res.error}")
             }
-            return@withContext res.success
+            return@withContext res.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("subscribeMessageChannel, $e")
             return@withContext false

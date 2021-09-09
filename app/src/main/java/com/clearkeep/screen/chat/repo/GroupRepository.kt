@@ -151,7 +151,7 @@ class GroupRepository @Inject constructor(
 
                 val response =
                     dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
-                printlnCK("removeMemberInGroup: ${response.success}")
+                printlnCK("removeMemberInGroup: ${response.error}")
                 return@withContext true
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
@@ -185,7 +185,7 @@ class GroupRepository @Inject constructor(
                     .build()
 
                 val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
-                printlnCK("inviteToGroupFromAPI: ${response.success}")
+                printlnCK("inviteToGroupFromAPI: ${response.error}")
                 return@withContext response
             } catch (e: Exception) {
                 printlnCK("inviteToGroupFromAPI error: $e")
@@ -210,9 +210,9 @@ class GroupRepository @Inject constructor(
                 .build()
 
             val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
-            if (response.success) {
+            if (response.error.isNullOrEmpty()) {
                 removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
-                printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.success}")
+                printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.error}")
                 return@withContext true
             }
             return@withContext false
@@ -285,7 +285,8 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): ChatGroup? {
-        var room: ChatGroup? = groupDAO.getGroupById(groupId, domain, ownerId)
+        printlnCK("getGroupByID")
+        var room: ChatGroup? = null
 
         if (room == null) {
             val server = serverRepository.getServer(domain, ownerId)

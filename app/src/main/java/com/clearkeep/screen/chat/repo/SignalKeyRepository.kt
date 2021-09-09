@@ -72,7 +72,7 @@ class SignalKeyRepository @Inject constructor(
             val response = withContext(Dispatchers.IO) {
                 dynamicAPIProvider.provideSignalKeyDistributionBlockingStub().groupRegisterClientKey(request)
             }
-            if (response?.success != false) {
+            if (response?.error.isNullOrEmpty()) {
                 printlnCK("registerSenderKeyToGroup: $groupID: success")
                 return@withContext true
             }

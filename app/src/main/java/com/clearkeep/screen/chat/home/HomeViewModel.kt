@@ -245,8 +245,8 @@ class HomeViewModel @Inject constructor(
             }else {
                 logOut()
             }*/
-            val result = workSpaceRepository.leaveServer()
-            if (result?.success == true){
+            val response = workSpaceRepository.leaveServer()
+            if (response?.error.isNullOrEmpty()) {
                 currentServer.value?.id?.let {
                     val removeResult = serverRepository.deleteServer(it)
                     roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
