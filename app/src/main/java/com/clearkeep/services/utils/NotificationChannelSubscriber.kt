@@ -29,13 +29,13 @@ class NotificationChannelSubscriber(
             .build()
         try {
             val res = notifyBlockingStub.subscribe(request)
-            if (res.success) {
+            if (res.error.isNullOrEmpty()) {
                 printlnCK("subscribeNotificationChannel, success")
                 listenNotificationChannel()
             } else {
-                printlnCK("subscribeNotificationChannel, ${res.errors}")
+                printlnCK("subscribeNotificationChannel, ${res.error}")
             }
-            return@withContext res.success
+            return@withContext res.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("subscribeNotificationChannel, $e")
             return@withContext false

@@ -55,7 +55,7 @@ class VideoCallRepository @Inject constructor(
                 .build()
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
-            val success = videoCallGrpc.updateCall(request).success
+            val success = videoCallGrpc.updateCall(request).error.isNullOrEmpty()
             printlnCK("cancelCall, success = $success")
             return@withContext success
         } catch (e: Exception) {
@@ -77,7 +77,7 @@ class VideoCallRepository @Inject constructor(
                 .build()
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
-            val success = videoCallGrpc.updateCall(request).success
+            val success = videoCallGrpc.updateCall(request).error.isNullOrEmpty()
             printlnCK("cancelCall, success = $success")
             return@withContext success
         } catch (e: Exception) {
@@ -100,7 +100,7 @@ class VideoCallRepository @Inject constructor(
                 .build()
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
-            val success = videoCallGrpc.updateCall(request).success
+            val success = videoCallGrpc.updateCall(request).error.isNullOrEmpty()
             printlnCK("switchAudioToVideoCall, success = $success")
             return@withContext success
         } catch (e: Exception) {

@@ -59,7 +59,7 @@ class ProfileRepository @Inject constructor(
             )
             val response = notifyPushGrpc.registerToken(request)
             printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
-            return@withContext response.success
+            return@withContext response.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
             return@withContext false
@@ -86,11 +86,11 @@ class ProfileRepository @Inject constructor(
                 )
             )
             val response = userGrpc.updateProfile(request)
-            printlnCK("updateProfile success? ${response.success} errors? ${response.errors}")
-            if (response.success) {
+            printlnCK("updateProfile success? ${response.error.isNullOrEmpty()} errors? ${response.error}")
+            if (response.error.isNullOrEmpty()) {
                 serverRepository.updateServerProfile(owner.domain, profile)
             }
-            return@withContext response.success
+            return@withContext response.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("updateProfile error: $e")
             return@withContext false
@@ -186,8 +186,7 @@ class ProfileRepository @Inject constructor(
                 .build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaValidatePassword(request)
-            printlnCK("mfaValidatePassword success? ${response.success} error? ${response.errors.message} code ${response.errors.code} next step ${response.nextStep}")
-            return@withContext if (response.success) Resource.success("" to "") else Resource.error("", "" to response.errors.toString())
+            return@withContext if (response.success) Resource.success("" to "") else Resource.error("", "" to response.error.toString())
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaValidatePassword: $exception")
             val parsedError = parseError(exception)
@@ -217,12 +216,12 @@ class ProfileRepository @Inject constructor(
                 )
             )
             val response = stub.mfaValidateOtp(request)
-            printlnCK("mfaValidateOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
+            printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
             return@withContext if (response.success) {
                 userPreferenceRepository.updateMfa(owner.domain, owner.clientId, true)
                 Resource.success(null)
             } else {
-                Resource.error(response.errors.message, null)
+                Resource.error(response.error, null)
             }
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
@@ -244,8 +243,8 @@ class ProfileRepository @Inject constructor(
             val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaResendOtp(request)
-            printlnCK("mfaResendOtp success? ${response.success} error? ${response.errors.message} code ${response.errors.code}")
-            return@withContext if (response.success) Resource.success(null) else Resource.error("", 0 to response.errors.message)
+            printlnCK("mfaResendOtp success? ${response.success} error? ${response.error} code ${response}")
+            return@withContext if (response.success) Resource.success(null) else Resource.error("", 0 to response.error)
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {

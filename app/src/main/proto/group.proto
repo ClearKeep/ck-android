@@ -40,17 +40,12 @@ message GroupObjectResponse {
   string updated_by_client_id = 10;
   int64 updated_at = 11;
   string group_rtc_token = 12;
+  bool has_unread_message = 13;
 }
 
-//errors response
-message ErrorRes {
-  int64 code = 1;
-  string message = 2;
-}
 
 message BaseResponse {
-  bool success = 1;
-  ErrorRes errors = 2;
+    string error = 1;
 }
 
 // Request: create group
@@ -197,19 +192,20 @@ message WorkspaceLeaveGroupRequest {
   GroupInfo owner_group = 3;
 }
 
+
 // Method
 service Group {
-  rpc create_group(CreateGroupRequest) returns (GroupObjectResponse) {};
-  rpc create_group_workspace(CreateGroupWorkspaceRequest) returns (CreateGroupWorkspaceResponse) {};
+    rpc create_group(CreateGroupRequest) returns (GroupObjectResponse) {};
+    rpc create_group_workspace(CreateGroupWorkspaceRequest) returns (CreateGroupWorkspaceResponse) {};
 
-  rpc get_group(GetGroupRequest) returns (GroupObjectResponse) {};
-  rpc search_groups(SearchGroupsRequest) returns (SearchGroupsResponse) {};
-  rpc get_joined_groups(GetJoinedGroupsRequest) returns (GetJoinedGroupsResponse) {};
-  rpc join_group(JoinGroupRequest) returns (BaseResponse) {};
+    rpc get_group(GetGroupRequest) returns (GroupObjectResponse) {};
+    rpc search_groups(SearchGroupsRequest) returns (SearchGroupsResponse) {};
+    rpc get_joined_groups(GetJoinedGroupsRequest) returns (GetJoinedGroupsResponse) {};
+    rpc join_group(JoinGroupRequest) returns (BaseResponse) {};
 
-  rpc add_member(AddMemberRequest) returns (BaseResponse) {};
-  rpc leave_group(LeaveGroupRequest) returns (BaseResponse) {};
-  //workspace call
-  rpc workspace_add_member(AddMemberWorkspaceRequest) returns (AddMemberWorkspaceResponse) {};
-  rpc workspace_leave_group(WorkspaceLeaveGroupRequest) returns (BaseResponse) {};
+    rpc add_member(AddMemberRequest) returns (BaseResponse) {};
+    rpc leave_group(LeaveGroupRequest) returns (BaseResponse) {};
+    //workspace call
+    rpc workspace_add_member(AddMemberWorkspaceRequest) returns (AddMemberWorkspaceResponse) {};
+    rpc workspace_leave_group(WorkspaceLeaveGroupRequest) returns (BaseResponse) {};
 }
