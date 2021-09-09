@@ -42,5 +42,11 @@ interface GroupDAO {
     suspend fun deleteGroupByOwnerDomain( domain: String, ownerId: String): Int
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" AND group_name LIKE :query")
-    abstract fun getGroupsByGroupName(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<ChatGroup>>
+    fun getGroupsByGroupName(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<ChatGroup>>
+
+    @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"peer\" AND group_name LIKE :query")
+    fun getPeerRoomsByPeerName(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<ChatGroup>>
+
+    @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" ")
+    fun getGroupsByDomain(ownerDomain: String, ownerClientId: String): LiveData<List<ChatGroup>>
 }

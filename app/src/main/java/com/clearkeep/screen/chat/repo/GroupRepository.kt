@@ -391,6 +391,12 @@ class GroupRepository @Inject constructor(
     fun getGroupsByGroupName(ownerDomain: String, ownerClientId: String, query: String) =
         groupDAO.getGroupsByGroupName(ownerDomain, ownerClientId, "%$query%")
 
+    fun getPeerRoomsByPeerName(ownerDomain: String, ownerClientId: String, query: String) =
+        groupDAO.getPeerRoomsByPeerName(ownerDomain, ownerClientId, "%$query%")
+
+    fun getGroupsByDomain(ownerDomain: String, ownerClientId: String) =
+        groupDAO.getGroupsByDomain(ownerDomain, ownerClientId)
+
     private suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
         serverDomain: String,
