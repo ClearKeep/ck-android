@@ -40,6 +40,7 @@ import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.composes.CircleAvatar
@@ -53,9 +54,15 @@ import java.util.regex.Matcher
 @Composable
 fun SearchUserScreen(
     searchViewModel: SearchViewModel,
-    onFinish: (people: User?) -> Unit
+    onFinish: (people: User?) -> Unit,
+    navigateToChatGroup: (chatGroup: ChatGroup) -> Unit
 ) {
     val friends = searchViewModel.friends.observeAsState()
+    val groups = searchViewModel.groups.observeAsState()
+    val profile = searchViewModel.profile.observeAsState()
+    val searchQuery = searchViewModel.searchQuery.observeAsState()
+
+    printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
 
     Column(
         modifier = Modifier
@@ -93,59 +100,68 @@ fun SearchUserScreen(
         Spacer(Modifier.height(18.sdp()))
 
         Box(Modifier.fillMaxSize()) {
-            friends.value?.let {
-                if (query.value.isEmpty()) {
-                    Column(Modifier.fillMaxSize()) {
-                        CKText("Search options")
-                        Spacer(Modifier.height(8.sdp()))
+            if (searchQuery.value?.isEmpty() == true) {
+                Column(Modifier.fillMaxSize()) {
+                    CKText("Search options")
+                    Spacer(Modifier.height(8.sdp()))
 
-                        Column(
-                            Modifier
-                                .background(Color.White, RoundedCornerShape(8.sdp()))
-                                .clip(RoundedCornerShape(8.sdp()))
-                        ) {
-                            SearchOptionsItem("to", query = "people")
-                            SearchOptionsItem("from", query = "people")
-                            SearchOptionsItem("in", query = "group chats")
-                        }
-                    }
-                } else if (it.isNotEmpty()) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(),
+                    Column(
+                        Modifier
+                            .background(Color.White, RoundedCornerShape(8.sdp()))
+                            .clip(RoundedCornerShape(8.sdp()))
                     ) {
-                        item {
-                            CKText("PEOPLE", color = grayscale1)
-                        }
-                        itemsIndexed(it) { _, friend ->
-                            Spacer(Modifier.height(18.sdp()))
-                            PeopleResultItem(user = friend, query = query.value)
-                        }
-                        item {
-                            Spacer(Modifier.height(26.sdp()))
-                            CKText("GROUP CHAT", color = grayscale1)
-                        }
-                        itemsIndexed(it) { _, friend ->
-                            Spacer(Modifier.height(18.sdp()))
-                            GroupResultItem("CK Development", query = "CK")
-                        }
-                        item {
-                            Spacer(Modifier.height(26.sdp()))
-                            CKText("MESSAGES", color = grayscale1)
-                        }
-                        itemsIndexed(it) { _, friend ->
-                            Spacer(Modifier.height(18.sdp()))
-                            MessageResultItem(user = friend, message = "Hello world!", query = query.value)
+                        SearchOptionsItem("to", query = "people")
+                        SearchOptionsItem("from", query = "people")
+                        SearchOptionsItem("in", query = "group chats")
+                    }
+                }
+            } else if (!groups.value.isNullOrEmpty()) {
+                printlnCK("Groups passed to composable ${groups.value}")
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(),
+                ) {
+                    item {
+                        CKText("PEOPLE", color = grayscale1)
+                    }
+//                        itemsIndexed(it) { _, friend ->
+//                            Spacer(Modifier.height(18.sdp()))
+//                            PeopleResultItem(user = friend, query = query.value)
+//                        }
+                    groups.value?.let {
+                        if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
+                            item {
+                                Spacer(Modifier.height(26.sdp()))
+                                CKText("GROUP CHAT", color = grayscale1)
+                            }
+                            itemsIndexed(it) { _, group ->
+                                Spacer(Modifier.height(18.sdp()))
+                                GroupResultItem(group.groupName, query = searchQuery.value!!) {
+                                    navigateToChatGroup(group)
+                                }
+                            }
                         }
                     }
-                } else {
-                    Text(
-                        "There is no result for your search",
-                        Modifier.align(Alignment.Center),
-                        grayscale3
-                    )
+                    item {
+                        Spacer(Modifier.height(26.sdp()))
+                        CKText("MESSAGES", color = grayscale1)
+                    }
+//                        itemsIndexed(it) { _, friend ->
+//                            Spacer(Modifier.height(18.sdp()))
+//                            MessageResultItem(
+//                                user = friend,
+//                                message = "Hello world!",
+//                                query = query.value
+//                            )
+//                        }
                 }
+            } else {
+                Text(
+                    "There is no result for your search",
+                    Modifier.align(Alignment.Center),
+                    grayscale3
+                )
             }
         }
     }
@@ -170,7 +186,12 @@ fun SearchOptionsItem(keyword: String, query: String) {
 }
 
 @Composable
-fun PeopleResultItem(modifier: Modifier = Modifier, user: User, query: String) {
+fun PeopleResultItem(
+    modifier: Modifier = Modifier,
+    user: User,
+    query: String,
+    onClick: () -> Unit
+) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
@@ -184,6 +205,7 @@ fun PeopleResultItem(modifier: Modifier = Modifier, user: User, query: String) {
                 .weight(1.0f, true)
         ) {
             HighlightedSearchText(
+                Modifier.clickable { onClick() },
                 user.userName,
                 query,
                 style = MaterialTheme.typography.body2.copy(
@@ -197,8 +219,11 @@ fun PeopleResultItem(modifier: Modifier = Modifier, user: User, query: String) {
 }
 
 @Composable
-fun GroupResultItem(groupName: String, query: String) {
-    HighlightedSearchText(groupName, query)
+fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
+    HighlightedSearchText(
+        Modifier
+            .clickable { onClick() }
+            .fillMaxWidth(), groupName, query)
 }
 
 @Composable
@@ -223,6 +248,7 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
             HighlightedSearchText(
+                modifier,
                 message,
                 query,
                 style = MaterialTheme.typography.body2.copy(
@@ -235,7 +261,14 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
 }
 
 @Composable
-fun HighlightedSearchText(fullString: String, query: String, style: TextStyle = LocalTextStyle.current, overflow: TextOverflow = TextOverflow.Clip, maxLines: Int = Int.MAX_VALUE) {
+fun HighlightedSearchText(
+    modifier: Modifier = Modifier,
+    fullString: String,
+    query: String,
+    style: TextStyle = LocalTextStyle.current,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE
+) {
     val annotatedString = buildAnnotatedString {
         var matchIndex = 0
         printlnCK("================= GroupResultItem groupName $fullString")
@@ -265,7 +298,13 @@ fun HighlightedSearchText(fullString: String, query: String, style: TextStyle = 
         }
     }
 
-    CKText(annotatedString, style = style, overflow = overflow, maxLines = maxLines)
+    CKText(
+        annotatedString,
+        style = style,
+        overflow = overflow,
+        maxLines = maxLines,
+        modifier = modifier
+    )
 }
 
 private const val MAX_SEARCH_LENGTH = 200
