@@ -388,6 +388,9 @@ class GroupRepository @Inject constructor(
         return updateGroup
     }
 
+    fun getGroupsByGroupName(ownerDomain: String, ownerClientId: String, query: String) =
+        groupDAO.getGroupsByGroupName(ownerDomain, ownerClientId, "%$query%")
+
     private suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
         serverDomain: String,
