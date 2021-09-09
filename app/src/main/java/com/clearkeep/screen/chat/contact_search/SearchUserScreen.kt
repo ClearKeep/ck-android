@@ -61,6 +61,7 @@ fun SearchUserScreen(
     val groups = searchViewModel.groups.observeAsState()
     val profile = searchViewModel.profile.observeAsState()
     val searchQuery = searchViewModel.searchQuery.observeAsState()
+    val server = searchViewModel.currentServer.observeAsState()
 
     printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
 
@@ -75,7 +76,7 @@ fun SearchUserScreen(
         Spacer(Modifier.height(44.sdp()))
         Box(Modifier.fillMaxWidth()) {
             CKHeaderText(
-                "CK Development",
+                server.value?.serverName ?: "",
                 Modifier.align(Alignment.CenterStart),
                 HeaderTextType.Large
             )
@@ -115,20 +116,26 @@ fun SearchUserScreen(
                         SearchOptionsItem("in", query = "group chats")
                     }
                 }
-            } else if (!groups.value.isNullOrEmpty()) {
-                printlnCK("Groups passed to composable ${groups.value}")
+            } else if (!groups.value.isNullOrEmpty() || !friends.value.isNullOrEmpty()) {
+                printlnCK("Friends passed to composable ${friends.value}")
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(),
                 ) {
-                    item {
-                        CKText("PEOPLE", color = grayscale1)
+                    friends.value?.let {
+                        if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
+                            item {
+                                CKText("PEOPLE", color = grayscale1)
+                            }
+                            itemsIndexed(it) { _, friend ->
+                                Spacer(Modifier.height(18.sdp()))
+                                PeopleResultItem(user = friend, query = searchQuery.value!!) {
+                                    onFinish(friend)
+                                }
+                            }
+                        }
                     }
-//                        itemsIndexed(it) { _, friend ->
-//                            Spacer(Modifier.height(18.sdp()))
-//                            PeopleResultItem(user = friend, query = query.value)
-//                        }
                     groups.value?.let {
                         if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
                             item {
@@ -285,7 +292,7 @@ fun HighlightedSearchText(
                 }
                 withStyle(SpanStyle(fontWeight = FontWeight.W700)) {
                     printlnCK("GroupResultItem keyword string $query")
-                    append(query)
+                    append(fullString.substring(newIndex until newIndex + query.length))
                 }
                 matchIndex = newIndex + query.length
             } else {
