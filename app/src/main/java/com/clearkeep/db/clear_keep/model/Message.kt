@@ -3,6 +3,7 @@ package com.clearkeep.db.clear_keep.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.clearkeep.screen.chat.utils.isGroup
 
 @Entity
 data class Message(
@@ -20,4 +21,6 @@ data class Message(
 ) {
     val owner: Owner
         get() = Owner(ownerDomain, ownerClientId)
+
+    fun isGroupMessage() = isGroup(groupType)
 }
