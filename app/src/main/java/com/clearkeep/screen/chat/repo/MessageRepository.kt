@@ -1,13 +1,14 @@
 package com.clearkeep.screen.chat.repo
 
 import android.text.TextUtils
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.dao.NoteDAO
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.Note
-import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
@@ -21,6 +22,7 @@ import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import message.MessageOuterClass
 import note.NoteOuterClass
@@ -225,6 +227,23 @@ class MessageRepository @Inject constructor(
                 ownerDomain = owner.domain, ownerClientId = owner.clientId
             ),
         )
+    }
+
+    fun getMessageByText(
+        ownerDomain: String,
+        ownerClientId: String,
+        query: String
+    ): LiveData<List<Pair<Message, User?>>> {
+        printlnCK("getMessageByText() ")
+        return messageDAO.getMessageByText(ownerDomain, ownerClientId, "%$query%").asFlow().map {
+            val clientList = it.map { it.groupId }.distinct().map {
+                groupDAO.getGroupById(it, ownerDomain, ownerClientId)?.clientList ?: emptyList()
+            }.flatten().distinctBy { it.userId }
+            val result = it.map { message -> message to clientList.find { message.senderId == it.userId } }
+            printlnCK("====================== result get message")
+            result.forEach { printlnCK("${it.first} ${it.second}") }
+            result
+        }.asLiveData()
     }
 
     suspend fun saveNewMessage(message: Message): Message {

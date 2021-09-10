@@ -7,7 +7,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomActivity
@@ -30,7 +29,7 @@ class SearchUserActivity : AppCompatActivity() {
             CKSimpleTheme {
                 SearchUserScreen(
                     searchViewModel,
-                    onFinish = { people ->
+                    navigateToPeerChat = { people ->
                         if (people != null) {
                             navigateToRoomScreen(people)
                         }

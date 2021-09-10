@@ -1,18 +1,13 @@
 package com.clearkeep.screen.chat.contact_search
 
-import android.content.ClipData
-import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -28,12 +23,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscale1
@@ -42,28 +33,25 @@ import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.composes.CircleAvatar
-import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.utilities.sdp
-import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
-import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.utilities.printlnCK
-import java.util.regex.Matcher
 
 @Composable
 fun SearchUserScreen(
     searchViewModel: SearchViewModel,
-    onFinish: (people: User?) -> Unit,
+    navigateToPeerChat: (people: User?) -> Unit,
     navigateToChatGroup: (chatGroup: ChatGroup) -> Unit
 ) {
     val friends = searchViewModel.friends.observeAsState()
     val groups = searchViewModel.groups.observeAsState()
+    val messages = searchViewModel.messages.observeAsState()
     val profile = searchViewModel.profile.observeAsState()
     val searchQuery = searchViewModel.searchQuery.observeAsState()
     val server = searchViewModel.currentServer.observeAsState()
 
     printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
+    printlnCK("Messages passed to composable ${messages.value}")
 
     Column(
         modifier = Modifier
@@ -84,7 +72,7 @@ fun SearchUserScreen(
                 painterResource(R.drawable.ic_cross),
                 null,
                 Modifier
-                    .clickable { onFinish.invoke(null) }
+                    .clickable { navigateToPeerChat.invoke(null) }
                     .align(Alignment.CenterEnd))
         }
         Spacer(Modifier.height(18.sdp()))
@@ -116,7 +104,7 @@ fun SearchUserScreen(
                         SearchOptionsItem("in", query = "group chats")
                     }
                 }
-            } else if (!groups.value.isNullOrEmpty() || !friends.value.isNullOrEmpty()) {
+            } else if (!groups.value.isNullOrEmpty() || !friends.value.isNullOrEmpty() || !messages.value.isNullOrEmpty()) {
                 printlnCK("Friends passed to composable ${friends.value}")
                 LazyColumn(
                     modifier = Modifier
@@ -131,7 +119,7 @@ fun SearchUserScreen(
                             itemsIndexed(it) { _, friend ->
                                 Spacer(Modifier.height(18.sdp()))
                                 PeopleResultItem(user = friend, query = searchQuery.value!!) {
-                                    onFinish(friend)
+                                    navigateToPeerChat(friend)
                                 }
                             }
                         }
@@ -150,18 +138,48 @@ fun SearchUserScreen(
                             }
                         }
                     }
-                    item {
-                        Spacer(Modifier.height(26.sdp()))
-                        CKText("MESSAGES", color = grayscale1)
+                    messages.value?.let {
+                        item {
+                            Spacer(Modifier.height(26.sdp()))
+                            CKText("MESSAGES", color = grayscale1)
+                        }
+                        itemsIndexed(it) { _, messageWithUser ->
+                            Spacer(Modifier.height(18.sdp()))
+                            MessageResultItem(
+                                Modifier.clickable {
+                                    val message = messageWithUser.first
+                                    if (messageWithUser.first.isGroupMessage()) {
+                                        navigateToChatGroup(
+                                            ChatGroup(
+                                                null,
+                                                message.groupId,
+                                                "",
+                                                "",
+                                                "",
+                                                "",
+                                                0L,
+                                                "",
+                                                0L,
+                                                "",
+                                                emptyList(),
+                                                false,
+                                                "",
+                                                "",
+                                                null,
+                                                0L,
+                                                0L
+                                            )
+                                        )
+                                    } else {
+                                        navigateToPeerChat(messageWithUser.second)
+                                    }
+                                },
+                                user = messageWithUser.second ?: User("", "", ""),
+                                message = messageWithUser.first.message,
+                                query = searchQuery.value!!
+                            )
+                        }
                     }
-//                        itemsIndexed(it) { _, friend ->
-//                            Spacer(Modifier.height(18.sdp()))
-//                            MessageResultItem(
-//                                user = friend,
-//                                message = "Hello world!",
-//                                query = query.value
-//                            )
-//                        }
                 }
             } else {
                 Text(
@@ -260,7 +278,7 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
                 query,
                 style = MaterialTheme.typography.body2.copy(
                     color = grayscale2
-                ), overflow = TextOverflow.Ellipsis, maxLines = 1
+                ), overflow = TextOverflow.Ellipsis, maxLines = 3
             )
         }
         Spacer(Modifier.width(16.sdp()))
@@ -290,7 +308,7 @@ fun HighlightedSearchText(
                     printlnCK("GroupResultItem normal string ${fullString.substring(matchIndex until newIndex)}")
                     append(fullString.substring(matchIndex until newIndex))
                 }
-                withStyle(SpanStyle(fontWeight = FontWeight.W700)) {
+                withStyle(SpanStyle(color = Color.Black)) {
                     printlnCK("GroupResultItem keyword string $query")
                     append(fullString.substring(newIndex until newIndex + query.length))
                 }
