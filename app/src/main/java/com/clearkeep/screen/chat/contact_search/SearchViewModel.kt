@@ -5,6 +5,7 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.*
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 class SearchViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
+    private val messageRepository: MessageRepository,
     private val roomRepository: GroupRepository,
     private val environment: Environment,
     serverRepository: ServerRepository,
@@ -32,6 +34,10 @@ class SearchViewModel @Inject constructor(
     private val _groups = MediatorLiveData<List<ChatGroup>>()
     val groups : LiveData<List<ChatGroup>> get() = _groups
     private var groupSource: LiveData<List<ChatGroup>> = MutableLiveData()
+
+    private val _messages = MediatorLiveData<List<Pair<Message, User?>>>()
+    val messages : LiveData<List<Pair<Message, User?>>> get() = _messages
+    private var messagesSource: LiveData<List<Pair<Message, User?>>> = MutableLiveData()
 
     private val _searchQuery = MutableLiveData<String>()
     val searchQuery : LiveData<String> get() = _searchQuery
@@ -56,6 +62,7 @@ class SearchViewModel @Inject constructor(
         searchJob = viewModelScope.launch {
             delay(debouncePeriod)
             searchGroups(server, text)
+            searchMessages(server, text)
             searchUsers(server, text)
             isShowLoading.postValue(false)
         }
@@ -107,6 +114,24 @@ class SearchViewModel @Inject constructor(
         }.collect {
             printlnCK("searchUsers result ${it.distinctBy { it.userId }}")
             _friends.value = it.distinctBy { it.userId }
+        }
+    }
+
+    private suspend fun searchMessages(server: Server, query: String) {
+        withContext(Dispatchers.Main) {
+            _messages.removeSource(messagesSource)
+            withContext(Dispatchers.IO) {
+                messagesSource = messageRepository.getMessageByText(server.serverDomain, server.profile.userId, query)
+                printlnCK("message result ${messagesSource.value}")
+            }
+            try {
+                _messages.addSource(messagesSource) {
+                    _messages.value = it.sortedByDescending { it.first.createdTime }
+                    printlnCK("message result ${_messages.value}")
+                }
+            } catch (e: Exception) {
+                printlnCK("searchGroups exception $e")
+            }
         }
     }
 }
