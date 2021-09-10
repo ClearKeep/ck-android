@@ -33,10 +33,11 @@ class SearchUserActivity : AppCompatActivity() {
                         if (people != null) {
                             navigateToRoomScreen(people)
                         }
-                        finish()
                     },
                     navigateToChatGroup = {
                         navigateToChatGroup(it)
+                    },
+                    onClose = {
                         finish()
                     }
                 )

@@ -31,6 +31,9 @@ val grayscaleBlack = Color(0xff000000)
 /* Primary/Default */
 val primaryDefault = Color(0xff6267FB)
 
+/* Primary/Light */
+val primaryLight = Color(0xFF898DFF)
+
 /* Secondary/Default */
 val colorSecondaryDefault = Color(0xffE06464)
 

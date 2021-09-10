@@ -2,16 +2,15 @@ package com.clearkeep.screen.chat.contact_search
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,22 +25,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.clearkeep.R
+import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscale3
-import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
+import com.clearkeep.utilities.countryCodesToNames
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.toNonScalableTextSize
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun SearchUserScreen(
     searchViewModel: SearchViewModel,
     navigateToPeerChat: (people: User?) -> Unit,
-    navigateToChatGroup: (chatGroup: ChatGroup) -> Unit
+    navigateToChatGroup: (chatGroup: ChatGroup) -> Unit,
+    onClose: () -> Unit
 ) {
     val friends = searchViewModel.friends.observeAsState()
     val groups = searchViewModel.groups.observeAsState()
@@ -49,6 +50,7 @@ fun SearchUserScreen(
     val profile = searchViewModel.profile.observeAsState()
     val searchQuery = searchViewModel.searchQuery.observeAsState()
     val server = searchViewModel.currentServer.observeAsState()
+    val searchMode = searchViewModel.searchMode.observeAsState()
 
     printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
     printlnCK("Messages passed to composable ${messages.value}")
@@ -72,7 +74,7 @@ fun SearchUserScreen(
                 painterResource(R.drawable.ic_cross),
                 null,
                 Modifier
-                    .clickable { navigateToPeerChat.invoke(null) }
+                    .clickable { onClose.invoke() }
                     .align(Alignment.CenterEnd))
         }
         Spacer(Modifier.height(18.sdp()))
@@ -81,28 +83,29 @@ fun SearchUserScreen(
             placeholder = stringResource(R.string.home_search_hint),
             maxChars = MAX_SEARCH_LENGTH
         ) {
-            if (query.value.isNotBlank()) {
-                searchViewModel.search(query.value)
+            searchViewModel.search(query.value)
+        }
+        Spacer(Modifier.height(10.sdp()))
+        Row(Modifier.fillMaxWidth()) {
+            FilterItem("All", isSelected = searchMode.value == SearchMode.ALL) {
+                searchViewModel.setSearchMode(SearchMode.ALL)
+            }
+            FilterItem("People", isSelected = searchMode.value == SearchMode.PEOPLE) {
+                searchViewModel.setSearchMode(SearchMode.PEOPLE)
+            }
+            FilterItem("Groups", isSelected = searchMode.value == SearchMode.GROUPS) {
+                searchViewModel.setSearchMode(SearchMode.GROUPS)
+            }
+            FilterItem("Messages", isSelected = searchMode.value == SearchMode.MESSAGES) {
+                searchViewModel.setSearchMode(SearchMode.MESSAGES)
             }
         }
 
         Spacer(Modifier.height(18.sdp()))
 
         Box(Modifier.fillMaxSize()) {
-            if (searchQuery.value?.isEmpty() == true) {
+            if (searchQuery.value.isNullOrBlank() && query.value.isEmpty()) {
                 Column(Modifier.fillMaxSize()) {
-                    CKText("Search options")
-                    Spacer(Modifier.height(8.sdp()))
-
-                    Column(
-                        Modifier
-                            .background(Color.White, RoundedCornerShape(8.sdp()))
-                            .clip(RoundedCornerShape(8.sdp()))
-                    ) {
-                        SearchOptionsItem("to", query = "people")
-                        SearchOptionsItem("from", query = "people")
-                        SearchOptionsItem("in", query = "group chats")
-                    }
                 }
             } else if (!groups.value.isNullOrEmpty() || !friends.value.isNullOrEmpty() || !messages.value.isNullOrEmpty()) {
                 printlnCK("Friends passed to composable ${friends.value}")
@@ -113,8 +116,10 @@ fun SearchUserScreen(
                 ) {
                     friends.value?.let {
                         if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
-                            item {
-                                CKText("PEOPLE", color = grayscale1)
+                            if (searchMode.value == SearchMode.ALL) {
+                                item {
+                                    CKText("PEOPLE", color = grayscale1)
+                                }
                             }
                             itemsIndexed(it) { _, friend ->
                                 Spacer(Modifier.height(18.sdp()))
@@ -126,9 +131,11 @@ fun SearchUserScreen(
                     }
                     groups.value?.let {
                         if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
-                            item {
-                                Spacer(Modifier.height(26.sdp()))
-                                CKText("GROUP CHAT", color = grayscale1)
+                            if (searchMode.value == SearchMode.ALL) {
+                                item {
+                                    Spacer(Modifier.height(26.sdp()))
+                                    CKText("GROUP CHAT", color = grayscale1)
+                                }
                             }
                             itemsIndexed(it) { _, group ->
                                 Spacer(Modifier.height(18.sdp()))
@@ -139,50 +146,51 @@ fun SearchUserScreen(
                         }
                     }
                     messages.value?.let {
-                        item {
-                            Spacer(Modifier.height(26.sdp()))
-                            CKText("MESSAGES", color = grayscale1)
+                        if (searchMode.value == SearchMode.ALL) {
+                            item {
+                                Spacer(Modifier.height(26.sdp()))
+                                CKText("MESSAGES", color = grayscale1)
+                            }
                         }
                         itemsIndexed(it) { _, messageWithUser ->
                             Spacer(Modifier.height(18.sdp()))
                             MessageResultItem(
-                                Modifier.clickable {
-                                    val message = messageWithUser.first
-                                    if (messageWithUser.first.isGroupMessage()) {
-                                        navigateToChatGroup(
-                                            ChatGroup(
-                                                null,
-                                                message.groupId,
-                                                "",
-                                                "",
-                                                "",
-                                                "",
-                                                0L,
-                                                "",
-                                                0L,
-                                                "",
-                                                emptyList(),
-                                                false,
-                                                "",
-                                                "",
-                                                null,
-                                                0L,
-                                                0L
-                                            )
-                                        )
-                                    } else {
-                                        navigateToPeerChat(messageWithUser.second)
-                                    }
-                                },
                                 user = messageWithUser.second ?: User("", "", ""),
                                 message = messageWithUser.first.message,
                                 query = searchQuery.value!!
-                            )
+                            ) {
+                                val message = messageWithUser.first
+                                if (messageWithUser.first.isGroupMessage()) {
+                                    navigateToChatGroup(
+                                        ChatGroup(
+                                            null,
+                                            message.groupId,
+                                            "",
+                                            "",
+                                            "",
+                                            "",
+                                            0L,
+                                            "",
+                                            0L,
+                                            "",
+                                            emptyList(),
+                                            false,
+                                            "",
+                                            "",
+                                            null,
+                                            0L,
+                                            0L
+                                        )
+                                    )
+                                } else {
+                                    navigateToPeerChat(messageWithUser.second)
+                                }
+                            }
                         }
                     }
                 }
             } else {
-                Text(
+                CKText(
                     "There is no result for your search",
                     Modifier.align(Alignment.Center),
                     grayscale3
@@ -193,21 +201,24 @@ fun SearchUserScreen(
 }
 
 @Composable
-fun SearchOptionsItem(keyword: String, query: String) {
-    Column(
+private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Box(
         Modifier
-            .background(Color.White)
+            .weight(1f)
+            .clip(RoundedCornerShape(8.sdp()))
+            .background(Color.White, RoundedCornerShape(8.sdp()))
+            .border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
+            .clickable { onClick() }
+            .padding(vertical = 4.sdp()),
+        contentAlignment = Alignment.Center
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.sdp(), horizontal = 16.sdp())
-        ) {
-            CKText("$keyword: ", fontWeight = FontWeight.Bold)
-            CKText(query)
-        }
-        Divider(Modifier.fillMaxWidth(), color = colorResource(R.color.line))
+        Text(
+            label,
+            fontSize = 12.sdp().toNonScalableTextSize(),
+            color = if (isSelected) primaryLight else grayscale2
+        )
     }
+
 }
 
 @Composable
@@ -217,7 +228,10 @@ fun PeopleResultItem(
     query: String,
     onClick: () -> Unit
 ) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier.then(Modifier.clickable { onClick() }),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         CircleAvatar(
             emptyList(),
             user.userName,
@@ -230,7 +244,7 @@ fun PeopleResultItem(
                 .weight(1.0f, true)
         ) {
             HighlightedSearchText(
-                Modifier.clickable { onClick() },
+                Modifier,
                 user.userName,
                 query,
                 style = MaterialTheme.typography.body2.copy(
@@ -252,8 +266,8 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String, query: String) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+fun MessageResultItem(user: User, message: String, query: String, onClick: () -> Unit) {
+    Row(Modifier.clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
             user.userName,
@@ -273,7 +287,7 @@ fun MessageResultItem(modifier: Modifier = Modifier, user: User, message: String
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
             HighlightedSearchText(
-                modifier,
+                Modifier,
                 message,
                 query,
                 style = MaterialTheme.typography.body2.copy(
