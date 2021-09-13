@@ -119,13 +119,22 @@ class SearchViewModel @Inject constructor(
     }
 
     private suspend fun searchUsers(server: Server, query: String) {
-        val allPeopleInServer = peopleRepository.getFriends(server.serverDomain, server.profile.userId)
-        println("searchUsers allPeopleInServer ${allPeopleInServer.value}")
-        allPeopleInServer.asFlow().combine(roomRepository.getPeerRoomsByPeerName(server.serverDomain, server.profile.userId, query).asFlow()) { a: List<User>, b: List<ChatGroup> ->
-            println("searchUsers List of chat groups $a list of users $b")
-            val usersInSameServer = a.filter { it.userName.contains(query, true) }.sortedBy { it.userName }
-            usersInSameServer.forEach { printlnCK("searchUsers users in same server $it") }
-            val usersInPeerChat = b.sortedByDescending { it.lastMessageAt }.map {
+        val allPeopleInGroupChats =
+            roomRepository.getGroupsByDomain(server.serverDomain, server.profile.userId).asFlow()
+        val allPeopleInServer =
+            peopleRepository.getFriends(server.serverDomain, server.profile.userId)
+        val allPeerChat = roomRepository.getPeerRoomsByPeerName(
+            server.serverDomain,
+            server.profile.userId,
+            query
+        )
+
+        val allUnchattedPeople = allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
+            (a.map { it.clientList }.flatten().filter { it.userName.contains(query, true) } + b.filter { it.userName.contains(query, true)}).filter{ it.userId != server.profile.userId }.sortedBy { it.userName }
+        }
+
+        allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
+            val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
                 printlnCK("searchUsers private chat group $it")
                 val userId = it.clientList.find { it.userId != server.profile.userId }?.userId
                 User(
@@ -139,12 +148,7 @@ class SearchViewModel @Inject constructor(
                     ""
                 )
             }
-            println("searchUsers usersInSameServer $usersInSameServer usersInPeerChat $usersInPeerChat")
-            (usersInPeerChat + usersInSameServer).distinctBy { it.userId }
-        }.combine(
-            roomRepository.getGroupsByDomain(server.serverDomain, server.profile.userId).asFlow()
-        ) { a: List<User>, b: List<ChatGroup> ->
-            a + b.map { it.clientList }.flatten().filter { it.userName.contains(query, true) }.sortedBy { it.userName }
+            (usersInPeerChat + b).distinctBy { it.userId }
         }.collect {
             printlnCK("searchUsers result ${it.distinctBy { it.userId }}")
             _friends.value = it.distinctBy { it.userId }
