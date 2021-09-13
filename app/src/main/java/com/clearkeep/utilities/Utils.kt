@@ -1,8 +1,10 @@
 package com.clearkeep.utilities
 
+import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.util.Patterns
 import com.clearkeep.BuildConfig
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import androidx.core.content.ContextCompat
 import com.clearkeep.R
 import com.clearkeep.screen.splash.SplashActivity
 import com.google.gson.Gson
@@ -198,6 +201,23 @@ fun isValidServerUrl(url: String): Boolean {
     } catch (e: Exception) {
         return false
     }
+}
+
+fun isPermissionGranted(context: Context, permission: String): Boolean {
+    return when (PackageManager.PERMISSION_GRANTED) {
+        ContextCompat.checkSelfPermission(context, permission) -> {
+            true
+        }
+        else -> {
+            false
+        }
+    }
+}
+
+fun isWriteFilePermissionGranted(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P)
+        return isPermissionGranted(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    return true
 }
 
 val errorRegex = "\\{.+\\}".toRegex()
