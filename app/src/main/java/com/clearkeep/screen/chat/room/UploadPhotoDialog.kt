@@ -29,6 +29,7 @@ import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.components.tintsRedLight
+import com.clearkeep.utilities.isPermissionGranted
 import com.clearkeep.utilities.sdp
 
 @ExperimentalComposeUiApi
@@ -142,15 +143,4 @@ fun isFilePermissionGranted(context: Context): Boolean {
 
 fun isCameraPermissionGranted(context: Context): Boolean {
     return isPermissionGranted(context, Manifest.permission.CAMERA)
-}
-
-fun isPermissionGranted(context: Context, permission: String): Boolean {
-    return when (PackageManager.PERMISSION_GRANTED) {
-        ContextCompat.checkSelfPermission(context, permission) -> {
-            true
-        }
-        else -> {
-            false
-        }
-    }
 }

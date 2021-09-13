@@ -1,5 +1,10 @@
 package com.clearkeep.screen.chat.room.photo_detail
 
+import android.Manifest
+import android.content.Context
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -34,6 +39,8 @@ import coil.imageLoader
 import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.isPermissionGranted
+import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.statusBarsPadding
@@ -47,6 +54,14 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
     val selectedImageUri = remember { mutableStateOf("") }
     val isShareDialogOpen = remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val requestWriteFilePermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                roomViewModel.downloadFile(context, selectedImageUri.value)
+            }
+        }
+
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
@@ -124,7 +139,11 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
         ShareImageDialog(isShareDialogOpen.value, onDismiss = {
             isShareDialogOpen.value = false
         }, onClickSave = {
-            roomViewModel.downloadFile(context, selectedImageUri.value)
+            if (isWriteFilePermissionGranted(context)) {
+                roomViewModel.downloadFile(context, selectedImageUri.value)
+            } else {
+                requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
             isShareDialogOpen.value = false
         })
     }
