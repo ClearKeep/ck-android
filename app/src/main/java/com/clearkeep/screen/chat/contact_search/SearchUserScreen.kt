@@ -14,6 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -51,6 +52,11 @@ fun SearchUserScreen(
     val searchQuery = searchViewModel.searchQuery.observeAsState()
     val server = searchViewModel.currentServer.observeAsState()
     val searchMode = searchViewModel.searchMode.observeAsState()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(key1 = Unit) {
+        focusRequester.requestFocus()
+    }
 
     printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
     printlnCK("Messages passed to composable ${messages.value}")
@@ -81,9 +87,12 @@ fun SearchUserScreen(
         CKSearchBox(
             query,
             placeholder = stringResource(R.string.home_search_hint),
-            maxChars = MAX_SEARCH_LENGTH
+            maxChars = MAX_SEARCH_LENGTH,
+            focusRequester = focusRequester
         ) {
-            searchViewModel.search(query.value)
+            if (query.value.isNotBlank()) {
+                searchViewModel.search(query.value)
+            }
         }
         Spacer(Modifier.height(10.sdp()))
         Row(Modifier.fillMaxWidth()) {
@@ -262,7 +271,10 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
     HighlightedSearchText(
         Modifier
             .clickable { onClick() }
-            .fillMaxWidth(), groupName, query)
+            .fillMaxWidth(), groupName, query,
+        style = MaterialTheme.typography.body2.copy(
+            color = grayscale2
+        ))
 }
 
 @Composable
@@ -324,6 +336,7 @@ fun HighlightedSearchText(
                 }
                 withStyle(SpanStyle(color = Color.Black)) {
                     printlnCK("GroupResultItem keyword string $query")
+                    printlnCK("GroupResultItem added keyword string ${fullString.substring(newIndex until newIndex + query.length)}")
                     append(fullString.substring(newIndex until newIndex + query.length))
                 }
                 matchIndex = newIndex + query.length
