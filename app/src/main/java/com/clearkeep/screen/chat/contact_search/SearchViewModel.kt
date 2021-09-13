@@ -136,11 +136,11 @@ class SearchViewModel @Inject constructor(
         allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
             val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
                 printlnCK("searchUsers private chat group $it")
-                val userId = it.clientList.find { it.userId != server.profile.userId }?.userId
+                val user = it.clientList.find { it.userId != server.profile.userId }
                 User(
-                    userId ?: it.ownerClientId,
-                    it.groupName,
-                    it.ownerDomain,
+                    user?.userId ?: it.ownerClientId,
+                    user?.userName ?: it.groupName,
+                    user?.domain ?: it.ownerDomain,
                     "",
                     "",
                     "",

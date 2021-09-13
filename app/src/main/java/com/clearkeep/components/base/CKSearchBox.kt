@@ -16,8 +16,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
-import androidx.compose.ui.focus.isFocused
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -36,10 +35,13 @@ fun CKSearchBox(
     modifier: Modifier = Modifier,
     placeholder: String = stringResource(R.string.search),
     maxChars: Int? = null,
-    onImeAction: () -> Unit = {}
+    focusRequester: FocusRequester? = null,
+    onImeAction: () -> Unit = {},
 ) {
     val shape = MaterialTheme.shapes.large
     val focusManager = LocalFocusManager.current
+
+    val keyboardFocusRequester = focusRequester ?: remember { FocusRequester() }
 
     var rememberBorderShow = remember { mutableStateOf(false) }
     Column {
@@ -47,7 +49,10 @@ fun CKSearchBox(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
-                BorderStroke(dimensionResource(R.dimen._1sdp), MaterialTheme.colors.secondaryVariant)
+                BorderStroke(
+                    dimensionResource(R.dimen._1sdp),
+                    MaterialTheme.colors.secondaryVariant
+                )
             } else null,
             color = Color.Transparent,
             elevation = 0.sdp()
@@ -92,7 +97,8 @@ fun CKSearchBox(
                     .fillMaxWidth()
                     .onFocusChanged {
                         rememberBorderShow.value = it.isFocused
-                    },
+                    }
+                    .focusRequester(keyboardFocusRequester),
                 leadingIcon = {
                     Icon(
                         Icons.Filled.Search,
@@ -102,11 +108,14 @@ fun CKSearchBox(
                 },
                 trailingIcon = {
                     if (textValue.value.length > 1) {
-                        Icon(Icons.Filled.Close,
+                        Icon(
+                            Icons.Filled.Close,
                             contentDescription = "",
-                            modifier = Modifier.clickable {
-                                textValue.value = ""
-                            }.size(dimensionResource(R.dimen._24sdp)))
+                            modifier = Modifier
+                                .clickable {
+                                    textValue.value = ""
+                                }
+                                .size(dimensionResource(R.dimen._24sdp)))
                     }
                 },
                 keyboardActions = KeyboardActions(onDone = {
