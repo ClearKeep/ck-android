@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room
 
+import android.Manifest
 import android.content.Context
 import android.os.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -24,6 +25,8 @@ import com.clearkeep.screen.chat.room.composes.ToolbarMessage
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,10 +36,13 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.core.content.ContextCompat
 import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.utilities.isPermissionGranted
+import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -66,6 +72,15 @@ fun RoomScreen(
     val coroutineScope = rememberCoroutineScope()
     val isShowDialogCalling = remember { mutableStateOf(false) }
     val listPeerAvatars = roomViewModel.listPeerAvatars.observeAsState()
+    val selectedFileUri = remember { mutableStateOf("") }
+
+    val requestWriteFilePermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                roomViewModel.downloadFile(context, selectedFileUri.value)
+            }
+        }
+
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
@@ -164,7 +179,12 @@ fun RoomScreen(
                                 myClientId = roomViewModel.clientId,
                                 group?.isGroup() ?: false,
                                 onClickFile = {
-                                    roomViewModel.downloadFile(context, it)
+                                    if (isWriteFilePermissionGranted(context)) {
+                                        roomViewModel.downloadFile(context, it)
+                                    } else {
+                                        selectedFileUri.value = it
+                                        requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    }
                                 },
                                 onClickImage = { uris: List<String>, senderName: String ->
                                     roomViewModel.setImageDetailList(uris)
