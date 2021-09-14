@@ -12,6 +12,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun CKHeaderText(
@@ -21,12 +23,11 @@ fun CKHeaderText(
     color: Color = grayscaleBlack
 ) {
     //todo disable dark mode
-    CKText(
+    Text(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(
             color = if (isSystemInDarkTheme()) color else color,
-            fontSize = defaultNonScalableTextSize()
         ),
         maxLines = 3,
         overflow = TextOverflow.Ellipsis
@@ -38,9 +39,9 @@ fun CKHeaderText(
 @Composable
 fun getTypography(headerTextType: HeaderTextType): TextStyle {
     return when (headerTextType) {
-        HeaderTextType.Normal -> MaterialTheme.typography.h6
-        HeaderTextType.Medium -> MaterialTheme.typography.h5
-        HeaderTextType.Large -> MaterialTheme.typography.h4
+        HeaderTextType.Normal -> MaterialTheme.typography.h6.copy(fontSize = 16.sdp().toNonScalableTextSize())
+        HeaderTextType.Medium -> MaterialTheme.typography.h5.copy(fontSize = 20.sdp().toNonScalableTextSize())
+        HeaderTextType.Large -> MaterialTheme.typography.h4.copy(fontSize = 24.sdp().toNonScalableTextSize())
     }
 }
 
