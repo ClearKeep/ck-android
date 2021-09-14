@@ -11,7 +11,6 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
@@ -51,7 +50,21 @@ fun showMessagingStyleNotification(
         ""
     }
 
-    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference, avatar, groupSender)
+    val messageNotificationContent = when {
+        isImageMessage(message.message) -> {
+            val messageSender = if (groupSender.isNotBlank()) groupSender else sender
+            getImageNotificationContent(message.message, messageSender)
+        }
+        isFileMessage(message.message) -> {
+            val messageSender = if (groupSender.isNotBlank()) groupSender else sender
+            getFileNotificationContent(message.message, messageSender)
+        }
+        else -> {
+            message.message
+        }
+    }
+
+    showHeadsUpMessageWithNoAutoLaunch(context, sender, message.copy(message = messageNotificationContent), preference, avatar, groupSender)
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
@@ -193,7 +206,19 @@ fun showMessageNotificationToSystemBar(
         for (message in messages) {
             val people = participants.find { it.userId == message.senderId }
             val messageContent =
-                if (userPreference.showNotificationPreview) message.message else "You have new message"
+                if (userPreference.showNotificationPreview) {
+                    when {
+                        isImageMessage(message.message) -> {
+                            getImageNotificationContent(message.message, people?.userName ?: "")
+                        }
+                        isFileMessage(message.message) -> {
+                            getFileNotificationContent(message.message, people?.userName ?: "")
+                        }
+                        else -> {
+                            message.message
+                        }
+                    }
+                } else "You have new message"
             val username =
                 if (userPreference.showNotificationPreview) people?.userName else ""
             messagingStyle.addMessage(
@@ -301,4 +326,20 @@ fun createInCallNotification(context: Context, activityToLaunchOnClick: Class<*>
 
 fun dismissInCallNotification(context: Context) {
     NotificationManagerCompat.from(context).cancel(null, CALL_NOTIFICATION_ID)
+}
+
+private fun getImageNotificationContent(message: String, sender: String) : String {
+    val imageCount = getImageUriStrings(message).size
+
+    val pluralString = if (imageCount > 1) "s" else ""
+
+    val messageContent = if (getMessageContent(message).isNotBlank()) "\n${getMessageContent(message)}" else ""
+    return "$sender send $imageCount image$pluralString$messageContent"
+}
+
+private fun getFileNotificationContent(message: String, sender: String): String {
+    val fileCount = getFileUriStrings(message).size
+    val pluralString = if (fileCount > 1) "s" else ""
+
+    return "$sender send $fileCount file$pluralString"
 }
