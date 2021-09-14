@@ -155,44 +155,46 @@ fun SearchUserScreen(
                         }
                     }
                     messages.value?.let {
-                        if (searchMode.value == SearchMode.ALL) {
-                            item {
-                                Spacer(Modifier.height(26.sdp()))
-                                CKText("MESSAGES", color = grayscale1)
+                        if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
+                            if (searchMode.value == SearchMode.ALL) {
+                                item {
+                                    Spacer(Modifier.height(26.sdp()))
+                                    CKText("MESSAGES", color = grayscale1)
+                                }
                             }
-                        }
-                        itemsIndexed(it) { _, messageWithUser ->
-                            Spacer(Modifier.height(18.sdp()))
-                            MessageResultItem(
-                                user = messageWithUser.second ?: User("", "", ""),
-                                message = messageWithUser.first.message,
-                                query = searchQuery.value!!
-                            ) {
-                                val message = messageWithUser.first
-                                if (messageWithUser.first.isGroupMessage()) {
-                                    navigateToChatGroup(
-                                        ChatGroup(
-                                            null,
-                                            message.groupId,
-                                            "",
-                                            "",
-                                            "",
-                                            "",
-                                            0L,
-                                            "",
-                                            0L,
-                                            "",
-                                            emptyList(),
-                                            false,
-                                            "",
-                                            "",
-                                            null,
-                                            0L,
-                                            0L
+                            itemsIndexed(it) { _, messageWithUser ->
+                                Spacer(Modifier.height(18.sdp()))
+                                MessageResultItem(
+                                    user = messageWithUser.second ?: User("", "", ""),
+                                    message = messageWithUser.first.message,
+                                    query = searchQuery.value!!
+                                ) {
+                                    val message = messageWithUser.first
+                                    if (messageWithUser.first.isGroupMessage()) {
+                                        navigateToChatGroup(
+                                            ChatGroup(
+                                                null,
+                                                message.groupId,
+                                                "",
+                                                "",
+                                                "",
+                                                "",
+                                                0L,
+                                                "",
+                                                0L,
+                                                "",
+                                                emptyList(),
+                                                false,
+                                                "",
+                                                "",
+                                                null,
+                                                0L,
+                                                0L
+                                            )
                                         )
-                                    )
-                                } else {
-                                    navigateToPeerChat(messageWithUser.second)
+                                    } else {
+                                        navigateToPeerChat(messageWithUser.second)
+                                    }
                                 }
                             }
                         }
@@ -227,7 +229,6 @@ private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () 
             color = if (isSelected) primaryLight else grayscale2
         )
     }
-
 }
 
 @Composable
