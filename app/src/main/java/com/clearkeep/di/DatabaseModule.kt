@@ -72,6 +72,12 @@ class DatabaseModule {
 
     @Singleton
     @Provides
+    fun provideUserKeyDao(db: ClearKeepDatabase): UserKeyDao {
+        return db.userKeyDao()
+    }
+
+    @Singleton
+    @Provides
     fun provideSignalKeyDatabase(app: Application): SignalKeyDatabase {
         return Room
                 .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")

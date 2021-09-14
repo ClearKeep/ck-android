@@ -1,16 +1,14 @@
 package com.clearkeep.screen.auth.repo
 
 import auth.AuthOuterClass
-import com.clearkeep.db.clear_keep.model.LoginResponse
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.db.clear_keep.model.Profile
+import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.CallCredentials
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.SignalKeyRepository
+import com.clearkeep.screen.chat.repo.UserKeyRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
@@ -37,7 +35,8 @@ class AuthRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
     private val signalKeyRepository: SignalKeyRepository,
-    private val userPreferenceRepository: UserPreferenceRepository
+    private val userPreferenceRepository: UserPreferenceRepository,
+    private val userKeyRepository: UserKeyRepository
 ) {
     suspend fun register(displayName: String, password: String, email: String, domain: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
         printlnCK("register: $displayName, password = $password, domain = $domain")
@@ -112,6 +111,7 @@ class AuthRepository @Inject constructor(
                         )
                     )
                     userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
+                    userKeyRepository.insert(UserKey(domain, profile.userId, "", ""))
                     return@withContext Resource.success(LoginResponse(response.accessToken, response.otpHash, response.sub, response.hashKey, 0, response.error))
                 }
             } else {
@@ -172,6 +172,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userKeyRepository.insert(UserKey(domain, profile.userId, "key", "salt"))
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
@@ -227,6 +228,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userKeyRepository.insert(UserKey(domain, profile.userId, "", ""))
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
@@ -285,6 +287,7 @@ class AuthRepository @Inject constructor(
                         profile = profile,
                     )
                 )
+                userKeyRepository.insert(UserKey(domain, profile.userId, "", ""))
                 userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
@@ -386,6 +389,7 @@ class AuthRepository @Inject constructor(
                     profile = profile,
                 )
             )
+            userKeyRepository.insert(UserKey(domain, profile.userId, "", ""))
             userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
             return@withContext Resource.success(response)
         } catch (exception: StatusRuntimeException) {
