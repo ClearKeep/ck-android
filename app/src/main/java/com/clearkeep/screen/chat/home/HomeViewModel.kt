@@ -10,15 +10,18 @@ import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
-import com.clearkeep.utilities.FIREBASE_TOKEN
-import com.clearkeep.utilities.isValidServerUrl
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
+import java.security.SecureRandom
+import java.security.spec.KeySpec
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
+
 
 class HomeViewModel @Inject constructor(
     private val roomRepository: GroupRepository,
