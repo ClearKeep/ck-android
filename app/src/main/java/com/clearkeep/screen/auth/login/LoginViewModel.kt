@@ -69,10 +69,41 @@ class LoginViewModel @Inject constructor(
     private val _isAccountLocked = MutableLiveData<Boolean>()
     val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
 
+    private val _securityPhrase = MutableLiveData<String>()
+    private val _confirmSecurityPhrase = MutableLiveData<String>()
+
+    private val _isSecurityPhraseValid = MutableLiveData<Boolean>()
+    val isSecurityPhraseValid : LiveData<Boolean> get() = _isSecurityPhraseValid
+
+    private val _isConfirmSecurityPhraseValid = MutableLiveData<Boolean>()
+    val isConfirmSecurityPhraseValid : LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
+
+    val verifyPassphraseResponse = MutableLiveData<Resource<Boolean>>()
+
+    val saveSecurityPhraseResponse = MutableLiveData<Boolean>()
+
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
         this.hashKey = hashKey
+    }
+
+    fun setSecurityPhrase(phrase: String) {
+        _securityPhrase.value = phrase
+        _isSecurityPhraseValid.value = isSecurityPhraseValid(phrase)
+    }
+
+    fun setConfirmSecurityPhrase(phrase: String) {
+        _confirmSecurityPhrase.value = phrase
+        _isConfirmSecurityPhraseValid.value = isConfirmSecurityPhraseValid()
+    }
+
+    fun saveSecurityPhrase() {
+        saveSecurityPhraseResponse.value = true
+    }
+
+    fun checkSecurityPhrase() {
+        verifyPassphraseResponse.value = Resource.success(null)
     }
 
     fun initGoogleSingIn(context: Context){
@@ -242,5 +273,14 @@ class LoginViewModel @Inject constructor(
 
     fun getDomain(): String {
         return if (isCustomServer) customDomain else "$BASE_URL:$PORT"
+    }
+
+    private fun isSecurityPhraseValid(phrase: String): Boolean {
+        val words = phrase.split("\\s+".toRegex())
+        return words.size >= 3 && words.sumBy { it.length } >= 15
+    }
+
+    private fun isConfirmSecurityPhraseValid(): Boolean {
+        return _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
     }
 }

@@ -41,7 +41,8 @@ fun CKTextInputField(
     trailingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
     allowSpace: Boolean = true,
-    maxChars: Int? = null
+    maxChars: Int? = null,
+    onValueChange: (String) -> Unit = {}
 ) {
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
@@ -69,6 +70,8 @@ fun CKTextInputField(
             TextField(
                 value = textValue?.value ?: "",
                 onValueChange = {
+                    onValueChange(it)
+
                     val trimmedInput = if (maxChars != null) {
                         if (it.length > maxChars) {
                             it.substring(0 until maxChars)
