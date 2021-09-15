@@ -8,6 +8,7 @@ import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.dao.*
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import dagger.Module
@@ -102,8 +103,9 @@ class DatabaseModule {
     fun provideInMemorySignalProtocolStore(
         preKeyDAO: SignalPreKeyDAO,
         signalIdentityKeyDAO: SignalIdentityKeyDAO,
+        environment: Environment,
     ): InMemorySignalProtocolStore {
-        return InMemorySignalProtocolStore(preKeyDAO, signalIdentityKeyDAO)
+        return InMemorySignalProtocolStore(preKeyDAO, signalIdentityKeyDAO, environment)
     }
 
     @Singleton

@@ -8,6 +8,7 @@ package com.clearkeep.screen.chat.signal_store
 import androidx.annotation.WorkerThread
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.dynamicapi.Environment
 import org.whispersystems.libsignal.state.SignalProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -21,6 +22,7 @@ import org.whispersystems.libsignal.state.SignedPreKeyRecord
 class InMemorySignalProtocolStore(
         preKeyDAO: SignalPreKeyDAO,
         signalIdentityKeyDAO: SignalIdentityKeyDAO,
+        environment: Environment
 ) : SignalProtocolStore, Closeable {
     private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO)
 
@@ -28,11 +30,15 @@ class InMemorySignalProtocolStore(
 
     private val signedPreKeyStore: InMemorySignedPreKeyStore = InMemorySignedPreKeyStore(preKeyDAO)
 
-    private val identityKeyStore: InMemoryIdentityKeyStore = InMemoryIdentityKeyStore(signalIdentityKeyDAO)
+    private val identityKeyStore: InMemoryIdentityKeyStore = InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
 
     @WorkerThread
     override fun getIdentityKeyPair(): IdentityKeyPair {
         return identityKeyStore.identityKeyPair
+    }
+
+    fun generateIdentityKeyPair(clientId: String, domain: String) : IdentityKeyPair {
+        return identityKeyStore.generateIdentityKeyPair(clientId, domain).identityKeyPair
     }
 
     @WorkerThread
