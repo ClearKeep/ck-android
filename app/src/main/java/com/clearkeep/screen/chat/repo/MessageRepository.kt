@@ -90,6 +90,7 @@ class MessageRepository @Inject constructor(
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val messages = responses.lstMessageList.map { parseMessageResponse(it, owner) }
+            println("updateMessageFromAPI offset $offSet lastMessageAt ${lastMessageAt-(10*60*60*1000)} messages $messages")
             if (messages.isNotEmpty()) {
                 messageDAO.insertMessages(messages)
                 val lastMessage = messages.maxByOrNull { it.createdTime }
