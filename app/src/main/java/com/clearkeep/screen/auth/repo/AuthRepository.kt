@@ -14,12 +14,12 @@ import com.clearkeep.screen.chat.repo.SignalKeyRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import signal.Signal
 import signal.SignalKeyDistributionGrpc
 import user.UserGrpc
 import user.UserOuterClass
@@ -39,18 +39,63 @@ class AuthRepository @Inject constructor(
     private val signalKeyRepository: SignalKeyRepository,
     private val userPreferenceRepository: UserPreferenceRepository
 ) {
-    suspend fun register(displayName: String, password: String, email: String, domain: String) : Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
+    suspend fun register(
+        displayName: String,
+        password: String,
+        email: String,
+        domain: String
+    ): Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
+        val decrypter = DecryptsPBKDF2(password)
+        val encrypt = decrypter.encrypt("xuan an")
+        val decrypt = encrypt?.let { decrypter.decrypt(it, fromHex(decrypter.getSaltEncryptValue())) }
+        printlnCK("validatePassword: decrypt $decrypt encrypt: $encrypt")
         printlnCK("register: $displayName, password = $password, domain = $domain")
+        val identityKeyPair = myStore.identityKeyPair
+        val preKey = signalKeyRepository.getPreKey()
+        val signedPreKey = signalKeyRepository.getSignedKey()
+
+        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+            .setDeviceId(111)
+            .setRegistrationId(myStore.localRegistrationId)
+            .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
+            .setPreKey(ByteString.copyFrom(preKey.serialize()))
+            .setPreKeyId(preKey.id)
+            .setSignedPreKeyId(signedPreKey.id)
+            .setSignedPreKey(
+                ByteString.copyFrom(signedPreKey.serialize())
+            )
+            .setIdentityKeyEncrypted(
+                ByteString.copyFrom(
+                    decrypter.encrypt(
+                        identityKeyPair.privateKey.serialize().toString()
+                    )?.toByteArray()
+                )
+            )
+            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+            .build()
+
+        /*val test2=identityKeyPair.privateKey.serialize().toString()
+        val test = decrypter.encrypt(identityKeyPair.privateKey.serialize().toString())
+        identityKeyPair.privateKey
+        val test3= test?.let {
+            decrypter.decrypt(it, fromHex(decrypter.getSaltEncryptValue())) }
+
+        printlnCK("privateKey: $test2")
+        printlnCK("privateKey: encrypt$encrypt")
+        printlnCK("privateKey: decrypt $test3")
+*/
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
                 .setDisplayName(displayName)
-                .setPassword(password)
+                .setHashPassword(DecryptsPBKDF2.md5(password))
                 .setEmail(email)
                 .setWorkspaceDomain(domain)
+                .setClientKeyPeer(setClientKeyPeer)
+                .setSalt(decrypter.getSaltEncryptValue())
                 .build()
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
-            if (response.success) {
+            if (response.error.isNullOrEmpty()) {
                 return@withContext Resource.success(response)
             } else {
                 printlnCK("register failed: ${response.error}")
@@ -66,73 +111,113 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
-
-    suspend fun login(userName: String, password: String, domain: String) : Resource<LoginResponse> = withContext(Dispatchers.IO) {
-        printlnCK("login: $userName, password = $password, domain = $domain")
-        try {
-            val request = AuthOuterClass.AuthReq.newBuilder()
+    suspend fun login(userName: String, password: String, domain: String): Resource<LoginResponse> =
+        withContext(Dispatchers.IO) {
+            printlnCK("login: $userName, password = $password, domain = $domain")
+            try {
+                val request = AuthOuterClass.AuthReq.newBuilder()
                     .setEmail(userName)
-                    .setPassword(password)
+                    .setHashPassword(password)
                     .setWorkspaceDomain(domain)
                     .build()
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).login(request)
-            if (response.error.isEmpty()) {
-                printlnCK("login successfully")
-                val accessToken = response.accessToken
-                val hashKey = response.hashKey
-                val requireAction = response.requireAction
-                printlnCK("login requireAction $requireAction sub ${response.sub} otp hash ${response.otpHash} hash key $hashKey")
-                val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
-                val requireOtp = accessToken.isNullOrBlank()
-                if (requireOtp) {
-                    return@withContext Resource.success(LoginResponse(response.accessToken, response.otpHash, response.sub, response.hashKey, 0, response.error))
-                } else {
-                    if (profile == null) {
-                        return@withContext Resource.error("Can not get profile", null)
-                    }
-                    val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                        Owner(domain, profile.userId),
-                        paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-                    )
-                    if (!isRegisterKeySuccess) {
-                        return@withContext Resource.error("Can not register key", null)
-                    }
-
-                    serverRepository.insertServer(
-                        Server(
-                            serverName = response.workspaceName,
-                            serverDomain = domain,
-                            ownerClientId = profile.userId,
-                            serverAvatar = "",
-                            loginTime = getCurrentDateTime().time,
-                            accessKey = accessToken,
-                            hashKey = hashKey,
-                            refreshToken = response.refreshToken,
-                            profile = profile,
+                val response =
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).login(request)
+                if (response.error.isEmpty()) {
+                    printlnCK("login successfully")
+                    val accessToken = response.accessToken
+                    val hashKey = response.hashKey
+                    val requireAction = response.requireAction
+                    printlnCK("login requireAction $requireAction sub ${response.sub} otp hash ${response.otpHash} hash key $hashKey")
+                    val profile = getProfile(
+                        paramAPIProvider.provideUserBlockingStub(
+                            ParamAPI(
+                                domain,
+                                accessToken,
+                                hashKey
+                            )
                         )
                     )
-                    userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
-                    return@withContext Resource.success(LoginResponse(response.accessToken, response.otpHash, response.sub, response.hashKey, 0, response.error))
+                    val requireOtp = accessToken.isNullOrBlank()
+                    if (requireOtp) {
+                        return@withContext Resource.success(
+                            LoginResponse(
+                                response.accessToken,
+                                response.otpHash,
+                                response.sub,
+                                response.hashKey,
+                                0,
+                                response.error
+                            )
+                        )
+                    } else {
+                        if (profile == null) {
+                            return@withContext Resource.error("Can not get profile", null)
+                        }
+                        val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
+                            Owner(domain, profile.userId),
+                            paramAPIProvider.provideSignalKeyDistributionBlockingStub(
+                                ParamAPI(
+                                    domain,
+                                    accessToken,
+                                    hashKey
+                                )
+                            )
+                        )
+                        if (!isRegisterKeySuccess) {
+                            return@withContext Resource.error("Can not register key", null)
+                        }
+
+                        serverRepository.insertServer(
+                            Server(
+                                serverName = response.workspaceName,
+                                serverDomain = domain,
+                                ownerClientId = profile.userId,
+                                serverAvatar = "",
+                                loginTime = getCurrentDateTime().time,
+                                accessKey = accessToken,
+                                hashKey = hashKey,
+                                refreshToken = response.refreshToken,
+                                profile = profile,
+                            )
+                        )
+                        userPreferenceRepository.initDefaultUserPreference(
+                            domain,
+                            profile.userId,
+                            isSocialAccount = false
+                        )
+                        return@withContext Resource.success(
+                            LoginResponse(
+                                response.accessToken,
+                                response.otpHash,
+                                response.sub,
+                                response.hashKey,
+                                0,
+                                response.error
+                            )
+                        )
+                    }
+                } else {
+                    printlnCK("login failed: ${response.error}")
+                    return@withContext Resource.error(response.error, null)
                 }
-            } else {
-                printlnCK("login failed: ${response.error}")
-                return@withContext Resource.error(response.error, null)
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+                printlnCK("login error: $e")
+                val errorMessage = when (parsedError.code) {
+                    1001 -> "Please check your details and try again"
+                    1026 -> "Your account has not been activated. Please check the email for the activation link."
+                    1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
+                    else -> parsedError.message
+                }
+                return@withContext Resource.error(
+                    errorMessage,
+                    LoginResponse("", "", "", "", parsedError.code, errorMessage)
+                )
+            } catch (e: Exception) {
+                printlnCK("login error: $e")
+                return@withContext Resource.error(e.toString(), null)
             }
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-            printlnCK("login error: $e")
-            val errorMessage = when (parsedError.code) {
-                1001 -> "Please check your details and try again"
-                1026 -> "Your account has not been activated. Please check the email for the activation link."
-                1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
-                else -> parsedError.message
-            }
-            return@withContext Resource.error(errorMessage, LoginResponse("", "", "", "", parsedError.code, errorMessage))
-        } catch (e: Exception) {
-            printlnCK("login error: $e")
-            return@withContext Resource.error(e.toString(), null)
         }
-    }
 
     suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){
         printlnCK("loginByGoogle: token = $token, domain = $domain")
@@ -454,7 +539,7 @@ class AuthRepository @Inject constructor(
             val preKey = signalKeyRepository.getPreKey()
             val signedPreKey = signalKeyRepository.getSignedKey()
 
-            val request = Signal.PeerRegisterClientKeyRequest.newBuilder()
+            /*val request = Signal.PeerRegisterClientKeyRequest.newBuilder()
                 .setClientId(address.owner.clientId)
                 .setDeviceId(address.deviceId)
                 .setRegistrationId(myStore.localRegistrationId)
@@ -466,13 +551,10 @@ class AuthRepository @Inject constructor(
                     ByteString.copyFrom(signedPreKey.serialize())
                 )
                 .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
-
+                .build()*/
+/*
             val response = signalGrpc.peerRegisterClientKey(request)
-            if (response?.error?.isEmpty() == true) {
-                printlnCK("peerRegisterClientKeyWithGrpc, success")
-                return@withContext true
-            }
+*/
         } catch (e: Exception) {
             printlnCK("peerRegisterClientKeyWithGrpc: $e")
         }
