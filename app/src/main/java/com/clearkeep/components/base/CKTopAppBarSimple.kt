@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun CKTopAppBarSample(
@@ -20,7 +21,7 @@ fun CKTopAppBarSample(
     title: String = "",
     onBackPressed: () -> Unit,
     type: TopAppBarSampleType = TopAppBarSampleType.White
-    ) {
+) {
     Row(
         modifier = modifier.padding(vertical = 8.sdp(), horizontal = 6.sdp()),
         verticalAlignment = Alignment.CenterVertically
@@ -40,7 +41,7 @@ fun CKTopAppBarSample(
                 style = MaterialTheme.typography.h5.copy(
                     color = if (type == TopAppBarSampleType.White) Color.White else Color.Black,
                 ),
-                fontSize = defaultNonScalableTextSize()
+                fontSize = 16.sdp().toNonScalableTextSize()
             )
         }
     }
