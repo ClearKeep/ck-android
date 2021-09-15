@@ -13,7 +13,7 @@ import com.clearkeep.db.signal_key.model.SignalSenderKey
     SignalSenderKey::class,
     SignalPreKey::class,
     SignalIdentityKey::class,
-], version = 2, exportSchema = false)
+], version = 3, exportSchema = false)
 abstract class SignalKeyDatabase : RoomDatabase() {
     abstract fun signalKeyDao(): SignalKeyDAO
     abstract fun signalIdentityKeyDao(): SignalIdentityKeyDAO
