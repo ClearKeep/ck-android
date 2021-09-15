@@ -20,10 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.*
 import auth.AuthOuterClass
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
@@ -32,6 +29,9 @@ import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
 import com.clearkeep.screen.chat.otp.EnterOtpScreen
+import com.clearkeep.screen.chat.social_login.ConfirmSocialLoginPhraseScreen
+import com.clearkeep.screen.chat.social_login.EnterSocialLoginPhraseScreen
+import com.clearkeep.screen.chat.social_login.SetSocialLoginPhraseScreen
 import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -152,6 +152,8 @@ class LoginActivity : AppCompatActivity() {
                         },
                         onLoginGoogle = {
                             signInGoogle()
+//                            navController.navigate("set_security_phrase")
+                            navController.navigate("enter_security_phrase")
                         },
                         onLoginMicrosoft = {
                             signInMicrosoft()
@@ -220,6 +222,33 @@ class LoginActivity : AppCompatActivity() {
                         onClickSubmit = { loginViewModel.validateOtp(it) },
                         onBackPress = { navController.popBackStack() }) {
                         onLoginSuccess()
+                    }
+                }
+                composable("set_security_phrase") {
+                    SetSocialLoginPhraseScreen(
+                        loginViewModel,
+                        onBackPress = { navController.popBackStack() }) {
+                        navController.navigate("confirm_security_phrase")
+                    }
+                }
+                composable("confirm_security_phrase") {
+                    ConfirmSocialLoginPhraseScreen(
+                        loginViewModel,
+                        onBackPress = { navController.popBackStack() }) {
+                        loginViewModel.saveSecurityPhrase()
+                        onLoginSuccess()
+                    }
+                }
+                composable("enter_security_phrase") {
+                    EnterSocialLoginPhraseScreen(
+                        loginViewModel,
+                        onBackPress = { navController.popBackStack() },
+                        onVerifySuccess = { onLoginSuccess() }) {
+                        navController.navigate("set_security_phrase") {
+                            popUpTo(route = "login") {
+
+                            }
+                        }
                     }
                 }
             }
