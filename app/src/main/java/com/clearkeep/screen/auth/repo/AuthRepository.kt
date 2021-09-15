@@ -7,6 +7,7 @@ import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.CallCredentials
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
@@ -37,7 +38,8 @@ class AuthRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
     private val signalKeyRepository: SignalKeyRepository,
-    private val userPreferenceRepository: UserPreferenceRepository
+    private val userPreferenceRepository: UserPreferenceRepository,
+    private val environment: Environment
 ) {
     suspend fun register(
         displayName: String,
@@ -534,7 +536,23 @@ class AuthRepository @Inject constructor(
         try {
             val address = CKSignalProtocolAddress(owner, 111)
 
-            val identityKeyPair = myStore.identityKeyPair
+            environment.setUpDomain(
+                Server(
+                    0,
+                    "",
+                    owner.domain,
+                    owner.clientId,
+                    "",
+                    0,
+                    "",
+                    "",
+                    "",
+                    false,
+                    Profile(null, "", "", "", "", 0L, "")
+                )
+            )
+
+            val identityKeyPair = myStore.generateIdentityKeyPair(owner.clientId, owner.domain)
 
             val preKey = signalKeyRepository.getPreKey()
             val signedPreKey = signalKeyRepository.getSignedKey()
