@@ -181,6 +181,12 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
+    fun insertFriend(people: User) {
+        viewModelScope.launch {
+            peopleRepository.insertFriend(people, owner = Owner(getDomainOfActiveServer(), getClientIdOfActiveServer()))
+        }
+    }
 }
 
 enum class SearchMode {

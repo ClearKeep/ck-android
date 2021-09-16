@@ -31,6 +31,7 @@ class SearchUserActivity : AppCompatActivity() {
                     searchViewModel,
                     navigateToPeerChat = { people ->
                         if (people != null) {
+                            searchViewModel.insertFriend(people)
                             navigateToRoomScreen(people)
                         }
                     },
