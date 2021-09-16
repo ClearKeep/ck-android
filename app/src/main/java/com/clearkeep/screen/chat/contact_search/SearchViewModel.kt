@@ -7,6 +7,8 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.repo.PeopleRepository
+import com.clearkeep.utilities.isFileMessage
+import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -130,7 +132,12 @@ class SearchViewModel @Inject constructor(
         )
 
         val allUnchattedPeople = allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
-            (a.map { it.clientList }.flatten().filter { it.userName.contains(query, true) } + b.filter { it.userName.contains(query, true)}).filter{ it.userId != server.profile.userId }.sortedBy { it.userName }
+            val usersFromGroupChatFiltered =
+                a.map { it.clientList }.flatten().filter { it.userName.contains(query, true) }
+            val usersInServerFiltered =
+                b.filter { it.userName.contains(query, true) && it.userId != server.profile.userId }
+
+            (usersFromGroupChatFiltered + usersInServerFiltered).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.userName }))
         }
 
         allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
@@ -164,7 +171,9 @@ class SearchViewModel @Inject constructor(
             }
             try {
                 _messages.addSource(messagesSource) {
-                    _messages.value = it.sortedByDescending { it.first.createdTime }
+                    _messages.value =
+                        it.filterNot { isFileMessage(it.first.message) || isImageMessage(it.first.message) }
+                            .sortedByDescending { it.first.createdTime }
                     printlnCK("message result ${_messages.value}")
                 }
             } catch (e: Exception) {
