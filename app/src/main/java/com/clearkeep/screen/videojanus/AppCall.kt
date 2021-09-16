@@ -96,13 +96,13 @@ object AppCall {
 
         val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true, currentUserName, currentUserAvatar)
-        val pendingWaitIntent = PendingIntent.getActivity(context, 0, waitIntent,
+        val pendingWaitIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, waitIntent,
             PendingIntent.FLAG_ONE_SHOT)
 
         val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId,
             userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false, currentUserName, currentUserAvatar)
-        val pendingInCallIntent = PendingIntent.getActivity(context, 0, inCallIntent,
+        val pendingInCallIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, inCallIntent,
             PendingIntent.FLAG_ONE_SHOT)
 
         val titleCallResource = if (isGroup(groupType)) {
@@ -185,6 +185,7 @@ object AppCall {
                  Intent(context, InCallPeerToPeerActivity::class.java)
              }
         }
+        printlnCK("createIncomingCallIntent isWaitingScreen $isWaitingScreen groupName $groupName groupType $groupType")
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
