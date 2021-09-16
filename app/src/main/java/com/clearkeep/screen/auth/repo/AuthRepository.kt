@@ -59,7 +59,10 @@ class AuthRepository @Inject constructor(
 
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-            val message = parsedError.message
+            val message = when (parsedError.code) {
+                1002 -> "This email address is already being used"
+                else -> parsedError.message
+            }
             return@withContext Resource.error(message, null)
         } catch (e: Exception) {
             printlnCK("register error: $e")
