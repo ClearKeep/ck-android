@@ -117,7 +117,6 @@ fun SearchUserScreen(
                 Column(Modifier.fillMaxSize()) {
                 }
             } else if (!groups.value.isNullOrEmpty() || !friends.value.isNullOrEmpty() || !messages.value.isNullOrEmpty()) {
-                printlnCK("Friends passed to composable ${friends.value}")
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -170,7 +169,6 @@ fun SearchUserScreen(
                                     query = searchQuery.value!!
                                 ) {
                                     val message = messageWithUser.first
-                                    if (messageWithUser.first.isGroupMessage()) {
                                         navigateToChatGroup(
                                             ChatGroup(
                                                 null,
@@ -192,9 +190,6 @@ fun SearchUserScreen(
                                                 0L
                                             )
                                         )
-                                    } else {
-                                        navigateToPeerChat(messageWithUser.second)
-                                    }
                                 }
                             }
                         }
