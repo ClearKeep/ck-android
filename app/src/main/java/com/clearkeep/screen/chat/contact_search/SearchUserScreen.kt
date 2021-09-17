@@ -29,12 +29,10 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
+import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
-import com.clearkeep.utilities.countryCodesToNames
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.printlnCK
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.utilities.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -164,11 +162,30 @@ fun SearchUserScreen(
                             itemsIndexed(it) { _, messageWithUser ->
                                 Spacer(Modifier.height(18.sdp()))
                                 MessageResultItem(
-                                    user = messageWithUser.second ?: User("", "", ""),
-                                    message = messageWithUser.first.message,
+                                    user = messageWithUser.user ?: User("", "", ""),
+                                    message = messageWithUser.message,
+                                    group = messageWithUser.group ?: ChatGroup(
+                                        null,
+                                        0L,
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        0L,
+                                        "",
+                                        0L,
+                                        "",
+                                        emptyList(),
+                                        false,
+                                        "",
+                                        "",
+                                        null,
+                                        0L,
+                                        0L
+                                    ),
                                     query = searchQuery.value!!
                                 ) {
-                                    val message = messageWithUser.first
+                                    val message = messageWithUser.message
                                         navigateToChatGroup(
                                             ChatGroup(
                                                 null,
@@ -274,7 +291,7 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun MessageResultItem(user: User, message: String, query: String, onClick: () -> Unit) {
+fun MessageResultItem(user: User, message: Message, group: ChatGroup, query: String, onClick: () -> Unit) {
     Row(Modifier.clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
@@ -296,12 +313,32 @@ fun MessageResultItem(user: User, message: String, query: String, onClick: () ->
             )
             HighlightedSearchText(
                 Modifier,
-                message,
+                message.message,
                 query,
                 style = MaterialTheme.typography.body2.copy(
                     color = grayscale2
                 ), overflow = TextOverflow.Ellipsis, maxLines = 3
             )
+            Row(Modifier.fillMaxWidth()) {
+                val groupName = if (group.isGroup()) group.groupName else ""
+
+                CKText(
+                    text = getTimeAsString(message.createdTime),
+                    style = MaterialTheme.typography.body2.copy(
+                        fontWeight = FontWeight.W400,
+                        color = grayscale2
+                    ), overflow = TextOverflow.Ellipsis, maxLines = 1
+                )
+                Spacer(Modifier.width(4.sdp()))
+                HighlightedSearchText(
+                    Modifier,
+                    groupName,
+                    query,
+                    style = MaterialTheme.typography.body2.copy(
+                        color = grayscale2
+                    ), overflow = TextOverflow.Ellipsis, maxLines = 1
+                )
+            }
         }
         Spacer(Modifier.width(16.sdp()))
     }
