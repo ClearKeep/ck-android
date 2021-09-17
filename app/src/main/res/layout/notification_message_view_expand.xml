@@ -3,12 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
     android:orientation="vertical">
 
     <TextView
-        android:layout_marginTop="@dimen/_10sdp"
         android:id="@+id/tvFrom"
+        android:layout_marginTop="@dimen/_10sdp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_22sdp"
@@ -42,8 +41,12 @@
             android:maxLines="1"
             android:textColor="@color/grey1"
             android:textSize="@dimen/_16sdp"
-            android:layout_marginBottom="@dimen/_10sdp"
             android:textStyle="normal"
             tools:text="Where are you? Pick up the..." />
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_10sdp"/>
+
 </LinearLayout>
