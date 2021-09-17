@@ -38,6 +38,7 @@ import androidx.lifecycle.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.view.View
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.compose.*
@@ -237,6 +238,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         roomViewModel.requestCallState.observe(this, Observer {
             if (it.status == Status.SUCCESS) {
                 it.data?.let { requestInfo ->
+                    NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
                     navigateToInComingCallActivity(
                         requestInfo.chatGroup,
                         requestInfo.isAudioMode
