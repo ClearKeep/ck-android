@@ -53,11 +53,11 @@ fun showMessagingStyleNotification(
     val messageNotificationContent = when {
         isImageMessage(message.message) -> {
             val messageSender = if (groupSender.isNotBlank()) groupSender else sender
-            getImageNotificationContent(message.message, messageSender)
+            getImageNotificationContent(message.message, messageSender, chatGroup.isGroup())
         }
         isFileMessage(message.message) -> {
             val messageSender = if (groupSender.isNotBlank()) groupSender else sender
-            getFileNotificationContent(message.message, messageSender)
+            getFileNotificationContent(message.message, messageSender, chatGroup.isGroup())
         }
         else -> {
             message.message
@@ -209,10 +209,10 @@ fun showMessageNotificationToSystemBar(
                 if (userPreference.showNotificationPreview) {
                     when {
                         isImageMessage(message.message) -> {
-                            getImageNotificationContent(message.message, people?.userName ?: "")
+                            getImageNotificationContent(message.message, people?.userName ?: "", chatGroup.isGroup())
                         }
                         isFileMessage(message.message) -> {
-                            getFileNotificationContent(message.message, people?.userName ?: "")
+                            getFileNotificationContent(message.message, people?.userName ?: "", chatGroup.isGroup())
                         }
                         else -> {
                             message.message
@@ -328,18 +328,20 @@ fun dismissInCallNotification(context: Context) {
     NotificationManagerCompat.from(context).cancel(null, CALL_NOTIFICATION_ID)
 }
 
-private fun getImageNotificationContent(message: String, sender: String) : String {
+private fun getImageNotificationContent(message: String, sender: String, isGroup: Boolean) : String {
     val imageCount = getImageUriStrings(message).size
 
     val pluralString = if (imageCount > 1) "s" else ""
 
     val messageContent = if (getMessageContent(message).isNotBlank()) "\n${getMessageContent(message)}" else ""
-    return "$sender send $imageCount image$pluralString$messageContent"
+    val senderString = if (isGroup) "" else "$sender "
+
+    return "${senderString}sent $imageCount image$pluralString$messageContent"
 }
 
-private fun getFileNotificationContent(message: String, sender: String): String {
+private fun getFileNotificationContent(message: String, sender: String, isGroup: Boolean): String {
     val fileCount = getFileUriStrings(message).size
     val pluralString = if (fileCount > 1) "s" else ""
-
-    return "$sender send $fileCount file$pluralString"
+    val senderString = if (isGroup) "" else "$sender "
+    return "${senderString}sent $fileCount file$pluralString"
 }
