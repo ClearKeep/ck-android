@@ -13,6 +13,7 @@ import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.contact_search.MessageSearchResult
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.isGroup
@@ -233,15 +234,15 @@ class MessageRepository @Inject constructor(
         ownerDomain: String,
         ownerClientId: String,
         query: String
-    ): LiveData<List<Pair<Message, User?>>> {
+    ): LiveData<List<MessageSearchResult>> {
         printlnCK("getMessageByText() ")
         return messageDAO.getMessageByText(ownerDomain, ownerClientId, "%$query%").asFlow().map {
-            val clientList = it.map { it.groupId }.distinct().map {
-                groupDAO.getGroupById(it, ownerDomain, ownerClientId)?.clientList ?: emptyList()
-            }.flatten().distinctBy { it.userId }
-            val result = it.map { message -> message to clientList.find { message.senderId == it.userId } }
+            val groupsList = it.map { it.groupId }.distinct().map {
+                groupDAO.getGroupById(it, ownerDomain, ownerClientId)
+            }
+            val clientList = groupsList.map { it?.clientList ?: emptyList() }.flatten().distinctBy { it.userId }
+            val result = it.map { message -> MessageSearchResult(message, clientList.find { message.senderId == it.userId }, groupsList.find { message.groupId == it?.groupId }) }
             printlnCK("====================== result get message")
-            result.forEach { printlnCK("${it.first} ${it.second}") }
             result
         }.asLiveData()
     }

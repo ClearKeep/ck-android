@@ -35,9 +35,9 @@ class SearchViewModel @Inject constructor(
     val groups : LiveData<List<ChatGroup>> get() = _groups
     private var groupSource: LiveData<List<ChatGroup>> = MutableLiveData()
 
-    private val _messages = MediatorLiveData<List<Pair<Message, User?>>>()
-    val messages : LiveData<List<Pair<Message, User?>>> get() = _messages
-    private var messagesSource: LiveData<List<Pair<Message, User?>>> = MutableLiveData()
+    private val _messages = MediatorLiveData<List<MessageSearchResult>>()
+    val messages : LiveData<List<MessageSearchResult>> get() = _messages
+    private var messagesSource: LiveData<List<MessageSearchResult>> = MutableLiveData()
 
     private val _searchMode = MutableLiveData<SearchMode>()
     val searchMode : LiveData<SearchMode> get() = _searchMode
@@ -172,8 +172,8 @@ class SearchViewModel @Inject constructor(
             try {
                 _messages.addSource(messagesSource) {
                     _messages.value =
-                        it.distinctBy { it.first.messageId }.filterNot { isFileMessage(it.first.message) || isImageMessage(it.first.message) }
-                            .sortedByDescending { it.first.createdTime }
+                        it.distinctBy { it.message.messageId }.filterNot { isFileMessage(it.message.message) || isImageMessage(it.message.message) }
+                            .sortedByDescending { it.message.createdTime }
                     printlnCK("message result ${_messages.value}")
                 }
             } catch (e: Exception) {
@@ -195,6 +195,8 @@ enum class SearchMode {
     GROUPS,
     MESSAGES
 }
+
+data class MessageSearchResult(val message: Message, val user: User?, val group: ChatGroup?)
 
 enum class StatusRequest(){
     REQUESTING,
