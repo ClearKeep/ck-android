@@ -172,7 +172,7 @@ class SearchViewModel @Inject constructor(
             try {
                 _messages.addSource(messagesSource) {
                     _messages.value =
-                        it.filterNot { isFileMessage(it.first.message) || isImageMessage(it.first.message) }
+                        it.distinctBy { it.first.messageId }.filterNot { isFileMessage(it.first.message) || isImageMessage(it.first.message) }
                             .sortedByDescending { it.first.createdTime }
                     printlnCK("message result ${_messages.value}")
                 }
