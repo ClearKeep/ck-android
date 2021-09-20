@@ -35,7 +35,7 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     }
 
     @Throws(Exception::class)
-    fun encrypt(data: String): String? {
+    fun encrypt(data: ByteArray): ByteArray? {
         saltEncrypt = getSalt()
         val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
@@ -43,17 +43,20 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         dcipher?.init(Cipher.ENCRYPT_MODE, key)
         val params: AlgorithmParameters? = dcipher?.parameters
         iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
-        return dcipher?.doFinal(data.toByteArray())?.let { toHex(it) }
+        printlnCK("encrypt: iv ${iv}")
+        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
+        return dcipher?.doFinal(data)
     }
 
     @Throws(Exception::class)
-    fun decrypt(base64EncryptedData: String, salt: ByteArray): String {
+    fun decrypt(base64EncryptedData: ByteArray, salt: ByteArray,ivParameterSpec: ByteArray): String {
         val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), salt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
+        printlnCK("decrypt: iv $ivParameterSpec")
+        printlnCK("base64EncryptedData: iv $ivParameterSpec")
         key = SecretKeySpec(tmp.encoded, "AES")
-        dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(iv))
-        val decryptedData: ByteArray = fromHex(base64EncryptedData)
-        val utf8: ByteArray? = dcipher?.doFinal(decryptedData)
+        dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivParameterSpec))
+        val utf8: ByteArray? = dcipher?.doFinal(base64EncryptedData)
         return utf8?.decodeToString().toString()
     }
 
@@ -69,6 +72,12 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     fun getSaltEncryptValue(): String {
         return toHex(saltEncrypt)
     }
+    fun getIv(): ByteArray {
+        printlnCK("encrypt: iv ${iv}")
+        printlnCK("encrypt: iv ${iv.toString()}")
+        return iv
+    }
+
 
     companion object {
         fun md5(input: String): String {

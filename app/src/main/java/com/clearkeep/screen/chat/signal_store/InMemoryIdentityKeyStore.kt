@@ -73,12 +73,13 @@ class InMemoryIdentityKeyStore(
         return SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
     }
 
+
     @WorkerThread
     private fun getOrGenerateIdentityKey(clientId: String, domain: String) : SignalIdentityKey {
         var signalIdentityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
 
         if (signalIdentityKey == null) {
-            signalIdentityKey = generateIdentityKeyPair(clientId, domain)
+           signalIdentityKey = generateIdentityKeyPair(clientId, domain)
             signalIdentityKeyDAO.insert(signalIdentityKey)
         }
         return signalIdentityKey

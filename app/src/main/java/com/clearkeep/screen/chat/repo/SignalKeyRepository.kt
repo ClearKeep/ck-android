@@ -10,6 +10,7 @@ import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.state.PreKeyRecord
