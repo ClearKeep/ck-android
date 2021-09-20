@@ -94,9 +94,13 @@ class AuthRepository @Inject constructor(
                 ByteString.copyFrom(signedPreKey.serialize())
             )
             .setIdentityKeyEncrypted(
-                    decrypter.encrypt(
-                        key.privateKey.serialize()
-                ).toString()
+                decrypter.encrypt(
+                    key.privateKey.serialize()
+                )?.let {
+                    toHex(
+                        it
+                    )
+                }
             )
             .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
             .build()
@@ -167,11 +171,11 @@ class AuthRepository @Inject constructor(
                         }"
                     )
                     printlnCK("privateKeyDecrypt: $privateKeyEncrypt")
-                    printlnCK("privateKeyDecrypt: ${privateKeyEncrypt.toByteArray()}")
+                    printlnCK("privateKeyDecrypt: ${privateKeyEncrypt}")
 
 
                     val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
-                        privateKeyEncrypt.toByteArray(),
+                        fromHex(privateKeyEncrypt),
                         fromHex(salt),
                         fromHex(response.ivParameterSpec)
                     )
