@@ -17,6 +17,7 @@ import com.clearkeep.screen.chat.repo.SignalKeyRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
@@ -124,7 +125,7 @@ class AuthRepository @Inject constructor(
             printlnCK("decrypter: ${decrypter.getIv()}")
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
-            if (response.error.isNullOrEmpty()) {
+            if (response.error.isNullOrBlank()) {
                 return@withContext Resource.success(response)
             } else {
                 printlnCK("register failed: ${response.error}")
@@ -302,33 +303,7 @@ class AuthRepository @Inject constructor(
             val response=paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginGoogle(request)
 
             if (response.error.isEmpty()) {
-                printlnCK("login by google successfully")
-                val accessToken = response.accessToken
-                val hashKey = response.hashKey
-                val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
-                    ?: return@withContext Resource.error("Can not get profile", null)
-                val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.userId),
-                    paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-                )
-                if (!isRegisterKeySuccess) {
-                    return@withContext Resource.error("Can not register key", null)
-                }
-
-                serverRepository.insertServer(
-                    Server(
-                        serverName = response.workspaceName,
-                        serverDomain = domain,
-                        ownerClientId = profile.userId,
-                        serverAvatar = "",
-                        loginTime = getCurrentDateTime().time,
-                        accessKey = accessToken,
-                        hashKey = hashKey,
-                        refreshToken = response.refreshToken ?: "",
-                        profile = profile,
-                    )
-                )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
+                printlnCK("login by google successfully: $response")
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.error, null)
@@ -358,32 +333,6 @@ class AuthRepository @Inject constructor(
 
             if (response.error.isEmpty()) {
                 printlnCK("login by facebook successfully: $response")
-                val accessToken = response.accessToken
-                val hashKey = response.hashKey
-                val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
-                    ?: return@withContext Resource.error("Can not get profile", null)
-                val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.userId),
-                    paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-                )
-                if (!isRegisterKeySuccess) {
-                    return@withContext Resource.error("Can not register key", null)
-                }
-
-                serverRepository.insertServer(
-                    Server(
-                        serverName = response.workspaceName,
-                        serverDomain = domain,
-                        ownerClientId = profile.userId,
-                        serverAvatar = "",
-                        loginTime = getCurrentDateTime().time,
-                        accessKey = accessToken,
-                        hashKey = hashKey,
-                        refreshToken = response.refreshToken,
-                        profile = profile,
-                    )
-                )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.error, null)
@@ -414,34 +363,7 @@ class AuthRepository @Inject constructor(
                 .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginOffice(request)
             if (response.error.isEmpty()) {
-                printlnCK("login by microsoft successfully")
-
-                val accessToken = response.accessToken
-                val hashKey = response.hashKey
-                val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
-                    ?: return@withContext Resource.error("Can not get profile", null)
-                val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                    Owner(domain, profile.userId),
-                    paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-                )
-                if (!isRegisterKeySuccess) {
-                    return@withContext Resource.error("Can not register key", null)
-                }
-
-                serverRepository.insertServer(
-                    Server(
-                        serverName = response.workspaceName,
-                        serverDomain = domain,
-                        ownerClientId = profile.userId,
-                        serverAvatar = "",
-                        loginTime = getCurrentDateTime().time,
-                        accessKey = accessToken,
-                        hashKey = hashKey,
-                        refreshToken = response.refreshToken,
-                        profile = profile,
-                    )
-                )
-                userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
+                printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken}")
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.error, null)
@@ -451,8 +373,84 @@ class AuthRepository @Inject constructor(
                 1001 -> "Login information is not correct. Please try again"
                 else -> parsedError.message
             }
+            printlnCK("login by microsoft error statusRuntime $e $message")
             return@withContext Resource.error(message, null)
         } catch (e: Exception) {
+            printlnCK("login by microsoft error $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun registerSocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
+        printlnCK("registerSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId")
+        try {
+            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+                .setRegistrationId(0) //TODO: set value
+                .setDeviceId(0) //TODO: set value
+                .setIdentityKeyPublic(ByteString.EMPTY) //TODO: set value
+                .setPreKeyId(0) //TODO: set value
+                .setPreKey(ByteString.EMPTY) //TODO: set value
+                .setSignedPreKeyId(0) //TODO: set value
+                .setSignedPreKey(ByteString.EMPTY) //TODO: set value
+                .setSignedPreKeySignature(ByteString.EMPTY) //TODO: set value
+                .build()
+
+            val request = AuthOuterClass
+                .RegisterPinCodeReq
+                .newBuilder()
+                .setPreAccessToken(preAccessToken)
+                .setUserId(userId)
+                .setHashPincode("") //TODO: set value
+                .setSalt("") //TODO: set value
+                .setClientKeyPeer(clientKeyPeer) //TODO: set value
+                .setIvParameterSpec("") //TODO: set value
+                .build()
+
+            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).registerPincode(request)
+            if (response.error.isEmpty()) {
+                printlnCK("registerSocialPin success ${response.requireAction}")
+                return@withContext onLoginSuccess(domain, response)
+            }
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                else -> parsedError.message
+            }
+            printlnCK("registerSocialPin error statusRuntime $e $message")
+            return@withContext Resource.error(message, null)
+        } catch (e: Exception) {
+            printlnCK("registerSocialPin error $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
+        printlnCK("verifySocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId")
+        try {
+            val request = AuthOuterClass
+                .VerifyPinCodeReq
+                .newBuilder()
+                .setPreAccessToken(preAccessToken)
+                .setUserId(userId)
+                .setHashPincode("") //TODO: set value
+                .build()
+
+            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).verifyPincode(request)
+            if (response.error.isEmpty()) {
+                printlnCK("verifySocialPin success ${response.requireAction}")
+                return@withContext onLoginSuccess(domain, response)
+            }
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                else -> parsedError.message
+            }
+            printlnCK("verifySocialPin error statusRuntime $e $message")
+            return@withContext Resource.error(message, null)
+        } catch (e: Exception) {
+            printlnCK("verifySocialPin error $e")
             return@withContext Resource.error(e.toString(), null)
         }
     }
@@ -579,6 +577,37 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error("", 0 to exception.toString())
         }
+    }
+
+    private suspend fun onLoginSuccess(domain: String, response: AuthOuterClass.AuthRes) : Resource<AuthOuterClass.AuthRes> {
+        val accessToken = response.accessToken
+        val hashKey = response.hashKey
+        val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
+            ?: return Resource.error("Can not get profile", null)
+        val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
+            Owner(domain, profile.userId),
+            paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
+        )
+        if (!isRegisterKeySuccess) {
+            return Resource.error("Can not register key", null)
+        }
+
+        serverRepository.insertServer(
+            Server(
+                serverName = response.workspaceName,
+                serverDomain = domain,
+                ownerClientId = profile.userId,
+                serverAvatar = "",
+                loginTime = getCurrentDateTime().time,
+                accessKey = accessToken,
+                hashKey = hashKey,
+                refreshToken = response.refreshToken,
+                profile = profile,
+            )
+        )
+        userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
+
+        return Resource.success(response)
     }
 
     private suspend fun getProfile(userGrpc: UserGrpc.UserBlockingStub) : Profile?  = withContext(Dispatchers.IO) {

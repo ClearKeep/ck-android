@@ -93,7 +93,7 @@ fun EnterSocialLoginPhraseScreen(
             CKButton(
                 stringResource(R.string.verify),
                 onClick = {
-                     viewModel.checkSecurityPhrase()
+                     viewModel.verifySocialPin()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = isSecurityPhraseValid.value == true,
