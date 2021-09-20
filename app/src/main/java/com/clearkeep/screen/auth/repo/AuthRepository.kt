@@ -384,15 +384,29 @@ class AuthRepository @Inject constructor(
     suspend fun registerSocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
         printlnCK("registerSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId")
         try {
+            val decrypter = DecryptsPBKDF2(rawPin)
+            val transitionID=KeyHelper.generateRegistrationId(false)
+            val preKeys = KeyHelper.generatePreKeys(1, 1)
+            val preKey = preKeys[0]
+            val key= KeyHelper.generateIdentityKeyPair()
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+
             val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setRegistrationId(0) //TODO: set value
-                .setDeviceId(0) //TODO: set value
-                .setIdentityKeyPublic(ByteString.EMPTY) //TODO: set value
-                .setPreKeyId(0) //TODO: set value
-                .setPreKey(ByteString.EMPTY) //TODO: set value
-                .setSignedPreKeyId(0) //TODO: set value
-                .setSignedPreKey(ByteString.EMPTY) //TODO: set value
-                .setSignedPreKeySignature(ByteString.EMPTY) //TODO: set value
+                .setDeviceId(111)
+                .setRegistrationId(transitionID)
+                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+                .setPreKey(ByteString.copyFrom(preKey.serialize()))
+                .setPreKeyId(preKey.id)
+                .setSignedPreKeyId(signedPreKey.id)
+                .setSignedPreKey(
+                    ByteString.copyFrom(signedPreKey.serialize())
+                )
+                .setIdentityKeyEncrypted(
+                    String(decrypter.encrypt(
+                        key.privateKey.serialize()
+                    )!!)
+                )
+                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                 .build()
 
             val request = AuthOuterClass
@@ -400,10 +414,10 @@ class AuthRepository @Inject constructor(
                 .newBuilder()
                 .setPreAccessToken(preAccessToken)
                 .setUserId(userId)
-                .setHashPincode("") //TODO: set value
-                .setSalt("") //TODO: set value
-                .setClientKeyPeer(clientKeyPeer) //TODO: set value
-                .setIvParameterSpec("") //TODO: set value
+                .setHashPincode(DecryptsPBKDF2.md5(rawPin))
+                .setSalt(decrypter.getSaltEncryptValue())
+                .setClientKeyPeer(clientKeyPeer)
+                .setIvParameterSpec(toHex(decrypter.getIv()))
                 .build()
 
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).registerPincode(request)
@@ -632,7 +646,8 @@ class AuthRepository @Inject constructor(
     private suspend fun peerRegisterClientKeyWithGrpc(owner: Owner, signalGrpc: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("peerRegisterClientKeyWithGrpc, clientId = ${owner.clientId}, domain = ${owner.domain}")
         return@withContext true
-    }}
+    }
+}
 
         /*try {
             *//*val address = CKSignalProtocolAddress(owner, 111)
@@ -672,14 +687,17 @@ class AuthRepository @Inject constructor(
                     ByteString.copyFrom(signedPreKey.serialize())
                 )
                 .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()*//*
-*//*
+                .build()
+
             val response = signalGrpc.peerRegisterClientKey(request)
-*//*
+            if (response?.error?.isEmpty() == true) {
+                printlnCK("peerRegisterClientKeyWithGrpc, success")
+                return@withContext true
+            }
         } catch (e: Exception) {
             printlnCK("peerRegisterClientKeyWithGrpc: $e")
         }
 
         return@withContext false
-    }*/
-
+    }
+}*/

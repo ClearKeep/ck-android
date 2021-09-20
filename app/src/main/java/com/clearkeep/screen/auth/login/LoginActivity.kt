@@ -247,7 +247,6 @@ class LoginActivity : AppCompatActivity() {
                     ConfirmSocialLoginPhraseScreen(
                         loginViewModel,
                         onBackPress = { navController.popBackStack() }) {
-                        loginViewModel.saveSecurityPhrase()
                         onLoginSuccess()
                     }
                 }
