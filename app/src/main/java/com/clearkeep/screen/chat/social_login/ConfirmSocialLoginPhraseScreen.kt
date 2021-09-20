@@ -1,7 +1,6 @@
 package com.clearkeep.screen.chat.social_login
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,18 +13,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
-fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onClickNext: () -> Unit) {
+fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onLoginSuccess: () -> Unit) {
     val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isConfirmSecurityPhraseValid.observeAsState()
+    val registerResponse = viewModel.registerSocialPinResponse.observeAsState()
+
+    if (registerResponse.value?.status == Status.SUCCESS) {
+        onLoginSuccess()
+    }
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -65,7 +69,7 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
             CKButton(
                 stringResource(R.string.btn_next),
                 onClick = {
-                    onClickNext()
+                    viewModel.registerSocialPin()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = isSecurityPhraseValid.value == true,

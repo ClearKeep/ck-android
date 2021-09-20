@@ -81,10 +81,7 @@ class LoginViewModel @Inject constructor(
     val isConfirmSecurityPhraseValid : LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
 
     val verifyPassphraseResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
-
-    val googleLoginResponse = MutableLiveData<Boolean>()
-
-    val saveSecurityPhraseResponse = MutableLiveData<Boolean>()
+    val registerSocialPinResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
 
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
@@ -100,10 +97,6 @@ class LoginViewModel @Inject constructor(
     fun setConfirmSecurityPhrase(phrase: String) {
         _confirmSecurityPhrase.value = phrase
         _isConfirmSecurityPhraseValid.value = isConfirmSecurityPhraseValid()
-    }
-
-    fun saveSecurityPhrase() {
-        saveSecurityPhraseResponse.value = true
     }
 
     fun initGoogleSingIn(context: Context){
@@ -221,7 +214,7 @@ class LoginViewModel @Inject constructor(
     fun registerSocialPin() {
         viewModelScope.launch {
             val pin = _confirmSecurityPhrase.value ?: ""
-            authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
+            registerSocialPinResponse.value = authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
         }
     }
 
