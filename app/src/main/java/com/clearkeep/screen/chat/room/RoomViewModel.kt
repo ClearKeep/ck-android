@@ -533,7 +533,7 @@ class RoomViewModel @Inject constructor(
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
                     Resource.error(
-                        "Failed to send message - Maximum number of attachments in a message reached (10)",
+                        "Maximum number of attachments in a message reached (10)",
                         null
                     )
                 )
@@ -542,7 +542,7 @@ class RoomViewModel @Inject constructor(
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    Resource.error("Failed to send message - File is larger than 1 GB.", null)
+                    Resource.error("File is larger than 1 GB.", null)
                 return
             }
 

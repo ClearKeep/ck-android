@@ -1,6 +1,6 @@
 <resources>
     <string name="title_app">ClearKeep</string>
-    <string name="leave_server">Leave server</string>
+    <string name="sign_out">Sign out</string>
     <string name="profile">Profile</string>
     <string name="btn_login">Sign in</string>
     <string name="btn_login_google">Sign In with Google</string>
@@ -85,13 +85,13 @@
     <string name="create_group_search">Search users in this server</string>
     <string name="invite_url_placeholder">Paste your friend\'s link</string>
     <string name="camera">Camera</string>
-    <string name="reset_password_description">To complete reset, please open verification link in your email.</string>
     <string name="reset_password_error_title">Sorry. We couldn\'t find your account</string>
-    <string name="reset_password_success_title">A verification link has been sent to %1$s</string>
+    <string name="reset_password_success_title">Check your email</string>
+    <string name="reset_password_success_content">A link to reset your password has been sent to your mail</string>
     <string name="notification_return_call_title">In call</string>
     <string name="notification_return_call_content">Click here to return to call</string>
     <string name="warning">Warning</string>
-    <string name="leave_server_dialog">Are you sure you would like to leave server?</string>
+    <string name="sign_out_dialog">Are you sure you want to sign out from the server?</string>
     <string name="cancel">Cancel</string>
     <string name="leave">Leave</string>
     <string name="search_people">Search people</string>
@@ -113,4 +113,8 @@
     <string name="otp_hint">Please input a code that has been sent to your phone number</string>
     <string name="social_sign_in">Sign in with</string>
     <string name="home_search_hint">Search people, groups &amp; messages</string>
+    <string name="confirm">Confirm</string>
+    <string name="success">Success</string>
+    <string name="message_sent_error">Failed to send message</string>
+    <string name="remove">Remove</string>
 </resources>

@@ -24,21 +24,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserStatus
@@ -159,7 +156,7 @@ fun SiteMenuScreen(
                             modifier = Modifier.size(24.sdp())
                         )
                         Text(
-                            text = stringResource(R.string.leave_server), modifier = Modifier
+                            text = stringResource(R.string.sign_out), modifier = Modifier
                                 .padding(start = 16.sdp()), style = TextStyle(
                                 color = errorDefault,
                                 fontSize = defaultNonScalableTextSize(),
@@ -355,9 +352,9 @@ fun LeaveServerConfirmDialog(
     if (showReminder) {
         CKAlertDialog(
             title = stringResource(R.string.warning),
-            text = stringResource(R.string.leave_server_dialog),
+            text = stringResource(R.string.sign_out_dialog),
             dismissTitle = stringResource(R.string.cancel),
-            confirmTitle = stringResource(R.string.leave),
+            confirmTitle = stringResource(R.string.sign_out),
             onDismissButtonClick = {
                 setShowDialog(false)
             },
