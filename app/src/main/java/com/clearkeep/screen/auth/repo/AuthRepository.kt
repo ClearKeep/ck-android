@@ -63,17 +63,22 @@ class AuthRepository @Inject constructor(
         val decrypter = DecryptsPBKDF2(password)
         printlnCK("register: $displayName, password = $password, domain = $domain")
         val key= KeyHelper.generateIdentityKeyPair()
+        val testprivate=key.privateKey.serialize()
+
         printlnCK("private key : ${key.privateKey.serialize()}")
-        printlnCK("private key 2  ${                ByteString.copyFrom(
-            decrypter.encrypt(
-                key.privateKey.serialize()
-            )
-        )}")
-        printlnCK("private key 3:${                ByteString.copyFrom(
-            decrypter.encrypt(
-                key.privateKey.serialize()
-            )
-        ).toByteArray()} ")
+
+        printlnCK(
+            "private key 4 ${
+                    decrypter.encrypt(
+                        key.privateKey.serialize()
+                    )
+            }"
+        )
+
+
+
+
+
         val preKeys = KeyHelper.generatePreKeys(1, 1)
         val preKey = preKeys[0]
         val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
@@ -89,11 +94,9 @@ class AuthRepository @Inject constructor(
                 ByteString.copyFrom(signedPreKey.serialize())
             )
             .setIdentityKeyEncrypted(
-                ByteString.copyFrom(
                     decrypter.encrypt(
                         key.privateKey.serialize()
-                    )
-                )
+                ).toString()
             )
             .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
             .build()
