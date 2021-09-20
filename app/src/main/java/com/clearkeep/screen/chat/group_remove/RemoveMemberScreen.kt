@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.clearkeep.R
 import com.clearkeep.components.*
@@ -37,6 +37,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
     val groupState = roomViewModel.group.observeAsState()
     val context = LocalContext.current
     val removeMemberDialogVisible = remember { mutableStateOf(false) }
+    val confirmRemoveMemberData = remember { mutableStateOf<Pair<User, Long>?>(null) }
 
     groupState.value?.let { group ->
         CKSimpleTheme {
@@ -70,11 +71,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                             }.sortedBy { it.userName.toLowerCase() }) { _, user ->
                                 RemoveMemberItem(itemModifier, user) {
                                     roomViewModel.group.value?.groupId?.let { it1 ->
-                                        roomViewModel.removeMember(user,groupId = it1,onSuccess = {
-                                            removeMemberDialogVisible.value = true
-                                        },onError = {
-                                            Toast.makeText(context,"Remove member error !",Toast.LENGTH_LONG).show()
-                                        })
+                                        confirmRemoveMemberData.value = user to it1
                                     }
                                 }
                             }
@@ -86,9 +83,35 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
     }
 
     if (removeMemberDialogVisible.value) {
-        CKAlertDialog(title = "Remove member success", onDismissButtonClick = {
-            removeMemberDialogVisible.value = false
-        })
+        CKAlertDialog(
+            title = stringResource(R.string.success),
+            text = "Remove member success",
+            onDismissButtonClick = {
+                removeMemberDialogVisible.value = false
+            }
+        )
+    }
+
+    if (confirmRemoveMemberData.value != null) {
+        val user = confirmRemoveMemberData.value!!.first
+        val groupId = confirmRemoveMemberData.value!!.second
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = "Do you want to remove ${user.userName} from the group chat?",
+            confirmTitle = stringResource(R.string.remove),
+            dismissTitle = stringResource(R.string.cancel),
+            onConfirmButtonClick = {
+                confirmRemoveMemberData.value = null
+                roomViewModel.removeMember(user, groupId = groupId, onSuccess = {
+                    removeMemberDialogVisible.value = true
+                },onError = {
+                    Toast.makeText(context,"Remove member error !",Toast.LENGTH_LONG).show()
+                })
+            },
+            onDismissButtonClick = {
+                confirmRemoveMemberData.value = null
+            }
+        )
     }
 }
 

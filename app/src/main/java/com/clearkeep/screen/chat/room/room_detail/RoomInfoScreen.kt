@@ -1,24 +1,30 @@
 package com.clearkeep.screen.chat.room.room_detail
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.navigate
 import com.clearkeep.R
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.errorDefault
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
+import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
@@ -30,8 +36,9 @@ fun RoomInfoScreen(
     roomViewModel: RoomViewModel,
     navHostController: NavHostController,
 ) {
-
     val groupState = roomViewModel.group.observeAsState()
+    val confirmLeaveGroupDialogVisible = remember { mutableStateOf(false) }
+
     groupState?.value?.let { group ->
         Surface(
             color = MaterialTheme.colors.background
@@ -59,7 +66,7 @@ fun RoomInfoScreen(
                         )
                     }
                     CKHeaderText(
-                        "${group.groupName}",
+                        group.groupName,
                         headerTextType = HeaderTextType.Medium,
                         modifier = Modifier
                             .weight(1.0f, true)
@@ -189,10 +196,28 @@ fun RoomInfoScreen(
                                 "Leave Group",
                                 R.drawable.ic_logout,
                                 textColor = errorDefault,
-                                onClickAction = { roomViewModel.leaveGroup() })
+                                onClickAction = {
+                                    confirmLeaveGroupDialogVisible.value = true
+                                })
                         }
                     }
                 }
+            }
+
+            if (confirmLeaveGroupDialogVisible.value) {
+                CKAlertDialog(
+                    title = stringResource(R.string.warning),
+                    text = "Are you sure you want to leave ${group.groupName}?",
+                    confirmTitle = "Leave group chat",
+                    dismissTitle = stringResource(R.string.cancel),
+                    onConfirmButtonClick = {
+                        confirmLeaveGroupDialogVisible.value = false
+                        roomViewModel.leaveGroup()
+                    },
+                    onDismissButtonClick = {
+                        confirmLeaveGroupDialogVisible.value = false
+                    }
+                )
             }
         }
     }

@@ -100,7 +100,7 @@ class ForgotActivity : AppCompatActivity() {
                     }
                 }
             }
-            ReminderDialog(showReminder, emailState.value)
+            ReminderDialog(showReminder)
             ErrorDialog(showDialog, setShowDialog)
         }
     }
@@ -109,8 +109,9 @@ class ForgotActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
         if (showDialog.isNotEmpty()) {
             CKAlertDialog(
-                title = stringResource(R.string.reset_password_error_title),
-                text = stringResource(R.string.pls_check_again),
+                title = stringResource(R.string.error),
+                text = stringResource(R.string.reset_password_error_title),
+                dismissTitle = stringResource(R.string.close),
                 onDismissButtonClick = {
                     setShowDialog("")
                 },
@@ -119,11 +120,11 @@ class ForgotActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun ReminderDialog(showReminder: Boolean, email: String) {
+    fun ReminderDialog(showReminder: Boolean) {
         if (showReminder) {
             CKAlertDialog(
-                title = stringResource(R.string.reset_password_success_title, email),
-                text = stringResource(R.string.reset_password_description),
+                title = stringResource(R.string.reset_password_success_title),
+                text = stringResource(R.string.reset_password_success_content),
                 onDismissButtonClick = {
                     finish()
                 },

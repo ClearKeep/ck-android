@@ -189,7 +189,7 @@ fun CustomServerScreen(
         onBackPress()
     } else if (serverUrlValidateResponse.value?.isBlank() == true) {
         CKAlertDialog(
-            title = stringResource(R.string.warning),
+            title = stringResource(R.string.error),
             text = stringResource(R.string.wrong_server_url_error),
             dismissTitle = stringResource(R.string.close),
             onDismissButtonClick = {
