@@ -65,6 +65,17 @@ class LoginActivity : AppCompatActivity() {
 
     private var isJoinServer: Boolean = false
 
+    private var navController: NavController? = null
+
+    val startForResultSignInGoogle =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            navController?.let {
+                printlnCK("onlogingoogle startForResultSignInGoogle controller $navController")
+                onSignInGoogleResult(it, task)
+            }
+        }
+
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
 
         if (isJoinServer) {
             val domain = intent.getStringExtra(SERVER_DOMAIN)
-            if(domain.isNullOrBlank()) {
+            if (domain.isNullOrBlank()) {
                 throw IllegalArgumentException("join server with domain must be not null")
             }
             loginViewModel.isCustomServer = true
@@ -100,6 +111,7 @@ class LoginActivity : AppCompatActivity() {
     @Composable
     fun AppContent(navController: NavController, isjoinServer: Boolean) {
         val (messageError, setShowDialog) = remember { mutableStateOf<ErrorMessage?>(null) }
+
         loginViewModel.initGoogleSingIn(this)
         showErrorDiaLog = {
             setShowDialog.invoke(it)
@@ -151,15 +163,15 @@ class LoginActivity : AppCompatActivity() {
                             navigateToForgotActivity()
                         },
                         onLoginGoogle = {
+                            printlnCK("onLoginGoogle navController $navController")
+                            this@LoginActivity.navController = navController
                             signInGoogle()
-//                            navController.navigate("set_security_phrase")
-                            navController.navigate("enter_security_phrase")
                         },
                         onLoginMicrosoft = {
-                            signInMicrosoft()
+                            signInMicrosoft(navController)
                         },
                         onLoginFacebook = {
-                            loginFacebook()
+                            loginFacebook(navController)
                         },
                         advanceSetting = {
                             navigateToAdvanceSetting(navController)
@@ -285,6 +297,17 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun onSocialLoginSuccess(navController: NavController, requireAction: String) {
+        when (requireAction) {
+            "verify_pincode" -> {
+                navController.navigate("enter_security_phrase")
+            }
+            "register_pincode" -> {
+                navController.navigate("set_security_phrase")
+            }
+        }
+    }
+
     private fun navigateToHomeActivity() {
         val intent = Intent(this, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -315,55 +338,53 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun signInMicrosoft() {
+    private fun signInMicrosoft(navController: NavController) {
         loginViewModel.initMicrosoftSignIn(this,
             onSuccess = {
                 loginViewModel.mSingleAccountApp?.signIn(
                     this, null, loginViewModel.SCOPES_MICROSOFT,
-                    getAuthInteractiveCallback()
+                    getAuthInteractiveCallback(navController)
                 )
             }, onError = {
-                showErrorDiaLog?.invoke(ErrorMessage("Error",it.toString()))
+                showErrorDiaLog?.invoke(ErrorMessage("Error", it.toString()))
             })
     }
 
 
-    private fun onSignInGoogleResult(completedTask: Task<GoogleSignInAccount>) {
+    private fun onSignInGoogleResult(
+        navController: NavController,
+        completedTask: Task<GoogleSignInAccount>
+    ) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
-            Log.e("antx","onSignInGoogleResult: ${account.toString()}")
+            Log.e("antx", "onSignInGoogleResult: ${account.toString()}")
             lifecycleScope.launch {
                 account?.serverAuthCode
                 val res = account?.idToken?.let {
                     loginViewModel.loginByGoogle(it)
                 }
-                onSignInResult(res)
+                onSignInResult(navController, res)
             }
         } catch (e: ApiException) {
             e.printStackTrace()
         }
     }
 
-    private val startForResultSignInGoogle =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            onSignInGoogleResult(task)
-        }
-
-    private fun getAuthInteractiveCallback(): AuthenticationCallback {
+    private fun getAuthInteractiveCallback(navController: NavController): AuthenticationCallback {
         return object : AuthenticationCallback {
             override fun onSuccess(authenticationResult: IAuthenticationResult) {
-                lifecycleScope.launch{
+                lifecycleScope.launch {
                     val res = loginViewModel.loginByMicrosoft(
                         authenticationResult.accessToken,
                     )
-                    onSignInResult(res)
+                    onSignInResult(navController, res)
                 }
             }
+
             override fun onError(exception: MsalException) {
                 val isLoginCancelled = exception is MsalServiceException && exception.httpStatusCode == MsalServiceException.DEFAULT_STATUS_CODE
                 if (!isLoginCancelled) {
-                    showErrorDiaLog?.invoke(ErrorMessage("Error",exception.message ?: "unknown"))
+                    showErrorDiaLog?.invoke(ErrorMessage("Error", exception.message ?: "unknown"))
                 }
             }
 
@@ -372,13 +393,14 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun onSignInResult(res: Resource<AuthOuterClass.AuthRes>?) {
+    fun onSignInResult(navController: NavController, res: Resource<AuthOuterClass.AuthRes>?) {
+        //Third party result
         when (res?.status) {
             Status.SUCCESS -> {
-                onLoginSuccess()
+                onSocialLoginSuccess(navController, res.data?.requireAction ?: "")
             }
             Status.ERROR -> {
-                showErrorDiaLog?.invoke(ErrorMessage("Error",res.message ?: "unknown"))
+                showErrorDiaLog?.invoke(ErrorMessage("Error", res.message ?: "unknown"))
             }
             else -> {
                 showErrorDiaLog?.invoke(ErrorMessage("Error", "unknown"))
@@ -386,7 +408,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun loginFacebook() {
+    private fun loginFacebook(navController: NavController) {
         loginViewModel.loginFacebookManager.logIn(this, arrayListOf("email", "public_profile"))
         loginViewModel.loginFacebookManager.registerCallback(callbackManager,
             object : FacebookCallback<LoginResult?> {
@@ -397,7 +419,7 @@ class LoginActivity : AppCompatActivity() {
                                 token = AccessToken.getCurrentAccessToken().token,
                             )
                             loginViewModel.loginFacebookManager.logOut()
-                            onSignInResult(res)
+                            onSignInResult(navController, res)
                         }
                     }
                 }
@@ -412,7 +434,11 @@ class LoginActivity : AppCompatActivity() {
             })
     }
 
-    data class ErrorMessage(val title:String, val message: String, val dismissButtonText: String = "OK")
+    data class ErrorMessage(
+        val title: String,
+        val message: String,
+        val dismissButtonText: String = "OK"
+    )
 
     companion object {
         const val IS_JOIN_SERVER = "is_join_server"
