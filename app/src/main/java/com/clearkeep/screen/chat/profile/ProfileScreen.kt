@@ -290,7 +290,9 @@ fun ProfileScreen(
         }
         if (uploadAvatarResponse.value != null && uploadAvatarResponse.value?.status == Status.ERROR) {
             CKAlertDialog(
-                title = uploadAvatarResponse.value!!.message ?: "",
+                title = stringResource(R.string.warning),
+                text = uploadAvatarResponse.value!!.message ?: "",
+                dismissTitle = stringResource(R.string.confirm),
                 onDismissButtonClick = {
                     profileViewModel.uploadAvatarResponse.value = null
                 },
@@ -298,9 +300,10 @@ fun ProfileScreen(
         }
         if (unsavedChangesDialogVisible.value == true) {
             CKAlertDialog(
-                title = stringResource(R.string.profile_unsaved_change_warning),
-                dismissTitle = "Stay on this page",
-                confirmTitle = "Leave this page",
+                title = stringResource(R.string.warning),
+                text = stringResource(R.string.profile_unsaved_change_warning),
+                dismissTitle = stringResource(R.string.cancel),
+                confirmTitle = stringResource(R.string.leave),
                 onDismissButtonClick = {
                     profileViewModel.unsavedChangeDialogVisible.value = false
                 },

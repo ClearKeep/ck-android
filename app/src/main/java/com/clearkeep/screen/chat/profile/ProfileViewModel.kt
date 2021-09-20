@@ -193,7 +193,7 @@ class ProfileViewModel @Inject constructor(
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
                 printlnCK("uploadAvatar exceed file size limit")
                 uploadAvatarResponse.value =
-                    Resource.error("Failed to upload avatar - File is larger than 5 MB", null)
+                    Resource.error("Your Profile Picture cannot be larger than 5MB", null)
                 undoAvatarChange()
                 return
             }

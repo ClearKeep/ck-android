@@ -300,7 +300,9 @@ fun RoomScreen(
                 onDismissButtonClick = {
                     roomViewModel.uploadFileResponse.value = null
                 },
-                title = response.message ?: "",
+                title = stringResource(R.string.message_sent_error),
+                text = response.message ?: "",
+                dismissTitle = stringResource(R.string.close)
             )
         }
         if (isShowDialogCalling.value) {

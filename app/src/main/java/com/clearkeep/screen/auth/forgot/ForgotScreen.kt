@@ -84,6 +84,7 @@ fun ForgotScreen(
                 CKAlertDialog(
                     title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else stringResource(R.string.email_invalid),
                     text = stringResource(R.string.pls_check_again),
+                    dismissTitle = stringResource(R.string.close),
                     onDismissButtonClick = {
                         isEmptyEmail.value = false
                         isInvalidEmailFormat.value = false
