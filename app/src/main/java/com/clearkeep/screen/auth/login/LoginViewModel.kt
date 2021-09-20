@@ -66,6 +66,8 @@ class LoginViewModel @Inject constructor(
     private var userId: String = ""
     private var hashKey: String = ""
 
+    private var preAccessToken: String = ""
+
     private val _isAccountLocked = MutableLiveData<Boolean>()
     val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
 
@@ -78,7 +80,9 @@ class LoginViewModel @Inject constructor(
     private val _isConfirmSecurityPhraseValid = MutableLiveData<Boolean>()
     val isConfirmSecurityPhraseValid : LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
 
-    val verifyPassphraseResponse = MutableLiveData<Resource<Boolean>>()
+    val verifyPassphraseResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
+
+    val googleLoginResponse = MutableLiveData<Boolean>()
 
     val saveSecurityPhraseResponse = MutableLiveData<Boolean>()
 
@@ -100,10 +104,6 @@ class LoginViewModel @Inject constructor(
 
     fun saveSecurityPhrase() {
         saveSecurityPhraseResponse.value = true
-    }
-
-    fun checkSecurityPhrase() {
-        verifyPassphraseResponse.value = Resource.success(null)
     }
 
     fun initGoogleSingIn(context: Context){
@@ -140,11 +140,21 @@ class LoginViewModel @Inject constructor(
     }
 
     suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByGoogle(token, getDomain())
+        return authRepo.loginByGoogle(token, getDomain()).also {
+            if (it.status == Status.SUCCESS) {
+                preAccessToken = it.data?.preAccessToken ?: ""
+                userId = it.data?.sub ?: ""
+            }
+        }
     }
 
     suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByFacebook(token, getDomain())
+        return authRepo.loginByFacebook(token, getDomain()).also {
+            if (it.status == Status.SUCCESS) {
+                preAccessToken = it.data?.preAccessToken ?: ""
+                userId = it.data?.sub ?: ""
+            }
+        }
     }
 
     fun getFacebookProfile(accessToken: AccessToken, getName: (String) -> Unit) {
@@ -161,10 +171,15 @@ class LoginViewModel @Inject constructor(
         request.executeAsync()
     }
 
-
     suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.AuthRes>{
-        return authRepo.loginByMicrosoft(accessToken, getDomain())
+        return authRepo.loginByMicrosoft(accessToken, getDomain()).also {
+            if (it.status == Status.SUCCESS) {
+                preAccessToken = it.data?.preAccessToken ?: ""
+                userId = it.data?.sub ?: ""
+            }
+        }
     }
+
     suspend fun login(context: Context, email: String, password: String): Resource<LoginResponse>? {
         _emailError.value = ""
         _passError.value = ""
@@ -201,6 +216,20 @@ class LoginViewModel @Inject constructor(
         }
         _isLoading.value = false
         return result
+    }
+
+    fun registerSocialPin() {
+        viewModelScope.launch {
+            val pin = _confirmSecurityPhrase.value ?: ""
+            authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
+        }
+    }
+
+    fun verifySocialPin() {
+        viewModelScope.launch {
+            val pin = _securityPhrase.value ?: ""
+            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken)
+        }
     }
 
     fun validateOtp(otp: String) {
