@@ -21,6 +21,7 @@ import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -131,7 +132,6 @@ class AuthRepository @Inject constructor(
                 printlnCK("register failed: ${response.error}")
                 return@withContext Resource.error(response.error, null)
             }
-
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
@@ -160,59 +160,7 @@ class AuthRepository @Inject constructor(
                 if (response.error.isEmpty()) {
                     printlnCK("login successfully")
                     val accessToken = response.accessToken
-                    val hashKey = response.hashKey
 
-                    val salt = response.salt
-                    val publicKey = response.clientKeyPeer.identityKeyPublic
-                    val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
-                    printlnCK("decrypter: ${response.ivParameterSpec}")
-                    printlnCK(
-                        "decrypter 2: ${
-                            fromHex(response.ivParameterSpec)
-                        }"
-                    )
-                    printlnCK("privateKeyDecrypt: $privateKeyEncrypt")
-                    printlnCK("privateKeyDecrypt: ${privateKeyEncrypt}")
-
-
-                    val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
-                        fromHex(privateKeyEncrypt),
-                        fromHex(salt),
-                        fromHex(response.ivParameterSpec)
-                    )
-                    val preKey = response.clientKeyPeer.preKey
-                    val preKeyID = response.clientKeyPeer.preKeyId
-                    val preKeyRecord = PreKeyRecord(preKey.toByteArray())
-                    val signedPreKeyId = response.clientKeyPeer.signedPreKeyId
-                    val signedPreKey = response.clientKeyPeer.signedPreKey
-                    val signedPreKeyRecord = SignedPreKeyRecord(signedPreKey.toByteArray())
-                    val registrationID = response.clientKeyPeer.registrationId
-                    val clientId = response.clientKeyPeer.clientId
-
-                    val eCPublicKey: ECPublicKey =
-                        Curve.decodePoint(publicKey.toByteArray(), 0)
-                    val eCPrivateKey: ECPrivateKey =
-                        Curve.decodePrivatePoint(privateKeyDecrypt.toByteArray())
-                    val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
-                    val signalIdentityKey =
-                        SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
-                    signalIdentityKeyDAO.insert(signalIdentityKey)
-                    myStore.storePreKey(preKeyID, preKeyRecord)
-                    myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
-
-                    //
-                    val owner=Owner(domain,response.clientKeyPeer.clientId)
-                    val address = CKSignalProtocolAddress(Owner(domain,response.clientKeyPeer.clientId), 111)
-
-                        val profile = getProfile(
-                        paramAPIProvider.provideUserBlockingStub(
-                            ParamAPI(
-                                domain,
-                                accessToken,
-                                hashKey
-                            )
-                        )
-                    )
                     val requireOtp = accessToken.isNullOrBlank()
                     if (requireOtp) {
                         return@withContext Resource.success(
@@ -226,7 +174,10 @@ class AuthRepository @Inject constructor(
                             )
                         )
                     } else {
-//                        onLoginSuccess(domain, password, response, isSocialAccount = false)
+                        val profileResponse = onLoginSuccess(domain, password, response)
+                        if (profileResponse.status == Status.ERROR) {
+                            return@withContext Resource.error(profileResponse.message ?: "", null)
+                        }
                         return@withContext Resource.success(
                             LoginResponse(
                                 response.accessToken,
@@ -333,7 +284,7 @@ class AuthRepository @Inject constructor(
                 .build()
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginOffice(request)
             if (response.error.isEmpty()) {
-                printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken}")
+                printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken} hashKey ${response.hashKey}")
                 return@withContext Resource.success(response)
             }
             return@withContext Resource.error(response.error, null)
@@ -351,7 +302,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun registerSocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
+    suspend fun registerSocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String, hashKey: String) = withContext(Dispatchers.IO) {
         try {
             val decrypter = DecryptsPBKDF2(rawPin)
             val key= KeyHelper.generateIdentityKeyPair()
@@ -398,7 +349,7 @@ class AuthRepository @Inject constructor(
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).registerPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("registerSocialPin success ${response.requireAction}")
-                val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                val profileResponse = onLoginSuccess(domain, rawPin, response, hashKey, isSocialAccount = true)
                 return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
@@ -415,7 +366,7 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
+    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String, hashKey: String) = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass
                 .VerifyPinCodeReq
@@ -430,7 +381,7 @@ class AuthRepository @Inject constructor(
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).verifyPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("verifySocialPin success ${response.requireAction}")
-                val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                val profileResponse = onLoginSuccess(domain, rawPin, response, hashKey, isSocialAccount = true)
                 return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
@@ -571,9 +522,8 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    private suspend fun onLoginSuccess(domain: String, password: String, response: AuthOuterClass.AuthRes, isSocialAccount: Boolean = false) : Resource<AuthOuterClass.AuthRes> {
+    private suspend fun onLoginSuccess(domain: String, password: String, response: AuthOuterClass.AuthRes, hashKey: String = response.hashKey, isSocialAccount: Boolean = false) : Resource<AuthOuterClass.AuthRes> {
         val accessToken = response.accessToken
-        val hashKey = response.hashKey
 
         val salt = response.salt
         val publicKey = response.clientKeyPeer.identityKeyPublic
@@ -611,6 +561,8 @@ class AuthRepository @Inject constructor(
         signalIdentityKeyDAO.insert(signalIdentityKey)
         myStore.storePreKey(preKeyID, preKeyRecord)
         myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
+
+        printlnCK("onLoginSuccess domain $domain accessToken $accessToken hashKey $hashKey")
 
         val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
             ?: return Resource.error("Can not get profile", null)
