@@ -139,30 +139,30 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getStatusUserInDirectGroup() {
-        viewModelScope.launch {
-            groups.asFlow().collect {
-                val listUserRequest = arrayListOf<User>()
-                it.forEach { group ->
-                    if (!group.isGroup()) {
-                        val user = group.clientList.firstOrNull { client ->
-                            client.userId != getClientIdOfActiveServer()
-                        }
-                        if (user != null) {
-                            listUserRequest.add(user)
-                        }
-                    }
-                }
-                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
-                _listUserStatus.postValue(listClientStatus)
-                listClientStatus?.forEach {
-                    currentServer.value?.serverDomain?.let { it1 ->
-                        currentServer.value?.ownerClientId?.let { it2 ->
-                            Owner(it1, it2)
-                        }
-                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            groups.asFlow().collect {
+//                val listUserRequest = arrayListOf<User>()
+//                it.forEach { group ->
+//                    if (!group.isGroup()) {
+//                        val user = group.clientList.firstOrNull { client ->
+//                            client.userId != getClientIdOfActiveServer()
+//                        }
+//                        if (user != null) {
+//                            listUserRequest.add(user)
+//                        }
+//                    }
+//                }
+//                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+//                _listUserStatus.postValue(listClientStatus)
+//                listClientStatus?.forEach {
+//                    currentServer.value?.serverDomain?.let { it1 ->
+//                        currentServer.value?.ownerClientId?.let { it2 ->
+//                            Owner(it1, it2)
+//                        }
+//                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
+//                }
+//            }
+//        }
     }
 
     private fun sendPing() {
