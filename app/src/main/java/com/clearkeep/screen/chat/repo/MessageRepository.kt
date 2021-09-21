@@ -10,6 +10,7 @@ import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.dao.NoteDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
+import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
@@ -389,7 +390,7 @@ class MessageRepository @Inject constructor(
 
     suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
-        clientBlocking: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub,
+        clientBlocking: DynamicAPIProvider,
         signalProtocolStore: InMemorySignalProtocolStore,
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
@@ -402,7 +403,7 @@ class MessageRepository @Inject constructor(
                 .setClientId(remoteClientId)
                 .setWorkspaceDomain(signalProtocolAddress.owner.domain)
                 .build()
-            val remoteKeyBundle = clientBlocking.peerGetClientKey(requestUser)
+            val remoteKeyBundle = clientBlocking.provideSignalKeyDistributionBlockingStub().peerGetClientKey(requestUser)
 
             val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
             val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
@@ -426,6 +427,7 @@ class MessageRepository @Inject constructor(
             printlnCK("initSessionUserPeer: success")
             return@withContext true
         } catch (e: java.lang.Exception) {
+            e.printStackTrace()
             printlnCK("initSessionUserPeer: $e")
         }
 
