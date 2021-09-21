@@ -144,6 +144,7 @@ class AuthRepository @Inject constructor(
             return@withContext Resource.error(e.toString(), null)
         }
     }
+
     suspend fun login(userName: String, password: String, domain: String): Resource<LoginResponse> =
         withContext(Dispatchers.IO) {
             printlnCK("login: $userName, password = $password, domain = $domain")
@@ -225,41 +226,7 @@ class AuthRepository @Inject constructor(
                             )
                         )
                     } else {
-                        if (profile == null) {
-                            return@withContext Resource.error("Can not get profile", null)
-                        }
-                        val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                            Owner(domain, profile.userId),
-                            paramAPIProvider.provideSignalKeyDistributionBlockingStub(
-                                ParamAPI(
-                                    domain,
-                                    accessToken,
-                                    hashKey
-                                )
-                            )
-                        )
-                        if (!isRegisterKeySuccess) {
-                            return@withContext Resource.error("Can not register key", null)
-                        }
-
-                        serverRepository.insertServer(
-                            Server(
-                                serverName = response.workspaceName,
-                                serverDomain = domain,
-                                ownerClientId = profile.userId,
-                                serverAvatar = "",
-                                loginTime = getCurrentDateTime().time,
-                                accessKey = accessToken,
-                                hashKey = hashKey,
-                                refreshToken = response.refreshToken,
-                                profile = profile,
-                            )
-                        )
-                        userPreferenceRepository.initDefaultUserPreference(
-                            domain,
-                            profile.userId,
-                            isSocialAccount = false
-                        )
+//                        onLoginSuccess(domain, password, response, isSocialAccount = false)
                         return@withContext Resource.success(
                             LoginResponse(
                                 response.accessToken,
@@ -385,15 +352,14 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun registerSocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
-        printlnCK("registerSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId")
         try {
             val decrypter = DecryptsPBKDF2(rawPin)
-            val transitionID=KeyHelper.generateRegistrationId(false)
+            val key= KeyHelper.generateIdentityKeyPair()
+
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val key= KeyHelper.generateIdentityKeyPair()
             val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
-
+            val transitionID=KeyHelper.generateRegistrationId(false)
             val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
                 .setDeviceId(111)
                 .setRegistrationId(transitionID)
@@ -405,9 +371,13 @@ class AuthRepository @Inject constructor(
                     ByteString.copyFrom(signedPreKey.serialize())
                 )
                 .setIdentityKeyEncrypted(
-                    String(decrypter.encrypt(
+                    decrypter.encrypt(
                         key.privateKey.serialize()
-                    )!!)
+                    )?.let {
+                        toHex(
+                            it
+                        )
+                    }
                 )
                 .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                 .build()
@@ -423,10 +393,13 @@ class AuthRepository @Inject constructor(
                 .setIvParameterSpec(toHex(decrypter.getIv()))
                 .build()
 
+            printlnCK("registerSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId hashPincode ${DecryptsPBKDF2.md5(rawPin)}")
+
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).registerPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("registerSocialPin success ${response.requireAction}")
-                return@withContext onLoginSuccess(domain, response)
+                val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -443,20 +416,22 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun verifySocialPin(domain: String, rawPin: String, userId: String, preAccessToken: String) = withContext(Dispatchers.IO) {
-        printlnCK("verifySocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId")
         try {
             val request = AuthOuterClass
                 .VerifyPinCodeReq
                 .newBuilder()
                 .setPreAccessToken(preAccessToken)
                 .setUserId(userId)
-                .setHashPincode("") //TODO: set value
+                .setHashPincode(DecryptsPBKDF2.md5(rawPin))
                 .build()
+
+            printlnCK("verifySocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId hashPincode ${DecryptsPBKDF2.md5(rawPin)}")
 
             val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).verifyPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("verifySocialPin success ${response.requireAction}")
-                return@withContext onLoginSuccess(domain, response)
+                val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -596,9 +571,47 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    private suspend fun onLoginSuccess(domain: String, response: AuthOuterClass.AuthRes) : Resource<AuthOuterClass.AuthRes> {
+    private suspend fun onLoginSuccess(domain: String, password: String, response: AuthOuterClass.AuthRes, isSocialAccount: Boolean = false) : Resource<AuthOuterClass.AuthRes> {
         val accessToken = response.accessToken
         val hashKey = response.hashKey
+
+        val salt = response.salt
+        val publicKey = response.clientKeyPeer.identityKeyPublic
+        val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
+        printlnCK("decrypter: ${response.ivParameterSpec}")
+        printlnCK(
+            "decrypter 2: ${
+                fromHex(response.ivParameterSpec)
+            }"
+        )
+        printlnCK("privateKeyDecrypt: $privateKeyEncrypt")
+        printlnCK("privateKeyDecrypt: ${privateKeyEncrypt}")
+
+        val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
+            fromHex(privateKeyEncrypt),
+            fromHex(salt),
+            fromHex(response.ivParameterSpec)
+        )
+        val preKey = response.clientKeyPeer.preKey
+        val preKeyID = response.clientKeyPeer.preKeyId
+        val preKeyRecord = PreKeyRecord(preKey.toByteArray())
+        val signedPreKeyId = response.clientKeyPeer.signedPreKeyId
+        val signedPreKey = response.clientKeyPeer.signedPreKey
+        val signedPreKeyRecord = SignedPreKeyRecord(signedPreKey.toByteArray())
+        val registrationID = response.clientKeyPeer.registrationId
+        val clientId = response.clientKeyPeer.clientId
+
+        val eCPublicKey: ECPublicKey =
+            Curve.decodePoint(publicKey.toByteArray(), 0)
+        val eCPrivateKey: ECPrivateKey =
+            Curve.decodePrivatePoint(privateKeyDecrypt.toByteArray())
+        val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
+        val signalIdentityKey =
+            SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
+        signalIdentityKeyDAO.insert(signalIdentityKey)
+        myStore.storePreKey(preKeyID, preKeyRecord)
+        myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
+
         val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
             ?: return Resource.error("Can not get profile", null)
         val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
@@ -622,7 +635,7 @@ class AuthRepository @Inject constructor(
                 profile = profile,
             )
         )
-        userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = true)
+        userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount)
 
         return Resource.success(response)
     }
