@@ -137,6 +137,7 @@ class LoginViewModel @Inject constructor(
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
+                hashKey = it.data?.hashKey ?: ""
             }
         }
     }
@@ -146,6 +147,7 @@ class LoginViewModel @Inject constructor(
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
+                hashKey = it.data?.hashKey ?: ""
             }
         }
     }
@@ -169,6 +171,7 @@ class LoginViewModel @Inject constructor(
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
+                hashKey = it.data?.hashKey ?: ""
             }
         }
     }
@@ -214,14 +217,14 @@ class LoginViewModel @Inject constructor(
     fun registerSocialPin() {
         viewModelScope.launch {
             val pin = _confirmSecurityPhrase.value ?: ""
-            registerSocialPinResponse.value = authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
+            registerSocialPinResponse.value = authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken, hashKey)
         }
     }
 
     fun verifySocialPin() {
         viewModelScope.launch {
             val pin = _securityPhrase.value ?: ""
-            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken)
+            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken, hashKey)
         }
     }
 
