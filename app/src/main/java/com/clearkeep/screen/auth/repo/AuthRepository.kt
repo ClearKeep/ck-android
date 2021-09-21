@@ -75,10 +75,6 @@ class AuthRepository @Inject constructor(
             }"
         )
 
-
-
-
-
         val preKeys = KeyHelper.generatePreKeys(1, 1)
         val preKey = preKeys[0]
         val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
@@ -202,7 +198,11 @@ class AuthRepository @Inject constructor(
                     myStore.storePreKey(preKeyID, preKeyRecord)
                     myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
 
-                    val profile = getProfile(
+                    //
+                    val owner=Owner(domain,response.clientKeyPeer.clientId)
+                    val address = CKSignalProtocolAddress(Owner(domain,response.clientKeyPeer.clientId), 111)
+
+                        val profile = getProfile(
                         paramAPIProvider.provideUserBlockingStub(
                             ParamAPI(
                                 domain,
@@ -287,10 +287,10 @@ class AuthRepository @Inject constructor(
                     errorMessage,
                     LoginResponse("", "", "", "", parsedError.code, errorMessage)
                 )
-            } /*catch (e: Exception) {
+            } catch (e: Exception) {
                 printlnCK("login error: $e")
                 return@withContext Resource.error(e.toString(), null)
-            }*/
+            }
         }
 
     suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO){

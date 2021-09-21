@@ -94,7 +94,7 @@ class ChatRepository @Inject constructor(
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
-            dynamicAPIProvider.provideSignalKeyDistributionBlockingStub(),
+            dynamicAPIProvider,
             signalProtocolStore
         )
     }
