@@ -152,27 +152,27 @@ class RoomViewModel @Inject constructor(
     }
 
     fun getStatusUserInGroup() {
-        viewModelScope.launch {
-            group.asFlow().collect {
-                val listClient = group.value?.clientList
-                val listClientStatus = listClient?.let { it1 ->
-                    peopleRepository.getListClientStatus(it1)
-                }
-
-                _listUserStatus.postValue(listClientStatus)
-                listClientStatus?.forEach {
-                    peopleRepository.updateAvatarUserEntity(it, getOwner())
-                }
-                if (group.value?.isGroup() == false) {
-                    val avatars = arrayListOf<String>()
-                    listClientStatus?.forEach {
-                        if (it.userId != getUser().userId)
-                            it.avatar?.let { it1 -> avatars.add(it1) }
-                    }
-                    listPeerAvatars.postValue(avatars)
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            group.asFlow().collect {
+//                val listClient = group.value?.clientList
+//                val listClientStatus = listClient?.let { it1 ->
+//                    peopleRepository.getListClientStatus(it1)
+//                }
+//
+//                _listUserStatus.postValue(listClientStatus)
+//                listClientStatus?.forEach {
+//                    peopleRepository.updateAvatarUserEntity(it, getOwner())
+//                }
+//                if (group.value?.isGroup() == false) {
+//                    val avatars = arrayListOf<String>()
+//                    listClientStatus?.forEach {
+//                        if (it.userId != getUser().userId)
+//                            it.avatar?.let { it1 -> avatars.add(it1) }
+//                    }
+//                    listPeerAvatars.postValue(avatars)
+//                }
+//            }
+//        }
     }
 
     fun initNotes(

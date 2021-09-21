@@ -19,7 +19,6 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
@@ -91,8 +90,7 @@ class AuthRepository @Inject constructor(
             .setSignedPreKey(
                 ByteString.copyFrom(signedPreKey.serialize())
             )
-            .setIdentityKeyEncrypted(
-                decrypter.encrypt(
+            .setIdentityKeyEncrypted(decrypter.encrypt(
                     key.privateKey.serialize()
                 )?.let {
                     toHex(
