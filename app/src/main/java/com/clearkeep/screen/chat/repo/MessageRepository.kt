@@ -20,8 +20,10 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.getUnableErrorMessage
+import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -99,6 +101,17 @@ class MessageRepository @Inject constructor(
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
             }
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
         } catch (exception: Exception) {
             printlnCK("fetchMessageFromAPI: $exception")
         }
@@ -119,6 +132,17 @@ class MessageRepository @Inject constructor(
             val notes = responses.userNotesList.map { parseNoteResponse(it, owner) }
             if (notes.isNotEmpty()) {
                 noteDAO.insertNotes(notes)
+            }
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
             }
         } catch (e: Exception) {
             printlnCK("updateNotesFromAPI: $e")
@@ -434,6 +458,16 @@ class MessageRepository @Inject constructor(
             sessionBuilder.process(retrievedPreKey)
             printlnCK("initSessionUserPeer: success")
             return@withContext true
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
             printlnCK("initSessionUserPeer: $e")
@@ -467,6 +501,17 @@ class MessageRepository @Inject constructor(
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
+                }
+                return false
             } catch (e: java.lang.Exception) {
                 printlnCK("initSessionUserInGroup: $e")
                 return false

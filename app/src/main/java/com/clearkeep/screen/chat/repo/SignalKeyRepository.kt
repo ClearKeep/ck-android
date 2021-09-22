@@ -4,10 +4,13 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.DynamicAPIProvider
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.IdentityKeyPair
@@ -28,6 +31,7 @@ class SignalKeyRepository @Inject constructor(
     private val senderKeyStore: InMemorySenderKeyStore,
     private val myStore: InMemorySignalProtocolStore,
     private val preKeyDAO: SignalPreKeyDAO,
+    private val serverRepository: ServerRepository
 ) {
     suspend fun getPreKey() : PreKeyRecord {
         var preKeyRecord = preKeyDAO.getFirstUnSignedPreKey()?.preKeyRecord ?: null
@@ -78,6 +82,17 @@ class SignalKeyRepository @Inject constructor(
             if (response?.error.isNullOrEmpty()) {
                 printlnCK("registerSenderKeyToGroup: $groupID: success")
                 return@withContext true
+            }
+        } catch (e: StatusRuntimeException) {
+            printlnCK("registerSenderKeyToGroup: $e")
+
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
             }
         } catch (e: Exception) {
             printlnCK("registerSenderKeyToGroup: $e")

@@ -37,9 +37,11 @@ class HomeViewModel @Inject constructor(
     private val signalKeyDatabase: SignalKeyDatabase,
     private val workSpaceRepository: WorkSpaceRepository,
     private val peopleRepository: PeopleRepository
-    ): ViewModel() {
+): ViewModel() {
 
     var profile = serverRepository.getDefaultServerProfileAsState()
+
+    val isLogout = serverRepository.isLogout
 
     var currentServer = serverRepository.activeServer
 
@@ -250,8 +252,8 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-            }else {
-                printlnCK("Leave Server error")
+            } else {
+                printlnCK("signOut error")
             }
         }
     }

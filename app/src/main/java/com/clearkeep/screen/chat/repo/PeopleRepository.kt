@@ -8,6 +8,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserEntity
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
@@ -27,6 +28,7 @@ class PeopleRepository @Inject constructor(
 
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
+    private val serverRepository: ServerRepository
 ) {
     fun getFriends(ownerDomain: String, ownerClientId: String) : LiveData<List<User>> = peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
         list.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
@@ -59,6 +61,17 @@ class PeopleRepository @Inject constructor(
                             domain = userInfoResponseOrBuilder.workspaceDomain,
                         )
                     }
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext emptyList()
         } catch (e: Exception) {
             printlnCK("searchUser: $e")
             return@withContext emptyList()
@@ -129,6 +142,19 @@ class PeopleRepository @Inject constructor(
                 .map { userInfoResponse ->
                     convertUserResponse(userInfoResponse, Owner(environment.getServer().serverDomain, environment.getServer().profile.userId))
                 }
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+
+            return@withContext emptyList()
         } catch (e: Exception) {
             printlnCK("getFriendsFromAPI: $e")
             return@withContext emptyList()
@@ -163,6 +189,18 @@ class PeopleRepository @Inject constructor(
             val request = UserOuterClass.PingRequest.newBuilder().build()
             val response = dynamicAPIProvider.provideUserBlockingStub().pingRequest(request)
             return@withContext response.error.isNullOrEmpty()
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: Exception) {
             printlnCK("sendPing: $e")
             return@withContext false
@@ -175,6 +213,18 @@ class PeopleRepository @Inject constructor(
             val request = UserOuterClass.SetUserStatusRequest.newBuilder().setStatus(status).build()
             val response = dynamicAPIProvider.provideUserBlockingStub().updateStatus(request)
             return@withContext response.error.isNullOrEmpty()
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
             return@withContext false
@@ -199,6 +249,18 @@ class PeopleRepository @Inject constructor(
                 // user.avatar = newUser?.avatar
             }
             return@withContext list
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext emptyList()
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
             return@withContext null
@@ -226,6 +288,18 @@ class PeopleRepository @Inject constructor(
                 }
                 printlnCK("getUserInfo exception: $e")
                 return@withContext Resource.error(errorMessage, null)
+            } catch (e: StatusRuntimeException) {
+
+                val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+                return@withContext Resource.error("", null)
             } catch (e: Exception) {
                 printlnCK("getUserInfo exception: $e")
                 return@withContext Resource.error(e.toString(), null)
