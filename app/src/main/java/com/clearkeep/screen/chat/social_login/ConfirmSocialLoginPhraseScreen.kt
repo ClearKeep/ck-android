@@ -69,7 +69,7 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
             CKButton(
                 stringResource(R.string.btn_next),
                 onClick = {
-                    viewModel.registerSocialPin()
+                    viewModel.onSubmitNewPin()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = isSecurityPhraseValid.value == true,

@@ -119,7 +119,7 @@ class AuthRepository @Inject constructor(
                 .setWorkspaceDomain(domain)
                 .setClientKeyPeer(setClientKeyPeer)
                 .setSalt(decrypter.getSaltEncryptValue())
-                .setIvParameterSpec(toHex(decrypter.getIv()))
+                .setIvParameter(toHex(decrypter.getIv()))
                 .build()
             printlnCK("decrypter: ${decrypter.getIv()}")
             val response =
@@ -339,7 +339,7 @@ class AuthRepository @Inject constructor(
                 .setHashPincode(DecryptsPBKDF2.md5(rawPin))
                 .setSalt(decrypter.getSaltEncryptValue())
                 .setClientKeyPeer(clientKeyPeer)
-                .setIvParameterSpec(toHex(decrypter.getIv()))
+                .setIvParameter(toHex(decrypter.getIv()))
                 .build()
 
             printlnCK("registerSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId hashPincode ${DecryptsPBKDF2.md5(rawPin)}")
@@ -396,13 +396,99 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun recoverPassword(email: String, domain: String) : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
+    suspend fun resetSocialPin(
+        domain: String,
+        rawPin: String,
+        userId: String,
+        preAccessToken: String,
+        hashKey: String
+    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+        try {
+            val decrypter = DecryptsPBKDF2(rawPin)
+
+            val key= KeyHelper.generateIdentityKeyPair()
+            decrypter.encrypt(
+                key.privateKey.serialize()
+            )
+
+//
+//            val preKeys = KeyHelper.generatePreKeys(1, 1)
+//            val preKey = preKeys[0]
+//            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+//            val transitionID=KeyHelper.generateRegistrationId(false)
+//            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+//                .setDeviceId(111)
+//                .setRegistrationId(transitionID)
+//                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+//                .setPreKey(ByteString.copyFrom(preKey.serialize()))
+//                .setPreKeyId(preKey.id)
+//                .setSignedPreKeyId(signedPreKey.id)
+//                .setSignedPreKey(
+//                    ByteString.copyFrom(signedPreKey.serialize())
+//                )
+//                .setIdentityKeyEncrypted(
+//                    decrypter.encrypt(
+//                        key.privateKey.serialize()
+//                    )?.let {
+//                        toHex(
+//                            it
+//                        )
+//                    }
+//                )
+//                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+//                .build()
+
+            val request = AuthOuterClass
+                .ResetPinCodeReq
+                .newBuilder()
+                .setPreAccessToken(preAccessToken)
+                .setUserId(userId)
+                .setHashPincode(DecryptsPBKDF2.md5(rawPin))
+                .setSalt(decrypter.getSaltEncryptValue())
+                .setIvParameter(toHex(decrypter.getIv()))
+                .build()
+
+            printlnCK(
+                "resetSocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId hashPincode ${
+                    DecryptsPBKDF2.md5(
+                        rawPin
+                    )
+                }"
+            )
+
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).resetPincode(request)
+            if (response.error.isEmpty()) {
+                printlnCK("resetSocialPin success ${response.requireAction}")
+                val profileResponse =
+                    onLoginSuccess(domain, rawPin, response, hashKey, isSocialAccount = true)
+                return@withContext profileResponse
+            }
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                else -> parsedError.message
+            }
+            printlnCK("resetSocialPin error statusRuntime $e $message")
+            return@withContext Resource.error(message, null)
+        } catch (e: Exception) {
+            printlnCK("resetSocialPin error $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
+    suspend fun recoverPassword(
+        email: String,
+        domain: String
+    ): Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
         printlnCK("recoverPassword: $email")
         try {
             val request = AuthOuterClass.FogotPassWord.newBuilder()
-                    .setEmail(email)
-                    .build()
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).fogotPassword(request)
+                .setEmail(email)
+                .build()
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).fogotPassword(request)
             if (response?.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {
@@ -526,10 +612,10 @@ class AuthRepository @Inject constructor(
         val salt = response.salt
         val publicKey = response.clientKeyPeer.identityKeyPublic
         val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
-        printlnCK("decrypter: ${response.ivParameterSpec}")
+        printlnCK("decrypter: ${response.ivParameter}")
         printlnCK(
             "decrypter 2: ${
-                fromHex(response.ivParameterSpec)
+                fromHex(response.ivParameter)
             }"
         )
         printlnCK("privateKeyDecrypt: $privateKeyEncrypt")
@@ -538,7 +624,7 @@ class AuthRepository @Inject constructor(
         val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
             fromHex(privateKeyEncrypt),
             fromHex(salt),
-            fromHex(response.ivParameterSpec)
+            fromHex(response.ivParameter)
         )
         val preKey = response.clientKeyPeer.preKey
         val preKeyID = response.clientKeyPeer.preKeyId
