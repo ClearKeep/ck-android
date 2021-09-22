@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.screen.auth.login.LoginActivity
@@ -88,8 +87,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 gotoRoomById = {
                                     navigateToRoomScreen(it)
                                 },
-                                onLeaveServer = {
-                                    leaveServer()
+                                onSignOut = {
+                                    signOut()
                                 },
                                 onJoinServer = {
                                     navigateToJoinServer(it)
@@ -222,8 +221,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    private fun leaveServer() {
-        homeViewModel.leaveServer()
+    private fun signOut() {
+        homeViewModel.signOut()
     }
 
     private fun navigateToProfileScreen() {
