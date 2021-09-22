@@ -256,6 +256,7 @@ class LoginActivity : AppCompatActivity() {
                         onBackPress = { navController.popBackStack() },
                         onVerifySuccess = { onLoginSuccess() }) {
                         navController.navigate("set_security_phrase") {
+                            loginViewModel.setResetPincodeState(true)
                             popUpTo(route = "login") {
 
                             }
@@ -300,9 +301,11 @@ class LoginActivity : AppCompatActivity() {
         when (requireAction) {
             "verify_pincode" -> {
                 navController.navigate("enter_security_phrase")
+                loginViewModel.setResetPincodeState(false)
             }
             "register_pincode" -> {
                 navController.navigate("set_security_phrase")
+                loginViewModel.setResetPincodeState(false)
             }
         }
     }

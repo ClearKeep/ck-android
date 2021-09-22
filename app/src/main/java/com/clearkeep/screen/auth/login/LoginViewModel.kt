@@ -83,10 +83,16 @@ class LoginViewModel @Inject constructor(
     val verifyPassphraseResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
     val registerSocialPinResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
 
+    private var isResetPincode = false
+
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
         this.hashKey = hashKey
+    }
+
+    fun setResetPincodeState(isResetPincode: Boolean) {
+        this.isResetPincode = isResetPincode
     }
 
     fun setSecurityPhrase(phrase: String) {
@@ -214,10 +220,14 @@ class LoginViewModel @Inject constructor(
         return result
     }
 
-    fun registerSocialPin() {
+    fun onSubmitNewPin() {
         viewModelScope.launch {
             val pin = _confirmSecurityPhrase.value ?: ""
-            registerSocialPinResponse.value = authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken, hashKey)
+            registerSocialPinResponse.value = if (isResetPincode) {
+                authRepo.resetSocialPin(getDomain(), pin, userId, preAccessToken, hashKey)
+            } else {
+                authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken, hashKey)
+            }
         }
     }
 
