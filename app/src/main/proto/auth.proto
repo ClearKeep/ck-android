@@ -151,14 +151,6 @@ message ResetPinCodeReq{
     PeerRegisterClientKeyRequest client_key_peer = 6;
 }
 
-// Update identityKey
-message UpdateIdentityKeyReq{
-    string hash_password = 1;
-    string salt = 2;
-    string iv_parameter = 3;
-    PeerRegisterClientKeyRequest client_key_peer = 4;
-}
-
 message MfaValidateOtpRequest {
     string otp_code = 1;
     string user_id = 2;
@@ -190,5 +182,4 @@ service Auth {
     rpc register_pincode(RegisterPinCodeReq) returns (AuthRes) {};
     rpc verify_pincode(VerifyPinCodeReq) returns (AuthRes) {};
     rpc reset_pincode(ResetPinCodeReq) returns (AuthRes) {};
-    rpc update_identity_key(UpdateIdentityKeyReq) returns (BaseResponse) {};
 }
