@@ -32,6 +32,8 @@ class ServerRepository @Inject constructor(
 
     var activeServer = MutableLiveData<Server>()
 
+    val isLogout = MutableLiveData<Boolean>()
+
     fun getServersAsState() = serverDAO.getServersAsState()
 
     suspend fun getServers() = serverDAO.getServers()
