@@ -232,7 +232,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun leaveServer() {
+    fun signOut() {
         viewModelScope.launch {
             val response = authRepository.logoutFromAPI(currentServer.value!!)
 
