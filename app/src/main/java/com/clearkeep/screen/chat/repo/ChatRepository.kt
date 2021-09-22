@@ -10,10 +10,12 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.DynamicAPIProvider
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
+import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import message.MessageOuterClass
@@ -36,7 +38,8 @@ class ChatRepository @Inject constructor(
     // data
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val serverRepository: ServerRepository
 ) {
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
@@ -85,6 +88,17 @@ class ChatRepository @Inject constructor(
             }
 
             printlnCK("send message success: $plainMessage")
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: java.lang.Exception) {
             printlnCK("sendMessage: $e")
             return@withContext false
@@ -129,6 +143,17 @@ class ChatRepository @Inject constructor(
 
             printlnCK("send message success: $plainMessage")
             return@withContext true
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
         }
@@ -150,6 +175,17 @@ class ChatRepository @Inject constructor(
                 messageRepository.updateNote(note.copy(generateId = cachedNoteId, createdTime = response.createdAt))
             }
             return@withContext true
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
         } catch (e: Exception) {
             printlnCK("create note $e")
         }
@@ -221,6 +257,18 @@ class ChatRepository @Inject constructor(
                     }
                     return@withContext result ?: ""
                 }
+            } catch (e: StatusRuntimeException) {
+
+                val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+                return@withContext ""
             } catch (e: Exception) {
                 printlnCK("uploadFileToGroup $e")
                 return@withContext ""

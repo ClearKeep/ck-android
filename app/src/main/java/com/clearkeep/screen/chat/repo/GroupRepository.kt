@@ -9,9 +9,11 @@ import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.getCurrentDateTime
+import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -51,6 +53,15 @@ class GroupRepository @Inject constructor(
                         convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
                     insertGroup(decryptedGroup)
                 }
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
+                }
             } catch (exception: Exception) {
                 printlnCK("fetchGroups: $exception")
             }
@@ -70,6 +81,15 @@ class GroupRepository @Inject constructor(
             val group = getGroupFromAPI(groupId, groupGrpc, Owner(owner.domain, owner.clientId))
             if (group != null) {
                 insertGroup(group)
+            }
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
             }
         } catch (exception: Exception) {
             printlnCK("fetchNewGroup: $exception")
@@ -104,6 +124,16 @@ class GroupRepository @Inject constructor(
             insertGroup(group)
             printlnCK("createGroup success, $group")
             return@withContext group
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext null
         } catch (e: Exception) {
             printlnCK("createGroup error: $e")
             return@withContext null
@@ -151,6 +181,18 @@ class GroupRepository @Inject constructor(
                     dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
                 printlnCK("removeMemberInGroup: ${response.error}")
                 return@withContext true
+            } catch (e: StatusRuntimeException) {
+
+                val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+                return@withContext false
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
                 e.printStackTrace()
@@ -185,6 +227,18 @@ class GroupRepository @Inject constructor(
                 val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
                 printlnCK("inviteToGroupFromAPI: ${response.error}")
                 return@withContext response
+            } catch (e: StatusRuntimeException) {
+
+                val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+                return@withContext null
             } catch (e: Exception) {
                 printlnCK("inviteToGroupFromAPI error: $e")
                 return@withContext null
@@ -214,6 +268,18 @@ class GroupRepository @Inject constructor(
                 return@withContext true
             }
             return@withContext false
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: Exception) {
             e.printStackTrace()
             printlnCK("leaveGroup error: " + e.message.toString())
@@ -236,6 +302,18 @@ class GroupRepository @Inject constructor(
             val group = convertGroupFromResponse(response, owner.domain, owner.clientId)
             printlnCK("getGroupFromAPI: ${group.clientList}")
             return@withContext group
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext null
         } catch (e: Exception) {
             printlnCK("getGroupFromAPI error: $e")
             return@withContext null
@@ -246,22 +324,37 @@ class GroupRepository @Inject constructor(
     private suspend fun getGroupListFromAPI(
         clientId: String
     ): List<GroupOuterClass.GroupObjectResponse> = withContext(Dispatchers.IO) {
-        printlnCK("getGroupListFromAPI: $clientId")
-        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder().build()
+        try {
+            printlnCK("getGroupListFromAPI: $clientId")
+            val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder().build()
+            val server = serverRepository.getServer(getDomain(), clientId)
+            if (server == null) {
+                printlnCK("getGroupByID: null server")
+                throw NullPointerException("getGroupListFromAPI null server")
+            }
+            val response = apiProvider.provideGroupBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            ).getJoinedGroups(request)
+            return@withContext response.lstGroupList
+        } catch (e: StatusRuntimeException) {
 
-        val server = serverRepository.getServer(getDomain(), clientId)
-        if (server == null) {
-            printlnCK("getGroupByID: null server")
-            throw NullPointerException("getGroupListFromAPI null server")
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext emptyList()
+        } catch (e: Exception) {
+            return@withContext emptyList()
         }
-        val response = apiProvider.provideGroupBlockingStub(
-            ParamAPI(
-                server.serverDomain,
-                server.accessKey,
-                server.hashKey
-            )
-        ).getJoinedGroups(request)
-        return@withContext response.lstGroupList
     }
 
     fun getTemporaryGroupWithAFriend(createPeople: User, receiverPeople: User): ChatGroup {

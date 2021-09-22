@@ -71,6 +71,13 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
+        homeViewModel.isLogout.observe(this) {
+//            if (false) {
+            printlnCK("MainActivity signOut")
+                homeViewModel.signOut()
+//            }
+        }
+
         setContent {
             CKSimpleTheme {
                 homeViewModel.prepareState.observeAsState().value.let { prepareState ->

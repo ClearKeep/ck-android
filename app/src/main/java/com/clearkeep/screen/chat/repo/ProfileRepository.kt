@@ -60,6 +60,18 @@ class ProfileRepository @Inject constructor(
             val response = notifyPushGrpc.registerToken(request)
             printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
             return@withContext response.error.isNullOrEmpty()
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: Exception) {
             printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
             return@withContext false
@@ -91,6 +103,18 @@ class ProfileRepository @Inject constructor(
                 serverRepository.updateServerProfile(owner.domain, profile)
             }
             return@withContext response.error.isNullOrEmpty()
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+            return@withContext false
         } catch (e: Exception) {
             printlnCK("updateProfile error: $e")
             return@withContext false
@@ -119,6 +143,17 @@ class ProfileRepository @Inject constructor(
 
                 printlnCK("uploadAvatar response ${response.fileUrl}")
                 return@withContext response.fileUrl
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
+                return@withContext ""
             } catch (e: Exception) {
                 printlnCK("uploadAvatar $e")
                 return@withContext ""
@@ -135,6 +170,17 @@ class ProfileRepository @Inject constructor(
             val isMfaEnabled = response.mfaEnable
             userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, isMfaEnabled)
             printlnCK("getMfaSettingsFromAPI MFA enabled? $isMfaEnabled")
+        } catch (e: StatusRuntimeException) {
+
+            val parsedError = parseError(e)
+
+            val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    parsedError.message
+                }
+                else -> parsedError.message
+            }
         } catch (exception: Exception) {
             printlnCK("getMfaSettingsFromAPI: $exception")
         }
@@ -166,8 +212,13 @@ class ProfileRepository @Inject constructor(
             }
             return@withContext Resource.success("" to "")
         } catch (e: StatusRuntimeException) {
+
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    "" to parsedError.message
+                }
                 1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> "" to parsedError.message
             }
@@ -189,8 +240,13 @@ class ProfileRepository @Inject constructor(
             return@withContext if (response.success) Resource.success("" to "") else Resource.error("", "" to response.error.toString())
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaValidatePassword: $exception")
+
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    "Error" to "Expired token"
+                }
                 1001 -> "Error" to "The password is incorrect. Try again"
                 1069 -> "Warning" to "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> "Error" to parsedError.message
@@ -226,6 +282,11 @@ class ProfileRepository @Inject constructor(
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
+                1000, 1077 -> {
+
+                    serverRepository.isLogout.postValue(true)
+                    ""
+                }
                 1071 -> "Authentication failed. Please retry."
                 1068, 1072 -> "Verification code has expired. Please request a new code and retry."
                 else -> parsedError.message
@@ -248,6 +309,10 @@ class ProfileRepository @Inject constructor(
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
+                1000, 1077 -> {
+                    serverRepository.isLogout.postValue(true)
+                    ""
+                }
                 1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> parsedError.message
             }
