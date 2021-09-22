@@ -17,6 +17,7 @@ import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import workspace.WorkspaceOuterClass
+import java.lang.Exception
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton

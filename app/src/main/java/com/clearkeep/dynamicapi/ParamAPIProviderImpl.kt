@@ -3,7 +3,6 @@ package com.clearkeep.dynamicapi
 import auth.AuthGrpc
 import com.clearkeep.dynamicapi.channel.ChannelSelector
 import group.GroupGrpc
-import io.grpc.stub.AbstractBlockingStub
 import message.MessageGrpc
 import note.NoteGrpc
 import notification.NotifyGrpc

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -28,7 +27,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
@@ -50,7 +48,7 @@ fun HomeScreen(
     gotoSearch: () -> Unit,
     createGroupChat: ((isDirectGroup: Boolean) -> Unit),
     gotoRoomById: ((idRoom: Long) -> Unit),
-    onLeaveServer: () -> Unit,
+    onSignOut: () -> Unit,
     onJoinServer: (serverUrl: String) -> Unit,
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
@@ -140,7 +138,7 @@ fun HomeScreen(
                     },
                     onLeaveServer = {
                         rememberStateSiteMenu.value = false
-                        onLeaveServer.invoke()
+                        onSignOut.invoke()
                     },
                     onNavigateServerSetting = onNavigateServerSetting,
                     onNavigateAccountSetting = onNavigateAccountSetting,
