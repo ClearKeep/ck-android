@@ -10,6 +10,7 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.DynamicAPIProvider
+import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
@@ -49,13 +50,14 @@ class ChatRepository @Inject constructor(
         return roomId
     }
 
-    suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long, plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long,
+                                  plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val processSuccess = processPeerKey(receiverId, receiverWorkspaceDomain)
+                val processSuccess = processPeerKey(receiverId, receiverWorkspaceDomain,senderId,ownerWorkSpace)
                 if (!processSuccess) {
                     printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                     return@withContext false
@@ -90,12 +92,12 @@ class ChatRepository @Inject constructor(
         return@withContext true
     }
 
-    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String): Boolean {
+    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
-            dynamicAPIProvider,
-            signalProtocolStore
+            signalProtocolStore,
+            owner = Owner(ownerWorkSpace,senderId)
         )
     }
 

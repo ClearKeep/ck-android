@@ -49,15 +49,17 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     }
 
     @Throws(Exception::class)
-    fun decrypt(base64EncryptedData: ByteArray, salt: ByteArray,ivParameterSpec: ByteArray): String {
+    fun decrypt(
+        base64EncryptedData: ByteArray,
+        salt: ByteArray,
+        ivParameterSpec: ByteArray
+    ): ByteArray? {
         val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), salt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
         printlnCK("decrypt: iv $ivParameterSpec")
-        printlnCK("base64EncryptedData: iv $ivParameterSpec")
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivParameterSpec))
-        val utf8: ByteArray? = dcipher?.doFinal(base64EncryptedData)
-        return utf8?.decodeToString().toString()
+        return dcipher?.doFinal(base64EncryptedData) ?: return null
     }
 
     @JvmName("getSalt1")
@@ -74,7 +76,6 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     }
     fun getIv(): ByteArray {
         printlnCK("encrypt: iv ${iv}")
-        printlnCK("encrypt: iv ${iv.toString()}")
         return iv
     }
 

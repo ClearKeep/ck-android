@@ -391,8 +391,8 @@ class MessageRepository @Inject constructor(
 
     suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
-        clientBlocking: DynamicAPIProvider,
         signalProtocolStore: InMemorySignalProtocolStore,
+        owner:Owner
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
         printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
@@ -400,11 +400,17 @@ class MessageRepository @Inject constructor(
             return@withContext false
         }
         try {
+            val server = serverRepository.getServerByOwner(owner)
+            if (server == null) {
+                printlnCK("initSessionUserPeer: server must be not null")
+                return@withContext false
+            }
             val requestUser = Signal.PeerGetClientKeyRequest.newBuilder()
                 .setClientId(remoteClientId)
                 .setWorkspaceDomain(signalProtocolAddress.owner.domain)
                 .build()
-            val remoteKeyBundle = clientBlocking.provideSignalKeyDistributionBlockingStub().peerGetClientKey(requestUser)
+
+            val remoteKeyBundle = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain,server.accessKey,server.hashKey)).peerGetClientKey(requestUser)
 
             val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
             val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())

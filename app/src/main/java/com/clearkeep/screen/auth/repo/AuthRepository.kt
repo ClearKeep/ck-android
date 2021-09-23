@@ -62,20 +62,7 @@ class AuthRepository @Inject constructor(
         domain: String
     ): Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
         val decrypter = DecryptsPBKDF2(password)
-        printlnCK("register: $displayName, password = $password, domain = $domain")
         val key= KeyHelper.generateIdentityKeyPair()
-        val testprivate=key.privateKey.serialize()
-
-        printlnCK("private key : ${key.privateKey.serialize()}")
-
-        printlnCK(
-            "private key 4 ${
-                    decrypter.encrypt(
-                        key.privateKey.serialize()
-                    )
-            }"
-        )
-
         val preKeys = KeyHelper.generatePreKeys(1, 1)
         val preKey = preKeys[0]
         val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
@@ -87,30 +74,14 @@ class AuthRepository @Inject constructor(
             .setPreKey(ByteString.copyFrom(preKey.serialize()))
             .setPreKeyId(preKey.id)
             .setSignedPreKeyId(signedPreKey.id)
-            .setSignedPreKey(
-                ByteString.copyFrom(signedPreKey.serialize())
-            )
-            .setIdentityKeyEncrypted(decrypter.encrypt(
-                    key.privateKey.serialize()
-                )?.let {
-                    toHex(
-                        it
-                    )
+            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
+            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize())?.let {
+                    toHex(it)
                 }
             )
             .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
             .build()
 
-        /*val test2=identityKeyPair.privateKey.serialize().toString()
-        val test = decrypter.encrypt(identityKeyPair.privateKey.serialize().toString())
-        identityKeyPair.privateKey
-        val test3= test?.let {
-            decrypter.decrypt(it, fromHex(decrypter.getSaltEncryptValue())) }
-
-        printlnCK("privateKey: $test2")
-        printlnCK("privateKey: encrypt$encrypt")
-        printlnCK("privateKey: decrypt $test3")
-*/
         try {
             val request = AuthOuterClass.RegisterReq.newBuilder()
                 .setDisplayName(displayName)
@@ -121,7 +92,6 @@ class AuthRepository @Inject constructor(
                 .setSalt(decrypter.getSaltEncryptValue())
                 .setIvParameter(toHex(decrypter.getIv()))
                 .build()
-            printlnCK("decrypter: ${decrypter.getIv()}")
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
             if (response.error.isNullOrBlank()) {
@@ -546,14 +516,6 @@ class AuthRepository @Inject constructor(
             printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
             val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                 ?: return@withContext Resource.error("Can not get profile", null)
-            val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                Owner(domain, profile.userId),
-                paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-            )
-            if (!isRegisterKeySuccess) {
-                return@withContext Resource.error("Can not register key", null)
-            }
-
             serverRepository.insertServer(
                 Server(
                     serverName = response.workspaceName,
@@ -608,19 +570,9 @@ class AuthRepository @Inject constructor(
 
     private suspend fun onLoginSuccess(domain: String, password: String, response: AuthOuterClass.AuthRes, hashKey: String = response.hashKey, isSocialAccount: Boolean = false) : Resource<AuthOuterClass.AuthRes> {
         val accessToken = response.accessToken
-
         val salt = response.salt
         val publicKey = response.clientKeyPeer.identityKeyPublic
         val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
-        printlnCK("decrypter: ${response.ivParameter}")
-        printlnCK(
-            "decrypter 2: ${
-                fromHex(response.ivParameter)
-            }"
-        )
-        printlnCK("privateKeyDecrypt: $privateKeyEncrypt")
-        printlnCK("privateKeyDecrypt: ${privateKeyEncrypt}")
-
         val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
             fromHex(privateKeyEncrypt),
             fromHex(salt),
@@ -638,26 +590,15 @@ class AuthRepository @Inject constructor(
         val eCPublicKey: ECPublicKey =
             Curve.decodePoint(publicKey.toByteArray(), 0)
         val eCPrivateKey: ECPrivateKey =
-            Curve.decodePrivatePoint(privateKeyDecrypt.toByteArray())
+            Curve.decodePrivatePoint(privateKeyDecrypt)
         val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
         val signalIdentityKey =
             SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
         signalIdentityKeyDAO.insert(signalIdentityKey)
         myStore.storePreKey(preKeyID, preKeyRecord)
         myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
-
-        printlnCK("onLoginSuccess domain $domain accessToken $accessToken hashKey $hashKey")
-
         val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
             ?: return Resource.error("Can not get profile", null)
-        val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-            Owner(domain, profile.userId),
-            paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-        )
-        if (!isRegisterKeySuccess) {
-            return Resource.error("Can not register key", null)
-        }
-
         serverRepository.insertServer(
             Server(
                 serverName = response.workspaceName,
@@ -694,62 +635,4 @@ class AuthRepository @Inject constructor(
             return@withContext null
         }
     }
-
-    private suspend fun peerRegisterClientKeyWithGrpc(owner: Owner, signalGrpc: SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("peerRegisterClientKeyWithGrpc, clientId = ${owner.clientId}, domain = ${owner.domain}")
-        return@withContext true
-    }
 }
-
-        /*try {
-            *//*val address = CKSignalProtocolAddress(owner, 111)
-
-            environment.setUpDomain(
-                Server(
-                    0,
-                    "",
-                    owner.domain,
-                    owner.clientId,
-                    "",
-                    0,
-                    "",
-                    "",
-                    "",
-                    false,
-                    Profile(null, "", "", "", "", 0L, "")
-                )
-            )*//*
-
-*//*
-            val identityKeyPair = myStore.generateIdentityKeyPair(owner.clientId, owner.domain)
-*//*
-
-*//*            val preKey = signalKeyRepository.getPreKey()
-            val signedPreKey = signalKeyRepository.getSignedKey()*//*
-
-            *//*val request = Signal.PeerRegisterClientKeyRequest.newBuilder()
-                .setClientId(address.owner.clientId)
-                .setDeviceId(address.deviceId)
-                .setRegistrationId(myStore.localRegistrationId)
-                .setIdentityKeyPublic(ByteString.copyFrom(identityKeyPair.publicKey.serialize()))
-                .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                .setPreKeyId(preKey.id)
-                .setSignedPreKeyId(signedPreKey.id)
-                .setSignedPreKey(
-                    ByteString.copyFrom(signedPreKey.serialize())
-                )
-                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
-
-            val response = signalGrpc.peerRegisterClientKey(request)
-            if (response?.error?.isEmpty() == true) {
-                printlnCK("peerRegisterClientKeyWithGrpc, success")
-                return@withContext true
-            }
-        } catch (e: Exception) {
-            printlnCK("peerRegisterClientKeyWithGrpc: $e")
-        }
-
-        return@withContext false
-    }
-}*/

@@ -162,7 +162,7 @@ class ChatService : Service(),
                     groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain)
+                    chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain,value.clientId,value.clientWorkspaceDomain)
                 }
                 "member-add" -> {
                     groupRepository.fetchGroups()
@@ -240,7 +240,7 @@ class ChatService : Service(),
                     client.userId != currentServer.profile.userId
                 }
                 if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.userId, receiver.domain)
+                    chatRepository.processPeerKey(receiver.userId, receiver.domain,currentServer.profile.userId,currentServer.serverDomain)
                 }
             }
         }
