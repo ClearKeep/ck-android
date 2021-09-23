@@ -26,8 +26,12 @@ class ParamAPIProviderImpl @Inject constructor(
     }
 
     override fun provideSignalKeyDistributionBlockingStub(paramAPI: ParamAPI): SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyPushBlockingStub: access and hash key must not null")
+        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
-        return SignalKeyDistributionGrpc.newBlockingStub(managedChannel)
+        return SignalKeyDistributionGrpc.newBlockingStub(managedChannel).withCallCredentials(
+            CallCredentials(paramAPI.accessKey,paramAPI.hashKey))
     }
 
     override fun provideNotifyStub(paramAPI: ParamAPI): NotifyGrpc.NotifyStub {

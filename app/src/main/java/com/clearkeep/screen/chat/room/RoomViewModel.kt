@@ -12,6 +12,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.getFileNameFromUrl
 import com.clearkeep.utilities.getFileUrl
@@ -245,6 +246,12 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
+        val friend = _group.value?.clientList?.firstOrNull { client ->
+            client.userId != clientId
+        }
+        friend?.let {
+            chatRepository.processPeerKey(friend.userId,friend.domain,clientId,getOwner().domain)
+        }
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 
