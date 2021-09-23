@@ -55,10 +55,13 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         ivParameterSpec: ByteArray
     ): ByteArray? {
         val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), salt, iterationCount, keyStrength)
+        printlnCK("decrypt spec success")
         val tmp = factory.generateSecret(spec)
+        printlnCK("decrypt gen secret success")
         printlnCK("decrypt: iv $ivParameterSpec")
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivParameterSpec))
+        printlnCK("decrypt dcipher init success")
         return dcipher?.doFinal(base64EncryptedData) ?: return null
     }
 
