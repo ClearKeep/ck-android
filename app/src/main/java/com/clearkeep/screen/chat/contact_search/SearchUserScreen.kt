@@ -323,7 +323,7 @@ fun MessageResultItem(user: User, message: Message, group: ChatGroup, query: Str
                 val groupName = if (group.isGroup()) group.groupName else ""
 
                 CKText(
-                    text = getTimeAsString(message.createdTime),
+                    text = getTimeAsString(message.createdTime, includeTime = true),
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.W400,
                         color = grayscale2
