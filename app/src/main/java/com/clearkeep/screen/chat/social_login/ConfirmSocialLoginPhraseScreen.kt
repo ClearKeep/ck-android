@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.social_login
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +27,10 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
     val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isConfirmSecurityPhraseValid.observeAsState()
     val registerResponse = viewModel.registerSocialPinResponse.observeAsState()
+
+    BackHandler {
+        onBackPress()
+    }
 
     if (registerResponse.value?.status == Status.SUCCESS) {
         onLoginSuccess()

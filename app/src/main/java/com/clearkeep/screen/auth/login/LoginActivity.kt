@@ -246,7 +246,10 @@ class LoginActivity : AppCompatActivity() {
                 composable("confirm_security_phrase") {
                     ConfirmSocialLoginPhraseScreen(
                         loginViewModel,
-                        onBackPress = { navController.popBackStack() }) {
+                        onBackPress = {
+                            navController.popBackStack()
+                            loginViewModel.clearSecurityPhraseInput()
+                        }) {
                         onLoginSuccess()
                     }
                 }
@@ -255,8 +258,9 @@ class LoginActivity : AppCompatActivity() {
                         loginViewModel,
                         onBackPress = { navController.popBackStack() },
                         onVerifySuccess = { onLoginSuccess() }) {
+                        loginViewModel.resetSecurityPhraseErrors()
+                        loginViewModel.setResetPincodeState(true)
                         navController.navigate("set_security_phrase") {
-                            loginViewModel.setResetPincodeState(true)
                             popUpTo(route = "login") {
 
                             }
@@ -300,8 +304,10 @@ class LoginActivity : AppCompatActivity() {
     private fun onSocialLoginSuccess(navController: NavController, requireAction: String) {
         when (requireAction) {
             "verify_pincode" -> {
-                navController.navigate("enter_security_phrase")
+                loginViewModel.resetSecurityPhraseErrors()
+                loginViewModel.clearSecurityPhraseInput()
                 loginViewModel.setResetPincodeState(false)
+                navController.navigate("enter_security_phrase")
             }
             "register_pincode" -> {
                 navController.navigate("set_security_phrase")
