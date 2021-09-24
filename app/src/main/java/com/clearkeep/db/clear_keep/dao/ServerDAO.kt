@@ -39,5 +39,5 @@ interface ServerDAO {
     fun getServersAsState(): LiveData<List<Server>>
 
     @Query("SELECT * FROM server WHERE is_active = 1 LIMIT 1")
-    fun getDefaultServerAsState(): LiveData<Server>
+    fun getDefaultServerAsState(): LiveData<Server?>
 }

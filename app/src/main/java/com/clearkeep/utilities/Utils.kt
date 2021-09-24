@@ -55,7 +55,7 @@ fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val inputTime = Calendar.getInstance()
     inputTime.timeInMillis = timeMs
 
-    val time = if (includeTime) " at ${DateFormat.format("hh:mm AA", inputTime)}" else ""
+    val time = if (includeTime) " at ${SimpleDateFormat("hh:mm aa", Locale.US).format(inputTime.time)}" else ""
 
     return if (
         inputTime[Calendar.YEAR] === nowTime[Calendar.YEAR]
