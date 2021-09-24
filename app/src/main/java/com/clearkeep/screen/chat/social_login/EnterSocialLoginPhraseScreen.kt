@@ -34,6 +34,7 @@ fun EnterSocialLoginPhraseScreen(
     val isSecurityPhraseValid = viewModel.isSecurityPhraseValid.observeAsState()
     val isConfirmForgotPassphraseDialogVisible = remember { mutableStateOf(false) }
     val verifyResponse = viewModel.verifyPassphraseResponse.observeAsState()
+    val isLoading = viewModel.isLoading.observeAsState()
 
     val error = if (verifyResponse.value?.status == Status.ERROR) {
         "Security phrase is incorrect. Please try again"
@@ -45,75 +46,81 @@ fun EnterSocialLoginPhraseScreen(
         onVerifySuccess()
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
-    ) {
-        Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(title = "Enter Your Security Phrase", onBackPressed = { onBackPress() })
-        Spacer(Modifier.height(30.sdp()))
-
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.sdp())
-                .fillMaxSize(),
+    Box (Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
         ) {
-            CKText(
-                text = "Please enter your security phrase",
-                style = MaterialTheme.typography.caption,
-                color = grayscaleOffWhite,
-                fontSize = 16.sdp().toNonScalableTextSize()
-            )
-            Spacer(Modifier.height(32.sdp()))
-            CKTextInputField(
-                "Security Phrase",
-                securityPhrase, singleLine = true,
-                leadingIcon = {
-                    Image(
-                        painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
-                    )
-                },
-                keyboardType = KeyboardType.Password,
-                error = error
-            ) {
-                viewModel.setSecurityPhrase(it)
-            }
-            Spacer(Modifier.height(54.sdp()))
-            CKText(
-                "Forgot passphrase?",
-                style = MaterialTheme.typography.caption,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .clickable { isConfirmForgotPassphraseDialogVisible.value = true },
-                color = grayscaleOffWhite,
-                fontSize = 16.sdp().toNonScalableTextSize()
-            )
-            Spacer(Modifier.height(22.sdp()))
-            CKButton(
-                stringResource(R.string.verify),
-                onClick = {
-                     viewModel.verifySocialPin()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = isSecurityPhraseValid.value == true,
-                buttonType = ButtonType.White
-            )
+            Spacer(Modifier.height(58.sdp()))
+            CKTopAppBarSample(title = "Enter Your Security Phrase", onBackPressed = { onBackPress() })
+            Spacer(Modifier.height(30.sdp()))
 
-            if (isConfirmForgotPassphraseDialogVisible.value) {
-                CKAlertDialog(
-                    title = stringResource(R.string.warning),
-                    text = stringResource(R.string.reset_social_login_pin_warning),
-                    confirmTitle = "Reset",
-                    dismissTitle = "Cancel",
-                    onDismissButtonClick = {
-                        isConfirmForgotPassphraseDialogVisible.value = false
-                    },
-                    onConfirmButtonClick = {
-                        onConfirmForgotPassphrase()
-                    }
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.sdp())
+                    .fillMaxSize(),
+            ) {
+                CKText(
+                    text = "Please enter your security phrase",
+                    style = MaterialTheme.typography.caption,
+                    color = grayscaleOffWhite,
+                    fontSize = 16.sdp().toNonScalableTextSize()
                 )
+                Spacer(Modifier.height(32.sdp()))
+                CKTextInputField(
+                    "Security Phrase",
+                    securityPhrase, singleLine = true,
+                    leadingIcon = {
+                        Image(
+                            painterResource(R.drawable.ic_icon_lock),
+                            contentDescription = null
+                        )
+                    },
+                    keyboardType = KeyboardType.Password,
+                    error = error
+                ) {
+                    viewModel.setSecurityPhrase(it)
+                }
+                Spacer(Modifier.height(54.sdp()))
+                CKText(
+                    "Forgot passphrase?",
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable { isConfirmForgotPassphraseDialogVisible.value = true },
+                    color = grayscaleOffWhite,
+                    fontSize = 16.sdp().toNonScalableTextSize()
+                )
+                Spacer(Modifier.height(22.sdp()))
+                CKButton(
+                    stringResource(R.string.verify),
+                    onClick = {
+                        viewModel.verifySocialPin()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = isSecurityPhraseValid.value == true,
+                    buttonType = ButtonType.White
+                )
+
+                if (isConfirmForgotPassphraseDialogVisible.value) {
+                    CKAlertDialog(
+                        title = stringResource(R.string.warning),
+                        text = stringResource(R.string.reset_social_login_pin_warning),
+                        confirmTitle = "Reset",
+                        dismissTitle = "Cancel",
+                        onDismissButtonClick = {
+                            isConfirmForgotPassphraseDialogVisible.value = false && isLoading.value == false
+                        },
+                        onConfirmButtonClick = {
+                            onConfirmForgotPassphrase()
+                        }
+                    )
+                }
             }
+        }
+
+        if (isLoading.value == true) {
+            CKCircularProgressIndicator(Modifier.align(Alignment.Center))
         }
     }
 }
