@@ -54,6 +54,7 @@ class ChatRepository @Inject constructor(
                                   plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
+            //val signalProtocolAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace,senderId ), 111)
             val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
@@ -94,6 +95,7 @@ class ChatRepository @Inject constructor(
 
     suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
+        //val signalProtocolAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,

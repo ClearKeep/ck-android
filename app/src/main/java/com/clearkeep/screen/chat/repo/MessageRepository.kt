@@ -192,6 +192,7 @@ class MessageRepository @Inject constructor(
         try {
             val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
+                //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
             } else {
                 decryptGroupMessage(

@@ -63,7 +63,9 @@ class SignalKeyRepository @Inject constructor(
         val sentAliceDistributionMessage = aliceSessionBuilder.create(groupSender)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
+/*
             .setClientId(senderAddress.owner.clientId)
+*/
             .setDeviceId(senderAddress.deviceId)
             .setGroupId(groupID)
             .setClientKeyDistribution(ByteString.copyFrom(sentAliceDistributionMessage.serialize()))

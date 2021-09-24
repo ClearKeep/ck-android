@@ -63,7 +63,16 @@ class ParamAPIProviderImpl @Inject constructor(
 
     override fun provideGroupBlockingStub(paramAPI: ParamAPI): GroupGrpc.GroupBlockingStub {
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw NullPointerException("provideNotifyPushBlockingStub: access and hash key must not null")
+        }
         return GroupGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideMessageBlockingStub(paramAPI: ParamAPI): MessageGrpc.MessageBlockingStub {

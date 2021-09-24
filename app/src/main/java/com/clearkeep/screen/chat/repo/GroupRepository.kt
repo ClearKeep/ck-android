@@ -40,10 +40,8 @@ class GroupRepository @Inject constructor(
         printlnCK("fetchGroups")
         val server = serverRepository.getServers()
         server.forEach { server ->
-            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
-            val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             try {
-                val groups = getGroupListFromAPI(groupGrpc, server.profile.userId)
+                val groups = getGroupListFromAPI(server.profile.userId)
                 for (group in groups) {
                     printlnCK("fetchGroups ${group.groupName} ${group.lstClientList}")
                     group.lstClientList.forEach {
@@ -246,14 +244,23 @@ class GroupRepository @Inject constructor(
 
     @Throws(Exception::class)
     private suspend fun getGroupListFromAPI(
-        groupGrpc: GroupGrpc.GroupBlockingStub,
         clientId: String
     ): List<GroupOuterClass.GroupObjectResponse> = withContext(Dispatchers.IO) {
         printlnCK("getGroupListFromAPI: $clientId")
-        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder()
-            .setClientId(clientId)
-            .build()
-        val response = groupGrpc.getJoinedGroups(request)
+        val request = GroupOuterClass.GetJoinedGroupsRequest.newBuilder().build()
+
+        val server = serverRepository.getServer(getDomain(), clientId)
+        if (server == null) {
+            printlnCK("getGroupByID: null server")
+            throw NullPointerException("getGroupListFromAPI null server")
+        }
+        val response = apiProvider.provideGroupBlockingStub(
+            ParamAPI(
+                server.serverDomain,
+                server.accessKey,
+                server.hashKey
+            )
+        ).getJoinedGroups(request)
         return@withContext response.lstGroupList
     }
 
