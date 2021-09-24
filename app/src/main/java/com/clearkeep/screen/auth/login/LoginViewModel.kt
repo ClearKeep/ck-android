@@ -139,21 +139,27 @@ class LoginViewModel @Inject constructor(
     }
 
     suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByGoogle(token, getDomain()).also {
+        _isLoading.value = true
+        val result = authRepo.loginByGoogle(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
             }
         }
+        _isLoading.value = false
+        return result
     }
 
     suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.AuthRes> {
-        return authRepo.loginByFacebook(token, getDomain()).also {
+        _isLoading.value = true
+        val result = authRepo.loginByFacebook(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
             }
         }
+        _isLoading.value = false
+        return result
     }
 
     fun getFacebookProfile(accessToken: AccessToken, getName: (String) -> Unit) {
@@ -171,12 +177,15 @@ class LoginViewModel @Inject constructor(
     }
 
     suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.AuthRes>{
-        return authRepo.loginByMicrosoft(accessToken, getDomain()).also {
+        _isLoading.value = true
+        val result = authRepo.loginByMicrosoft(accessToken, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 preAccessToken = it.data?.preAccessToken ?: ""
                 userId = it.data?.sub ?: ""
             }
         }
+        _isLoading.value = false
+        return result
     }
 
     suspend fun login(context: Context, email: String, password: String): Resource<LoginResponse>? {
@@ -230,19 +239,23 @@ class LoginViewModel @Inject constructor(
 
     fun onSubmitNewPin() {
         viewModelScope.launch {
+            _isLoading.value = true
             val pin = _confirmSecurityPhrase.value?.trim() ?: ""
             registerSocialPinResponse.value = if (isResetPincode) {
                 authRepo.resetSocialPin(getDomain(), pin, userId, preAccessToken)
             } else {
                 authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
             }
+            _isLoading.value = false
         }
     }
 
     fun verifySocialPin() {
         viewModelScope.launch {
+            _isLoading.value = true
             val pin = _securityPhrase.value?.trim() ?: ""
             verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken)
+            _isLoading.value = false
         }
     }
 
