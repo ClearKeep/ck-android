@@ -25,102 +25,105 @@ import com.clearkeep.utilities.*
 fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit, onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
-    Column {
-        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp() ))
-        Row(
-            verticalAlignment = Alignment.Top
-        ) {
-            Column(modifier = Modifier.width(26.sdp()),
-                horizontalAlignment = Alignment.Start
+
+    if (message.isNotBlank()) {
+        Column {
+            Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp() ))
+            Row(
+                verticalAlignment = Alignment.Top
             ) {
-                if (messageDisplayInfo.showAvatarAndName) {
-                    CircleAvatar(emptyList(), messageDisplayInfo.userName, size = 18.sdp())
-                }
-            }
-            Column(modifier = Modifier.fillMaxWidth()) {
-                if (messageDisplayInfo.showAvatarAndName) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = messageDisplayInfo.userName,
-                            style = MaterialTheme.typography.body2.copy(
-                                color = colorSuccessDefault,
-                                fontWeight = FontWeight.W600,
-                                fontSize = defaultNonScalableTextSize()
-                            ),
-                        )
-                        Spacer(modifier = Modifier.height(8.sdp()))
-                        Text(
-                            text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
-                            style = MaterialTheme.typography.caption.copy(
-                                fontWeight = FontWeight.Medium,
-                                color = grayscale3,
-                                textAlign = TextAlign.Start,
-                                fontSize = defaultNonScalableTextSize()
-                            ),
-                            modifier = Modifier
-                                .weight(1.0f, true)
-                                .padding(start = 4.sdp()),
-                        )
+                Column(modifier = Modifier.width(26.sdp()),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    if (messageDisplayInfo.showAvatarAndName) {
+                        CircleAvatar(emptyList(), messageDisplayInfo.userName, size = 18.sdp())
                     }
                 }
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                    ) {
-                        if (!messageDisplayInfo.showAvatarAndName) {
-                            CKText(
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    if (messageDisplayInfo.showAvatarAndName) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = messageDisplayInfo.userName,
+                                style = MaterialTheme.typography.body2.copy(
+                                    color = colorSuccessDefault,
+                                    fontWeight = FontWeight.W600,
+                                    fontSize = defaultNonScalableTextSize()
+                                ),
+                            )
+                            Spacer(modifier = Modifier.height(8.sdp()))
+                            Text(
                                 text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
                                 style = MaterialTheme.typography.caption.copy(
                                     fontWeight = FontWeight.Medium,
                                     color = grayscale3,
-                                    textAlign = TextAlign.End,
+                                    textAlign = TextAlign.Start,
                                     fontSize = defaultNonScalableTextSize()
                                 ),
+                                modifier = Modifier
+                                    .weight(1.0f, true)
+                                    .padding(start = 4.sdp()),
                             )
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Card(
-                                Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
-                                    detectTapGestures(
-                                        onLongPress = {
-                                            printlnCK("Long press on message ${messageDisplayInfo.message.message}")
-                                            onLongClick(messageDisplayInfo)
-                                        }
-                                    )
-                                },
-                                backgroundColor = primaryDefault,
-                                shape = messageDisplayInfo.cornerShape,
-                            ) {
-                                Column(horizontalAlignment = Alignment.Start) {
-                                    if (isImageMessage(message)) {
-                                        ImageMessageContent(
-                                            Modifier.padding(24.sdp(), 16.sdp()),
-                                            getImageUriStrings(message)
-                                        ) {
-                                            onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
-                                        }
-                                    } else if (isFileMessage(message)) {
-                                        FileMessageContent(getFileUriStrings(message)) {
-                                            onClickFile.invoke(it)
-                                        }
-                                    }
-                                    val messageContent = getMessageContent(message)
-                                    if (messageContent.isNotBlank()) {
-                                        Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
-                                            ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                    }
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                        ) {
+                            if (!messageDisplayInfo.showAvatarAndName) {
+                                CKText(
+                                    text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
+                                    style = MaterialTheme.typography.caption.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        color = grayscale3,
+                                        textAlign = TextAlign.End,
+                                        fontSize = defaultNonScalableTextSize()
+                                    ),
+                                )
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Card(
+                                    Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
+                                        detectTapGestures(
+                                            onLongPress = {
+                                                printlnCK("Long press on message ${messageDisplayInfo.message.message}")
                                                 onLongClick(messageDisplayInfo)
+                                            }
+                                        )
+                                    },
+                                    backgroundColor = primaryDefault,
+                                    shape = messageDisplayInfo.cornerShape,
+                                ) {
+                                    Column(horizontalAlignment = Alignment.Start) {
+                                        if (isImageMessage(message)) {
+                                            ImageMessageContent(
+                                                Modifier.padding(24.sdp(), 16.sdp()),
+                                                getImageUriStrings(message)
+                                            ) {
+                                                onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
+                                            }
+                                        } else if (isFileMessage(message)) {
+                                            FileMessageContent(getFileUriStrings(message)) {
+                                                onClickFile.invoke(it)
+                                            }
+                                        }
+                                        val messageContent = getMessageContent(message)
+                                        if (messageContent.isNotBlank()) {
+                                            Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
+                                                ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                                    onLongClick(messageDisplayInfo)
+                                                }
                                             }
                                         }
                                     }
                                 }
+                                Spacer(Modifier.width(18.sdp()))
+                                if (isTempMessage(message))
+                                    CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
                             }
-                            Spacer(Modifier.width(18.sdp()))
-                            if (isTempMessage(message))
-                                CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
                         }
                     }
                 }
