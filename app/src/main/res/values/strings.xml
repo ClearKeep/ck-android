@@ -117,4 +117,6 @@
     <string name="success">Success</string>
     <string name="message_sent_error">Failed to send message</string>
     <string name="remove">Remove</string>
+    <string name="social_login_phrase_screen_title">Set Your Security Phrase</string>
+    <string name="reset_social_login_pin_warning">Resetting your Security Phrase will reset all your data</string>
 </resources>

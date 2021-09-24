@@ -103,7 +103,7 @@ fun EnterSocialLoginPhraseScreen(
             if (isConfirmForgotPassphraseDialogVisible.value) {
                 CKAlertDialog(
                     title = stringResource(R.string.warning),
-                    text = "Resetting your PIN will reset all your data.",
+                    text = stringResource(R.string.reset_social_login_pin_warning),
                     confirmTitle = "Reset",
                     dismissTitle = "Cancel",
                     onDismissButtonClick = {

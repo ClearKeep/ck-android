@@ -11,6 +11,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.SignalKeyRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -50,6 +51,7 @@ class AuthRepository @Inject constructor(
     private val userPreferenceRepository: UserPreferenceRepository,
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    private val roomRepository: GroupRepository
     ) {
     suspend fun register(
         displayName: String,
@@ -420,12 +422,14 @@ class AuthRepository @Inject constructor(
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).resetPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("resetSocialPin success ${response.requireAction}")
-                return@withContext onLoginSuccess(
+                val profileResponse = onLoginSuccess(
                     domain,
                     rawPin,
                     response,
-                    isSocialAccount = true
+                    isSocialAccount = true,
+                    clearOldUserData = true
                 )
+                return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -509,14 +513,6 @@ class AuthRepository @Inject constructor(
             printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
             val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
                 ?: return@withContext Resource.error("Can not get profile", null)
-            val isRegisterKeySuccess = peerRegisterClientKeyWithGrpc(
-                Owner(domain, profile.userId),
-                paramAPIProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(domain, accessToken, hashKey))
-            )
-            if (!isRegisterKeySuccess) {
-                return@withContext Resource.error("Can not register key", null)
-            }
-
             serverRepository.insertServer(
                 Server(
                     serverName = response.workspaceName,
@@ -569,7 +565,14 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    private suspend fun onLoginSuccess(domain: String, password: String, response: AuthOuterClass.AuthRes, hashKey: String = response.hashKey, isSocialAccount: Boolean = false) : Resource<AuthOuterClass.AuthRes> {
+    private suspend fun onLoginSuccess(
+        domain: String,
+        password: String,
+        response: AuthOuterClass.AuthRes,
+        hashKey: String = response.hashKey,
+        isSocialAccount: Boolean = false,
+        clearOldUserData: Boolean = false
+    ): Resource<AuthOuterClass.AuthRes> {
         try {
             val accessToken = response.accessToken
             val salt = response.salt
@@ -603,9 +606,31 @@ class AuthRepository @Inject constructor(
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
             printlnCK("onLoginSuccess store key success")
-            val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
+            printlnCK("onLoginSuccess domain $domain accessToken $accessToken hashKey $hashKey")
+            val profile = getProfile(
+                paramAPIProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        domain,
+                        accessToken,
+                        hashKey
+                    )
+                )
+            )
                 ?: return Resource.error("Can not get profile", null)
             printlnCK("onLoginSuccess get key success")
+
+            if (clearOldUserData) {
+                val oldServer = serverRepository.getServer(domain, profile.userId)
+//                val logoutFromOldServerResponse = oldServer?.let {
+//                    logoutFromAPI(it)
+//                }
+//                if (logoutFromOldServerResponse?.data?.error.isNullOrBlank()) {
+                    oldServer?.id?.let {
+                        roomRepository.removeGroupByDomain(domain, profile.userId)
+                    }
+//                }
+            }
+
             serverRepository.insertServer(
                 Server(
                     serverName = response.workspaceName,
