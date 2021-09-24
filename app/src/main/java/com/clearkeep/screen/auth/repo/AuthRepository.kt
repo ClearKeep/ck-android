@@ -621,14 +621,9 @@ class AuthRepository @Inject constructor(
 
             if (clearOldUserData) {
                 val oldServer = serverRepository.getServer(domain, profile.userId)
-//                val logoutFromOldServerResponse = oldServer?.let {
-//                    logoutFromAPI(it)
-//                }
-//                if (logoutFromOldServerResponse?.data?.error.isNullOrBlank()) {
                     oldServer?.id?.let {
                         roomRepository.removeGroupByDomain(domain, profile.userId)
                     }
-//                }
             }
 
             serverRepository.insertServer(
