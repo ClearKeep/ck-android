@@ -67,7 +67,7 @@ private fun MessageListView(
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
     val reversedMessage = messageList.reversed()
-    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
+    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.filter{ it.message.isNotBlank() }.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
         convertMessageList(entry.value, clients, myClientId, isGroup)
     }
     Surface(
