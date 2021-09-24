@@ -21,13 +21,9 @@ import androidx.lifecycle.lifecycleScope
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.screen.auth.forgot.ForgotScreen
 import com.clearkeep.screen.auth.login.LoginViewModel
-import com.clearkeep.utilities.isValidEmail
-import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
-import kotlinx.coroutines.launch
 
 @Composable
 fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onClickNext: () -> Unit) {
@@ -84,18 +80,6 @@ fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Uni
                 enabled = isSecurityPhraseValid.value == true,
                 buttonType = ButtonType.White
             )
-
-//            if (isEmptyEmail.value || isInvalidEmailFormat.value) {
-//                CKAlertDialog(
-//                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else stringResource(
-//                        R.string.email_invalid),
-//                    text = stringResource(R.string.pls_check_again),
-//                    onDismissButtonClick = {
-//                        isEmptyEmail.value = false
-//                        isInvalidEmailFormat.value = false
-//                    }
-//                )
-//            }
         }
     }
 }
