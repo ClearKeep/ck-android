@@ -76,7 +76,6 @@ fun RegisterScreen(
                 CKText(
                     text = stringResource(R.string.sign_up_fill_information),
                     color = grayscaleBlack,
-                    textAlign = TextAlign.Justify,
                     fontSize = defaultNonScalableTextSize()
                 )
                 Spacer(Modifier.height(24.sdp()))
