@@ -83,7 +83,7 @@ fun printlnCK(str: String) {
 }
 
 fun getUnableErrorMessage(message: String?): String {
-    return if (BuildConfig.FLAVOR == "dev" || BuildConfig.FLAVOR == "staging") {
+    return if (BuildConfig.FLAVOR == "dev") {
         message ?: ""
     } else {
         ""

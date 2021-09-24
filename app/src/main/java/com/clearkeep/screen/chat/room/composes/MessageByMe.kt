@@ -31,69 +31,71 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalAlignment = Alignment.End
-    ) {
-        Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
-        Text(
-            text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
-            style = MaterialTheme.typography.caption.copy(
-                fontWeight = FontWeight.Medium,
-                color = grayscale3,
-                textAlign = TextAlign.Start,
-                fontSize = defaultNonScalableTextSize()
-            ),
-        )
-        Row(
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
+    if (message.isNotBlank()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            horizontalAlignment = Alignment.End
         ) {
-            if (isTempMessage(message))
-                CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
-            Spacer(Modifier.width(18.sdp()))
-            Card(
-                Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
-                    detectTapGestures(
-                        onLongPress = {
-                            printlnCK("Long press on message ${messageDisplayInfo.message.message}")
-                            onLongClick(messageDisplayInfo)
-                        }
-                    )
-                },
-                backgroundColor = grayscale2,
-                shape = messageDisplayInfo.cornerShape,
+            Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
+            Text(
+                text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
+                style = MaterialTheme.typography.caption.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = grayscale3,
+                    textAlign = TextAlign.Start,
+                    fontSize = defaultNonScalableTextSize()
+                ),
+            )
+            Row(
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.End) {
-                    if (isImageMessage(message)) {
-                        ImageMessageContent(
-                            Modifier.padding(24.sdp(), 16.sdp()),
-                            getImageUriStrings(message)
-                        ) {
-                            onClickImage.invoke(getImageUriStrings(message), "You")
-                        }
-                    } else if (isFileMessage(message)) {
-                        FileMessageContent(getFileUriStrings(message)) {
-                            onClickFile.invoke(it)
-                        }
-                    }
-                    val messageContent = getMessageContent(message)
-                    if (messageContent.isNotBlank()) {
-                        Row(
-                            Modifier
-                                .align(Alignment.End)
-                                .wrapContentHeight()
-                                .pointerInput(messageDisplayInfo.message.hashCode()) {
-                                    detectTapGestures(
-                                        onLongPress = {
-                                            onLongClick(messageDisplayInfo)
-                                        }
-                                    )
-                                }) {
-                            ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                if (isTempMessage(message))
+                    CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
+                Spacer(Modifier.width(18.sdp()))
+                Card(
+                    Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {
+                        detectTapGestures(
+                            onLongPress = {
+                                printlnCK("Long press on message ${messageDisplayInfo.message.message}")
                                 onLongClick(messageDisplayInfo)
+                            }
+                        )
+                    },
+                    backgroundColor = grayscale2,
+                    shape = messageDisplayInfo.cornerShape,
+                ) {
+                    Column(horizontalAlignment = Alignment.End) {
+                        if (isImageMessage(message)) {
+                            ImageMessageContent(
+                                Modifier.padding(24.sdp(), 16.sdp()),
+                                getImageUriStrings(message)
+                            ) {
+                                onClickImage.invoke(getImageUriStrings(message), "You")
+                            }
+                        } else if (isFileMessage(message)) {
+                            FileMessageContent(getFileUriStrings(message)) {
+                                onClickFile.invoke(it)
+                            }
+                        }
+                        val messageContent = getMessageContent(message)
+                        if (messageContent.isNotBlank()) {
+                            Row(
+                                Modifier
+                                    .align(Alignment.End)
+                                    .wrapContentHeight()
+                                    .pointerInput(messageDisplayInfo.message.hashCode()) {
+                                        detectTapGestures(
+                                            onLongPress = {
+                                                onLongClick(messageDisplayInfo)
+                                            }
+                                        )
+                                    }) {
+                                ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                    onLongClick(messageDisplayInfo)
+                                }
                             }
                         }
                     }
