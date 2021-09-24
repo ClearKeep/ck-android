@@ -217,6 +217,17 @@ class LoginViewModel @Inject constructor(
         return result
     }
 
+    fun clearSecurityPhraseInput() {
+        _securityPhrase.value = ""
+        _confirmSecurityPhrase.value = ""
+        _isSecurityPhraseValid.value = null
+    }
+
+    fun resetSecurityPhraseErrors() {
+        verifyPassphraseResponse.value = null
+        registerSocialPinResponse.value = null
+    }
+
     fun onSubmitNewPin() {
         viewModelScope.launch {
             val pin = _confirmSecurityPhrase.value ?: ""
