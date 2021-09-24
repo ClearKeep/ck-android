@@ -55,6 +55,7 @@ class ChatRepository @Inject constructor(
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             //val signalProtocolAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace,senderId ), 111)
+            val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
                 val processSuccess = processPeerKey(receiverId, receiverWorkspaceDomain,senderId,ownerWorkSpace)
