@@ -233,23 +233,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun leaveServer() {
-
         viewModelScope.launch {
+            val response = authRepository.logoutFromAPI(currentServer.value!!)
 
-            /*workSpaceRepository.leaveServer()
-            *//*currentServer.value?.id?.let { serverRepository.deleteServer(it) }
-            currentServer.value?.id?.let {
-              var resutf=  serverRepository.deleteServer(it)
-            }
-            printlnCK("leaveServer: ${servers.value?.size} ")
-            if (servers.value?.size!! > 0) {
-                printlnCK("leaveServer: ${servers.value?.size} ")
-                selectChannel(servers.value!![0])
-            }else {
-                logOut()
-            }*/
-            val response = workSpaceRepository.leaveServer()
-            if (response?.error.isNullOrEmpty()) {
+            if (response.data?.error.isNullOrBlank()) {
                 currentServer.value?.id?.let {
                     val removeResult = serverRepository.deleteServer(it)
                     roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
@@ -266,17 +253,6 @@ class HomeViewModel @Inject constructor(
             }else {
                 printlnCK("Leave Server error")
             }
-
-            /*if (result?.success == true) {
-                currentServer.value?.id?.let { serverRepository.deleteServer(it) }
-                if (servers.value?.size!! > 0) {
-                    selectChannel(servers.value!![0])
-                }else {
-                    logOut()
-                }
-            } else {
-                printlnCK("leaveServer error")
-            }*/
         }
     }
 

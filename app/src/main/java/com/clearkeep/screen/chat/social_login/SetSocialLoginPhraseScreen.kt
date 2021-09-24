@@ -39,7 +39,7 @@ fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Uni
         .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(title = "Set your security phrase", onBackPressed = { onBackPress() })
+        CKTopAppBarSample(title = stringResource(R.string.social_login_phrase_screen_title), onBackPressed = { onBackPress() })
         Spacer(Modifier.height(30.sdp()))
 
         Column(
