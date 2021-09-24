@@ -49,11 +49,13 @@ fun getCurrentDateTime(): Date {
     return DateUtils.getRelativeTimeSpanString(timeMs).toString()
 }*/
 
-fun getTimeAsString(timeMs: Long): String {
+fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val nowTime = Calendar.getInstance()
 
     val inputTime = Calendar.getInstance()
     inputTime.timeInMillis = timeMs
+
+    val time = if (includeTime) " at ${DateFormat.format("hh:mm AA", inputTime)}" else ""
 
     return if (
         inputTime[Calendar.YEAR] === nowTime[Calendar.YEAR]
@@ -61,8 +63,12 @@ fun getTimeAsString(timeMs: Long): String {
         && inputTime[Calendar.WEEK_OF_MONTH] === nowTime[Calendar.WEEK_OF_MONTH]
     ) {
         when {
-            nowTime[Calendar.DATE] === inputTime[Calendar.DATE] -> "Today"
-            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] === 1 -> "Yesterday"
+            nowTime[Calendar.DATE] === inputTime[Calendar.DATE] -> {
+                "Today$time"
+            }
+            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] === 1 -> {
+                "Yesterday$time"
+            }
             else -> {
                 DateFormat.format("EEE", inputTime).toString()
             }
