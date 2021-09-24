@@ -62,7 +62,7 @@ class ServerRepository @Inject constructor(
     }
 
     fun getDefaultServerProfileAsState() = serverDAO.getDefaultServerAsState().map {
-        it.profile
+        it?.profile ?: Profile(null, "", "", "", "", 0L, "")
     }
 
     suspend fun updateServerProfile(domain: String, profile: Profile) {

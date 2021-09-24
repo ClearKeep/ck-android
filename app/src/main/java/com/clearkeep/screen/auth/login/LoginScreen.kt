@@ -50,6 +50,7 @@ fun LoginScreen(
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
+    val confirmForgotPasswordVisible = remember { mutableStateOf(false) }
     val emailError = loginViewModel.emailError.observeAsState()
     val passError = loginViewModel.passError.observeAsState()
 
@@ -135,7 +136,7 @@ fun LoginScreen(
                         CKTextButton(
                             modifier = Modifier.padding(0.sdp()),
                             stringResource(R.string.btn_forgot_password),
-                            onClick = onForgotPasswordPress,
+                            onClick = { confirmForgotPasswordVisible.value = true },
                             enabled = !isLoading,
                             textButtonType = TextButtonType.White
                         )
@@ -238,6 +239,22 @@ fun LoginScreen(
                 Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
             }
         }
+    }
+
+    if (confirmForgotPasswordVisible.value) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = "Forgetting your Password will reset all your data",
+            confirmTitle = "Forgot",
+            dismissTitle = stringResource(R.string.cancel),
+            onConfirmButtonClick = {
+                confirmForgotPasswordVisible.value = false
+                onForgotPasswordPress()
+            },
+            onDismissButtonClick = {
+                confirmForgotPasswordVisible.value = false
+            }
+        )
     }
 }
 

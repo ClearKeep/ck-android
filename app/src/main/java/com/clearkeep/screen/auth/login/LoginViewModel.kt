@@ -230,7 +230,7 @@ class LoginViewModel @Inject constructor(
 
     fun onSubmitNewPin() {
         viewModelScope.launch {
-            val pin = _confirmSecurityPhrase.value ?: ""
+            val pin = _confirmSecurityPhrase.value?.trim() ?: ""
             registerSocialPinResponse.value = if (isResetPincode) {
                 authRepo.resetSocialPin(getDomain(), pin, userId, preAccessToken)
             } else {
@@ -241,7 +241,7 @@ class LoginViewModel @Inject constructor(
 
     fun verifySocialPin() {
         viewModelScope.launch {
-            val pin = _securityPhrase.value ?: ""
+            val pin = _securityPhrase.value?.trim() ?: ""
             verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken)
         }
     }
@@ -324,6 +324,6 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun isConfirmSecurityPhraseValid(): Boolean {
-        return _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
+        return isSecurityPhraseValid((_securityPhrase.value ?: "").trim()) && _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
     }
 }
