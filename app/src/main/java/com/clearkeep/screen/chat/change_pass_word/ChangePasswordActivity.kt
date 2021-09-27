@@ -2,14 +2,23 @@ package com.clearkeep.screen.chat.change_pass_word
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val changePasswordViewModel: ChangePasswordViewModel by viewModels {
+        viewModelFactory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -23,10 +32,11 @@ class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun MainComposable() {
-        ChangePassWordScreen(
+        ChangePasswordScreen(
+            changePasswordViewModel,
             onBackPress = {
                 finish()
-            })
+            }
+        )
     }
-
 }
