@@ -10,15 +10,13 @@ import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.screen.chat.utils.isGroup
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
-import com.clearkeep.utilities.getFileNameFromUrl
-import com.clearkeep.utilities.getFileUrl
-import com.clearkeep.utilities.getMessageContent
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -34,12 +32,15 @@ class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val groupRepository: GroupRepository,
     private val signalKeyRepository: SignalKeyRepository,
+    authRepository: AuthRepository,
+    serverRepository: ServerRepository,
 
     private val peopleRepository: PeopleRepository,
     private val messageRepository: MessageRepository,
-    private val serverRepository: ServerRepository,
     private val environment: Environment
-): ViewModel() {
+): BaseViewModel(authRepository, groupRepository, serverRepository) {
+    val isLogout = serverRepository.isLogout
+
     private var roomId: Long? = null
 
     private var friendId: String? = null

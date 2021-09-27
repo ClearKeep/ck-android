@@ -89,6 +89,7 @@ class SignalKeyRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("registerSenderKeyToGroup token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }

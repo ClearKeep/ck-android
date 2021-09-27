@@ -57,6 +57,7 @@ class GroupRepository @Inject constructor(
                 val parsedError = parseError(e)
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
+                        printlnCK("fetchGroups token expired")
                         serverRepository.isLogout.postValue(true)
                         parsedError.message
                     }
@@ -86,6 +87,7 @@ class GroupRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("fetchNewGroup token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -128,6 +130,7 @@ class GroupRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("createGroupFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -187,6 +190,7 @@ class GroupRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("removeMemberInGroup token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -233,6 +237,7 @@ class GroupRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("inviteToGroupFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -274,6 +279,7 @@ class GroupRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("leaveGroup token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -303,11 +309,11 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupFromAPI: ${group.clientList}")
             return@withContext group
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("getGroupFromAPI token expired}")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -341,11 +347,11 @@ class GroupRepository @Inject constructor(
             ).getJoinedGroups(request)
             return@withContext response.lstGroupList
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("getGroupListFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
