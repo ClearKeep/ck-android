@@ -107,6 +107,7 @@ class MessageRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("inviteToGroupFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -139,6 +140,7 @@ class MessageRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("updateNotesFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -463,6 +465,7 @@ class MessageRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("initSessionUserPeer token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -506,6 +509,7 @@ class MessageRepository @Inject constructor(
 
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
+                        printlnCK("initSessionUsInGroup token expired")
                         serverRepository.isLogout.postValue(true)
                         parsedError.message
                     }

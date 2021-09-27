@@ -46,7 +46,12 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return SignalKeyDistributionGrpc.newBlockingStub(managedChannel)
+        return SignalKeyDistributionGrpc.newBlockingStub(managedChannel).withCallCredentials(
+            CallCredentials(
+                server!!.accessKey,
+                server!!.hashKey
+            )
+        )
     }
 
     override fun provideNotifyStub(): NotifyGrpc.NotifyStub {

@@ -66,6 +66,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("searchUser token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -148,6 +149,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("getFriendsFromAPI token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -195,6 +197,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("sendPing token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -219,6 +222,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("updateStatus token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -255,6 +259,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("getListClientStatus token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -294,6 +299,7 @@ class PeopleRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("getUserInfo token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }

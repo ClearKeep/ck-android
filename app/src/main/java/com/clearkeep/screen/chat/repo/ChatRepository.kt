@@ -93,6 +93,7 @@ class ChatRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("sendMessageInPeer token expire")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -149,6 +150,7 @@ class ChatRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("sendMessageToGroup token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -181,6 +183,7 @@ class ChatRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("sendNote token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -263,6 +266,7 @@ class ChatRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("uploadFile token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }

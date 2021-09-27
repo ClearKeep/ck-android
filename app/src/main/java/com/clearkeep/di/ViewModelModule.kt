@@ -18,6 +18,7 @@ import com.clearkeep.screen.chat.notification_setting.NotificationSettingsViewMo
 import com.clearkeep.screen.chat.otp.OtpViewModel
 import com.clearkeep.screen.chat.settings.ServerSettingViewModel
 import com.clearkeep.screen.videojanus.CallViewModel
+import com.clearkeep.utilities.BaseViewModel
 import com.setel.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
@@ -98,6 +99,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(OtpViewModel::class)
     abstract fun bindOtpViewModel(otpViewModel: OtpViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(BaseViewModel::class)
+    abstract fun bindBaseViewModel(baseViewModel: BaseViewModel): BaseViewModel
 
     @Binds
     @IntoMap
