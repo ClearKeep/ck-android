@@ -1,19 +1,18 @@
 package com.clearkeep.screen.chat.repo
 
+import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
-import com.clearkeep.db.clear_keep.model.ProtoResponse
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.AppStorage
+import com.clearkeep.utilities.DecryptsPBKDF2
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
-import com.google.gson.Gson
 import com.google.protobuf.ByteString
-import io.grpc.Metadata
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -322,4 +321,42 @@ class ProfileRepository @Inject constructor(
             return@withContext Resource.error("", 0 to exception.toString())
         }
     }
+
+    suspend fun changePassword(owner: Owner, oldPassword: String, newPassword: String): Resource<String> =
+        withContext(Dispatchers.IO) {
+            println("changePassword oldPassword $oldPassword, newPassword $newPassword")
+            try {
+                val server = serverRepository.getServerByOwner(owner)
+                    ?: return@withContext Resource.error("", null)
+                val request = UserOuterClass.ChangePasswordRequest.newBuilder()
+                    .setOldPassword(DecryptsPBKDF2.md5(oldPassword))
+                    .setNewPassword(DecryptsPBKDF2.md5(newPassword))
+                    .build()
+                val stub = apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
+                val response = stub.changePassword(request)
+                return@withContext if (response.error.isNullOrBlank()) Resource.success(null) else Resource.error(
+                    "",
+                    null
+                )
+            } catch (exception: StatusRuntimeException) {
+                val parsedError = parseError(exception)
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        serverRepository.isLogout.postValue(true)
+                        ""
+                    }
+                    else -> parsedError.message
+                }
+                return@withContext Resource.error("", null)
+            } catch (exception: Exception) {
+                printlnCK("changePassword: $exception")
+                return@withContext Resource.error("", null)
+            }
+        }
 }

@@ -7,6 +7,8 @@ import com.clearkeep.screen.chat.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
+import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
+import com.clearkeep.screen.chat.change_pass_word.ChangePasswordViewModel
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.profile.ProfileViewModel
@@ -96,6 +98,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(OtpViewModel::class)
     abstract fun bindOtpViewModel(otpViewModel: OtpViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ChangePasswordViewModel::class)
+    abstract fun bindChangePasswordViewModel(changePasswordViewModel: ChangePasswordViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
