@@ -52,7 +52,7 @@ class AuthRepository @Inject constructor(
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val roomRepository: GroupRepository
-    ) {
+) {
     suspend fun register(
         displayName: String,
         password: String,

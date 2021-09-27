@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,7 +30,8 @@ import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
-fun ChangePassWordScreen(
+fun ChangePasswordScreen(
+    viewModel: ChangePasswordViewModel,
     onBackPress: (() -> Unit)
 ) {
     Column(
@@ -71,6 +73,7 @@ fun ChangePassWordScreen(
             CKTextInputField(
                 placeholder = "Current Password",
                 textValue = currentPassWord,
+                onValueChange = { viewModel.setOldPassword(it) },
                 keyboardType = KeyboardType.Password,
                 singleLine = true,
                 leadingIcon = {
@@ -88,6 +91,7 @@ fun ChangePassWordScreen(
                 placeholder = "New Password",
                 textValue = newPassWord,
                 keyboardType = KeyboardType.Password,
+                onValueChange = { viewModel.setNewPassword(it) },
                 singleLine = true,
                 leadingIcon = {
                     Image(
@@ -103,6 +107,7 @@ fun ChangePassWordScreen(
             CKTextInputField(
                 placeholder = stringResource(R.string.confirm_password),
                 textValue = confirmPassWord,
+                onValueChange = { viewModel.setNewPasswordConfirm(it) },
                 keyboardType = KeyboardType.Password,
                 singleLine = true,
                 leadingIcon = {
@@ -119,12 +124,11 @@ fun ChangePassWordScreen(
             CKButton(
                 stringResource(R.string.save),
                 onClick = {
-
+                    viewModel.changePassword()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 buttonType = ButtonType.White
             )
         }
     }
-
 }
