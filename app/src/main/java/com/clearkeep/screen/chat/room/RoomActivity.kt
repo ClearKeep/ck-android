@@ -76,6 +76,21 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        roomViewModel.isLogout.observe(this) {
+            printlnCK("RoomActivity signOut $it")
+            if (it) {
+                roomViewModel.signOut()
+            }
+        }
+
+        roomViewModel.isLogOutCompleted.observe(this) {
+            println("RoomActivity isLogoutCompleted $it")
+            if (it) {
+                restartToRoot(this)
+            }
+        }
+
         val rootView = findViewById<View>(android.R.id.content).rootView
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
             val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom

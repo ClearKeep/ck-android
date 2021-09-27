@@ -29,7 +29,7 @@ class WorkSpaceRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
-
+                    printlnCK("leaveServer token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -59,7 +59,7 @@ class WorkSpaceRepository @Inject constructor(
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
-
+                    printlnCK("getWorkspaceInfo token expired")
                     serverRepository.isLogout.postValue(true)
                     ""
                 }

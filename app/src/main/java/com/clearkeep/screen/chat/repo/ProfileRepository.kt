@@ -65,6 +65,7 @@ class ProfileRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("registerTokenByOwner token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -108,6 +109,7 @@ class ProfileRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("updateProfile token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -147,6 +149,7 @@ class ProfileRepository @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("uploadAvatar token expired")
                     serverRepository.isLogout.postValue(true)
                     parsedError.message
                 }
@@ -176,6 +179,7 @@ class ProfileRepository @Inject constructor(
             val message = when (parsedError.code) {
                 1000, 1077 -> {
                     serverRepository.isLogout.postValue(true)
+                    printlnCK("getMfaSettingsFromAPI token expired")
                     parsedError.message
                 }
                 else -> parsedError.message
@@ -216,6 +220,7 @@ class ProfileRepository @Inject constructor(
             val message = when (parsedError.code) {
                 1000, 1077 -> {
                     serverRepository.isLogout.postValue(true)
+                    printlnCK("updateMfaSettings token expired")
                     "" to parsedError.message
                 }
                 1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
@@ -243,6 +248,7 @@ class ProfileRepository @Inject constructor(
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("mfaValidatePassword token expired")
                     serverRepository.isLogout.postValue(true)
                     "Error" to "Expired token"
                 }
@@ -282,7 +288,7 @@ class ProfileRepository @Inject constructor(
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
-
+                    printlnCK("mfaValidateOtp token expired")
                     serverRepository.isLogout.postValue(true)
                     ""
                 }
@@ -309,6 +315,7 @@ class ProfileRepository @Inject constructor(
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
                 1000, 1077 -> {
+                    printlnCK("mfaResendOtp token expired")
                     serverRepository.isLogout.postValue(true)
                     ""
                 }
@@ -348,6 +355,7 @@ class ProfileRepository @Inject constructor(
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
+                        printlnCK("changePassword token expired")
                         serverRepository.isLogout.postValue(true)
                         ""
                     }
