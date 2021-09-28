@@ -84,7 +84,7 @@ fun RoomMemberHeader(onCloseView: () -> Unit) {
                 )
             }
             CKHeaderText(
-                "Member", modifier = Modifier
+                "See Members", modifier = Modifier
                     .weight(1.0f, true), headerTextType = HeaderTextType.Medium
             )
         }

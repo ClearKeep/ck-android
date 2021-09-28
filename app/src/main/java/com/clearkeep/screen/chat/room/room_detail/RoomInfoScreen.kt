@@ -71,19 +71,6 @@ fun RoomInfoScreen(
                         modifier = Modifier
                             .weight(1.0f, true)
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(
-                            onClick = {},
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_pencil),
-                                contentDescription = ""
-                            )
-                        }
-                    }
                 }
                 Spacer(modifier = Modifier.height(20.sdp()))
                 Column(
@@ -135,18 +122,6 @@ fun RoomInfoScreen(
                         )
                         SideBarLabel(text = "Video", color = primaryDefault)
                     }
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_button_alert),
-                            contentDescription = null,
-                            modifier = Modifier.size(36.sdp())
-                        )
-                        SideBarLabel(text = "Mute", color = primaryDefault)
-                    }
-
                 }
                 Column(
                     modifier = Modifier
@@ -169,7 +144,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "Add member",
+                                "Add Member",
                                 R.drawable.ic_user_plus,
                                 textColor = grayscale1,
                                 onClickAction = {
@@ -181,7 +156,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "Remove member",
+                                "Remove Member",
                                 R.drawable.ic_user_off,
                                 textColor = grayscale1,
                                 onClickAction = {
