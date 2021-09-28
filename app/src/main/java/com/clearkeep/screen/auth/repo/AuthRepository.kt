@@ -578,6 +578,7 @@ class AuthRepository @Inject constructor(
             val salt = response.salt
             val publicKey = response.clientKeyPeer.identityKeyPublic
             val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
+            printlnCK("onLoginSuccess privateKeyEncrypt $privateKeyEncrypt")
             printlnCK("onLoginSuccess first step")
             val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
                 fromHex(privateKeyEncrypt),
