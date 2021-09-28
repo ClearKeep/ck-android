@@ -36,4 +36,7 @@ interface MessageDAO {
 
     @Query("SELECT * FROM message WHERE owner_domain = :ownerDomain AND owner_client_id = :ownerClientId AND message LIKE :query GROUP BY message_id")
     fun getMessageByText(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<Message>>
+
+    @Query("DELETE FROM message WHERE owner_domain = :domain AND owner_client_id = :ownerClientId")
+    suspend fun deleteMessageByDomain(domain: String, ownerClientId: String)
 }

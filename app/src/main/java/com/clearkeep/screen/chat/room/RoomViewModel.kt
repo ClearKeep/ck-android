@@ -34,11 +34,11 @@ class RoomViewModel @Inject constructor(
     private val signalKeyRepository: SignalKeyRepository,
     authRepository: AuthRepository,
     serverRepository: ServerRepository,
+    messageRepository: MessageRepository,
 
     private val peopleRepository: PeopleRepository,
-    private val messageRepository: MessageRepository,
     private val environment: Environment
-): BaseViewModel(authRepository, groupRepository, serverRepository) {
+): BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
     val isLogout = serverRepository.isLogout
 
     private var roomId: Long? = null

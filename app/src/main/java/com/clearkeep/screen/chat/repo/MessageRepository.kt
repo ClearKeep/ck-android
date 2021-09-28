@@ -523,4 +523,8 @@ class MessageRepository @Inject constructor(
         }
         return true
     }
+
+    suspend fun clearMessageByDomain(domain: String, userId: String) {
+        messageDAO.deleteMessageByDomain(domain, userId)
+    }
 }
