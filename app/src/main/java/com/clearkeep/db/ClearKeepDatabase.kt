@@ -15,8 +15,9 @@ import com.clearkeep.db.clear_keep.model.*
     UserEntity::class,
     Server::class,
     Note::class,
-    UserPreference::class
-], version = 13, exportSchema = false)
+    UserPreference::class,
+    UserKey::class
+], version = 14, exportSchema = false)
 @TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
@@ -26,4 +27,5 @@ abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun groupDao(): GroupDAO
     abstract fun userDao(): UserDao
     abstract fun userPreferenceDao(): UserPreferenceDAO
+    abstract fun userKeyDao(): UserKeyDAO
 }

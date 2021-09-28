@@ -4,6 +4,7 @@ import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.db.clear_keep.model.Profile
+import com.clearkeep.db.clear_keep.model.UserKey
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.model.SignalIdentityKey
 import com.clearkeep.dynamicapi.CallCredentials
@@ -13,6 +14,7 @@ import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
 import com.clearkeep.screen.chat.repo.SignalKeyRepository
+import com.clearkeep.screen.chat.repo.UserKeyRepository
 import com.clearkeep.screen.chat.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
@@ -51,7 +53,8 @@ class AuthRepository @Inject constructor(
     private val userPreferenceRepository: UserPreferenceRepository,
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val roomRepository: GroupRepository
+    private val roomRepository: GroupRepository,
+    private val userKeyRepository: UserKeyRepository
 ) {
     suspend fun register(
         displayName: String,
@@ -578,12 +581,12 @@ class AuthRepository @Inject constructor(
             val salt = response.salt
             val publicKey = response.clientKeyPeer.identityKeyPublic
             val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
-            printlnCK("onLoginSuccess privateKeyEncrypt $privateKeyEncrypt")
+            val iv = response.ivParameter
             printlnCK("onLoginSuccess first step")
             val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
                 fromHex(privateKeyEncrypt),
                 fromHex(salt),
-                fromHex(response.ivParameter)
+                fromHex(iv)
             )
             printlnCK("onLoginSuccess decrypt private key success")
             val preKey = response.clientKeyPeer.preKey
@@ -607,7 +610,6 @@ class AuthRepository @Inject constructor(
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
             printlnCK("onLoginSuccess store key success")
-            printlnCK("onLoginSuccess domain $domain accessToken $accessToken hashKey $hashKey")
             val profile = getProfile(
                 paramAPIProvider.provideUserBlockingStub(
                     ParamAPI(
@@ -641,6 +643,7 @@ class AuthRepository @Inject constructor(
                 )
             )
             userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount)
+            userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv))
             printlnCK("onLoginSuccess insert server success")
 
             return Resource.success(response)

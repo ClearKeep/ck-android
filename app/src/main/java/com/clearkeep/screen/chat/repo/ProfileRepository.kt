@@ -17,6 +17,7 @@ import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notify_push.NotifyPushOuterClass
+import org.whispersystems.libsignal.util.KeyHelper
 import user.UserOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,6 +30,7 @@ class ProfileRepository @Inject constructor(
     // data
     private val serverRepository: ServerRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
+    private val userKeyRepository: UserKeyRepository,
 
     private val userManager: AppStorage
 ) {
@@ -331,12 +333,49 @@ class ProfileRepository @Inject constructor(
 
     suspend fun changePassword(owner: Owner, oldPassword: String, newPassword: String): Resource<String> =
         withContext(Dispatchers.IO) {
+            val userKey = userKeyRepository.get(owner.domain, owner.clientId)
+
+            val decrypter = DecryptsPBKDF2(newPassword)
+            val key= KeyHelper.generateIdentityKeyPair()
+
+            val preKeys = KeyHelper.generatePreKeys(1, 1)
+            val preKey = preKeys[0]
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+            val transitionID=KeyHelper.generateRegistrationId(false)
+
+            val decryptResult = decrypter.encrypt(
+                key.privateKey.serialize(),
+                userKey.salt,
+                userKey.iv
+            )?.let {
+                DecryptsPBKDF2.toHex(
+                    it
+                )
+            }
+
+            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+                .setDeviceId(111)
+                .setRegistrationId(transitionID)
+                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+                .setPreKey(ByteString.copyFrom(preKey.serialize()))
+                .setPreKeyId(preKey.id)
+                .setSignedPreKeyId(signedPreKey.id)
+                .setSignedPreKey(
+                    ByteString.copyFrom(signedPreKey.serialize())
+                )
+                .setIdentityKeyEncrypted(
+                    decryptResult
+                )
+                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+                .build()
+
             try {
                 val server = serverRepository.getServerByOwner(owner)
                     ?: return@withContext Resource.error("", null)
                 val request = UserOuterClass.ChangePasswordRequest.newBuilder()
-                    .setOldPassword(DecryptsPBKDF2.md5(oldPassword))
-                    .setNewPassword(DecryptsPBKDF2.md5(newPassword))
+                    .setOldHashPassword(DecryptsPBKDF2.md5(oldPassword))
+                    .setNewHashPassword(DecryptsPBKDF2.md5(newPassword))
+                    .setIdentityKeyEncrypted(decryptResult)
                     .build()
                 val stub = apiProvider.provideUserBlockingStub(
                     ParamAPI(

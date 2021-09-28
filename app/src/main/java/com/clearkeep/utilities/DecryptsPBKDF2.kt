@@ -48,6 +48,20 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         return dcipher?.doFinal(data)
     }
 
+    @kotlin.jvm.Throws(Exception::class)
+    fun encrypt(data: ByteArray, salt: String, oldIv: String): ByteArray? {
+        saltEncrypt = fromHex(salt)
+        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val tmp = factory.generateSecret(spec)
+        key = SecretKeySpec(tmp.encoded, "AES")
+        dcipher?.init(Cipher.ENCRYPT_MODE, key)
+        val params: AlgorithmParameters? = dcipher?.parameters
+        iv = fromHex(oldIv)
+        printlnCK("encrypt: iv ${iv}")
+        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
+        return dcipher?.doFinal(data)
+    }
+
     @Throws(Exception::class)
     fun decrypt(
         base64EncryptedData: ByteArray,
