@@ -27,7 +27,7 @@ class HomeViewModel @Inject constructor(
     roomRepository: GroupRepository,
     serverRepository: ServerRepository,
     private val profileRepository: ProfileRepository,
-    private val messageRepository: MessageRepository,
+    messageRepository: MessageRepository,
     private val environment: Environment,
 
     authRepository: AuthRepository,
@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(
     private val signalKeyDatabase: SignalKeyDatabase,
     private val workSpaceRepository: WorkSpaceRepository,
     private val peopleRepository: PeopleRepository
-): BaseViewModel(authRepository, roomRepository, serverRepository) {
+): BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     val isLogout = serverRepository.isLogout

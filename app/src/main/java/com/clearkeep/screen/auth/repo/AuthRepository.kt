@@ -12,10 +12,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.SignalKeyRepository
-import com.clearkeep.screen.chat.repo.UserKeyRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
@@ -54,7 +51,8 @@ class AuthRepository @Inject constructor(
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val roomRepository: GroupRepository,
-    private val userKeyRepository: UserKeyRepository
+    private val userKeyRepository: UserKeyRepository,
+    private val messageRepository: MessageRepository
 ) {
     suspend fun register(
         displayName: String,
@@ -626,6 +624,7 @@ class AuthRepository @Inject constructor(
                 val oldServer = serverRepository.getServer(domain, profile.userId)
                     oldServer?.id?.let {
                         roomRepository.removeGroupByDomain(domain, profile.userId)
+                        messageRepository.clearMessageByDomain(domain, profile.userId)
                     }
             }
 
