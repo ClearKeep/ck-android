@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
@@ -236,7 +238,16 @@ fun LoginScreen(
                     buttonType = ButtonType.BorderWhite
 
                 )
-                Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
+                Spacer(Modifier.height(dimensionResource(R.dimen._30sdp)))
+                Text(
+                    "App version: ${BuildConfig.VERSION_NAME}",
+                    Modifier.align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.caption.copy(
+                        fontSize = 10.dp.toNonScalableTextSize()
+                    ),
+                    color = Color.White
+                )
+                Spacer(Modifier.height(dimensionResource(R.dimen._14sdp)))
             }
         }
     }

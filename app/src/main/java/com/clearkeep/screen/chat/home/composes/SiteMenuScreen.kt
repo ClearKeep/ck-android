@@ -127,7 +127,6 @@ fun SiteMenuScreen(
                             Spacer(modifier = Modifier.size(12.sdp()))
                             Divider(color = grayscale3)
                             SettingGeneral(onNavigateAccountSetting)
-                            Divider(color = grayscale3)
                             SettingServer(
                                 onNavigateServerSetting,
                                 onNavigateNotificationSetting,
@@ -256,12 +255,7 @@ fun SettingServer(
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit
 ) {
-    Column(Modifier.padding(top = 16.sdp(), bottom = 16.sdp())) {
-        CKHeaderText(
-            text = "Server Setting",
-            headerTextType = HeaderTextType.Normal,
-            color = grayscale2
-        )
+    Column(Modifier.padding(bottom = 16.sdp())) {
         ItemSiteSetting(stringResource(R.string.server), R.drawable.ic_adjustment, {
             onNavigateServerSetting()
         })
