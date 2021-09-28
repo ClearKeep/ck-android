@@ -133,7 +133,7 @@ class SearchViewModel @Inject constructor(
 
         val allUnchattedPeople = allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
             val usersFromGroupChatFiltered =
-                a.map { it.clientList }.flatten().filter { it.userName.contains(query, true) }
+                a.map { it.clientList }.flatten().filter { it.userId != server.profile.userId && it.userName.contains(query, true) }
             val usersInServerFiltered =
                 b.filter { it.userName.contains(query, true) && it.userId != server.profile.userId }
 
