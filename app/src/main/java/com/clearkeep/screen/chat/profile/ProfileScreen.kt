@@ -243,8 +243,10 @@ fun ProfileScreen(
                                 }
                             )
                             Spacer(Modifier.height(8.sdp()))
-                            ChangePassword(onChangePassword)
-                            Spacer(Modifier.height(24.sdp()))
+                            if (userPreference.value?.isSocialAccount == false) {
+                                ChangePassword(onChangePassword)
+                                Spacer(Modifier.height(24.sdp()))
+                            }
                             TwoFaceAuthView(userPreference.value?.mfa ?: false) {
                                 focusManager.clearFocus()
                                 if (it) {
