@@ -18,14 +18,10 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
-import com.clearkeep.components.base.ButtonType
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKTopAppBarSample
+import com.clearkeep.components.base.*
+import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -51,11 +47,16 @@ fun ChangePasswordScreen(
         val newPassWord = remember { mutableStateOf("") }
         val confirmPassWord = remember { mutableStateOf("") }
 
+        val currentPassWordError = viewModel.oldPasswordError.observeAsState()
+        val newPassWordError = viewModel.newPasswordError.observeAsState()
+        val confirmPassWordError = viewModel.newPasswordConfirmError.observeAsState()
+        val changePasswordResponse = viewModel.changePasswordResponse.observeAsState()
+
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
             title = stringResource(R.string.enter_new_password), onBackPressed = {
-            onBackPress.invoke()
-        })
+                onBackPress.invoke()
+            })
         Spacer(Modifier.height(26.sdp()))
         Column(
             modifier = Modifier
@@ -84,7 +85,8 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false
+                allowSpace = false,
+                error = currentPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
@@ -101,7 +103,8 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false
+                allowSpace = false,
+                error = newPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
@@ -118,7 +121,8 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false
+                allowSpace = false,
+                error = confirmPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
             CKButton(
@@ -127,8 +131,24 @@ fun ChangePasswordScreen(
                     viewModel.changePassword()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                buttonType = ButtonType.White
+                buttonType = ButtonType.White,
+                enabled = currentPassWordError.value.isNullOrBlank()
+                        && newPassWordError.value.isNullOrBlank()
+                        && confirmPassWordError.value.isNullOrBlank()
+                        && currentPassWord.value.isNotBlank()
+                        && newPassWord.value.isNotBlank()
+                        && confirmPassWord.value.isNotBlank()
             )
+
+            if (changePasswordResponse.value?.status == Status.SUCCESS) {
+                CKAlertDialog(
+                    title = "Password changed successfully",
+                    text = "Please login again with new password!",
+                    onDismissButtonClick = {
+                        onBackPress()
+                    }
+                )
+            }
         }
     }
 }

@@ -331,7 +331,6 @@ class ProfileRepository @Inject constructor(
 
     suspend fun changePassword(owner: Owner, oldPassword: String, newPassword: String): Resource<String> =
         withContext(Dispatchers.IO) {
-            println("changePassword oldPassword $oldPassword, newPassword $newPassword")
             try {
                 val server = serverRepository.getServerByOwner(owner)
                     ?: return@withContext Resource.error("", null)
@@ -354,6 +353,9 @@ class ProfileRepository @Inject constructor(
             } catch (exception: StatusRuntimeException) {
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
+                    1001 -> {
+                        "The password is incorrect. Try again"
+                    }
                     1000, 1077 -> {
                         printlnCK("changePassword token expired")
                         serverRepository.isLogout.postValue(true)
@@ -361,7 +363,7 @@ class ProfileRepository @Inject constructor(
                     }
                     else -> parsedError.message
                 }
-                return@withContext Resource.error("", null)
+                return@withContext Resource.error(message, null)
             } catch (exception: Exception) {
                 printlnCK("changePassword: $exception")
                 return@withContext Resource.error("", null)

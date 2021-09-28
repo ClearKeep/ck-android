@@ -48,10 +48,9 @@ open class BaseViewModel @Inject constructor(
         }
     }
 
-    protected fun selectChannel(server: Server) {
+    open fun selectChannel(server: Server) {
         viewModelScope.launch {
             serverRepository.setActiveServer(server)
-//            selectingJoinServer.value = false
         }
     }
 }
