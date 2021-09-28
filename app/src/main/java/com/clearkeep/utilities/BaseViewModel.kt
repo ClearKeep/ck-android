@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.auth.repo.AuthRepository
+import com.clearkeep.screen.chat.repo.ChatRepository
 import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.screen.chat.repo.MessageRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,6 +17,7 @@ open class BaseViewModel @Inject constructor(
     protected val authRepository: AuthRepository,
     protected val roomRepository: GroupRepository,
     protected val serverRepository: ServerRepository,
+    protected val messageRepository: MessageRepository
 ) : ViewModel() {
     val currentServer = serverRepository.activeServer
 
@@ -32,6 +35,7 @@ open class BaseViewModel @Inject constructor(
                 currentServer.value?.id?.let {
                     val removeResult = serverRepository.deleteServer(it)
                     roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
+                    messageRepository.clearMessageByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
                     if (removeResult > 0) {
                         printlnCK("serverRepository: ${serverRepository.getServers().size}")
                         if (serverRepository.getServers().isNotEmpty()) {
