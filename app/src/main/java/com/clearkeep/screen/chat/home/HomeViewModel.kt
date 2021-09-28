@@ -24,34 +24,29 @@ import javax.crypto.spec.PBEKeySpec
 
 
 class HomeViewModel @Inject constructor(
-    private val roomRepository: GroupRepository,
-    private val serverRepository: ServerRepository,
+    roomRepository: GroupRepository,
+    serverRepository: ServerRepository,
     private val profileRepository: ProfileRepository,
     private val messageRepository: MessageRepository,
     private val environment: Environment,
 
-    private val authRepository: AuthRepository,
+    authRepository: AuthRepository,
     private val signalProtocolStore: InMemorySignalProtocolStore,
     private val storage: UserPreferencesStorage,
     private val clearKeepDatabase: ClearKeepDatabase,
     private val signalKeyDatabase: SignalKeyDatabase,
     private val workSpaceRepository: WorkSpaceRepository,
     private val peopleRepository: PeopleRepository
-): ViewModel() {
-
+): BaseViewModel(authRepository, roomRepository, serverRepository) {
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     val isLogout = serverRepository.isLogout
-
-    var currentServer = serverRepository.activeServer
 
     val selectingJoinServer = MutableLiveData(false)
     private val _prepareState = MutableLiveData<PrepareViewState>()
 
     val prepareState: LiveData<PrepareViewState>
         get() = _prepareState
-
-    val servers: LiveData<List<Server>> = serverRepository.getServersAsState()
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
@@ -192,7 +187,7 @@ class HomeViewModel @Inject constructor(
 
     fun searchGroup(text: String) {}
 
-    fun selectChannel(server: Server) {
+    override fun selectChannel(server: Server) {
         viewModelScope.launch {
             serverRepository.setActiveServer(server)
             selectingJoinServer.value = false
@@ -214,9 +209,6 @@ class HomeViewModel @Inject constructor(
 
     private val _isLogOutCompleted = MutableLiveData(false)
 
-    val isLogOutCompleted: LiveData<Boolean>
-        get() = _isLogOutCompleted
-
     private fun updateFirebaseToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -230,30 +222,6 @@ class HomeViewModel @Inject constructor(
                     storage.setString(FIREBASE_TOKEN, token)
                     pushFireBaseTokenToServer()
                 }
-            }
-        }
-    }
-
-    fun signOut() {
-        viewModelScope.launch {
-            val response = authRepository.logoutFromAPI(currentServer.value!!)
-
-            if (response.data?.error.isNullOrBlank()) {
-                currentServer.value?.id?.let {
-                    val removeResult = serverRepository.deleteServer(it)
-                    roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
-                    if (removeResult > 0) {
-                        printlnCK("serverRepository: ${serverRepository.getServers().size}")
-                        if (serverRepository.getServers().isNotEmpty()) {
-                            printlnCK("servers.value!![0]: ${servers.value!![0]}")
-                            selectChannel(servers.value!![0])
-                        }else {
-                            _isLogOutCompleted.value = true
-                        }
-                    }
-                }
-            } else {
-                printlnCK("signOut error")
             }
         }
     }
