@@ -281,7 +281,7 @@ class AuthRepository @Inject constructor(
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId+domain).hashCode())
             val transitionID=KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(
                 key.privateKey.serialize()
@@ -382,7 +382,7 @@ class AuthRepository @Inject constructor(
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId+domain).hashCode())
             val transitionID=KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(
                 key.privateKey.serialize()
