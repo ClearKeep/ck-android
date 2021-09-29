@@ -40,6 +40,7 @@ import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -192,7 +193,8 @@ fun InviteGroupScreen(
 
                 Spacer(modifier = Modifier.height(16.sdp()))
                 friends.value?.let { values ->
-                    val listShow = values.filterNot { listMemberInGroup.contains(it) }
+                    val membersId = listMemberInGroup.map { it.userId }
+                    val listShow = values.filterNot { membersId.contains(it.userId) }
                     LazyColumn(
                         contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
                     ) {
