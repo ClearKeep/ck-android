@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscale1
+import com.clearkeep.components.grayscale3
 import com.clearkeep.screen.chat.composes.FriendListItem
 
 @Composable
@@ -75,7 +76,7 @@ fun EnterGroupNameScreen(
                     groupName
                 )
                 Spacer(modifier = Modifier.height(16.sdp()))
-                CKHeaderText("User in this group", headerTextType = HeaderTextType.Normal)
+                CKHeaderText("Users in this group", headerTextType = HeaderTextType.Normal, color = grayscale3)
                 Spacer(modifier = Modifier.height(16.sdp()))
                 friends.let { values ->
                     LazyColumn(
@@ -104,7 +105,8 @@ fun EnterGroupNameScreen(
                         }
                     },
                     modifier = Modifier
-                        .width(200.sdp())
+                        .width(200.sdp()),
+                    enabled = groupName.value.isNotBlank()
                 )
             }
         }

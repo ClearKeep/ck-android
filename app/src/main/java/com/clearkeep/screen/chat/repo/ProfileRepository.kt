@@ -331,7 +331,7 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun changePassword(owner: Owner, oldPassword: String, newPassword: String): Resource<String> =
+    suspend fun changePassword(owner: Owner, email: String, oldPassword: String, newPassword: String): Resource<String> =
         withContext(Dispatchers.IO) {
             val userKey = userKeyRepository.get(owner.domain, owner.clientId)
 
@@ -340,7 +340,7 @@ class ProfileRepository @Inject constructor(
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+owner.domain).hashCode())
             val transitionID=KeyHelper.generateRegistrationId(false)
 
             val decryptResult = decrypter.encrypt(

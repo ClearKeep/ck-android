@@ -220,40 +220,43 @@ fun InviteGroupScreen(
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CKButton(
-                    if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
-                    else  stringResource(R.string.btn_next),
-                    onClick = {
-                        if (useCustomServerChecked.value) {
-                            val people = getPeopleFromLink(urlOtherServer.value)
-                            if (people?.userId != inviteGroupViewModel.getClientId()){
-                                if (isCreateDirectGroup) {
-                                    if (people != null) {
-                                        inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup)) {
+                    CKButton(
+                        if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
+                        else  stringResource(R.string.btn_next),
+                        onClick = {
+                            if (useCustomServerChecked.value) {
+                                val people = getPeopleFromLink(urlOtherServer.value)
+                                if (people?.userId != inviteGroupViewModel.getClientId()){
+                                    if (isCreateDirectGroup) {
+                                        if (people != null) {
+                                            inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                        } else {
+                                            addUserFromOtherServerError.value = "Profile link is incorrect."
+                                        }
                                     } else {
-                                        addUserFromOtherServerError.value = "Profile link is incorrect."
+                                        if (people != null) {
+                                            inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                        } else {
+                                            addUserFromOtherServerError.value = "Profile link is incorrect."
+                                        }
                                     }
                                 } else {
-                                    if (people != null) {
-                                        inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
-                                    } else {
-                                        addUserFromOtherServerError.value = "Profile link is incorrect."
-                                    }
+                                    addUserFromOtherServerError.value = "You can't create conversation with yourself"
                                 }
+                                urlOtherServer.value = ""
+                                useCustomServerChecked.value = false
                             } else {
-                                addUserFromOtherServerError.value = "You can't create conversation with yourself"
+                                if (selectedItem.size > 0) {
+                                    onFriendSelected(selectedItem)
+                                }
                             }
-                            urlOtherServer.value = ""
-                            useCustomServerChecked.value = false
-                        } else {
-                            if (selectedItem.size > 0) {
-                                onFriendSelected(selectedItem)
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .width(200.sdp())
-                )
+                        },
+                        modifier = Modifier
+                            .width(200.sdp()),
+                        enabled = (isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank())))
+                    )
+                }
             }
         }
     }

@@ -31,8 +31,7 @@ class SignalKeyRepository @Inject constructor(
     private val preKeyDAO: SignalPreKeyDAO,
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository,
-    
-    ) {
+) {
     suspend fun getPreKey() : PreKeyRecord {
         val preKeyRecord = preKeyDAO.getFirstUnSignedPreKey()?.preKeyRecord ?: null
         return if (preKeyRecord == null) {
