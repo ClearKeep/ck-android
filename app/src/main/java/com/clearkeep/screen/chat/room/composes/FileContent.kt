@@ -58,6 +58,15 @@ private fun getFileSizeInBytesFromUrl(url: String): Long {
 }
 
 private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
-    val fileSizeInMegabytes = fileSizeInBytes.toDouble() / 1_000_000
-    return "%.2f MB".format(fileSizeInMegabytes)
+    val unit = when {
+        fileSizeInBytes < 1024 -> "B"
+        fileSizeInBytes < 1024 * 1_000 -> "kB"
+        else -> "MB"
+    }
+    val fileSizeInMegabytes = when {
+        fileSizeInBytes < 1024 -> fileSizeInBytes.toDouble()
+        fileSizeInBytes < 1024 * 1_000 -> fileSizeInBytes.toDouble() / 1_000
+        else -> fileSizeInBytes.toDouble() / 1_000_000
+    }
+    return if (fileSizeInBytes < 1024) "$fileSizeInBytes $unit" else "%.2f $unit".format(fileSizeInMegabytes)
 }
