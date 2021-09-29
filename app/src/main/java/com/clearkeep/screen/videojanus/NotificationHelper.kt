@@ -38,6 +38,7 @@ fun showMessagingStyleNotification(
     preference: UserPreference,
     avatar: String? = ""
 ) {
+    printlnCK("Notification showMessagingStyleNotification message $message")
     val sender = if (chatGroup.isGroup()) {
         chatGroup.groupName
     } else {

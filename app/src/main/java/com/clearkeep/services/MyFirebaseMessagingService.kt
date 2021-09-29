@@ -150,6 +150,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val groupType = data["group_type"] ?: ""
         val messageUTF8AsBytes = (data["message"] ?: "").toByteArray(StandardCharsets.UTF_8)
         val messageBase64 = Base64.decode(messageUTF8AsBytes, Base64.DEFAULT)
+        printlnCK("Notification raw message messageUTF8AsBytes $messageUTF8AsBytes")
+        printlnCK("Notification raw message messageBase64 $messageBase64")
         val messageContent: ByteString = ByteString.copyFrom(messageBase64)
         try {
             val decryptedMessage = messageRepository.decryptMessage(

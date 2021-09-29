@@ -7,6 +7,8 @@ data class SignalPreKey(
         @PrimaryKey val preKeyId: Int,
         @ColumnInfo(name = "pre_key_record") val preKeyRecord: ByteArray,
         @ColumnInfo(name = "is_signed_key") val isSignedKey: Boolean,
+        @ColumnInfo(name = "domain") val domain: String,
+        @ColumnInfo(name = "user_id") val userId: String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

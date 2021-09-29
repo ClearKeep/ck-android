@@ -134,6 +134,7 @@ class ChatService : Service(),
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         scope.launch {
+            printlnCK("chatService raw message ${value.message.toStringUtf8()}")
             val res = messageRepository.decryptMessage(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
@@ -211,6 +212,7 @@ class ChatService : Service(),
                         message.senderId
                     )
                     val avatar = senderUser?.avatar
+                    printlnCK("Notification service raw message $message")
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
