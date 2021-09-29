@@ -85,7 +85,6 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false,
                 error = currentPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
@@ -103,7 +102,6 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false,
                 error = newPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
@@ -121,7 +119,6 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                allowSpace = false,
                 error = confirmPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))

@@ -69,8 +69,11 @@ class ChangePasswordViewModel @Inject constructor(
     }
 
     private fun getOldPasswordError(password: String): String? {
-        return when (password.length) {
-            !in 6..12 -> {
+        return when {
+            password.isEmpty() -> {
+                null
+            }
+            password.length !in 6..12 && password.length > 1 -> {
                 "Password must be between 6–12 characters"
             }
             else -> {
@@ -81,6 +84,9 @@ class ChangePasswordViewModel @Inject constructor(
 
     private fun getPasswordError(oldPassword: String, newPassword: String): String? {
         return when {
+            newPassword.isEmpty() -> {
+                null
+            }
             newPassword.length !in 6..12 -> {
                 "Password must be between 6–12 characters"
             }
@@ -95,6 +101,9 @@ class ChangePasswordViewModel @Inject constructor(
 
     private fun getConfirmPasswordError(password: String, confirmPassword: String): String? {
         return when {
+            confirmPassword.isEmpty() -> {
+                null
+            }
             confirmPassword.length !in 6..12 -> {
                 "Password must be between 6–12 characters"
             }
