@@ -64,7 +64,7 @@ class AuthRepository @Inject constructor(
         val key= KeyHelper.generateIdentityKeyPair()
         val preKeys = KeyHelper.generatePreKeys(1, 1)
         val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, 5)
+        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
         val transitionID=KeyHelper.generateRegistrationId(false)
         val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
             .setDeviceId(111)
@@ -605,6 +605,7 @@ class AuthRepository @Inject constructor(
             val signalIdentityKey =
                 SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
             signalIdentityKeyDAO.insert(signalIdentityKey)
+            environment.setUpDomain(Server(null, "", domain, clientId, "", 0L, "", "", "", false, Profile(null, "", "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
             printlnCK("onLoginSuccess store key success")

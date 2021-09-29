@@ -28,7 +28,7 @@ class InMemorySignalProtocolStore(
 
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
 
-    private val signedPreKeyStore: InMemorySignedPreKeyStore = InMemorySignedPreKeyStore(preKeyDAO)
+    private val signedPreKeyStore: InMemorySignedPreKeyStore = InMemorySignedPreKeyStore(preKeyDAO, environment)
 
     private val identityKeyStore: InMemoryIdentityKeyStore = InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
 
