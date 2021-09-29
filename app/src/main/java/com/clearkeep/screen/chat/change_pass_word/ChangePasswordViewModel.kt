@@ -59,7 +59,7 @@ class ChangePasswordViewModel @Inject constructor(
         val owner = Owner(server.serverDomain, server.profile.userId)
 
         viewModelScope.launch {
-            val response = profileRepository.changePassword(owner, oldPassword, newPassword)
+            val response = profileRepository.changePassword(owner, server.profile.email?: "", oldPassword, newPassword)
             if (response.status == Status.ERROR) {
                 _oldPasswordError.value = response.message
             } else {

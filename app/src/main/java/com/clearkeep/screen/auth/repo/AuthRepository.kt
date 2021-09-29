@@ -595,7 +595,6 @@ class AuthRepository @Inject constructor(
             val signedPreKeyRecord = SignedPreKeyRecord(signedPreKey.toByteArray())
             val registrationID = response.clientKeyPeer.registrationId
             val clientId = response.clientKeyPeer.clientId
-            printlnCK("onLoginSuccess set data from response success")
 
             val eCPublicKey: ECPublicKey =
                 Curve.decodePoint(publicKey.toByteArray(), 0)
