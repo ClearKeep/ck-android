@@ -123,7 +123,7 @@ class ChatRepository @Inject constructor(
         try {
             val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
             val groupSender  =  SenderKeyName(groupId.toString(), senderAddress)
-
+            printlnCK("sendMessageToGroup: senderAddress : ${senderAddress}  groupSender: ${groupSender}")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =
                     aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))

@@ -10,7 +10,10 @@ data class SignalIdentityKey(
         @ColumnInfo(name = "identity_key_pair") val identityKeyPair: IdentityKeyPair,
         @ColumnInfo(name = "registration_id") val registrationId: Int,
         @ColumnInfo(name = "domain") val domain: String,
-        @ColumnInfo(name = "user_id") val userId: String
+        @ColumnInfo(name = "user_id") val userId: String,
+        @ColumnInfo(name = "iv") val iv: String? = "",
+        @ColumnInfo(name = "salt") val salt: String? = ""
+
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
