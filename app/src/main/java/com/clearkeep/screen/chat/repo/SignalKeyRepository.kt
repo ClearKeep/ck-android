@@ -46,7 +46,7 @@ class SignalKeyRepository @Inject constructor(
         }
     }
 
-    suspend fun getSigngenerateSignedPreKeyedKey() : SignedPreKeyRecord {
+    suspend fun getSignedKey() : SignedPreKeyRecord {
         var signedKeyRecord = preKeyDAO.getFirstSignedPreKey()?.preKeyRecord ?: null
         return if (signedKeyRecord == null) {
             val identityKeyPair = myStore.identityKeyPair
