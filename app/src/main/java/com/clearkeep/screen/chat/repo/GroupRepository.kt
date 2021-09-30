@@ -2,12 +2,15 @@ package com.clearkeep.screen.chat.repo
 
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
@@ -16,6 +19,15 @@ import group.GroupOuterClass
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.whispersystems.libsignal.IdentityKey
+import org.whispersystems.libsignal.IdentityKeyPair
+import org.whispersystems.libsignal.ecc.Curve
+import org.whispersystems.libsignal.ecc.ECKeyPair
+import org.whispersystems.libsignal.ecc.ECPrivateKey
+import org.whispersystems.libsignal.ecc.ECPublicKey
+import org.whispersystems.libsignal.groups.SenderKeyName
+import org.whispersystems.libsignal.groups.state.SenderKeyStore
+import org.whispersystems.libsignal.util.KeyHelper
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +42,8 @@ class GroupRepository @Inject constructor(
 
     private val serverRepository: ServerRepository,
 
-    private val environment: Environment
+    private val environment: Environment,
+    private val senderKeyStore: InMemorySenderKeyStore
 ) {
     fun getAllRooms() = groupDAO.getRoomsAsState()
 
@@ -391,7 +404,7 @@ class GroupRepository @Inject constructor(
     }
 
     suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): ChatGroup? {
-        printlnCK("getGroupByID")
+        printlnCK("getGroupByID: groupId $groupId")
         var room: ChatGroup? = null
 
         if (room == null) {
@@ -510,7 +523,8 @@ class GroupRepository @Inject constructor(
     ): ChatGroup {
         val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
-        val isRegisteredKey = oldGroup?.isJoined ?: false
+        printlnCK("convertGroupFromResponse isRegisteredKey: ${oldGroup?.isJoined} ")
+        var isRegisteredKey = oldGroup?.isJoined ?: false
         val lastMessageSyncTime =
             oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
@@ -523,9 +537,39 @@ class GroupRepository @Inject constructor(
             )
         }
         val groupName = if (isGroup(response.groupType)) response.groupName else {
-            clientList?.firstOrNull { client ->
+            clientList.firstOrNull { client ->
                 client.userId != ownerId
             }?.userName ?: ""
+        }
+
+        try {
+            printlnCK("convertGroupFromResponse senderKeyID ${response.clientKey.senderKeyId} ${response.groupType} ")
+            val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
+            val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
+            if (response.clientKey.senderKeyId > 0 && senderKeyStore.loadSenderKey(groupSender).isEmpty && response.groupType=="group") {
+                val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
+                val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
+                val senderKeyID = response.clientKey.senderKeyId
+                val senderKey = response.clientKey.senderKey.toByteArray()
+                val eCPublicKey: ECPublicKey =
+                    Curve.decodePoint(response.clientKey.publicKey.toByteArray(), 0)
+                val eCPrivateKey: ECPrivateKey =
+                    Curve.decodePrivatePoint(fromHex(response.clientKey.privateKey))
+                val identityKeyPair = ECKeyPair(eCPublicKey, eCPrivateKey)
+                val senderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
+                printlnCK("convertGroupFromResponse privateKey ${response.groupName} ${response.clientKey.privateKey.toByteArray()}")
+
+                senderKeyRecord.setSenderKeyState(
+                    senderKeyID.toInt(),
+                    0,
+                    senderKey,
+                    identityKeyPair
+                )
+                senderKeyStore.storeSenderKey(groupSender, senderKeyRecord)
+                isRegisteredKey = true
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         return ChatGroup(

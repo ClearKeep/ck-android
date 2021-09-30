@@ -35,7 +35,6 @@ class RoomViewModel @Inject constructor(
     authRepository: AuthRepository,
     serverRepository: ServerRepository,
     messageRepository: MessageRepository,
-
     private val peopleRepository: PeopleRepository,
     private val environment: Environment
 ): BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
@@ -247,12 +246,6 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
-        val friend = _group.value?.clientList?.firstOrNull { client ->
-            client.userId != clientId
-        }
-        friend?.let {
-            chatRepository.processPeerKey(friend.userId,friend.domain,clientId,getOwner().domain)
-        }
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 

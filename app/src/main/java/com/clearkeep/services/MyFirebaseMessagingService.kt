@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.UserPreference
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.utils.isGroup
@@ -49,6 +50,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
 
+    @Inject
+    lateinit var  environment: Environment
+
+
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
         printlnCK("onMessageReceived: ${remoteMessage.data}")
@@ -61,7 +66,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         printlnCK("notification  $clientId")
         GlobalScope.launch {
             val server = serverRepository.getServer(clientDomain, clientId)
+            printlnCK("handleNotification server  clientDomain: ${clientDomain} clientId: $clientId")
+
             if (server != null) {
+                environment.setUpDomain(server)
                 when (remoteMessage.data["notify_type"]) {
                     "request_call" -> {
                         handleRequestCall(remoteMessage)

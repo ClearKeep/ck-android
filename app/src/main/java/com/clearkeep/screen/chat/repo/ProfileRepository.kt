@@ -353,7 +353,7 @@ class ProfileRepository @Inject constructor(
                 )
             }
 
-            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+             AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
                 .setDeviceId(111)
                 .setRegistrationId(transitionID)
                 .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))

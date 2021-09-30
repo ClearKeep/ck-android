@@ -603,7 +603,7 @@ class AuthRepository @Inject constructor(
                 Curve.decodePrivatePoint(privateKeyDecrypt)
             val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
             val signalIdentityKey =
-                SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
+                SignalIdentityKey(identityKeyPair, registrationID, domain, clientId,response.ivParameter,salt)
             signalIdentityKeyDAO.insert(signalIdentityKey)
             environment.setUpDomain(Server(null, "", domain, clientId, "", 0L, "", "", "", false, Profile(null, "", "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)

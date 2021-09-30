@@ -219,8 +219,10 @@ class MessageRepository @Inject constructor(
             val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
                 //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
+                printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
                 decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
             } else {
+                printlnCK("signalProtocolStore 2 localRegistrationId : ${signalProtocolStore.localRegistrationId}")
                 decryptGroupMessage(
                     sender,
                     groupId,
@@ -398,7 +400,7 @@ class MessageRepository @Inject constructor(
         initSessionUserInGroup(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
-        var plaintextFromAlice = try {
+        val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx
