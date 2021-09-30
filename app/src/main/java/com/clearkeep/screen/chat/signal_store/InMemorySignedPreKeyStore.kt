@@ -8,6 +8,7 @@ package com.clearkeep.screen.chat.signal_store
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.db.signal_key.model.SignalPreKey
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.utilities.printlnCK
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
@@ -23,10 +24,12 @@ class InMemorySignedPreKeyStore(
     @Throws(InvalidKeyIdException::class)
     override fun loadSignedPreKey(signedPreKeyId: Int): SignedPreKeyRecord {
         return try {
+            printlnCK("loadSignedPreKey: signedPreKeyId: $signedPreKeyId server: ${environment.getServer()}")
             var record = store[signedPreKeyId]
             if (record == null) {
                 val server = environment.getServer()
-                record = preKeyDAO.getSignedPreKey(signedPreKeyId, server.serverDomain, server.profile.userId)?.preKeyRecord ?: null
+                record = preKeyDAO.getSignedPreKey(signedPreKeyId)?.preKeyRecord ?: null
+
                 if (record != null) {
                     store[signedPreKeyId] = record
                 }
@@ -58,7 +61,7 @@ class InMemorySignedPreKeyStore(
     override fun containsSignedPreKey(signedPreKeyId: Int): Boolean {
         val server = environment.getServer()
         return store.containsKey(signedPreKeyId)
-                || (preKeyDAO.getSignedPreKey(signedPreKeyId, server.serverDomain, server.profile.userId) != null)
+                || (preKeyDAO.getSignedPreKey(signedPreKeyId) != null)
     }
 
     override fun removeSignedPreKey(signedPreKeyId: Int) {

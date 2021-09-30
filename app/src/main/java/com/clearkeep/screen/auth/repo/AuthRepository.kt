@@ -586,7 +586,7 @@ class AuthRepository @Inject constructor(
                 fromHex(salt),
                 fromHex(iv)
             )
-            printlnCK("onLoginSuccess decrypt private key success")
+            printlnCK("onLoginSuccess decrypt private key success:signedPreKeyID:  ${response.clientKeyPeer.signedPreKeyId}")
             val preKey = response.clientKeyPeer.preKey
             val preKeyID = response.clientKeyPeer.preKeyId
             val preKeyRecord = PreKeyRecord(preKey.toByteArray())
@@ -604,11 +604,6 @@ class AuthRepository @Inject constructor(
             val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
             val signalIdentityKey =
                 SignalIdentityKey(identityKeyPair, registrationID, domain, clientId,response.ivParameter,salt)
-            signalIdentityKeyDAO.insert(signalIdentityKey)
-            environment.setUpDomain(Server(null, "", domain, clientId, "", 0L, "", "", "", false, Profile(null, "", "", "", "", 0L, "")))
-            myStore.storePreKey(preKeyID, preKeyRecord)
-            myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
-            printlnCK("onLoginSuccess store key success")
             val profile = getProfile(
                 paramAPIProvider.provideUserBlockingStub(
                     ParamAPI(
@@ -619,6 +614,11 @@ class AuthRepository @Inject constructor(
                 )
             )
                 ?: return Resource.error("Can not get profile", null)
+            signalIdentityKeyDAO.insert(signalIdentityKey)
+            environment.setUpDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
+            myStore.storePreKey(preKeyID, preKeyRecord)
+            myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
+            printlnCK("onLoginSuccess store key success")
             printlnCK("onLoginSuccess get key success")
 
             if (clearOldUserData) {
