@@ -29,6 +29,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.*
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 
 @Composable
@@ -64,11 +65,15 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                         Spacer(modifier = Modifier.height(16.sdp()))
 
                         val itemModifier = Modifier.padding(vertical = 8.sdp())
+                        printlnCK("RemoveMemberScreen userId ${roomViewModel.getCurrentUser().userId}")
+                        val usersList = group.clientList.filter {
+                            it.userState == UserStateTypeInGroup.ACTIVE.value && it.userId != roomViewModel.getCurrentUser().userId
+                                    && it.userName.toLowerCase().contains(text.value)
+                        }.sortedBy { it.userName.toLowerCase() }
+
                         LazyColumn {
-                            itemsIndexed(group.clientList.filter {
-                                it.userState == UserStateTypeInGroup.ACTIVE.value && it != roomViewModel.getCurrentUser()
-                                        && it.userName.toLowerCase().contains(text.value)
-                            }.sortedBy { it.userName.toLowerCase() }) { _, user ->
+                            itemsIndexed(usersList) { _, user ->
+                                printlnCK("RemoveMemberScreen all userId ${user}")
                                 RemoveMemberItem(itemModifier, user) {
                                     roomViewModel.group.value?.groupId?.let { it1 ->
                                         confirmRemoveMemberData.value = user to it1
