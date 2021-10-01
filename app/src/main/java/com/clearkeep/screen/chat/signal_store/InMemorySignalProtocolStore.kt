@@ -9,6 +9,7 @@ import androidx.annotation.WorkerThread
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.utilities.printlnCK
 import org.whispersystems.libsignal.state.SignalProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -37,16 +38,13 @@ class InMemorySignalProtocolStore(
         return identityKeyStore.identityKeyPair
     }
 
-    fun generateIdentityKeyPair(clientId: String, domain: String) : IdentityKeyPair {
-        return identityKeyStore.generateIdentityKeyPair(clientId, domain).identityKeyPair
-    }
-
     @WorkerThread
     override fun getLocalRegistrationId(): Int {
         return identityKeyStore.localRegistrationId
     }
 
     override fun saveIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean {
+        printlnCK("InMemorySignalProtocolStore saveIdentity for address $address identKey $identityKey")
         return identityKeyStore.saveIdentity(address, identityKey)
     }
 

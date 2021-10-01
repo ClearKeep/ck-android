@@ -69,7 +69,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             printlnCK("handleNotification server  clientDomain: ${clientDomain} clientId: $clientId")
 
             if (server != null) {
-                environment.setUpDomain(server)
+                environment.setUpTempDomain(server)
                 when (remoteMessage.data["notify_type"]) {
                     "request_call" -> {
                         handleRequestCall(remoteMessage)
