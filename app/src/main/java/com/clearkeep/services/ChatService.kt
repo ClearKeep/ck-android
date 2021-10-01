@@ -7,15 +7,13 @@ import android.net.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
+import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import message.MessageOuterClass
 import notification.NotifyOuterClass
 import javax.inject.Inject
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
@@ -135,6 +133,7 @@ class ChatService : Service(),
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         scope.launch {
             printlnCK("chatService raw message ${value.message.toStringUtf8()}")
+            environment.setUpTempDomain(Server(null, "", domain, value.clientId, "", 0L, "", "", "", false, Profile(null, value.clientId, "", "", "", 0L, "")))
             val res = messageRepository.decryptMessage(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
