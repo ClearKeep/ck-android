@@ -35,6 +35,11 @@ data class SignalIdentityKey(
         result = 31 * result + registrationId
         return result
     }
+
+    override fun toString(): String {
+        val keyPair = identityKeyPair.serialize()
+        return "key ${keyPair[0]} ${keyPair[1]} ${keyPair[2]} ${keyPair[keyPair.size - 1]} ${keyPair[keyPair.size - 2]} ${keyPair[keyPair.size - 3]} domain $domain userId $userId regId $registrationId"
+    }
 }
 
 class SignalIdentityKeyPairConverter {

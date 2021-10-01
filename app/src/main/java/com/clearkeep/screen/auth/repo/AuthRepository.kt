@@ -614,7 +614,7 @@ class AuthRepository @Inject constructor(
             )
                 ?: return Resource.error("Can not get profile", null)
             signalIdentityKeyDAO.insert(signalIdentityKey)
-            environment.setUpDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
+            environment.setUpTempDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
             printlnCK("onLoginSuccess store key success")
