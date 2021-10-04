@@ -15,8 +15,8 @@ interface SignalPreKeyDAO {
     @Query("SELECT * FROM signalprekey WHERE is_signed_key = 1 LIMIT 1")
     suspend fun getFirstSignedPreKey(): SignalPreKey?
 
-    @Query("SELECT * FROM signalprekey WHERE preKeyId =:preKeyId AND is_signed_key = 0 LIMIT 1")
-    fun getUnSignedPreKey(preKeyId: Int): SignalPreKey?
+    @Query("SELECT * FROM signalprekey WHERE preKeyId =:preKeyId AND is_signed_key = 0 AND domain = :domain AND user_id = :userId LIMIT 1")
+    fun getUnSignedPreKey(preKeyId: Int, domain: String, userId: String): SignalPreKey?
 
     @Query("SELECT * FROM signalprekey WHERE is_signed_key = 0")
     fun getAllUnSignedPreKey(): List<SignalPreKey>
