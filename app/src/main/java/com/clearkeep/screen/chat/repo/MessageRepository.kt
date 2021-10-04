@@ -4,13 +4,11 @@ import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.dao.NoteDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
-import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
@@ -30,21 +28,22 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import message.MessageOuterClass
 import note.NoteOuterClass
-import org.whispersystems.libsignal.DuplicateMessageException
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.SessionBuilder
-import org.whispersystems.libsignal.SessionCipher
+import org.whispersystems.libsignal.*
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
+import org.whispersystems.libsignal.groups.ratchet.SenderMessageKey
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
+import org.whispersystems.libsignal.groups.state.SenderKeyState
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
+import org.whispersystems.libsignal.protocol.SenderKeyMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import signal.Signal
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -90,11 +89,15 @@ class MessageRepository @Inject constructor(
                     .setLastMessageAt(lastMessageAt-(10*60*60*1000))
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
-            val messages = responses.lstMessageList.map { parseMessageResponse(it, owner) }
-            println("updateMessageFromAPI offset $offSet lastMessageAt ${lastMessageAt-(10*60*60*1000)} messages $messages")
-            if (messages.isNotEmpty()) {
-                messageDAO.insertMessages(messages)
-                val lastMessage = messages.maxByOrNull { it.createdTime }
+            val listMessage = arrayListOf<Message>()
+            responses.lstMessageList
+                .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
+                .forEachIndexed { _, data ->
+                    listMessage.add(parseMessageResponse(data, owner))
+                }
+            if (listMessage.isNotEmpty()) {
+                messageDAO.insertMessages(listMessage)
+                val lastMessage = listMessage.maxByOrNull { it.createdTime }
                 if (lastMessage != null) {
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
@@ -179,7 +182,7 @@ class MessageRepository @Inject constructor(
         groupDAO.updateGroup(updateGroup)
     }
 
-    private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner,): Message {
+    private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner): Message {
         val oldMessage = messageDAO.getMessage(response.id,response.groupId)
         if (oldMessage != null) {
             return oldMessage
@@ -220,7 +223,7 @@ class MessageRepository @Inject constructor(
                 printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
                 decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
             } else {
-                printlnCK("signalProtocolStore 2 localRegistrationId : ${signalProtocolStore.localRegistrationId}")
+                printlnCK("signalProtocolStore 2 messageId : ${messageId}")
                 decryptGroupMessage(
                     sender,
                     groupId,
@@ -393,12 +396,23 @@ class MessageRepository @Inject constructor(
         val senderAddress = CKSignalProtocolAddress(sender, 222)
         val groupSender = SenderKeyName(groupId.toString(), senderAddress)
         val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
-
-        printlnCK("decryptGroupMessage: groupId=$groupId, fromClientId=${sender.clientId}")
         initSessionUserInGroup(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
-        val plaintextFromAlice = try {
+            /*val record = senderKeyStore.loadSenderKey(groupSender)
+
+            if (record.isEmpty) {
+                throw NoSessionException("No sender key for: $groupSender")
+            }
+
+            val senderKeyMessage = SenderKeyMessage(message.toByteArray())
+            val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
+
+            senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
+            printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
+
+
+*/        val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx
