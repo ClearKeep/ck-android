@@ -25,7 +25,7 @@ class InMemorySignalProtocolStore(
         signalIdentityKeyDAO: SignalIdentityKeyDAO,
         environment: Environment
 ) : SignalProtocolStore, Closeable {
-    private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO)
+    private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO, environment)
 
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
 

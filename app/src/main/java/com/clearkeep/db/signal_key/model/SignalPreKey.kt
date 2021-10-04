@@ -2,9 +2,9 @@ package com.clearkeep.db.signal_key.model
 
 import androidx.room.*
 
-@Entity
+@Entity(primaryKeys = ["preKeyId", "domain", "user_id"])
 data class SignalPreKey(
-        @PrimaryKey val preKeyId: Int,
+        val preKeyId: Int,
         @ColumnInfo(name = "pre_key_record") val preKeyRecord: ByteArray,
         @ColumnInfo(name = "is_signed_key") val isSignedKey: Boolean,
         @ColumnInfo(name = "domain") val domain: String,
@@ -28,5 +28,9 @@ data class SignalPreKey(
         result = 31 * result + preKeyRecord.contentHashCode()
         result = 31 * result + isSignedKey.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "key ${preKeyRecord[0]} ${preKeyRecord[1]} ${preKeyRecord[2]} ${preKeyRecord[preKeyRecord.size - 1]} ${preKeyRecord[preKeyRecord.size - 2]} ${preKeyRecord[preKeyRecord.size - 3]} domain $domain userId $userId isSignedKey $isSignedKey"
     }
 }
