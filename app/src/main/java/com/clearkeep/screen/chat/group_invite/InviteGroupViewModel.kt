@@ -16,7 +16,7 @@ class InviteGroupViewModel @Inject constructor(
 ): ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
-    fun getDomain() = environment.getServer().serverDomain
+    private fun getDomain() = environment.getServer().serverDomain
 
     private var textSearch = MutableLiveData<String>()
 
