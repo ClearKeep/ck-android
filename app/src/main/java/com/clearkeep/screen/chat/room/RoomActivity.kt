@@ -153,7 +153,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                         InviteGroupScreen(
                             AddMemberUIType,
                             inviteGroupViewModel,
-                            listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
+                            chatGroup = roomViewModel.group,
                             onFriendSelected = { friends ->
                                 roomViewModel.inviteToGroup(friends, groupId = roomId)
                                 navController.navigate("room_screen")

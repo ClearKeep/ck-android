@@ -30,9 +30,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
@@ -51,7 +53,7 @@ fun InviteGroupScreen(
     managerMember: MemberUIType? = InviteMemberUIType,
     inviteGroupViewModel: InviteGroupViewModel,
     selectedItem: SnapshotStateList<User>,
-    listMemberInGroup: List<User>,
+    chatGroup: LiveData<ChatGroup>,
     onFriendSelected: (List<User>) -> Unit,
     onDirectFriendSelected: (User) -> Unit,
     onBackPressed: () -> Unit,
@@ -64,6 +66,7 @@ fun InviteGroupScreen(
     val urlOtherServer = remember { mutableStateOf("") }
     val addUserFromOtherServerError = remember { mutableStateOf("") }
     val checkUserUrlResponse = inviteGroupViewModel.checkUserUrlResponse.observeAsState()
+    val group = chatGroup.observeAsState()
     val context = LocalContext.current
 
     CKSimpleTheme {
@@ -193,7 +196,7 @@ fun InviteGroupScreen(
 
                 Spacer(modifier = Modifier.height(16.sdp()))
                 friends.value?.let { values ->
-                    val membersId = listMemberInGroup.map { it.userId }
+                    val membersId = group.value?.clientList?.map { it.userId } ?: emptyList()
                     val listShow = values.filterNot { membersId.contains(it.userId) }
                     LazyColumn(
                         contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),

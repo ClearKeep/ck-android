@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,7 +53,7 @@ class CreateGroupActivity : AppCompatActivity() {
                         InviteGroupScreen(
                             InviteMemberUIType,
                             inviteGroupViewModel,
-                            listMemberInGroup = listOf(),
+                            chatGroup = MutableLiveData(),
                             selectedItem = selectedItem,
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)
