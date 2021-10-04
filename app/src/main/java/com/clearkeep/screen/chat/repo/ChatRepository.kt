@@ -125,6 +125,8 @@ class ChatRepository @Inject constructor(
             val groupSender  =  SenderKeyName(groupId.toString(), senderAddress)
             printlnCK("sendMessageToGroup: senderAddress : ${senderAddress}  groupSender: ${groupSender}")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            val senderKeyStore=senderKeyStore.loadSenderKey(groupSender)
+            printlnCK("send message iteration ${senderKeyStore.senderKeyState.senderChainKey.senderMessageKey.iteration}")
             val ciphertextFromAlice: ByteArray =
                     aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
