@@ -292,7 +292,6 @@ fun InviteGroupScreen(
         )
     } else if (checkUserUrlResponse.value?.status == Status.SUCCESS) {
         val people = checkUserUrlResponse.value!!.data
-
         people?.let { user ->
             if (isCreateDirectGroup) {
                 onDirectFriendSelected(user)
@@ -302,6 +301,7 @@ fun InviteGroupScreen(
                     selectedItem.add(user)
             }
         }
+        inviteGroupViewModel.checkUserUrlResponse.value = null
     }
 }
 
