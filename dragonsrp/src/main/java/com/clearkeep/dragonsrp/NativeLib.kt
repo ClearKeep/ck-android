@@ -2,11 +2,10 @@ package com.clearkeep.dragonsrp
 
 class NativeLib {
 
-    /**
-     * A native method that is implemented by the 'dragonsrp' native library,
-     * which is packaged with this application.
-     */
     external fun stringFromJNI(): String
+    external fun getSalt(): String
+    external fun getVerificator(username: String, rawPassword: String, salt: String): String
+    external fun getA(username: String, rawPassword: String): String
 
     companion object {
         // Used to load the 'dragonsrp' library on application startup.
