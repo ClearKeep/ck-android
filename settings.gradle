@@ -1,3 +1,4 @@
 include ':app'
 rootProject.name = "ClearKeep"
 include ':januswrapper'
+include ':dragonsrp'
