@@ -36,12 +36,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.core.content.ContextCompat
 import androidx.core.os.postDelayed
 import com.clearkeep.R
+import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.utilities.isPermissionGranted
 import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -60,7 +59,7 @@ fun RoomScreen(
     onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
     val systemUiController = rememberSystemUiController()
-    val group = roomViewModel.group.observeAsState()
+    val groupState = roomViewModel.group.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
     val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
     val isMessageClickDialogVisible = remember { mutableStateOf(false) }
@@ -88,20 +87,25 @@ fun RoomScreen(
         )
     }
 
-    if (group.value != null || isNote.value == true) {
-        val group = group.value
-        if (group != null && group.groupId != GROUP_ID_TEMPO) {
-            roomViewModel.setJoiningRoomId(group.groupId)
-        }
-        val messageList = if (group != null) {
+    val group = groupState.value
+
+    if (group != null && group.groupId != GROUP_ID_TEMPO) {
+        roomViewModel.setJoiningRoomId(group.groupId)
+    }
+
+    val messageList = when {
+        group != null -> {
             roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
                 .observeAsState()
-        } else {
+        }
+        isNote.value == true -> {
             roomViewModel.getNotes().observeAsState()
         }
+        else -> null
+    }
 
         printlnCK("test: ${group?.clientList}")
-        val groupName = group?.groupName ?: "Note"
+        val groupName = if (isNote.value == true) "Note" else group?.groupName ?: ""
         val requestCallViewState = roomViewModel.requestCallState.observeAsState()
         ModalBottomSheetLayout(
             sheetState = bottomSheetState,
@@ -166,15 +170,15 @@ fun RoomScreen(
                                 isShowDialogCalling.value = true
                             }
                         })
-                    Column(
-                        modifier = Modifier
-                            .weight(
-                                0.66f
-                            )
-                    ) {
-                        messageList.value?.let { messages ->
+                    if (messageList?.value != null) {
+                        Column(
+                            modifier = Modifier
+                                .weight(
+                                    0.66f
+                                )
+                        ) {
                             MessageListView(
-                                messageList = messages,
+                                messageList = messageList.value!!,
                                 clients = group?.clientList ?: emptyList(),
                                 myClientId = roomViewModel.clientId,
                                 group?.isGroup() ?: false,
@@ -203,6 +207,14 @@ fun RoomScreen(
                                 }
                             )
                         }
+                    } else {
+                        Column(Modifier.weight(0.66f)) {
+                            Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
+                                Box(Modifier.fillMaxSize())  {
+                                    CKCircularProgressIndicator(Modifier.align(Alignment.Center))
+                                }
+                            }
+                        }
                     }
                     SendBottomCompose(
                         roomViewModel,
@@ -214,26 +226,25 @@ fun RoomScreen(
                             if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                 return@SendBottomCompose
                             }
-                            val groupResult = group
-                            val isGroup = groupResult?.isGroup()
+                            val isGroup = group?.isGroup()
                             if (isNote.value == true) {
                                 roomViewModel.sendNote(context)
                             } else if (isGroup == true) {
                                 roomViewModel.sendMessageToGroup(
                                     context,
-                                    groupResult.groupId,
+                                    group.groupId,
                                     validMessage,
-                                    groupResult.isJoined
+                                    group.isJoined
                                 )
                             } else {
-                                val friend = groupResult?.clientList?.firstOrNull { client ->
+                                val friend = group?.clientList?.firstOrNull { client ->
                                     client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
                                     roomViewModel.sendMessageToUser(
                                         context,
                                         friend,
-                                        groupResult.groupId,
+                                        group.groupId,
                                         validMessage
                                     )
                                 } else {
@@ -260,7 +271,7 @@ fun RoomScreen(
                 }
             }
         }
-        requestCallViewState?.value?.let {
+        requestCallViewState.value?.let {
             printlnCK("status = ${it.status}")
             if (Status.LOADING == it.status) {
                 Column(
@@ -314,7 +325,6 @@ fun RoomScreen(
                 }
             )
         }
-    }
 }
 
 @ExperimentalComposeUiApi
@@ -352,7 +362,9 @@ fun MessageClickDialog(
                             .padding(16.dp)
                             .clickable {
                                 roomViewModel.copySelectedMessage(context)
-                                Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
+                                Toast
+                                    .makeText(context, "You copied", Toast.LENGTH_SHORT)
+                                    .show()
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )

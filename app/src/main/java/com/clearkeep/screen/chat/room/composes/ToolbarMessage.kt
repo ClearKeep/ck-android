@@ -39,7 +39,7 @@ fun ToolbarMessage(
             )
         }
 
-        if (!isGroup && !isNote) {
+        if (!isGroup && !isNote && title.isNotBlank()) {
             CircleAvatar(
                 avatars ?: arrayListOf(),
                 name = title,
