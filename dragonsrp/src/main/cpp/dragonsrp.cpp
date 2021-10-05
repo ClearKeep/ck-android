@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <dsrp/memorylookup.hpp>
+#include <dsrp/srpserver.hpp>
 
 #include "dsrp/srpclient.hpp"
 #include "dsrp/srpclientauthenticator.hpp"
@@ -78,7 +79,7 @@ string bytesToString(bytes b) {
 
     for (; from != to; ++from) {
 //        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "%02X", *from);
-        bHex << std::hex << (int) *from;
+        bHex << std::hex << std::setw(2) << std::setfill('0') << (int) *from;
     }
 
     return bHex.str();
@@ -105,21 +106,11 @@ Java_com_clearkeep_dragonsrp_NativeLib_getSalt(JNIEnv* env, jobject /* this */) 
     printf("getSalt gen salt complete");
     __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt gen salt complete");
 
-    std::vector<unsigned char>::const_iterator from = salt.begin();
-    std::vector<unsigned char>::const_iterator to = salt.end();
-
-    std::stringstream saltHex;
-
-    for ( ; from!=to; ++from ) {
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "%02X", *from);
-        saltHex << std::hex << (int) *from;
-    }
-
-    __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt saltHex %s", saltHex.str().c_str());
+    __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt saltHex %s", bytesToString(salt).c_str());
     printf("getSalt converted to jstring");
     __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt converted to jstring");
 
-    return stringToJstring(env, saltHex.str());
+    return stringToJstring(env, bytesToString(salt));
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -197,88 +188,407 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
     }
 }
 
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_getM1(
+        JNIEnv *env,
+        jobject /* this */,
+        jstring username,
+        jstring rawPassword,
+        jstring newSalt,
+        jstring b
+) {
+    try {
+        OsslSha1 hash;
+        OsslRandom random;
+        Ng ng = Ng::predefined(1024);
+        OsslMathImpl math(hash, ng);
+
+        SrpClient srpclient(math, random, false);
+
+        string convertedUsername = jstringToString(env, username);
+        string convertedPassword = jstringToString(env, rawPassword);
+
+        bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
+        bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
+
+        SrpClientAuthenticator sca = srpclient.getAuthenticator(usernameBytes, passwordBytes);
+
+        bytes salt = Conversion::string2bytes(jstringToString(env, newSalt));
+        bytes B = Conversion::string2bytes(jstringToString(env, b));
+
+        bytes m1Bytes = srpclient.getM1(salt, B, sca);
+        string m1String = bytesToString(m1Bytes);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 %s", m1String.c_str());
+
+        return stringToJstring(env, m1String);
+    } catch (UserNotFoundException e) {
+        return env->NewStringUTF(e.what().c_str());
+    } catch (DsrpException e) {
+        return env->NewStringUTF(e.what().c_str());
+    } catch (...) {
+        string error = "Unknown exception";
+        return env->NewStringUTF(error.c_str());
+    }
+}
+
 //////////////////////////////////////////////////////////// Test server code
-//extern "C" JNIEXPORT jstring JNICALL
-//Java_com_clearkeep_dragonsrp_NativeLib_testVerify(
-//        JNIEnv *env,
-//        jobject /* this */,
-//        jstring username,
-//        jstring rawPassword
-//) {
-//    try {
-//        OsslSha1 hash; // We will use OpenSSL SHA1 implementation
-//        OsslRandom random; // We will use OpenSSL random number generator
-//        MemoryLookup lookup; // This stores users in memory (linked-list)
-//
-//        // Load predefined N,g 1024bit RFC values
-//        Ng ng = Ng::predefined(1024);
-//
-//        OsslMathImpl math(hash, ng);
-//        SrpServer srpserver(lookup, math, random, false);
-//
-//        // Begin user creation
-//        std::string strUsername;
-//        cout << "username: ";
-//        cin >> strUsername;
-//        cin.ignore();
-//
-//        bytes username = Conversion::string2bytes(strUsername);
-//        bytes verificator = Conversion::readBytesHexForce("verificator");
-//        bytes salt = Conversion::readBytesHexForce("salt");
-//
-//        User u(username, verificator, salt);
-//
-//        if (!lookup.userAdd(u)) {
-//            cout << "Error: user already exists" << endl;
-//        }
-//        // End of user creation
-//
-//
-//        // Receive A from client
-//        bytes A = Conversion::readBytesHexForce("A(from client)");
-//
-//        // verifivator is used to authenticate one user(one session)
-//        SrpVerificator ver = srpserver.getVerificator(username, A);
-//
-//        // Send salt and B to client
-//        cout << "salt(send to client): ";
-//        Conversion::printBytes(ver.getSalt());
-//        cout << endl;
-//
-//        cout << "B(send to client): ";
-//        Conversion::printBytes(ver.getB());
-//        cout << endl;
-//
-//        // receive M1 from client
-//        bytes M1_fc = Conversion::readBytesHexForce("M1(from client)");
-//
-//        bytes M2_to_client;
-//        bytes K; // secret session key
-//
-//        // if M1 is OK we get M2 and K otherwise exception is thrown
-//        ver.authenticate(M1_fc, M2_to_client, K);
-//
-//        // send M2 to client
-//        cout << "M2 (send to client): ";
-//        Conversion::printBytes(M2_to_client);
-//        cout << endl;
-//
-//        // display shared secret
-//        cout << "shared secret session key is: ";
-//        Conversion::printBytes(K);
-//        cout << endl;
-//
-//        // if we get here, no exception was thrown
-//        // if auth fails DsrpException is thrown
-//        cout << "authentification successful" << endl;
-//        return 0;
-//    }
-//    catch (UserNotFoundException e) {
-//        return env->NewStringUTF(e.what().c_str());
-//    } catch (DsrpException e) {
-//        return env->NewStringUTF(e.what().c_str());
-//    } catch (...) {
-//        string error = "Unknown exception";
-//        return env->NewStringUTF(error.c_str());
-//    }
-//}
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetSalt(
+        JNIEnv *env,
+        jobject /* this */,
+        jstring username,
+        jstring verificator,
+        jstring salt,
+        jstring a
+) {
+    try {
+        OsslSha1 hash; // We will use OpenSSL SHA1 implementation
+        OsslRandom random; // We will use OpenSSL random number generator
+        MemoryLookup lookup; // This stores users in memory (linked-list)
+
+        // Load predefined N,g 1024bit RFC values
+        Ng ng = Ng::predefined(1024);
+
+        OsslMathImpl math(hash, ng);
+        SrpServer srpserver(lookup, math, random, false);
+
+        // Begin user creation
+
+        bytes usernameBytes = Conversion::string2bytes(jstringToString(env, username));
+        bytes saltBytes = Conversion::string2bytes(jstringToString(env, salt));
+        bytes verificatorBytes = Conversion::string2bytes(jstringToString(env, verificator));
+
+        User u(usernameBytes, verificatorBytes, saltBytes);
+
+        if (!lookup.userAdd(u)) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        }
+        // End of user creation
+
+
+        // Receive A from client
+        bytes A = Conversion::string2bytes(jstringToString(env, a));
+
+        // verificator is used to authenticate one user(one session)
+        SrpVerificator ver = srpserver.getVerificator(usernameBytes, A);
+
+        // Send salt and B to client
+        return stringToJstring(env, bytesToString(ver.getSalt()));
+    }
+    catch (UserNotFoundException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! UserNotFoundException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (DsrpException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! DsrpException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (...) {
+        string error = "Unknown exception";
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! Unknown exception");
+        return env->NewStringUTF(error.c_str());
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetB(
+        JNIEnv *env,
+        jobject /* this */,
+        jstring username,
+        jstring verificator,
+        jstring salt,
+        jstring a
+) {
+    try {
+        OsslSha1 hash; // We will use OpenSSL SHA1 implementation
+        OsslRandom random; // We will use OpenSSL random number generator
+        MemoryLookup lookup; // This stores users in memory (linked-list)
+
+        // Load predefined N,g 1024bit RFC values
+        Ng ng = Ng::predefined(1024);
+
+        OsslMathImpl math(hash, ng);
+        SrpServer srpserver(lookup, math, random, false);
+
+        // Begin user creation
+
+        bytes usernameBytes = Conversion::string2bytes(jstringToString(env, username));
+        bytes saltBytes = Conversion::string2bytes(jstringToString(env, salt));
+        bytes verificatorBytes = Conversion::string2bytes(jstringToString(env, verificator));
+
+        User u(usernameBytes, verificatorBytes, saltBytes);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA init user success!");
+
+        if (!lookup.userAdd(u)) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        }
+        // End of user creation
+
+
+        // Receive A from client
+        bytes A = Conversion::string2bytes(jstringToString(env, a));
+
+        // verificator is used to authenticate one user(one session)
+        SrpVerificator ver = srpserver.getVerificator(usernameBytes, A);
+
+        // Send salt and B to client
+        return stringToJstring(env, bytesToString(ver.getB()));
+    }
+    catch (UserNotFoundException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! UserNotFoundException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (DsrpException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! DsrpException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (...) {
+        string error = "Unknown exception";
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! Unknown exception");
+        return env->NewStringUTF(error.c_str());
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetM2(
+        JNIEnv *env,
+        jobject /* this */,
+        jstring username,
+        jstring verificator,
+        jstring salt,
+        jstring a,
+        jstring m1
+) {
+    try {
+        OsslSha1 hash; // We will use OpenSSL SHA1 implementation
+        OsslRandom random; // We will use OpenSSL random number generator
+        MemoryLookup lookup; // This stores users in memory (linked-list)
+
+        // Load predefined N,g 1024bit RFC values
+        Ng ng = Ng::predefined(1024);
+
+        OsslMathImpl math(hash, ng);
+        SrpServer srpserver(lookup, math, random, false);
+
+        // Begin user creation
+
+        bytes usernameBytes = Conversion::string2bytes(jstringToString(env, username));
+        bytes saltBytes = Conversion::string2bytes(jstringToString(env, salt));
+        bytes verificatorBytes = Conversion::string2bytes(jstringToString(env, verificator));
+
+        User u(usernameBytes, verificatorBytes, saltBytes);
+
+        if (!lookup.userAdd(u)) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        }
+        // End of user creation
+
+
+        // Receive A from client
+        bytes A = Conversion::string2bytes(jstringToString(env, a));
+
+        // verificator is used to authenticate one user(one session)
+        SrpVerificator ver = srpserver.getVerificator(usernameBytes, A);
+
+        // receive M1 from client
+        bytes M1_fc = Conversion::string2bytes(jstringToString(env, m1));
+
+        bytes M2_to_client;
+        bytes K; // secret session key
+
+        // if M1 is OK we get M2 and K otherwise exception is thrown
+        ver.authenticate(M1_fc, M2_to_client, K);
+
+        string m2String = bytesToString(M2_to_client);
+        return stringToJstring(env, m2String);
+    }
+    catch (UserNotFoundException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 exception! UserNotFoundException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (DsrpException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 exception! DsrpException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (...) {
+        string error = "Unknown exception";
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI",
+                            "testVerifyGetM2 exception! Unknown exception");
+        return env->NewStringUTF(error.c_str());
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetK(
+        JNIEnv *env,
+        jobject /* this */,
+        jstring username,
+        jstring verificator,
+        jstring salt,
+        jstring a,
+        jstring m1
+) {
+    try {
+        OsslSha1 hash; // We will use OpenSSL SHA1 implementation
+        OsslRandom random; // We will use OpenSSL random number generator
+        MemoryLookup lookup; // This stores users in memory (linked-list)
+
+        // Load predefined N,g 1024bit RFC values
+        Ng ng = Ng::predefined(1024);
+
+        OsslMathImpl math(hash, ng);
+        SrpServer srpserver(lookup, math, random, false);
+
+        // Begin user creation
+
+        bytes usernameBytes = Conversion::string2bytes(jstringToString(env, username));
+        bytes saltBytes = Conversion::string2bytes(jstringToString(env, salt));
+        bytes verificatorBytes = Conversion::string2bytes(jstringToString(env, verificator));
+
+        User u(usernameBytes, verificatorBytes, saltBytes);
+
+        if (!lookup.userAdd(u)) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        }
+        // End of user creation
+
+
+        // Receive A from client
+        bytes A = Conversion::string2bytes(jstringToString(env, a));
+
+        // verificator is used to authenticate one user(one session)
+        SrpVerificator ver = srpserver.getVerificator(usernameBytes, A);
+
+        // receive M1 from client
+        bytes M1_fc = Conversion::string2bytes(jstringToString(env, m1));
+
+        bytes M2_to_client;
+        bytes K; // secret session key
+
+        // if M1 is OK we get M2 and K otherwise exception is thrown
+        ver.authenticate(M1_fc, M2_to_client, K);
+
+        string kString = bytesToString(K);
+        return stringToJstring(env, kString);
+    }
+    catch (UserNotFoundException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! UserNotFoundException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (DsrpException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! DsrpException");
+        return env->NewStringUTF(e.what().c_str());
+    } catch (...) {
+        string error = "Unknown exception";
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! Unknown exception");
+        return env->NewStringUTF(error.c_str());
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testCreateUserNative(
+        JNIEnv *env,
+        jobject /* this */
+) {
+    try {
+        OsslSha1 hash;
+        OsslRandom random;
+        Ng ng = Ng::predefined(1024);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "INFO: using RFC5054 Appendix A 1024 bit N,g pair");
+        OsslMathImpl math(hash, ng);
+
+        SrpClient srpclient(math, random, false);
+
+        string strUsername = "linh";
+        string strPassword = "12345678";
+
+        bytes username = Conversion::string2bytes(strUsername);
+        bytes password = Conversion::string2bytes(strPassword);
+
+        bytes salt;
+        if (salt.size() == 0) salt = random.getRandom(SALTLEN);
+
+        bytes verificator = math.calculateVerificator(username, password, salt);
+
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "*** RESULT ***");
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "username: %s", strUsername.c_str());
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "salt: %s", bytesToString(salt).c_str());
+
+        std::vector<unsigned char>::const_iterator from = salt.begin();
+        std::vector<unsigned char>::const_iterator to = salt.end();
+        for ( ; from!=to; ++from ) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "%02X", *from);
+        }
+
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "verificator: %s", bytesToString(verificator).c_str());
+        std::vector<unsigned char>::const_iterator from1 = verificator.begin();
+        std::vector<unsigned char>::const_iterator to1 = verificator.end();
+        for ( ; from1!=to1; ++from1 ) {
+            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "%02X", *from1);
+        }
+
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "ok - you can now use these parameters in server_test program");
+        return stringToJstring(env, "");
+    }
+    catch (DsrpException e)
+    {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        return stringToJstring(env, e.what());
+    }
+    catch (...)
+    {
+        return stringToJstring(env, "Unknown exception");
+    }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_clearkeep_dragonsrp_NativeLib_testClientFlowNative(
+        JNIEnv *env,
+        jobject /* this */
+) {
+    try {
+        OsslSha1 hash;
+        OsslRandom random;
+        Ng ng = Ng::predefined(1024);
+        OsslMathImpl math(hash, ng);
+
+        SrpClient srpclient(math, random, false);
+
+        // ask user for credentials
+        string strUsername = "linh";
+        string strPassword = "12345678";
+
+        bytes username = Conversion::string2bytes(strUsername);
+        bytes password = Conversion::string2bytes(strPassword);
+
+        SrpClientAuthenticator sca = srpclient.getAuthenticator(username, password);
+
+        // send username and A to server
+        bytes A = sca.getA();
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "A: %s", bytesToString(A).c_str());
+
+        // receive salt and B from server
+        bytes salt = Conversion::readBytesHexForce("salt(from server)");
+        bytes B = Conversion::readBytesHexForce("B(from server)");
+
+        // send M1 to server
+        bytes M1 = srpclient.getM1(salt, B, sca);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "M1(send to server): %s", bytesToString(M1).c_str());
+
+        // receive M2 from server (or nothing if auth on server side not successful!)
+        bytes M2 = Conversion::readBytesHexForce("M2(from server)");
+        // if M2 matches we get K
+        bytes K = sca.getSessionKey(M2); // this throws exception on bad password
+
+        // display shared secret
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "M1(send to server): %s", bytesToString(M1).c_str());
+
+        // if we get here, no exception was thrown
+        // if auth fails DsrpException is thrown
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "authentification successful");
+        return stringToJstring(env, "");
+    }
+    catch (DsrpException e)
+    {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
+        return stringToJstring(env, e.what());
+    }
+    catch (...)
+    {
+        return stringToJstring(env, "Unknown exception");
+    }
+}
+
