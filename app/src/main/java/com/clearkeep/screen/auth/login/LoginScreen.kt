@@ -31,7 +31,9 @@ import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.dragonsrp.NativeLib
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -266,6 +268,9 @@ fun LoginScreen(
             }
         )
     }
+
+    val nativeLib = NativeLib()
+    printlnCK("Test call native library ${nativeLib.stringFromJNI()}")
 }
 
 @Composable
