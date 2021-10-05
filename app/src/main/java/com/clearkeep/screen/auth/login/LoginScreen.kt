@@ -36,6 +36,7 @@ import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
+import java.util.*
 
 @Composable
 fun LoginScreen(
@@ -271,6 +272,12 @@ fun LoginScreen(
 
     val nativeLib = NativeLib()
     printlnCK("Test call native library ${nativeLib.stringFromJNI()}")
+    val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
+    printlnCK("Test call get salt $salt")
+    val verificator = nativeLib.getVerificator("linh", "12345678", salt).toUpperCase(Locale.ROOT)
+    printlnCK("Test call get verificator $verificator")
+    val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
+    printlnCK("Test call get A $a")
 }
 
 @Composable
