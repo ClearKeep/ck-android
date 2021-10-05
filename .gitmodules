@@ -1,0 +1,3 @@
+[submodule "dragonsrp/src/main/cpp/DragonSRP"]
+	path = dragonsrp/src/main/cpp/DragonSRP
+	url = git@github.com:slechta/DragonSRP.git
