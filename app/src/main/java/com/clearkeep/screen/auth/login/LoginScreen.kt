@@ -271,6 +271,10 @@ fun LoginScreen(
     }
 
     val nativeLib = NativeLib()
+    printlnCK("Test call native library")
+//    nativeLib.testCreateUserNative()
+//    nativeLib.testClientFlowNative()
+
     printlnCK("Test call native library ${nativeLib.stringFromJNI()}")
     val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
     printlnCK("Test call get salt $salt")
@@ -278,6 +282,16 @@ fun LoginScreen(
     printlnCK("Test call get verificator $verificator")
     val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
     printlnCK("Test call get A $a")
+    val newSalt = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
+    val b = nativeLib.testVerifyGetB("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
+    printlnCK("Test call verify get Salt $newSalt")
+    printlnCK("Test call verify get B $b")
+    val m1 = nativeLib.getM1("linh", "12345678", salt, b).toUpperCase(Locale.ROOT)
+    printlnCK("Test call get M1 $m1")
+    val m2 = nativeLib.testVerifyGetM2("linh", verificator, salt, a, m1)
+    val k = nativeLib.testVerifyGetK("linh", verificator, salt, a, m1)
+    println("Test call verify get M2 $m2")
+    println("Test call verify get K $k")
 }
 
 @Composable
