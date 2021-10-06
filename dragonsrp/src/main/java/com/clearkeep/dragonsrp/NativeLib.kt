@@ -6,8 +6,10 @@ class NativeLib {
     @JvmField
     var srpClientAuthenticatorPtr = 0L
 
-//    var srpClientPtr = 0L
-//    var srpClientAuthenticatorPtr = 0L
+    @JvmField
+    var srpServerPtr = 0L
+    @JvmField
+    var srpVerificatorPtr = 0L
 
     external fun stringFromJNI(): String
     external fun getSalt(): String
