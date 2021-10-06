@@ -224,8 +224,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
         Ng ng = Ng::predefined(1024);
         OsslMathImpl math(hash, ng);
 
-        SrpClient srpclient(math, random, false);
-        SrpClient* srpclientPtr = &srpclient;
+        auto* srpclientPtr = new SrpClient(math, random, false);
         env->SetLongField(obj, getSrpClientPtrFieldId(env, obj), (jlong) srpclientPtr);
 
         string convertedUsername = jstringToString(env, username);
@@ -234,22 +233,34 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
         bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
         bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
 
-        SrpClientAuthenticator sca = srpclient.getAuthenticator(usernameBytes, passwordBytes);
+        SrpClientAuthenticator sca = srpclientPtr->getAuthenticator(usernameBytes, passwordBytes);
         SrpClientAuthenticator* scaPtr = &sca;
         env->SetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj), (jlong) scaPtr);
 
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "srpclientPtr %ld", (long) srpclientPtr);
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "scaPtr %ld", (long) scaPtr);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA srpclientPtr %ld", (long) srpclientPtr);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA scaPtr %ld", (long) scaPtr);
 
         string aString = bytesToString(sca.getA());
         __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA %s", aString.c_str());
 
+        //TEST pointer, remove after done
+        bytes salt = DragonSRP::Conversion::hexstring2bytes("832f55bd03808ce8015f01515f193ebc64fc34e5c8fd312e60bc56774f071bf4");
+        bytes B = DragonSRP::Conversion::hexstring2bytes("d0950ed022b048a9ecb43cfe053a024a56a516a76951ed69594efbba56dac0d15770ef96014998123f0c2064ffbfee1043c28590bf1f375fe62d255c120ef2d62d1f3f8c48217ed5ff1069ca54946d13f11ea7487806df54154015e5de21df7fcf93a5158a9fa6e517860e5b999782c3e91d1fa8caec1b61a7d5aae067b88896");
+        auto *scaJava = (SrpClientAuthenticator*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
+        auto *srpcJava = (SrpClient*) env->GetLongField(obj, getSrpClientPtrFieldId(env, obj));
+
+        bytes m1Bytes = srpcJava->getM1(salt, B, *scaJava);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA test pointer success sca %ld srpclient %ld, scaJava %ld srpcJava %ld", (long) scaPtr, (long) srpclientPtr, (long) scaJava, (long) srpcJava);
+
         return stringToJstring(env, aString);
     } catch (UserNotFoundException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
         return env->NewStringUTF(e.what().c_str());
     } catch (DsrpException e) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
         return env->NewStringUTF(e.what().c_str());
     } catch (...) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "unknown exception");
         string error = "Unknown exception";
         return env->NewStringUTF(error.c_str());
     }
@@ -265,13 +276,16 @@ Java_com_clearkeep_dragonsrp_NativeLib_getM1(
         jstring b
 ) {
     try {
-        SrpClientAuthenticator* sca = (SrpClientAuthenticator*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
-        SrpClient* srpclient = (SrpClient*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
+        auto *sca = (SrpClientAuthenticator*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
+        auto *srpclient = (SrpClient*) env->GetLongField(obj, getSrpClientPtrFieldId(env, obj));
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 pointer init success sca %ld srpcclient %ld", (long) sca, (long) srpclient);
 
         bytes salt = Conversion::hexstring2bytes(jstringToString(env, newSalt));
         bytes B = Conversion::hexstring2bytes(jstringToString(env, b));
 
-        bytes m1Bytes = srpclient->getM1(salt, B, reinterpret_cast<SrpClientAuthenticator &>(sca));
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 salt %s B %s", bytesToString(salt).c_str(), bytesToString(B).c_str());
+
+        bytes m1Bytes = srpclient->getM1(salt, B, *sca);
         string m1String = bytesToString(m1Bytes);
         __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 %s", m1String.c_str());
 
