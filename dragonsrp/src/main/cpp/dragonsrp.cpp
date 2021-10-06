@@ -85,6 +85,42 @@ string bytesToString(bytes b) {
     return bHex.str();
 }
 
+jfieldID getHashPtrFieldId(JNIEnv *env, jobject obj) {
+    static jfieldID hashPtrId = 0;
+
+    if (!hashPtrId) {
+        jclass c = env->GetObjectClass(obj);
+        hashPtrId = env->GetFieldID(c, "hashPtr", "J");
+        env->DeleteLocalRef(c);
+    }
+
+    return hashPtrId;
+}
+
+jfieldID getSrpClientPtrFieldId(JNIEnv *env, jobject obj) {
+    static jfieldID srpClientPtrId = 0;
+
+    if (!srpClientPtrId) {
+        jclass c = env->GetObjectClass(obj);
+        srpClientPtrId = env->GetFieldID(c, "srpClientPtr", "J");
+        env->DeleteLocalRef(c);
+    }
+
+    return srpClientPtrId;
+}
+
+jfieldID getSrpcClientAuthenticatorPtr(JNIEnv *env, jobject obj) {
+    static jfieldID srpcClientAuthenticatorPtrId = 0;
+
+    if (!srpcClientAuthenticatorPtrId) {
+        jclass c = env->GetObjectClass(obj);
+        srpcClientAuthenticatorPtrId = env->GetFieldID(c, "srpClientAuthenticatorPtr", "J");
+        env->DeleteLocalRef(c);
+    }
+
+    return srpcClientAuthenticatorPtrId;
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_clearkeep_dragonsrp_NativeLib_stringFromJNI(
         JNIEnv *env,
@@ -154,7 +190,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_clearkeep_dragonsrp_NativeLib_getA(
         JNIEnv *env,
-        jobject /* this */,
+        jobject obj /* this */,
         jstring username,
         jstring rawPassword
 ) {
@@ -165,6 +201,11 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
         OsslMathImpl math(hash, ng);
 
         SrpClient srpclient(math, random, false);
+        SrpClient* srpclientPtr = &srpclient;
+        env->SetLongField(obj, getSrpClientPtrFieldId(env, obj), (jlong) srpclientPtr);
+
+//        SrpClient* srpClientPtr = &srpclient;
+//        env->SetLongField(obj, getSrpClientPtrFieldId(env, obj), (jlong) srpClientPtr);
 
         string convertedUsername = jstringToString(env, username);
         string convertedPassword = jstringToString(env, rawPassword);
@@ -173,6 +214,11 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
         bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
 
         SrpClientAuthenticator sca = srpclient.getAuthenticator(usernameBytes, passwordBytes);
+        SrpClientAuthenticator* scaPtr = &sca;
+        env->SetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj), (jlong) scaPtr);
+
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "srpclientPtr %ld", (long) srpclientPtr);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "scaPtr %ld", (long) scaPtr);
 
         string aString = bytesToString(sca.getA());
         __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA %s", aString.c_str());
@@ -191,32 +237,20 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_clearkeep_dragonsrp_NativeLib_getM1(
         JNIEnv *env,
-        jobject /* this */,
+        jobject obj /* this */,
         jstring username,
         jstring rawPassword,
         jstring newSalt,
         jstring b
 ) {
     try {
-        OsslSha1 hash;
-        OsslRandom random;
-        Ng ng = Ng::predefined(1024);
-        OsslMathImpl math(hash, ng);
-
-        SrpClient srpclient(math, random, false);
-
-        string convertedUsername = jstringToString(env, username);
-        string convertedPassword = jstringToString(env, rawPassword);
-
-        bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
-        bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
-
-        SrpClientAuthenticator sca = srpclient.getAuthenticator(usernameBytes, passwordBytes);
+        SrpClientAuthenticator* sca = (SrpClientAuthenticator*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
+        SrpClient* srpclient = (SrpClient*) env->GetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj));
 
         bytes salt = Conversion::string2bytes(jstringToString(env, newSalt));
         bytes B = Conversion::string2bytes(jstringToString(env, b));
 
-        bytes m1Bytes = srpclient.getM1(salt, B, sca);
+        bytes m1Bytes = srpclient->getM1(salt, B, reinterpret_cast<SrpClientAuthenticator &>(sca));
         string m1String = bytesToString(m1Bytes);
         __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 %s", m1String.c_str());
 

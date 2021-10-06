@@ -1,6 +1,13 @@
 package com.clearkeep.dragonsrp
 
 class NativeLib {
+    @JvmField
+    var srpClientPtr = 0L
+    @JvmField
+    var srpClientAuthenticatorPtr = 0L
+
+//    var srpClientPtr = 0L
+//    var srpClientAuthenticatorPtr = 0L
 
     external fun stringFromJNI(): String
     external fun getSalt(): String
