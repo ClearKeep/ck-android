@@ -12,7 +12,6 @@ import androidx.compose.material.TabRowDefaults.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -272,29 +271,28 @@ fun LoginScreen(
 
     val nativeLib = NativeLib()
     printlnCK("Test call native library")
-//    nativeLib.testCreateUserNative()
-//    nativeLib.testClientFlowNative()
 
     //Register new user flow
-    val salt = "832F55BD03808CE8015F01515F193EBC64FC34E5C8FD312E60BC56774F071BF4".toUpperCase(Locale.ROOT)
-    val verificator = "244A5D7DDEE0C2ABDE48C903052EAEA62F65DFA01E493B8B40A59F7683ABE71C699BACD36EC480970D1080C8EB72CFB73E23129BBA17F68B2D7CC790DD2E15DAE406D407769343DFEFF1B125B2450F5C00A0167D1EF765A9597A27D92F595C1E1EB6E740A35E4E4C55E279E34E49C6275B0BA2C0B15863402ECA6D821B56633B".toUpperCase(Locale.ROOT)
+    val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
+    val verificator = nativeLib.getVerificator("linh", "12345678", salt).toUpperCase(Locale.ROOT)
 
     //Login flow
     val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
     printlnCK("Test call get A $a")
-    val newSaltAndB = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
-    printlnCK("Test call new salt and b $newSaltAndB")
-    val newSalt = newSaltAndB.split(",")[0]
-    val b = newSaltAndB.split(",")[1]
+    val newSalt = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
+    val b = nativeLib.testVerifyGetB().toUpperCase(Locale.ROOT)
     printlnCK("Test call verify get new salt $newSalt")
     printlnCK("Test call verify get B $b")
 
-    val m1 = nativeLib.getM1("linh", "12345678", salt, b).toUpperCase(Locale.ROOT)
+    val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
     printlnCK("Test call get M1 $m1")
-//    val m2 = nativeLib.testVerifyGetM2("linh", verificator, salt, a, m1)
-//    val k = nativeLib.testVerifyGetK("linh", verificator, salt, a, m1)
-//    println("Test call verify get M2 $m2")
-//    println("Test call verify get K $k")
+    val m2 = nativeLib.testVerifyGetM2(m1)
+    val kFromServer = nativeLib.testVerifyGetK(m1)
+    println("Test call verify get M2 $m2")
+    println("Test call verify get K $kFromServer")
+    val kFromClient = nativeLib.getK(m2)
+    println("Test call client has K $kFromClient")
+    println("Test call correct? ${kFromClient == kFromServer}")
 }
 
 @Composable
