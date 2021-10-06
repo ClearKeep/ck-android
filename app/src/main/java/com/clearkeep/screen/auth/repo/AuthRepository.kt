@@ -7,6 +7,7 @@ import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserKey
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.model.SignalIdentityKey
+import com.clearkeep.dragonsrp.NativeLib
 import com.clearkeep.dynamicapi.CallCredentials
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
@@ -582,6 +583,40 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error("", 0 to exception.toString())
         }
+    }
+
+    private suspend fun registerSrp(username: String, rawPassword: String) = withContext(Dispatchers.IO) {
+        val nativeLib = NativeLib()
+
+        val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
+        val verificator = nativeLib.getVerificator(username, rawPassword, salt).toUpperCase(Locale.ROOT)
+
+        printlnCK("Verificator hardcode ")
+
+        //TODO: Send salt and verificator to server
+    }
+
+    private suspend fun loginSrp(username: String, rawPassword: String) = withContext(Dispatchers.IO) {
+//        val nativeLib = NativeLib()
+//
+//        val a = nativeLib.getA(username, rawPassword).toUpperCase(Locale.ROOT)
+//        printlnCK("Test call get A $a")
+//        val newSaltAndB = nativeLib.testVerifyGetSalt(username, verificator, salt, a).toUpperCase(Locale.ROOT)
+//        printlnCK("Test call new salt and b $newSaltAndB")
+//        val newSalt = newSaltAndB.split(",")[0]
+//        val b = newSaltAndB.split(",")[1]
+//        printlnCK("Test call verify get new salt $newSalt")
+//        printlnCK("Test call verify get B $b")
+//
+//        val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
+//        printlnCK("Test call get M1 $m1")
+//        val m2 = nativeLib.testVerifyGetM2(m1)
+//        val kFromServer = nativeLib.testVerifyGetK(m1)
+//        println("Test call verify get M2 $m2")
+//        println("Test call verify get K $kFromServer")
+//        val kFromClient = nativeLib.getK(m2)
+//        println("Test call client has K $kFromClient")
+//        println("Test call correct? ${kFromClient == kFromServer}")
     }
 
     private suspend fun onLoginSuccess(

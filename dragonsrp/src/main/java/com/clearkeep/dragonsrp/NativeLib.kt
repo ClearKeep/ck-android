@@ -15,11 +15,12 @@ class NativeLib {
     external fun getSalt(): String
     external fun getVerificator(username: String, rawPassword: String, salt: String): String
     external fun getA(username: String, rawPassword: String): String
-    external fun getM1(username: String, rawPassword: String, newSalt: String, b: String): String
+    external fun getM1(newSalt: String, b: String): String
+    external fun getK(m2: String): String
     external fun testVerifyGetSalt(username: String, verificator: String, salt: String, a: String): String
-    external fun testVerifyGetB(username: String, verificator: String, salt: String, a: String): String
-    external fun testVerifyGetM2(username: String, verificator: String, salt: String, a: String, m1: String): String
-    external fun testVerifyGetK(username: String, verificator: String, salt: String, a: String, m1: String): String
+    external fun testVerifyGetB(): String
+    external fun testVerifyGetM2(m1: String): String
+    external fun testVerifyGetK(m1: String): String
     external fun testCreateUserNative(): String
     external fun testClientFlowNative(): String
 
