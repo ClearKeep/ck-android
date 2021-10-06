@@ -282,12 +282,15 @@ fun LoginScreen(
     //Login flow
     val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
     printlnCK("Test call get A $a")
-    val newSalt = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
-    printlnCK("Test call verify get Salt $newSalt")
-    val b = nativeLib.testVerifyGetB("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
-//    printlnCK("Test call verify get B $b")
-//    val m1 = nativeLib.getM1("linh", "12345678", salt, b).toUpperCase(Locale.ROOT)
-//    printlnCK("Test call get M1 $m1")
+    val newSaltAndB = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
+    printlnCK("Test call new salt and b $newSaltAndB")
+    val newSalt = newSaltAndB.split(",")[0]
+    val b = newSaltAndB.split(",")[1]
+    printlnCK("Test call verify get new salt $newSalt")
+    printlnCK("Test call verify get B $b")
+
+    val m1 = nativeLib.getM1("linh", "12345678", salt, b).toUpperCase(Locale.ROOT)
+    printlnCK("Test call get M1 $m1")
 //    val m2 = nativeLib.testVerifyGetM2("linh", verificator, salt, a, m1)
 //    val k = nativeLib.testVerifyGetK("linh", verificator, salt, a, m1)
 //    println("Test call verify get M2 $m2")
