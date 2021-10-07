@@ -1,0 +1,3 @@
+[submodule "dragonsrp/src/main/cpp/csrp"]
+	path = dragonsrp/src/main/cpp/csrp
+	url = git@github.com:cocagne/csrp.git
