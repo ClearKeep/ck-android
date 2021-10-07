@@ -220,7 +220,7 @@ class LoginViewModel @Inject constructor(
             )
             null
         } else {
-            authRepo.login(email.trim(), password.trim(), getDomain())
+            authRepo.login(email.trim(), password, getDomain())
         }
         _isLoading.value = false
         return result

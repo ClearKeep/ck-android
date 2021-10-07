@@ -125,7 +125,6 @@ fun RegisterScreen(
                             contentScale = ContentScale.FillBounds
                         )
                     },
-                    allowSpace = false
                 )
                 Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
@@ -142,7 +141,6 @@ fun RegisterScreen(
                             contentScale = ContentScale.FillBounds
                         )
                     },
-                    allowSpace = false
                 )
                 Spacer(Modifier.height(24.sdp()))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,8 +163,8 @@ fun RegisterScreen(
                             onRegisterPressed(
                                 email.value,
                                 displayName.value,
-                                password.value.trim(),
-                                confirmPassword.value.trim()
+                                password.value,
+                                confirmPassword.value
                             )
                         },
                         enabled = !isLoading && email.value.isNotBlank() && displayName.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank(),
