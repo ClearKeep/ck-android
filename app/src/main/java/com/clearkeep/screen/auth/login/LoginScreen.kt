@@ -112,14 +112,13 @@ fun LoginScreen(
                             contentDescription = null
                         )
                     },
-                    allowSpace = false
                 )
 
                 Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 CKButton(
                     stringResource(R.string.btn_login),
                     onClick = {
-                        onLoginPressed(email.value, password.value.trim())
+                        onLoginPressed(email.value, password.value)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
