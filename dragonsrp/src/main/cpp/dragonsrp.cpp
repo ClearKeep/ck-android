@@ -3,27 +3,9 @@
 #include <android/log.h>
 #include <iomanip>
 #include <sstream>
-#include <dsrp/memorylookup.hpp>
-#include <dsrp/srpserver.hpp>
+#include <srp.h>
+#include <srp.c>
 
-#include "dsrp/srpclient.hpp"
-#include "dsrp/srpclientauthenticator.hpp"
-#include "dsrp/user.hpp"
-#include "dsrp/ng.hpp"
-
-#include "dsrp/dsrpexception.hpp"
-#include "dsrp/conversionexception.hpp"
-#include "dsrp/usernotfoundexception.hpp"
-#include "dsrp/conversion.hpp"
-
-#include "ossl/osslsha1.hpp"
-#include "ossl/osslmathimpl.hpp"
-#include "ossl/osslrandom.hpp"
-
-#define SALTLEN 32
-
-using namespace DragonSRP;
-using namespace DragonSRP::Ossl;
 using namespace std;
 
 string jstringToString(JNIEnv *env, jstring jStr) {
@@ -69,20 +51,6 @@ jstring stringToJstring(JNIEnv *env, string str) {
             env->NewObject(stringClass, ctor, bytes, charset));
 
     return jMessage;
-}
-
-string bytesToString(bytes b) {
-    std::vector<unsigned char>::const_iterator from = b.begin();
-    std::vector<unsigned char>::const_iterator to = b.end();
-
-    std::stringstream bHex;
-
-    for (; from != to; ++from) {
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "%02X", *from);
-        bHex << std::hex << std::setw(2) << std::setfill('0') << (int) *from;
-    }
-
-    return bHex.str();
 }
 
 jfieldID getHashPtrFieldId(JNIEnv *env, jobject obj) {
@@ -157,22 +125,22 @@ Java_com_clearkeep_dragonsrp_NativeLib_stringFromJNI(
 //region Create new user
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_clearkeep_dragonsrp_NativeLib_getSalt(JNIEnv* env, jobject /* this */) {
-    OsslSha1 hash;
-    OsslRandom random;
-
-    printf("getSalt init");
-    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt init");
-
-    bytes salt;
-    if (salt.size() == 0) salt = random.getRandom(SALTLEN);
-    printf("getSalt gen salt complete");
-    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt gen salt complete");
-
-    __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt saltHex %s", bytesToString(salt).c_str());
-    printf("getSalt converted to jstring");
-    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt converted to jstring");
-
-    return stringToJstring(env, bytesToString(salt));
+//    OsslSha1 hash;
+//    OsslRandom random;
+//
+//    printf("getSalt init");
+//    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt init");
+//
+//    bytes salt;
+//    if (salt.size() == 0) salt = random.getRandom(SALTLEN);
+//    printf("getSalt gen salt complete");
+//    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt gen salt complete");
+//
+//    __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt saltHex %s", bytesToString(salt).c_str());
+//    printf("getSalt converted to jstring");
+//    __android_log_print(ANDROID_LOG_DEBUG, "JNI","getSalt converted to jstring");
+//
+    return stringToJstring(env, "");
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -184,29 +152,41 @@ Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
         jstring salt
 ) {
     try {
-        OsslSha1 hash;
-        OsslRandom random;
-        Ng ng = Ng::predefined(2048);
-        OsslMathImpl math(hash, ng);
+        SRP_HashAlgorithm alg = SRP_SHA1;
+        SRP_NGType ng_type = SRP_NG_2048;
 
-        string convertedUsername = jstringToString(env, username);
-        string convertedPassword = jstringToString(env, rawPassword);
-        string convertedSalt = jstringToString(env, salt);
+        struct SRPVerifier *ver;
+        struct SRPUser *usr;
 
-        bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
-        bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
-        bytes saltBytes = DragonSRP::Conversion::hexstring2bytes(convertedSalt);
+        const unsigned char *bytes_s = nullptr;
+        const unsigned char *bytes_v = nullptr;
+        const unsigned char *bytes_A = nullptr;
+        const unsigned char *bytes_B = nullptr;
 
-        bytes verificator = math.calculateVerificator(usernameBytes, passwordBytes, saltBytes);
+        const unsigned char *bytes_M = nullptr;
+        const unsigned char *bytes_HAMK = nullptr;
 
-        string verificatorString = bytesToString(verificator);
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator %s",
-                            verificatorString.c_str());
-        return stringToJstring(env, verificatorString);
-    } catch (UserNotFoundException e) {
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        return env->NewStringUTF(e.what().c_str());
+        int len_s = 0;
+        int len_v = 0;
+        int len_A = 0;
+        int len_B = 0;
+        int len_M = 0;
+
+        string password = jstringToString(env, rawPassword);
+
+        srp_create_salted_verification_key(alg, ng_type, jstringToString(env, username).c_str(),
+                                           (const unsigned char *) password.c_str(),
+                                           password.length(),
+                                           &bytes_s, &len_s,
+                                           &bytes_v, &len_v,
+                                           nullptr, nullptr);
+
+        string saltStr(reinterpret_cast<char const*>(bytes_s));
+        string verificatorStr(reinterpret_cast<char const*>(bytes_v));
+
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator salt %s len %d", saltStr.c_str(), len_s);
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator verificator %s len %d", verificatorStr.c_str(), len_v);
+        return stringToJstring(env, "");
     } catch (...) {
         string error = "Unknown exception";
         return env->NewStringUTF(error.c_str());
@@ -215,296 +195,116 @@ Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
 //endregion
 
 //region Authenticate
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getA(
-        JNIEnv *env,
-        jobject obj /* this */,
-        jstring username,
-        jstring rawPassword
-) {
-    try {
-        auto* hash = new OsslSha1();
-        auto* random = new OsslRandom();
-        Ng ng = Ng::predefined(2048);
-        auto* math = new OsslMathImpl(*hash, ng);
+//extern "C" JNIEXPORT jstring JNICALL
+//Java_com_clearkeep_dragonsrp_NativeLib_getA(
+//        JNIEnv *env,
+//        jobject obj /* this */,
+//        jstring username,
+//        jstring rawPassword
+//) {
+//    try {
+//        auto* hash = new OsslSha1();
+//        auto* random = new OsslRandom();
+//        Ng ng = Ng::predefined(2048);
+//        auto* math = new OsslMathImpl(*hash, ng);
+//
+//        auto* srpclientPtr = new SrpClient(*math, *random, false);
+//        env->SetLongField(obj, getSrpClientPtrFieldId(env, obj), (jlong) srpclientPtr);
+//
+//        string convertedUsername = jstringToString(env, username);
+//        string convertedPassword = jstringToString(env, rawPassword);
+//
+//        bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
+//        bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
+//
+//        SrpClientAuthenticator sca = srpclientPtr->getAuthenticator(usernameBytes, passwordBytes);
+//        auto *scaPtr = new SrpClientAuthenticator(sca);
+//        env->SetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj), (jlong) scaPtr);
+//
+//        string aString = bytesToString(sca.getA());
+//        return stringToJstring(env, aString);
+//    } catch (UserNotFoundException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (DsrpException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (...) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "unknown exception");
+//        string error = "Unknown exception";
+//        return env->NewStringUTF(error.c_str());
+//    }
+//}
 
-        auto* srpclientPtr = new SrpClient(*math, *random, false);
-        env->SetLongField(obj, getSrpClientPtrFieldId(env, obj), (jlong) srpclientPtr);
+//extern "C" JNIEXPORT jstring JNICALL
+//Java_com_clearkeep_dragonsrp_NativeLib_getM1(
+//        JNIEnv *env,
+//        jobject obj /* this */,
+//        jstring salt,
+//        jstring b
+//) {
+//    try {
+//        auto *sca = (SrpClientAuthenticator *) env->GetLongField(obj,
+//                                                                 getSrpcClientAuthenticatorPtr(env,
+//                                                                                               obj));
+//        auto *srpclient = (SrpClient *) env->GetLongField(obj, getSrpClientPtrFieldId(env, obj));
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI",
+//                            "getM1 pointer init success sca %ld srpcclient %ld", (long) sca,
+//                            (long) srpclient);
+//
+//        bytes saltBytes = Conversion::hexstring2bytes(jstringToString(env, salt));
+//        bytes B = Conversion::hexstring2bytes(jstringToString(env, b));
+//
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 salt %s B %s",
+//                            bytesToString(saltBytes).c_str(), bytesToString(B).c_str());
+//
+//        bytes m1Bytes = srpclient->getM1(saltBytes, B, *sca);
+//        string m1String = bytesToString(m1Bytes);
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 %s", m1String.c_str());
+//
+//        return stringToJstring(env, m1String);
+//    } catch (UserNotFoundException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (DsrpException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (...) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 unknown exception");
+//        string error = "Unknown exception";
+//        return env->NewStringUTF(error.c_str());
+//    }
+//}
 
-        string convertedUsername = jstringToString(env, username);
-        string convertedPassword = jstringToString(env, rawPassword);
-
-        bytes usernameBytes = DragonSRP::Conversion::string2bytes(convertedUsername);
-        bytes passwordBytes = DragonSRP::Conversion::string2bytes(convertedPassword);
-
-        SrpClientAuthenticator sca = srpclientPtr->getAuthenticator(usernameBytes, passwordBytes);
-        auto *scaPtr = new SrpClientAuthenticator(sca);
-        env->SetLongField(obj, getSrpcClientAuthenticatorPtr(env, obj), (jlong) scaPtr);
-
-        string aString = bytesToString(sca.getA());
-        return stringToJstring(env, aString);
-    } catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getA exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "unknown exception");
-        string error = "Unknown exception";
-        return env->NewStringUTF(error.c_str());
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getM1(
-        JNIEnv *env,
-        jobject obj /* this */,
-        jstring salt,
-        jstring b
-) {
-    try {
-        auto *sca = (SrpClientAuthenticator *) env->GetLongField(obj,
-                                                                 getSrpcClientAuthenticatorPtr(env,
-                                                                                               obj));
-        auto *srpclient = (SrpClient *) env->GetLongField(obj, getSrpClientPtrFieldId(env, obj));
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI",
-                            "getM1 pointer init success sca %ld srpcclient %ld", (long) sca,
-                            (long) srpclient);
-
-        bytes saltBytes = Conversion::hexstring2bytes(jstringToString(env, salt));
-        bytes B = Conversion::hexstring2bytes(jstringToString(env, b));
-
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 salt %s B %s",
-                            bytesToString(saltBytes).c_str(), bytesToString(B).c_str());
-
-        bytes m1Bytes = srpclient->getM1(saltBytes, B, *sca);
-        string m1String = bytesToString(m1Bytes);
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 %s", m1String.c_str());
-
-        return stringToJstring(env, m1String);
-    } catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 unknown exception");
-        string error = "Unknown exception";
-        return env->NewStringUTF(error.c_str());
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getK(
-        JNIEnv *env,
-        jobject obj /* this */,
-        jstring m2
-) {
-    try {
-        auto *sca = (SrpClientAuthenticator *) env->GetLongField(obj,
-                                                                 getSrpcClientAuthenticatorPtr(env,
-                                                                                               obj));
-
-        bytes m2Bytes = Conversion::hexstring2bytes(jstringToString(env, m2));
-
-        bytes K = sca->getSessionKey(m2Bytes);
-        string kString = bytesToString(K);
-
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getK from client success %s", kString.c_str());
-
-        return stringToJstring(env, kString);
-    } catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 unknown exception");
-        string error = "Unknown exception";
-        return env->NewStringUTF(error.c_str());
-    }
-}
-//endregion
-
-//region Test server code
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetSalt(
-        JNIEnv *env,
-        jobject obj /* this */,
-        jstring username,
-        jstring verificator,
-        jstring salt,
-        jstring a
-) {
-    try {
-        OsslSha1* hash = new OsslSha1(); // We will use OpenSSL SHA1 implementation
-        OsslRandom* random = new OsslRandom(); // We will use OpenSSL random number generator
-        MemoryLookup* lookup = new MemoryLookup(); // This stores users in memory (linked-list)
-
-        // Load predefined N,g 1024bit RFC values
-        Ng ng = Ng::predefined(2048);
-
-        OsslMathImpl* math = new OsslMathImpl(*hash, ng);
-        SrpServer* srpserver = new SrpServer(*lookup, *math, *random, false);
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt srpserverPtr %ld", (long) srpserver);
-        env->SetLongField(obj, getSrpServerPtrFieldId(env, obj), (jlong) srpserver);
-
-        // Begin user creation
-
-        string usernameStr = jstringToString(env, username);
-        string saltStr = jstringToString(env, salt);
-        string verificatorStr = jstringToString(env, verificator);
-
-        bytes usernameBytes = Conversion::string2bytes(usernameStr);
-        bytes saltBytes = Conversion::hexstring2bytes(saltStr);
-        bytes verificatorBytes = Conversion::hexstring2bytes(verificatorStr);
-
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt usernameStr %s", bytesToString(usernameBytes).c_str());
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt saltStr %s", bytesToString(saltBytes).c_str());
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt verificatorStr %s", bytesToString(verificatorBytes).c_str());
-
-        User u(usernameBytes, verificatorBytes, saltBytes);
-
-        if (!lookup->userAdd(u)) {
-            __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyA Error: user already exists");
-        }
-        // End of user creation
-
-
-        // Receive A from client
-        bytes A = Conversion::hexstring2bytes(jstringToString(env, a));
-
-        // verificator is used to authenticate one user(one session)
-        SrpVerificator ver = srpserver->getVerificator(usernameBytes, A);
-        SrpVerificator* srpVerificator = new SrpVerificator(ver);
-        env->SetLongField(obj, getSrpVerificatorPtrFieldId(env, obj), (jlong) srpVerificator);
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt srpVerificator %ld", (long) srpVerificator);
-
-        return stringToJstring(env, bytesToString(ver.getSalt()));
-    }
-    catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! UserNotFoundException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! DsrpException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        string error = "Unknown exception";
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetSalt exception! Unknown exception");
-        return env->NewStringUTF(error.c_str());
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetB(
-        JNIEnv *env,
-        jobject obj /* this */
-) {
-    try {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB init");
-        SrpVerificator* ver = (SrpVerificator*) env->GetLongField(obj, getSrpVerificatorPtrFieldId(env, obj));
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB init ptr ver %ld", (long) ver);
-
-        bytes slt = ver->getSalt();
-        bytes byteB = ver->getB();
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB got B %s", bytesToString(byteB).c_str());
-        // Send salt and B to client
-        return stringToJstring(env, bytesToString(byteB));
-    }
-    catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! UserNotFoundException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! DsrpException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        string error = "Unknown exception";
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetB exception! Unknown exception");
-        return env->NewStringUTF(error.c_str());
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetM2(
-        JNIEnv *env,
-        jobject obj /* this */,
-        jstring m1
-) {
-    try {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 init");
-        SrpVerificator* ver = (SrpVerificator*) env->GetLongField(obj, getSrpVerificatorPtrFieldId(env, obj));
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 init ptr ver %ld", (long) ver);
-
-        bytes slt = ver->getSalt();
-        bytes byteB = ver->getB();
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 got M1 %s", bytesToString(byteB).c_str());
-
-        // receive M1 from client
-        bytes M1_fc = Conversion::hexstring2bytes(jstringToString(env, m1));
-
-        bytes M2_to_client;
-        bytes K; // secret session key
-
-        // if M1 is OK we get M2 and K otherwise exception is thrown
-        ver->authenticate(M1_fc, M2_to_client, K);
-
-        string m2String = bytesToString(M2_to_client);
-        return stringToJstring(env, m2String);
-    }
-    catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 exception! UserNotFoundException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 exception! DsrpException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        string error = "Unknown exception";
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI",
-                            "testVerifyGetM2 exception! Unknown exception");
-        return env->NewStringUTF(error.c_str());
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_testVerifyGetK(
-        JNIEnv *env,
-        jobject  obj/* this */,
-        jstring m1
-) {
-    try {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 init");
-        SrpVerificator* ver = (SrpVerificator*) env->GetLongField(obj, getSrpVerificatorPtrFieldId(env, obj));
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 init ptr ver %ld", (long) ver);
-
-        bytes slt = ver->getSalt();
-        bytes byteB = ver->getB();
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetM2 got M1 %s", bytesToString(byteB).c_str());
-
-        // receive M1 from client
-        bytes M1_fc = Conversion::hexstring2bytes(jstringToString(env, m1));
-
-        bytes M2_to_client;
-        bytes K; // secret session key
-
-        // if M1 is OK we get M2 and K otherwise exception is thrown
-        ver->authenticate(M1_fc, M2_to_client, K);
-
-        string kString = bytesToString(K);
-        return stringToJstring(env, kString);
-    }
-    catch (UserNotFoundException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! UserNotFoundException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (DsrpException e) {
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! DsrpException");
-        return env->NewStringUTF(e.what().c_str());
-    } catch (...) {
-        string error = "Unknown exception";
-        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "testVerifyGetK exception! Unknown exception");
-        return env->NewStringUTF(error.c_str());
-    }
-}
+//extern "C" JNIEXPORT jstring JNICALL
+//Java_com_clearkeep_dragonsrp_NativeLib_getK(
+//        JNIEnv *env,
+//        jobject obj /* this */,
+//        jstring m2
+//) {
+//    try {
+//        auto *sca = (SrpClientAuthenticator *) env->GetLongField(obj,
+//                                                                 getSrpcClientAuthenticatorPtr(env,
+//                                                                                               obj));
+//
+//        bytes m2Bytes = Conversion::hexstring2bytes(jstringToString(env, m2));
+//
+//        bytes K = sca->getSessionKey(m2Bytes);
+//        string kString = bytesToString(K);
+//
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getK from client success %s", kString.c_str());
+//
+//        return stringToJstring(env, kString);
+//    } catch (UserNotFoundException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (DsrpException e) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 exception %s", e.what().c_str());
+//        return env->NewStringUTF(e.what().c_str());
+//    } catch (...) {
+//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM1 unknown exception");
+//        string error = "Unknown exception";
+//        return env->NewStringUTF(error.c_str());
+//    }
+//}
 //endregion

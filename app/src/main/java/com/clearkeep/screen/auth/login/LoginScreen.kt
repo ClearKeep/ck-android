@@ -277,22 +277,22 @@ fun LoginScreen(
     val verificator = nativeLib.getVerificator("linh", "12345678", salt).toUpperCase(Locale.ROOT)
 
     //Login flow
-    val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
-    printlnCK("Test call get A $a")
-    val newSalt = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
-    val b = nativeLib.testVerifyGetB().toUpperCase(Locale.ROOT)
-    printlnCK("Test call verify get new salt $newSalt")
-    printlnCK("Test call verify get B $b")
-
-    val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
-    printlnCK("Test call get M1 $m1")
-    val m2 = nativeLib.testVerifyGetM2(m1)
-    val kFromServer = nativeLib.testVerifyGetK(m1)
-    println("Test call verify get M2 $m2")
-    println("Test call verify get K $kFromServer")
-    val kFromClient = nativeLib.getK(m2)
-    println("Test call client has K $kFromClient")
-    println("Test call correct? ${kFromClient == kFromServer}")
+//    val a = nativeLib.getA("linh", "12345678").toUpperCase(Locale.ROOT)
+//    printlnCK("Test call get A $a")
+//    val newSalt = nativeLib.testVerifyGetSalt("linh", verificator, salt, a).toUpperCase(Locale.ROOT)
+//    val b = nativeLib.testVerifyGetB().toUpperCase(Locale.ROOT)
+//    printlnCK("Test call verify get new salt $newSalt")
+//    printlnCK("Test call verify get B $b")
+//
+//    val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
+//    printlnCK("Test call get M1 $m1")
+//    val m2 = nativeLib.testVerifyGetM2(m1)
+//    val kFromServer = nativeLib.testVerifyGetK(m1)
+//    println("Test call verify get M2 $m2")
+//    println("Test call verify get K $kFromServer")
+//    val kFromClient = nativeLib.getK(m2)
+//    println("Test call client has K $kFromClient")
+//    println("Test call correct? ${kFromClient == kFromServer}")
 }
 
 @Composable
