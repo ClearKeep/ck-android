@@ -61,42 +61,52 @@ class AuthRepository @Inject constructor(
         password: String,
         email: String,
         domain: String
-    ): Resource<AuthOuterClass.RegisterRes> = withContext(Dispatchers.IO) {
-        val decrypter = DecryptsPBKDF2(password)
-        val key= KeyHelper.generateIdentityKeyPair()
-        val preKeys = KeyHelper.generatePreKeys(1, 1)
-        val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
-        val transitionID=KeyHelper.generateRegistrationId(false)
-        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-            .setDeviceId(111)
-            .setRegistrationId(transitionID)
-            .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-            .setPreKey(ByteString.copyFrom(preKey.serialize()))
-            .setPreKeyId(preKey.id)
-            .setSignedPreKeyId(signedPreKey.id)
-            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
-            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize())?.let {
-                toHex(it)
-            }
-            )
-            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-            .build()
+    ): Resource<AuthOuterClass.RegisterSRPRes> = withContext(Dispatchers.IO) {
+//        val decrypter = DecryptsPBKDF2(password)
+//        val key= KeyHelper.generateIdentityKeyPair()
+//        val preKeys = KeyHelper.generatePreKeys(1, 1)
+//        val preKey = preKeys[0]
+//        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
+//        val transitionID=KeyHelper.generateRegistrationId(false)
+//        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+//            .setDeviceId(111)
+//            .setRegistrationId(transitionID)
+//            .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+//            .setPreKey(ByteString.copyFrom(preKey.serialize()))
+//            .setPreKeyId(preKey.id)
+//            .setSignedPreKeyId(signedPreKey.id)
+//            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
+//            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize())?.let {
+//                toHex(it)
+//            }
+//            )
+//            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+//            .build()
 
+        val nativeLib = NativeLib()
+
+        val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
+        val verificator = nativeLib.getVerificator(email, password, salt).toUpperCase(Locale.ROOT)
+
+        val request = AuthOuterClass.RegisterSRPReq.newBuilder()
+            .setWorkspaceDomain(domain)
+            .setEmail(email)
+            .setPasswordVerifier(verificator)
+            .setSalt(salt)
+            .setDisplayName(displayName)
+            .setAuthType(0L)
+            .setFirstName("abc")
+            .setLastName("abc")
+//                .setHashPassword(DecryptsPBKDF2.md5(password))
+//                .setClientKeyPeer(setClientKeyPeer)
+//            .setSalt(decrypter.getSaltEncryptValue())
+//                .setIvParameter(toHex(decrypter.getIv()))
+            .build()
         try {
-            val request = AuthOuterClass.RegisterReq.newBuilder()
-                .setDisplayName(displayName)
-                .setHashPassword(DecryptsPBKDF2.md5(password))
-                .setEmail(email)
-                .setWorkspaceDomain(domain)
-                .setClientKeyPeer(setClientKeyPeer)
-                .setSalt(decrypter.getSaltEncryptValue())
-                .setIvParameter(toHex(decrypter.getIv()))
-                .build()
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
                     REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).register(request)
+                ).registerSrp(request)
             if (response.error.isNullOrBlank()) {
                 return@withContext Resource.success(response)
             } else {
@@ -120,19 +130,34 @@ class AuthRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             printlnCK("login: $userName, password = $password, domain = $domain")
             try {
-                val request = AuthOuterClass.AuthReq.newBuilder()
+                val nativeLib = NativeLib()
+                val a = nativeLib.getA(userName, password)
+
+                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
                     .setEmail(userName)
-                    .setHashPassword(DecryptsPBKDF2.md5(password))
-                    .setWorkspaceDomain(domain)
-                    .setAuthType(1)
+                    .setClientPublic(a)
                     .build()
                 val response =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS).login(request)
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+                        .loginChallenge(request)
+
+                val salt = response.salt
+                val b = response.publicChallengeB
+
+                val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
+
+                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
+                    .setEmail(userName)
+                    .setClientSessionKeyProof(m1)
+                    .build()
+
+                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
+
                 if (response.error.isEmpty()) {
                     printlnCK("login successfully")
                     val accessToken = response.accessToken
 
-                    val requireOtp = accessToken.isNullOrBlank()
+                val requireOtp = accessToken.isNullOrBlank()
                     if (requireOtp) {
                         return@withContext Resource.success(
                             LoginResponse(
