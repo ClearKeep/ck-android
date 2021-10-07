@@ -21,8 +21,6 @@ class NativeLib {
     external fun testVerifyGetB(): String
     external fun testVerifyGetM2(m1: String): String
     external fun testVerifyGetK(m1: String): String
-    external fun testCreateUserNative(): String
-    external fun testClientFlowNative(): String
 
     companion object {
         // Used to load the 'dragonsrp' library on application startup.
