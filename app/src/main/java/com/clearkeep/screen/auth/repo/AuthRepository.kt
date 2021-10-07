@@ -131,27 +131,27 @@ class AuthRepository @Inject constructor(
             printlnCK("login: $userName, password = $password, domain = $domain")
             try {
                 val nativeLib = NativeLib()
-                val a = nativeLib.getA(userName, password)
-
-                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
-                    .setEmail(userName)
-                    .setClientPublic(a)
-                    .build()
-                val response =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-                        .loginChallenge(request)
-
-                val salt = response.salt
-                val b = response.publicChallengeB
-
-                val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
-
-                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
-                    .setEmail(userName)
-                    .setClientSessionKeyProof(m1)
-                    .build()
-
-                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
+//                val a = nativeLib.getA(userName, password)
+//
+//                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
+//                    .setEmail(userName)
+//                    .setClientPublic(a)
+//                    .build()
+//                val response =
+//                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+//                        .loginChallenge(request)
+//
+//                val salt = response.salt
+//                val b = response.publicChallengeB
+//
+//                val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
+//
+//                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
+//                    .setEmail(userName)
+//                    .setClientSessionKeyProof(m1)
+//                    .build()
+//
+//                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
 
                 if (response.error.isEmpty()) {
                     printlnCK("login successfully")
