@@ -171,6 +171,7 @@ message MfaResendOtpRes{
 
 message AuthChallengeReq {
     string email = 1;
+    string client_public = 2;
 }
 
 message AuthChallengeRes {
@@ -195,8 +196,7 @@ message RegisterSRPRes {
 
 message AuthenticateReq {
     string email = 1;
-    string client_public = 2;
-    string client_session_key_proof = 3;
+    string client_session_key_proof = 2;
 }
 
 service Auth {
