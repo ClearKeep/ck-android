@@ -169,26 +169,28 @@ message MfaResendOtpRes{
     string error = 3;
 }
 
+//new flow login with rpc
+//Login message struct
 message AuthChallengeReq {
     string email = 1;
-    string client_public = 2;
+    bytes client_public = 2;
 }
 
 message AuthChallengeRes {
-    string salt = 1;
-    string public_challenge_b = 2;
+    bytes salt = 1;
+    bytes public_challenge_b = 2;
 }
 
 message AuthenticateReq {
     string email = 1;
-    string client_session_key_proof = 2;
+    bytes client_session_key_proof = 2;
 }
 
 message RegisterSRPReq {
     string workspace_domain = 1;
     string email = 2;
-    string password_verifier = 3;
-    string salt = 4;
+    bytes password_verifier = 3;
+    bytes salt = 4;
     string display_name = 5;
     int64 auth_type = 6;
     string first_name = 7;

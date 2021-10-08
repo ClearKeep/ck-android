@@ -85,19 +85,14 @@ class AuthRepository @Inject constructor(
 
         val nativeLib = NativeLib()
 
-        val salt = nativeLib.getSalt("linh", "12345678")
-        val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-        printlnCK("Test call native salt bytes $saltHex")
-
+        val salt = nativeLib.getSalt(email, password)
         val verificator = nativeLib.getVerificator()
-        val verificatorHex = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-        printlnCK("Test call native verificator bytes $verificatorHex")
 
         val request = AuthOuterClass.RegisterSRPReq.newBuilder()
             .setWorkspaceDomain(domain)
             .setEmail(email)
-            .setPasswordVerifier(verificatorHex)
-            .setSalt(saltHex)
+            .setPasswordVerifier(ByteString.copyFrom(verificator))
+            .setSalt(ByteString.copyFrom(salt))
             .setDisplayName(displayName)
             .setAuthType(0L)
             .setFirstName("abc")
@@ -137,12 +132,10 @@ class AuthRepository @Inject constructor(
             try {
                 val nativeLib = NativeLib()
                 val a = nativeLib.getA(userName, password)
-                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-                printlnCK("Test call get A $aHex")
 
                 val request = AuthOuterClass.AuthChallengeReq.newBuilder()
                     .setEmail(userName)
-                    .setClientPublic(aHex)
+                    .setClientPublic(ByteString.copyFrom(a))
                     .build()
                 val response =
                     paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
@@ -151,13 +144,11 @@ class AuthRepository @Inject constructor(
                 val salt = response.salt
                 val b = response.publicChallengeB
 
-                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
-                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-                printlnCK("Test call native m bytes $mHex")
+                val m = nativeLib.getM(salt.toByteArray(), b.toByteArray())
 
                 val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
                     .setEmail(userName)
-                    .setClientSessionKeyProof(mHex)
+                    .setClientSessionKeyProof(ByteString.copyFrom(m))
                     .build()
 
                 val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)

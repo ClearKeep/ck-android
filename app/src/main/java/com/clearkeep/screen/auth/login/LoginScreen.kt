@@ -266,30 +266,29 @@ fun LoginScreen(
         )
     }
 
-//    val nativeLib = NativeLib()
-//    printlnCK("Test call native library")
-//
-//    //Register new user flow
-//    val salt = nativeLib.getSalt("linh", "12345678")
-//
-//    val test = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-//    printlnCK("Test call native salt bytes $test")
-//
-//    val verificator = nativeLib.getVerificator()
-//    val verificatorBytes = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-//    printlnCK("Test call native verificator bytes $verificatorBytes")
-//
-//    //Login flow
-//    val a = nativeLib.getA("linh", "12345678")
-//    val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-//    printlnCK("Test call get A $aHex")
-//
-//    val b = "19762ccf7086b53e06fe9180401e8a7420fac1689c87399d1c95bd05196b53d5316018046ef98b0ae84952e0f70d9b53371cba75eb5323f8dcb15c105286ea13f4f4310be9bd0d6184d35d29bbf6544a528c8f11aefbd1dd823898699d297cb8cb3b6c46043a13b5f0ad9d8acb959dfeff068531f578f10f40dcc0dacf77c74381539a38545052482ee095bde30d70ef8ec93376ce083cfbb19f4085d227e8ca1793c7ca3225a9b00c063643ca69e3ca20d2a4d37a49b537592c07f9e274e1802450d59f4ff4f354f7f619638361e67fed3a536cbae6b1ac822ebc870c494bda61173a8c4cb6ed604116994d5dde4f05ab8ec6423bff529a3913f35511cc7239"
-//
-//    val m = nativeLib.getM(test.decodeHex(), b.decodeHex())
-//    val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-//    printlnCK("Test call get M $mHex")
+    val nativeLib = NativeLib()
+    printlnCK("Test call native library")
 
+    //Register new user flow
+    val salt = nativeLib.getSalt("linh", "12345678")
+    val test = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    printlnCK("Test call native salt bytes $test")
+
+    val verificator = nativeLib.getVerificator()
+    val verificatorBytes = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    printlnCK("Test call native verificator bytes $verificatorBytes")
+
+//    //Login flow
+    val a = nativeLib.getA("linh", "12345678")
+    val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    printlnCK("Test call get A $aHex")
+
+    val b = "19762ccf7086b53e06fe9180401e8a7420fac1689c87399d1c95bd05196b53d5316018046ef98b0ae84952e0f70d9b53371cba75eb5323f8dcb15c105286ea13f4f4310be9bd0d6184d35d29bbf6544a528c8f11aefbd1dd823898699d297cb8cb3b6c46043a13b5f0ad9d8acb959dfeff068531f578f10f40dcc0dacf77c74381539a38545052482ee095bde30d70ef8ec93376ce083cfbb19f4085d227e8ca1793c7ca3225a9b00c063643ca69e3ca20d2a4d37a49b537592c07f9e274e1802450d59f4ff4f354f7f619638361e67fed3a536cbae6b1ac822ebc870c494bda61173a8c4cb6ed604116994d5dde4f05ab8ec6423bff529a3913f35511cc7239"
+
+    val m = nativeLib.getM(salt, b.decodeHex())
+    val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    printlnCK("Test call get M $mHex")
+//
 //    val m2 = nativeLib.testVerifyGetM2(m1)
 //    val kFromServer = nativeLib.testVerifyGetK(m1)
 //    println("Test call verify get M2 $m2")
