@@ -159,7 +159,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getSalt(JNIEnv *env,
                                                jobject obj /* this */,
                                                jstring username,
                                                jstring rawPassword) {
-    SRP_HashAlgorithm alg = SRP_SHA1;
+    SRP_HashAlgorithm alg = SRP_SHA256;
     SRP_NGType ng_type = SRP_NG_2048;
 
     const unsigned char *bytes_s = nullptr;
@@ -180,6 +180,14 @@ Java_com_clearkeep_dragonsrp_NativeLib_getSalt(JNIEnv *env,
     jbyteArray myJByteArray = env->NewByteArray(len_s);
     env->SetByteArrayRegion(myJByteArray, 0, len_s, (jbyte *) bytes_s);
 
+    const unsigned char *testPtr = bytes_s;
+    const unsigned char *endPtr = bytes_s + len_s;
+
+    while (testPtr < endPtr) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt salt iter %d", (int) *testPtr);
+        testPtr++;
+    }
+
     env->SetLongField(obj, getVerificatorPtrFieldId(env, obj), (jlong) bytes_v);
 
     __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt verificator length %d", len_v);
@@ -198,20 +206,6 @@ Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
     env->SetByteArrayRegion(myJByteArray, 0, 256, (jbyte *) bytes_v);
 
     return myJByteArray;
-//        string saltStr(reinterpret_cast<char const*>(bytes_s));
-//        string verificatorStr(reinterpret_cast<char const*>(bytes_v));
-//
-//        stringstream ss;
-//        ss << std::hex << std::setw(2) << std::setfill('0') << (0xff & (unsigned char) *bytes_s);
-//
-//        stringstream sv;
-//        sv << std::hex << std::setw(2) << std::setfill('0') << (0xff & (unsigned char) *bytes_v);
-//
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator test str %s", testStr);
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator salt %s len %d", saltStr.c_str(), len_s);
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator salt ss %s", ss.str().c_str());
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator verificator %s len %d", verificatorStr.c_str(), len_v);
-//        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getVerificator verificator sv %s", sv.str().c_str());
 }
 //endregion
 
@@ -262,8 +256,23 @@ Java_com_clearkeep_dragonsrp_NativeLib_getM(
 
     srp_user_process_challenge(usr, bytes_s, 4, bytes_B, 256, &bytes_M, &len_M);
 
+    const unsigned char *testPtr = bytes_s;
+    const unsigned char *endPtr = bytes_s + 4;
+
+    while (testPtr < endPtr) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getSalt after convert salt iter %d", (int) *testPtr);
+        testPtr++;
+    }
+
     jbyteArray myJByteArray = env->NewByteArray(len_M);
     env->SetByteArrayRegion(myJByteArray, 0, len_M, (jbyte *) bytes_M);
+
+    const unsigned char *testBPtr = bytes_B;
+    const unsigned char *endBPtr = bytes_B + 256;
+    while (testBPtr < endBPtr) {
+        __android_log_print(ANDROID_LOG_DEBUG, "JNI", "getM after convert m iter %d", (int) *testBPtr);
+        testBPtr++;
+    }
 
     return myJByteArray;
 }
