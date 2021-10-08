@@ -288,7 +288,7 @@ fun LoginScreen(
     val m = nativeLib.getM(salt, b.decodeHex())
     val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
     printlnCK("Test call get M $mHex")
-//
+
 //    val m2 = nativeLib.testVerifyGetM2(m1)
 //    val kFromServer = nativeLib.testVerifyGetK(m1)
 //    println("Test call verify get M2 $m2")
