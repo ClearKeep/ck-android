@@ -85,22 +85,27 @@ class AuthRepository @Inject constructor(
 
         val nativeLib = NativeLib()
 
-        val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
-        val verificator = nativeLib.getVerificator(email, password, salt).toUpperCase(Locale.ROOT)
+        val salt = nativeLib.getSalt("linh", "12345678")
+        val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        printlnCK("Test call native salt bytes $saltHex")
+
+        val verificator = nativeLib.getVerificator()
+        val verificatorHex = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        printlnCK("Test call native verificator bytes $verificatorHex")
 
         val request = AuthOuterClass.RegisterSRPReq.newBuilder()
             .setWorkspaceDomain(domain)
             .setEmail(email)
-            .setPasswordVerifier(verificator)
-            .setSalt(salt)
+            .setPasswordVerifier(verificatorHex)
+            .setSalt(saltHex)
             .setDisplayName(displayName)
             .setAuthType(0L)
             .setFirstName("abc")
             .setLastName("abc")
-//                .setHashPassword(DecryptsPBKDF2.md5(password))
-//                .setClientKeyPeer(setClientKeyPeer)
-//            .setSalt(decrypter.getSaltEncryptValue())
-//                .setIvParameter(toHex(decrypter.getIv()))
+////                .setHashPassword(DecryptsPBKDF2.md5(password))
+////                .setClientKeyPeer(setClientKeyPeer)
+////            .setSalt(decrypter.getSaltEncryptValue())
+////                .setIvParameter(toHex(decrypter.getIv()))
             .build()
         try {
             val response =
@@ -131,27 +136,31 @@ class AuthRepository @Inject constructor(
             printlnCK("login: $userName, password = $password, domain = $domain")
             try {
                 val nativeLib = NativeLib()
-//                val a = nativeLib.getA(userName, password)
-//
-//                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
-//                    .setEmail(userName)
-//                    .setClientPublic(a)
-//                    .build()
-//                val response =
-//                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-//                        .loginChallenge(request)
-//
-//                val salt = response.salt
-//                val b = response.publicChallengeB
-//
-//                val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
-//
-//                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
-//                    .setEmail(userName)
-//                    .setClientSessionKeyProof(m1)
-//                    .build()
-//
-//                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
+                val a = nativeLib.getA(userName, password)
+                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                printlnCK("Test call get A $aHex")
+
+                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
+                    .setEmail(userName)
+                    .setClientPublic(aHex)
+                    .build()
+                val response =
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+                        .loginChallenge(request)
+
+                val salt = response.salt
+                val b = response.publicChallengeB
+
+                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
+                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                printlnCK("Test call native m bytes $mHex")
+
+                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
+                    .setEmail(userName)
+                    .setClientSessionKeyProof(mHex)
+                    .build()
+
+                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
 
                 if (response.error.isEmpty()) {
                     printlnCK("login successfully")
@@ -608,17 +617,6 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error("", 0 to exception.toString())
         }
-    }
-
-    private suspend fun registerSrp(username: String, rawPassword: String) = withContext(Dispatchers.IO) {
-        val nativeLib = NativeLib()
-
-        val salt = nativeLib.getSalt().toUpperCase(Locale.ROOT)
-        val verificator = nativeLib.getVerificator(username, rawPassword, salt).toUpperCase(Locale.ROOT)
-
-        printlnCK("Verificator hardcode ")
-
-        //TODO: Send salt and verificator to server
     }
 
     private suspend fun loginSrp(username: String, rawPassword: String) = withContext(Dispatchers.IO) {

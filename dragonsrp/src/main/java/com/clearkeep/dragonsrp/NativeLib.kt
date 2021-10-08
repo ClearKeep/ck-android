@@ -11,11 +11,16 @@ class NativeLib {
     @JvmField
     var srpVerificatorPtr = 0L
 
+    @JvmField
+    var verificatorPtr = 0L
+    @JvmField
+    var usrPtr = 0L
+
     external fun stringFromJNI(): String
-    external fun getSalt(): String
-    external fun getVerificator(username: String, rawPassword: String, salt: String): String
-    external fun getA(username: String, rawPassword: String): String
-    external fun getM1(newSalt: String, b: String): String
+    external fun getSalt(username: String, rawPassword: String): ByteArray
+    external fun getVerificator(): ByteArray
+    external fun getA(username: String, rawPassword: String): ByteArray
+    external fun getM(salt: ByteArray, b: ByteArray): ByteArray
     external fun getK(m2: String): String
     external fun testVerifyGetSalt(username: String, verificator: String, salt: String, a: String): String
     external fun testVerifyGetB(): String

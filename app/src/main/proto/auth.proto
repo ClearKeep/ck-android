@@ -179,6 +179,11 @@ message AuthChallengeRes {
     string public_challenge_b = 2;
 }
 
+message AuthenticateReq {
+    string email = 1;
+    string client_session_key_proof = 2;
+}
+
 message RegisterSRPReq {
     string workspace_domain = 1;
     string email = 2;
@@ -192,11 +197,6 @@ message RegisterSRPReq {
 
 message RegisterSRPRes {
     string error = 1;
-}
-
-message AuthenticateReq {
-    string email = 1;
-    string client_session_key_proof = 2;
 }
 
 service Auth {
