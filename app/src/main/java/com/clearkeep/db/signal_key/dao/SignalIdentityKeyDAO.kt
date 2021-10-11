@@ -14,4 +14,7 @@ interface SignalIdentityKeyDAO {
 
     @Query("SELECT * FROM signalidentitykey")
     fun getAllIdentityKey(): List<SignalIdentityKey>
+
+    @Query("DELETE  FROM signalidentitykey WHERE  user_id = :clientId AND domain = :domain")
+    suspend fun deleteSignalKeyByOwnerDomain(clientId: String, domain: String): Int
 }

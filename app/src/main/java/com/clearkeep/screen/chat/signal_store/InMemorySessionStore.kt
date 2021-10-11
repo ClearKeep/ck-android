@@ -49,7 +49,6 @@ class InMemorySessionStore : SessionStore, Closeable {
 
     @Synchronized
     override fun containsSession(address: SignalProtocolAddress): Boolean {
-        printlnCK("InMemorySessionStore containsSession address $address ${sessions.containsKey(address)}")
         return sessions.containsKey(address)
     }
 

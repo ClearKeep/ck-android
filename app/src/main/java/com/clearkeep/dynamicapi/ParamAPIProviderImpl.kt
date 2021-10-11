@@ -34,13 +34,29 @@ class ParamAPIProviderImpl @Inject constructor(
     }
 
     override fun provideNotifyStub(paramAPI: ParamAPI): NotifyGrpc.NotifyStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyStub: access and hash key must not null")
+        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return NotifyGrpc.newStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                paramAPI.accessKey,
+                paramAPI.hashKey
+            ))
     }
 
     override fun provideNotifyBlockingStub(paramAPI: ParamAPI): NotifyGrpc.NotifyBlockingStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyBlockingStub: access and hash key must not null")
+        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return NotifyGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideAuthBlockingStub(paramAPI: ParamAPI): AuthGrpc.AuthBlockingStub {
@@ -75,8 +91,17 @@ class ParamAPIProviderImpl @Inject constructor(
     }
 
     override fun provideMessageBlockingStub(paramAPI: ParamAPI): MessageGrpc.MessageBlockingStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyPushBlockingStub: access and hash key must not null")
+        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return MessageGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideNotesBlockingStub(paramAPI: ParamAPI): NoteGrpc.NoteBlockingStub {
@@ -92,8 +117,15 @@ class ParamAPIProviderImpl @Inject constructor(
     }
 
     override fun provideMessageStub(paramAPI: ParamAPI): MessageGrpc.MessageStub {
+        if (paramAPI.accessKey == null || paramAPI.hashKey == null) {
+            throw IllegalArgumentException("provideNotifyPushBlockingStub: access and hash key must not null")
+        }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return MessageGrpc.newStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+                paramAPI.accessKey,
+                paramAPI.hashKey
+            ))
     }
 
     override fun provideNotifyPushBlockingStub(paramAPI: ParamAPI): NotifyPushGrpc.NotifyPushBlockingStub {

@@ -15,6 +15,8 @@ import message.MessageOuterClass
 import notification.NotifyOuterClass
 import javax.inject.Inject
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.dynamicapi.ParamAPI
+import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
 import com.clearkeep.screen.chat.repo.*
@@ -49,6 +51,12 @@ class ChatService : Service(),
 
     @Inject
     lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
+
+    @Inject
+    lateinit var appStorage: AppStorage
+
+    @Inject
+    lateinit var apiProvider: ParamAPIProvider
 
     private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
@@ -113,16 +121,18 @@ class ChatService : Service(),
             val messageSubscriber = MessageChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
-                messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
-                onMessageSubscriberListener = this
+                messageBlockingStub = apiProvider.provideMessageBlockingStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                messageGrpc = apiProvider.provideMessageStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                onMessageSubscriberListener = this,
+                appStorage
             )
             val notificationSubscriber = NotificationChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
-                notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
-                notificationChannelListener = this
+                notifyBlockingStub = apiProvider.provideNotifyBlockingStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                notifyStub = apiProvider.provideNotifyStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                notificationChannelListener = this,
+                appStorage
             )
             messageSubscriber.subscribeAndListen()
             notificationSubscriber.subscribeAndListen()

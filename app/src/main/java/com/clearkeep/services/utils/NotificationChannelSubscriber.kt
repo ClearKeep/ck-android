@@ -12,7 +12,8 @@ class NotificationChannelSubscriber(
     private val clientId: String,
     private val notifyBlockingStub: NotifyGrpc.NotifyBlockingStub,
     private val notifyStub: NotifyGrpc.NotifyStub,
-    private val notificationChannelListener: NotificationSubscriberListener
+    private val notificationChannelListener: NotificationSubscriberListener,
+    private val userManager: AppStorage
 ) {
 
     interface NotificationSubscriberListener {
@@ -25,7 +26,7 @@ class NotificationChannelSubscriber(
 
     private suspend fun subscribe(): Boolean = withContext(Dispatchers.IO) {
         val request = NotifyOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
         try {
             val res = notifyBlockingStub.subscribe(request)
@@ -44,7 +45,7 @@ class NotificationChannelSubscriber(
 
     private fun listenNotificationChannel() {
         val request = NotifyOuterClass.ListenRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
         notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {

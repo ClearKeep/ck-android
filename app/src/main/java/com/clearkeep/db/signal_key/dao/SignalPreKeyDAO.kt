@@ -26,4 +26,7 @@ interface SignalPreKeyDAO {
 
     @Query("SELECT * FROM signalprekey WHERE is_signed_key = 1")
     fun getAllSignedPreKey(): List<SignalPreKey>
+
+    @Query("DELETE FROM signalprekey WHERE domain =:domain AND user_id = :userId")
+    suspend fun deleteSignalSenderKey(domain: String, userId: String): Int
 }
