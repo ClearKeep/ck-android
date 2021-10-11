@@ -49,7 +49,9 @@ class InviteGroupViewModel @Inject constructor(
 
     fun insertFriend(people: User) {
         viewModelScope.launch {
+            _isLoading.value = true
             peopleRepository.insertFriend(people, owner = getOwner())
+            _isLoading.value = false
         }
     }
 
