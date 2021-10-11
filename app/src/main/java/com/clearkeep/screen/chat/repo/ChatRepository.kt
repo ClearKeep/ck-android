@@ -10,6 +10,7 @@ import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.DynamicAPIProvider
+import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.utils.*
@@ -28,19 +29,19 @@ import upload_file.UploadFileOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class ChatRepository @Inject constructor(
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
-
+    private val  apiProvider: ParamAPIProvider,
     // data
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
     private val messageRepository: MessageRepository,
-    private val serverRepository: ServerRepository
-) {
+    private val serverRepository: ServerRepository,
+    private val userManager: AppStorage
+    ) {
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var roomId: Long = -1
@@ -55,38 +56,55 @@ class ChatRepository @Inject constructor(
 
     suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long,
                                   plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
-            //val signalProtocolAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace,senderId ), 111)
-            val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
+            val signalProtocolAddress =
+                CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
-                val processSuccess = processPeerKey(receiverId, receiverWorkspaceDomain,senderId,ownerWorkSpace)
+                val processSuccess =
+                    processPeerKey(receiverId, receiverWorkspaceDomain, senderId, ownerWorkSpace)
                 if (!processSuccess) {
                     printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                     return@withContext false
                 }
             }
-
+            val signalProtocolAddressPublishRequest =
+                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
             val message: CiphertextMessage =
-                    sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
+                sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
+
+            val sessionCipherSender =
+                SessionCipher(signalProtocolStore, signalProtocolAddressPublishRequest)
+            val messageSender: CiphertextMessage =
+                sessionCipherSender.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
             val request = MessageOuterClass.PublishRequest.newBuilder()
-                    .setClientId(receiverId)
-                    .setFromClientId(senderId)
-                    .setGroupId(groupId)
-                    .setMessage(ByteString.copyFrom(message.serialize()))
-                    .build()
+                .setClientId(receiverId)
+                .setFromClientDeviceId(userManager.getUniqueDeviceID())
+                .setGroupId(groupId)
+                .setMessage(ByteString.copyFrom(message.serialize()))
+                .setSenderMessage(ByteString.copyFrom(messageSender.serialize()))
+                .build()
 
-            val response = dynamicAPIProvider.provideMessageBlockingStub().publish(request)
-            val responseMessage = messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId))
+            val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
+            if (server == null) {
+                printlnCK("sendMessageInPeer: server must be not null")
+                return@withContext false
+            }
+
+            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+            val response = apiProvider.provideMessageBlockingStub(paramAPI).publish(request)
+            val responseMessage = messageRepository.convertMessageResponse(
+                response,
+                plainMessage,
+                Owner(ownerWorkSpace, senderId)
+            )
             if (cachedMessageId == 0) {
                 messageRepository.saveNewMessage(responseMessage)
             } else {
                 messageRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
             }
-
             printlnCK("send message success: $plainMessage")
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
@@ -110,7 +128,12 @@ class ChatRepository @Inject constructor(
 
     suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
         val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
-        //val signalProtocolAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
+        val signalProtocolAddress2 = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
+        messageRepository.initSessionUserPeer(
+            signalProtocolAddress2,
+            signalProtocolStore,
+            owner = Owner(ownerWorkSpace,senderId)
+        )
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,
@@ -132,10 +155,19 @@ class ChatRepository @Inject constructor(
 
             val request = MessageOuterClass.PublishRequest.newBuilder()
                     .setGroupId(groupId)
-                    .setFromClientId(senderAddress.owner.clientId)
+                    .setFromClientDeviceId(userManager.getUniqueDeviceID())
                     .setMessage(ByteString.copyFrom(ciphertextFromAlice))
+                    .setSenderMessage(ByteString.copyFrom(ciphertextFromAlice))
                     .build()
-            val response = dynamicAPIProvider.provideMessageBlockingStub().publish(request)
+
+            val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
+            if (server == null) {
+                printlnCK("sendMessageToGroup: server must be not null")
+                return@withContext false
+            }
+
+            val paramAPI= ParamAPI(server.serverDomain,server.accessKey,server.hashKey)
+            val response = apiProvider.provideMessageBlockingStub(paramAPI).publish(request)
             val message = messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId))
 
             if (cachedMessageId == 0) {

@@ -28,6 +28,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.screen.chat.banned_users.BannedUserActivity
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.invite.InviteActivity
@@ -36,6 +38,7 @@ import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.utilities.sdp
+import org.whispersystems.libsignal.groups.SenderKeyName
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
@@ -229,6 +232,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun signOut() {
+        homeViewModel.deleteKey()
         homeViewModel.signOut()
     }
 

@@ -1,6 +1,8 @@
 package com.clearkeep.services.utils
 
+import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.storage.PersistPreferencesStorage
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,7 +14,8 @@ class MessageChannelSubscriber(
     private val clientId: String,
     private val messageBlockingStub: MessageGrpc.MessageBlockingStub,
     private val messageGrpc: MessageGrpc.MessageStub,
-    private val onMessageSubscriberListener: MessageSubscriberListener
+    private val onMessageSubscriberListener: MessageSubscriberListener,
+    private val userManager: AppStorage
 ) : ChannelSubscriber {
 
     interface MessageSubscriberListener {
@@ -29,7 +32,7 @@ class MessageChannelSubscriber(
 
     private suspend fun subscribe(): Boolean = withContext(Dispatchers.IO) {
         val request = MessageOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
         try {
@@ -49,7 +52,7 @@ class MessageChannelSubscriber(
 
     private fun listenMessageChannel() {
         val request = MessageOuterClass.ListenRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
         messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {

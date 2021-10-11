@@ -44,7 +44,6 @@ class InMemorySignalProtocolStore(
     }
 
     override fun saveIdentity(address: SignalProtocolAddress, identityKey: IdentityKey): Boolean {
-        printlnCK("InMemorySignalProtocolStore saveIdentity for address $address identKey $identityKey")
         return identityKeyStore.saveIdentity(address, identityKey)
     }
 

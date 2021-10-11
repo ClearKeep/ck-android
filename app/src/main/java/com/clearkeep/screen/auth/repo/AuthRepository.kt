@@ -613,6 +613,7 @@ class AuthRepository @Inject constructor(
                 )
             )
                 ?: return Resource.error("Can not get profile", null)
+            printlnCK("insert signalIdentityKeyDAO")
             signalIdentityKeyDAO.insert(signalIdentityKey)
             environment.setUpTempDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)

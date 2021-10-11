@@ -86,7 +86,7 @@ class MessageRepository @Inject constructor(
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
                     .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt-(10*60*60*1000))
+                    .setLastMessageAt(lastMessageAt-(3*24*60*60*1000))
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val listMessage = arrayListOf<Message>()
@@ -187,6 +187,15 @@ class MessageRepository @Inject constructor(
         if (oldMessage != null) {
             return oldMessage
         }
+        if (owner.clientId == response.fromClientId) {
+            return decryptMessage(
+                response.id, response.groupId, response.groupType,
+                response.fromClientId, response.fromClientWorkspaceDomain,
+                response.createdAt, response.updatedAt,
+                response.senderMessage,
+                owner
+            )
+        }
         return decryptMessage(
             response.id, response.groupId, response.groupType,
             response.fromClientId, response.fromClientWorkspaceDomain,
@@ -221,9 +230,13 @@ class MessageRepository @Inject constructor(
             messageText = if (!isGroup(groupType)) {
                 //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
-                decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
+                if (owner.clientId == sender.clientId) {
+                    decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
+                }else {
+                    decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
+                }
             } else {
-                printlnCK("signalProtocolStore 2 messageId : ${messageId}")
+                printlnCK("signalProtocolStore 2 messageId : ${messageId}  encryptedMessage: ${encryptedMessage}")
                 decryptGroupMessage(
                     sender,
                     groupId,

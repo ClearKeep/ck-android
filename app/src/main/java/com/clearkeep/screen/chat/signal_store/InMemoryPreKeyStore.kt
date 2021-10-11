@@ -45,6 +45,7 @@ class InMemoryPreKeyStore(
     }
 
     override fun storePreKey(preKeyId: Int, record: PreKeyRecord) {
+        printlnCK("insert preKeyDAO")
         val server = environment.getTempServer()
         val index = getIndex(preKeyId)
         store[index] = record.serialize()
@@ -59,7 +60,7 @@ class InMemoryPreKeyStore(
     }
 
     override fun removePreKey(preKeyId: Int) {
-        /*store.remove(preKeyId);*/
+        store.remove(preKeyId);
     }
 
     override fun clear() {

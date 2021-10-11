@@ -56,6 +56,7 @@ class InMemorySignedPreKeyStore(
     override fun storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord) {
         store[signedPreKeyId] = record.serialize()
         val server = environment.getTempServer()
+        printlnCK("insert preKeyDAO 2 ")
         preKeyDAO.insert(SignalPreKey(signedPreKeyId, record.serialize(), true, server.serverDomain, server.profile.userId))
     }
 
