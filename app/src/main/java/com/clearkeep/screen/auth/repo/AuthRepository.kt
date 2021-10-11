@@ -86,13 +86,16 @@ class AuthRepository @Inject constructor(
         val nativeLib = NativeLib()
 
         val salt = nativeLib.getSalt(email, password)
+        val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
         val verificator = nativeLib.getVerificator()
+        val verificatorHex = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
         val request = AuthOuterClass.RegisterSRPReq.newBuilder()
             .setWorkspaceDomain(domain)
             .setEmail(email)
-            .setPasswordVerifier(ByteString.copyFrom(verificator))
-            .setSalt(ByteString.copyFrom(salt))
+            .setPasswordVerifier(verificatorHex)
+            .setSalt(saltHex)
             .setDisplayName(displayName)
             .setAuthType(0L)
             .setFirstName("abc")
@@ -132,23 +135,26 @@ class AuthRepository @Inject constructor(
             try {
                 val nativeLib = NativeLib()
                 val a = nativeLib.getA(userName, password)
+                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
                 val request = AuthOuterClass.AuthChallengeReq.newBuilder()
                     .setEmail(userName)
-                    .setClientPublic(ByteString.copyFrom(a))
+                    .setClientPublic(aHex)
                     .build()
                 val response =
                     paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
                         .loginChallenge(request)
 
                 val salt = response.salt
+                printlnCK("salt bytestring ${ByteString.copyFrom(salt.decodeHex())}")
                 val b = response.publicChallengeB
 
-                val m = nativeLib.getM(salt.toByteArray(), b.toByteArray())
+                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
+                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
                 val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
                     .setEmail(userName)
-                    .setClientSessionKeyProof(ByteString.copyFrom(m))
+                    .setClientSessionKeyProof(mHex)
                     .build()
 
                 val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
