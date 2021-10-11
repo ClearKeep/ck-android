@@ -77,7 +77,7 @@ class RegisterViewModel @Inject constructor(
         }
 
         val result = if (isValid) {
-            authRepository.register(displayName.trim(), password.trim(), email.trim(), domain)
+            authRepository.register(displayName.trim(), password, email.trim(), domain)
         } else {
             null
         }
