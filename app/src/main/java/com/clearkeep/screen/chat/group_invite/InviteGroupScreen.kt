@@ -206,7 +206,9 @@ fun InviteGroupScreen(
                             itemsIndexed(listShow) { _, friend ->
                                 if (isCreateDirectGroup) {
                                     FriendListItem(friend, onFriendSelected = {
-                                        onDirectFriendSelected(it)
+                                        if (isLoading.value != true) {
+                                            onDirectFriendSelected(it)
+                                        }
                                     })
                                 } else {
                                     FriendListItemSelectable(friend,
@@ -261,7 +263,7 @@ fun InviteGroupScreen(
                             },
                             modifier = Modifier
                                 .width(200.sdp()),
-                            enabled = (isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank())))
+                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))))
                         )
                     }
                 }
