@@ -36,6 +36,7 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
@@ -196,7 +197,7 @@ fun InviteGroupScreen(
 
                 Spacer(modifier = Modifier.height(16.sdp()))
                 friends.value?.let { values ->
-                    val membersId = group.value?.clientList?.map { it.userId } ?: emptyList()
+                    val membersId = group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }?.map { it.userId } ?: emptyList()
                     val listShow = values.filterNot { membersId.contains(it.userId) }
                     LazyColumn(
                         contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
