@@ -159,7 +159,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getSalt(JNIEnv *env,
                                                jobject obj /* this */,
                                                jstring username,
                                                jstring rawPassword) {
-    SRP_HashAlgorithm alg = SRP_SHA256;
+    SRP_HashAlgorithm alg = SRP_SHA1;
     SRP_NGType ng_type = SRP_NG_2048;
 
     const unsigned char *bytes_s = nullptr;
