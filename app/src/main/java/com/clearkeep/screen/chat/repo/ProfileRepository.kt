@@ -239,7 +239,7 @@ class ProfileRepository @Inject constructor(
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", "" to "")
             val request = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
-                .setPassword(password)
+                .setPassword(DecryptsPBKDF2.md5(password))
                 .build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val response = stub.mfaValidatePassword(request)
