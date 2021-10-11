@@ -68,200 +68,207 @@ fun InviteGroupScreen(
     val addUserFromOtherServerError = remember { mutableStateOf("") }
     val checkUserUrlResponse = inviteGroupViewModel.checkUserUrlResponse.observeAsState()
     val group = chatGroup.observeAsState()
+    val isLoading = inviteGroupViewModel.isLoading.observeAsState()
     val context = LocalContext.current
 
     CKSimpleTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-
+        Box(Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
-                    .weight(0.66f)
+                    .fillMaxSize()
+                    .background(Color.White)
             ) {
-                Row(
-                    modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .weight(0.66f)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .weight(1.0f, true),
-                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = onBackPressed
+                        Row(
+                            modifier = Modifier
+                                .weight(1.0f, true),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_chev_left),
-                                contentDescription = "",
-                                tint = grayscale1
+                            IconButton(
+                                onClick = onBackPressed
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_chev_left),
+                                    contentDescription = "",
+                                    tint = grayscale1
+                                )
+                            }
+                            CKHeaderText(
+                                text = when (managerMember) {
+                                    InviteMemberUIType -> {
+                                        if (isCreateDirectGroup) "Create direct message" else "Create group"
+                                    }
+                                    AddMemberUIType -> "Add member"
+                                    else -> "Create group"
+                                }, headerTextType = HeaderTextType.Medium
                             )
                         }
-                        CKHeaderText(
-                            text = when (managerMember) {
-                                InviteMemberUIType -> {
-                                    if (isCreateDirectGroup) "Create direct message" else "Create group"
-                                }
-                                AddMemberUIType -> "Add member"
-                                else -> "Create group"
-                            }, headerTextType = HeaderTextType.Medium
-                        )
                     }
-                }
-                Spacer(modifier = Modifier.height(24.sdp()))
-                Row(modifier = Modifier.padding(horizontal = 16.sdp())) {
-                    CKSearchBox(
-                        textSearch,
-                        placeholder = when {
-                            isCreateDirectGroup -> stringResource(R.string.search)
-                            managerMember == AddMemberUIType -> stringResource(R.string.search_people)
-                            else -> stringResource(R.string.create_group_search)
-                        }
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .padding(all = 16.sdp())
-                ) {
-                    if (selectedItem.isNotEmpty()) {
-                        SelectedHorizontalBox(selectedItem,
-                            unSelectItem = { people ->
-                                selectedItem.remove(people)
+                    Spacer(modifier = Modifier.height(24.sdp()))
+                    Row(modifier = Modifier.padding(horizontal = 16.sdp())) {
+                        CKSearchBox(
+                            textSearch,
+                            placeholder = when {
+                                isCreateDirectGroup -> stringResource(R.string.search)
+                                managerMember == AddMemberUIType -> stringResource(R.string.search_people)
+                                else -> stringResource(R.string.create_group_search)
                             }
                         )
                     }
-                }
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 16.sdp())
-                        .clickable {
-                            useCustomServerChecked.value = !useCustomServerChecked.value
-                        }, verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
-                        ""
-                    )
-                    Spacer(modifier = Modifier.width(16.sdp()))
-                    Text(
-                        text = "Add user from other server",
-                        modifier = Modifier.padding(vertical = 16.sdp()),
-                        style = MaterialTheme.typography.body1.copy(
-                            color = grayscaleBlack,
-                            fontSize = defaultNonScalableTextSize(),
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-
-                Column(Modifier.padding(horizontal = 16.sdp())) {
-                    AnimatedVisibility(
-                        visible = useCustomServerChecked.value,
-                        enter = expandIn(
-                            expandFrom = Alignment.BottomStart,
-                            animationSpec = tween(300, easing = LinearOutSlowInEasing)
-                        ),
-                        exit = shrinkOut(
-                            shrinkTowards = Alignment.CenterStart,
-                            targetSize = { fullSize ->
-                                IntSize(
-                                    fullSize.width / 10,
-                                    fullSize.height / 10
-                                )
-                            },
-                            animationSpec = tween(300, easing = FastOutSlowInEasing)
-                        )
-
+                    Row(
+                        modifier = Modifier
+                            .padding(all = 16.sdp())
                     ) {
-                        Column {
-                            Row(
-                                modifier = Modifier,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    CKTextInputField(
-                                        stringResource(R.string.invite_url_placeholder),
-                                        textValue = urlOtherServer,
-                                        keyboardType = KeyboardType.Text,
-                                        singleLine = true,
+                        if (selectedItem.isNotEmpty()) {
+                            SelectedHorizontalBox(selectedItem,
+                                unSelectItem = { people ->
+                                    selectedItem.remove(people)
+                                }
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 16.sdp())
+                            .clickable {
+                                useCustomServerChecked.value = !useCustomServerChecked.value
+                            }, verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
+                            ""
+                        )
+                        Spacer(modifier = Modifier.width(16.sdp()))
+                        Text(
+                            text = "Add user from other server",
+                            modifier = Modifier.padding(vertical = 16.sdp()),
+                            style = MaterialTheme.typography.body1.copy(
+                                color = grayscaleBlack,
+                                fontSize = defaultNonScalableTextSize(),
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
+
+                    Column(Modifier.padding(horizontal = 16.sdp())) {
+                        AnimatedVisibility(
+                            visible = useCustomServerChecked.value,
+                            enter = expandIn(
+                                expandFrom = Alignment.BottomStart,
+                                animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                            ),
+                            exit = shrinkOut(
+                                shrinkTowards = Alignment.CenterStart,
+                                targetSize = { fullSize ->
+                                    IntSize(
+                                        fullSize.width / 10,
+                                        fullSize.height / 10
+                                    )
+                                },
+                                animationSpec = tween(300, easing = FastOutSlowInEasing)
+                            )
+
+                        ) {
+                            Column {
+                                Row(
+                                    modifier = Modifier,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        CKTextInputField(
+                                            stringResource(R.string.invite_url_placeholder),
+                                            textValue = urlOtherServer,
+                                            keyboardType = KeyboardType.Text,
+                                            singleLine = true,
+                                        )
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.sdp()))
+                    friends.value?.let { values ->
+                        val membersId = group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }?.map { it.userId } ?: emptyList()
+                        val listShow = values.filterNot { membersId.contains(it.userId) }
+                        LazyColumn(
+                            contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
+                        ) {
+                            itemsIndexed(listShow) { _, friend ->
+                                if (isCreateDirectGroup) {
+                                    FriendListItem(friend, onFriendSelected = {
+                                        onDirectFriendSelected(it)
+                                    })
+                                } else {
+                                    FriendListItemSelectable(friend,
+                                        selectedItem.contains(friend),
+                                        onFriendSelected = { people, isAdd ->
+                                            if (isAdd) selectedItem.add(people) else
+                                                selectedItem.remove(people)
+                                        }
                                     )
                                 }
                             }
-
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.sdp()))
-                friends.value?.let { values ->
-                    val membersId = group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }?.map { it.userId } ?: emptyList()
-                    val listShow = values.filterNot { membersId.contains(it.userId) }
-                    LazyColumn(
-                        contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
-                    ) {
-                        itemsIndexed(listShow) { _, friend ->
-                            if (isCreateDirectGroup) {
-                                FriendListItem(friend, onFriendSelected = {
-                                    onDirectFriendSelected(it)
-                                })
-                            } else {
-                                FriendListItemSelectable(friend,
-                                    selectedItem.contains(friend),
-                                    onFriendSelected = { people, isAdd ->
-                                        if (isAdd) selectedItem.add(people) else
-                                            selectedItem.remove(people)
+                Column(
+                    modifier = Modifier
+                        .padding(16.sdp())
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup)) {
+                        CKButton(
+                            if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
+                            else  stringResource(R.string.btn_next),
+                            onClick = {
+                                if (useCustomServerChecked.value) {
+                                    val people = getPeopleFromLink(urlOtherServer.value)
+                                    if (people?.userId != inviteGroupViewModel.getClientId()){
+                                        if (isCreateDirectGroup) {
+                                            if (people != null) {
+                                                inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                            } else {
+                                                addUserFromOtherServerError.value = "Profile link is incorrect."
+                                            }
+                                        } else {
+                                            if (people != null) {
+                                                inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                            } else {
+                                                addUserFromOtherServerError.value = "Profile link is incorrect."
+                                            }
+                                        }
+                                    } else {
+                                        addUserFromOtherServerError.value = "You can't create conversation with yourself"
                                     }
-                                )
-                            }
-                        }
+                                    urlOtherServer.value = ""
+                                    useCustomServerChecked.value = false
+                                } else {
+                                    if (selectedItem.size > 0) {
+                                        onFriendSelected(selectedItem)
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .width(200.sdp()),
+                            enabled = (isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank())))
+                        )
                     }
                 }
             }
-            Column(
-                modifier = Modifier
-                    .padding(16.sdp())
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup)) {
-                    CKButton(
-                        if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
-                        else  stringResource(R.string.btn_next),
-                        onClick = {
-                            if (useCustomServerChecked.value) {
-                                val people = getPeopleFromLink(urlOtherServer.value)
-                                if (people?.userId != inviteGroupViewModel.getClientId()){
-                                    if (isCreateDirectGroup) {
-                                        if (people != null) {
-                                            inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
-                                        } else {
-                                            addUserFromOtherServerError.value = "Profile link is incorrect."
-                                        }
-                                    } else {
-                                        if (people != null) {
-                                            inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
-                                        } else {
-                                            addUserFromOtherServerError.value = "Profile link is incorrect."
-                                        }
-                                    }
-                                } else {
-                                    addUserFromOtherServerError.value = "You can't create conversation with yourself"
-                                }
-                                urlOtherServer.value = ""
-                                useCustomServerChecked.value = false
-                            } else {
-                                if (selectedItem.size > 0) {
-                                    onFriendSelected(selectedItem)
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .width(200.sdp()),
-                        enabled = (isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank())))
-                    )
+            if (isLoading.value == true) {
+                Box(Modifier.fillMaxSize()) {
+                    CKCircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
             }
         }
@@ -287,9 +294,16 @@ fun InviteGroupScreen(
     }
 
     if (checkUserUrlResponse.value?.status == Status.ERROR) {
+        val error = checkUserUrlResponse.value!!.message?.split(",")
+        val (errorTitle, errorText) = if (error?.size == 1) {
+            stringResource(R.string.warning) to checkUserUrlResponse.value!!.message
+        } else {
+            error?.get(0) to error?.get(1)
+        }
+
         CKAlertDialog(
-            title = stringResource(R.string.warning),
-            text = checkUserUrlResponse.value!!.message,
+            title = errorTitle,
+            text = errorText,
             onDismissButtonClick = {
                 inviteGroupViewModel.checkUserUrlResponse.value = null
             }

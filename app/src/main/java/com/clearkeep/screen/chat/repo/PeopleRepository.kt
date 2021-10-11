@@ -12,10 +12,12 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
+import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import user.UserOuterClass
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -280,32 +282,32 @@ class PeopleRepository @Inject constructor(
                     .setWorkspaceDomain(userDomain)
                     .build()
 
-                val response = dynamicAPIProvider.provideUserBlockingStub().getUserInfo(request)
+                val response = dynamicAPIProvider.provideUserBlockingStub()
+                    .withDeadlineAfter(30, TimeUnit.SECONDS).getUserInfo(request)
 
                 printlnCK("getUserInfo response display name ${response.displayName} id ${response.id}")
 
                 return@withContext Resource.success(User(response.id, response.displayName, response.workspaceDomain))
             } catch (e: StatusRuntimeException) {
-                val rawError = parseError(e)
-                val errorMessage = when (rawError.code) {
+                val parsedError = parseError(e)
+
+                val errorMessage = when (parsedError.code) {
                     1008, 1005 -> "Profile link is incorrect."
-                    else -> rawError.message
+                    1077 -> {
+                        printlnCK("getUserInfo token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> {
+                        if (e.status.code == Status.Code.DEADLINE_EXCEEDED) {
+                            "Network error,We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                        } else {
+                            parsedError.message
+                        }
+                    }
                 }
                 printlnCK("getUserInfo exception: $e")
                 return@withContext Resource.error(errorMessage, null)
-            } catch (e: StatusRuntimeException) {
-
-                val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getUserInfo token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-                return@withContext Resource.error("", null)
             } catch (e: Exception) {
                 printlnCK("getUserInfo exception: $e")
                 return@withContext Resource.error(e.toString(), null)
