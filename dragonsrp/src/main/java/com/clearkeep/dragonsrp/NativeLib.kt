@@ -22,10 +22,6 @@ class NativeLib {
     external fun getA(username: String, rawPassword: String): ByteArray
     external fun getM(salt: ByteArray, b: ByteArray): ByteArray
     external fun getK(m2: String): String
-    external fun testVerifyGetSalt(username: String, verificator: String, salt: String, a: String): String
-    external fun testVerifyGetB(): String
-    external fun testVerifyGetM2(m1: String): String
-    external fun testVerifyGetK(m1: String): String
 
     companion object {
         // Used to load the 'dragonsrp' library on application startup.
