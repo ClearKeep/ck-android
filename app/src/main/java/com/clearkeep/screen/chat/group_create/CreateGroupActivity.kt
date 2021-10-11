@@ -59,7 +59,6 @@ class CreateGroupActivity : AppCompatActivity() {
                                 createGroupViewModel.setFriendsList(friends)
                                 navController.navigate("enter_group_name")
                             },
-
                             onDirectFriendSelected = {
                                 inviteGroupViewModel.insertFriend(it)
                                 handleDirectChat(it) },

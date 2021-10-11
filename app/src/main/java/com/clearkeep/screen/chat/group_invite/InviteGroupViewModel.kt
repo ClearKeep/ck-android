@@ -7,6 +7,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +24,12 @@ class InviteGroupViewModel @Inject constructor(
     val friends: LiveData<List<User>> = peopleRepository.getFriends(getDomain(), getClientId())
 
     val checkUserUrlResponse = MutableLiveData<Resource<User>>()
+
+    private var insertFriendJob: Job? = null
+    private var checkUserUrlJob: Job? = null
+
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading : LiveData<Boolean> get() = _isLoading
 
     val filterFriends = liveData<List<User>> {
         val result = MediatorLiveData<List<User>>()
@@ -62,8 +69,12 @@ class InviteGroupViewModel @Inject constructor(
     }
 
     fun checkUserUrlValid(userId: String, userDomain: String) {
-        viewModelScope.launch {
+        checkUserUrlJob?.cancel()
+
+        checkUserUrlJob = viewModelScope.launch {
+            _isLoading.value = true
             checkUserUrlResponse.value = peopleRepository.getUserInfo(userId, userDomain)
+            _isLoading.value = false
         }
     }
 }
