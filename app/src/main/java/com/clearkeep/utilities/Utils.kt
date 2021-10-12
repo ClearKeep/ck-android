@@ -184,6 +184,10 @@ fun isOdd(num: Int) : Boolean {
 }
 
 fun parseError(e: StatusRuntimeException) : ProtoResponse {
+    if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED || e.status.code == io.grpc.Status.Code.UNAVAILABLE) {
+        return ProtoResponse(ERROR_CODE_TIMEOUT, "We are unable to detect an internet connection. Please try again when you have a stronger connection.")
+    }
+
     val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
     return try {
         Gson().fromJson(rawError, ProtoResponse::class.java)

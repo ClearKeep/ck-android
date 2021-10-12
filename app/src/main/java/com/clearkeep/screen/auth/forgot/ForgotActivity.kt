@@ -19,6 +19,7 @@ import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -54,7 +55,7 @@ class ForgotActivity : AppCompatActivity() {
 
     @Composable
     fun AppContent() {
-        val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+        val (showDialog, setShowDialog) = remember { mutableStateOf(0 to "") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
         val emailState = remember { mutableStateOf("") }
 
@@ -65,13 +66,13 @@ class ForgotActivity : AppCompatActivity() {
                     setShowReminderDialog(true)
                     emailState.value = email
                 } else if (res.status == Status.ERROR) {
-                    setShowDialog(res.message ?: "unknown")
+                    setShowDialog(res.errorCode to (res.message ?: "unknown"))
                 }
             }
         }
         val isLoadingState = forgotViewModel.isLoading.observeAsState()
 
-        Box() {
+        Box {
             Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,14 +107,20 @@ class ForgotActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
-        if (showDialog.isNotEmpty()) {
+    fun ErrorDialog(showDialog: Pair<Int, String>, setShowDialog: (Pair<Int, String>) -> Unit) {
+        if (showDialog.second.isNotBlank() || showDialog.first != 0) {
+            val (title, text, dismissText) = if (showDialog.first == ERROR_CODE_TIMEOUT) {
+                Triple(stringResource(R.string.network_error_dialog_title), stringResource(R.string.network_error_dialog_text), stringResource(R.string.ok))
+            } else {
+                Triple(stringResource(R.string.error), stringResource(R.string.reset_password_error_title), stringResource(R.string.close))
+            }
             CKAlertDialog(
-                title = stringResource(R.string.error),
-                text = stringResource(R.string.reset_password_error_title),
-                dismissTitle = stringResource(R.string.close),
+                title = title,
+                text = text,
+                dismissTitle = dismissText,
                 onDismissButtonClick = {
-                    setShowDialog("")
+                    // Change the state to close the dialog
+                    setShowDialog(0 to "")
                 },
             )
         }

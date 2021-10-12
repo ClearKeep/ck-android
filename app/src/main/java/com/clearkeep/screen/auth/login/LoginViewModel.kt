@@ -58,7 +58,7 @@ class LoginViewModel @Inject constructor(
 
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
 
-    val serverUrlValidateResponse = MutableLiveData<String>()
+    val serverUrlValidateResponse = MutableLiveData<Resource<String>>()
 
     private var checkValidServerJob: Job? = null
 
@@ -302,7 +302,7 @@ class LoginViewModel @Inject constructor(
         checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
                 printlnCK("checkValidServerUrl local validation invalid")
-                serverUrlValidateResponse.value = ""
+                serverUrlValidateResponse.value = Resource.error("Wrong server URL. Please try again", null, 0)
                 _isLoading.value = false
                 return@launch
             }
@@ -311,11 +311,11 @@ class LoginViewModel @Inject constructor(
             _isLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
-                serverUrlValidateResponse.value = ""
+                serverUrlValidateResponse.value = workspaceInfoResponse
                 return@launch
             }
 
-            serverUrlValidateResponse.value = url
+            serverUrlValidateResponse.value = Resource.success(url)
         }
     }
 

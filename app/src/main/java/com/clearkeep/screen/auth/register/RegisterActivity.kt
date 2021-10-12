@@ -15,11 +15,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -65,7 +68,7 @@ class RegisterActivity : AppCompatActivity() {
 
     @Composable
     fun MainContent() {
-        val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+        val (showDialog, setShowDialog) = remember { mutableStateOf(0 to "") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
         val onRegisterPressed: (String, String, String, String) -> Unit = { email, userName, password, confirmPass ->
@@ -75,7 +78,7 @@ class RegisterActivity : AppCompatActivity() {
                 if (res.status == Status.SUCCESS) {
                     setShowReminderDialog(true)
                 } else if (res.status == Status.ERROR) {
-                    setShowDialog(res.message ?: "unknown")
+                    setShowDialog(res.errorCode to (res.message ?: "unknown"))
                 }
             }
         }
@@ -106,14 +109,15 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
-        if (showDialog.isNotEmpty()) {
+    fun ErrorDialog(showDialog: Pair<Int, String>, setShowDialog: (Pair<Int, String>) -> Unit) {
+        if (showDialog.second.isNotBlank() || showDialog.first != 0) {
+            val title = if (showDialog.first == ERROR_CODE_TIMEOUT) stringResource(R.string.network_error_dialog_title) else stringResource(R.string.error)
             CKAlertDialog(
-                title = "Error",
-                text = showDialog,
+                title = title,
+                text = showDialog.second,
                 onDismissButtonClick = {
                     // Change the state to close the dialog
-                    setShowDialog("")
+                    setShowDialog(0 to "")
                 },
             )
         }
