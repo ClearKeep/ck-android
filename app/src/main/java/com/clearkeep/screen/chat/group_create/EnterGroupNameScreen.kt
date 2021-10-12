@@ -106,7 +106,7 @@ fun EnterGroupNameScreen(
                     },
                     modifier = Modifier
                         .width(200.sdp()),
-                    enabled = groupName.value.isNotBlank()
+                    enabled = groupName.value.isNotBlank() && !isLoadingState.value
                 )
             }
         }
