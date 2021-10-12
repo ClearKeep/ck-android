@@ -9,6 +9,7 @@ import com.clearkeep.screen.chat.repo.MessageRepository
 import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -45,6 +46,8 @@ class SearchViewModel @Inject constructor(
     private val _searchQuery = MutableLiveData<String>()
     val searchQuery : LiveData<String> get() = _searchQuery
 
+    val getPeopleResponse = MutableLiveData<Resource<Nothing>>()
+
     val currentServer = serverRepository.activeServer
 
     fun getClientIdOfActiveServer() = environment.getServer().profile.userId
@@ -53,7 +56,7 @@ class SearchViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            peopleRepository.updatePeople()
+            getPeopleResponse.value = peopleRepository.updatePeople()
         }
         setSearchMode(SearchMode.ALL)
     }
