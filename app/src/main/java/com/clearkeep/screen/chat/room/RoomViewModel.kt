@@ -17,6 +17,7 @@ import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -49,10 +50,7 @@ class RoomViewModel @Inject constructor(
 
     private val _group = MutableLiveData<ChatGroup>()
 
-    private val _requestCallState = MutableLiveData<Resource<RequestInfo>>()
-
-    val requestCallState: LiveData<Resource<RequestInfo>>
-        get() = _requestCallState
+    val requestCallState = MutableLiveData<Resource<RequestInfo>>()
 
     val group: LiveData<ChatGroup>
         get() = _group
@@ -100,6 +98,11 @@ class RoomViewModel @Inject constructor(
     private var _selectedMessage : MessageDisplayInfo? = null
     val selectedMessage : MessageDisplayInfo?
         get() = _selectedMessage
+
+    val getGroupResponse = MutableLiveData<Resource<ChatGroup>>()
+    val createGroupResponse = MutableLiveData<Resource<ChatGroup>>()
+    val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
+    val sendMessageResponse = MutableLiveData<Resource<Any>>()
 
     init {
         getStatusUserInGroup()
@@ -217,10 +220,10 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
-        val ret = groupRepository.getGroupByID(groupId, domain, clientId)
-        if (ret != null) {
-            setJoiningGroup(ret)
-            updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
+        getGroupResponse.value = groupRepository.getGroupByID(groupId, domain, clientId)
+        getGroupResponse.value?.data?.let {
+            setJoiningGroup(it)
+            updateMessagesFromRemote(groupId, it.lastMessageSyncTimestamp)
         }
     }
 
@@ -273,25 +276,26 @@ class RoomViewModel @Inject constructor(
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
-                val group = groupRepository.createGroupFromAPI(
+                createGroupResponse.value = groupRepository.createGroupFromAPI(
                         user.userId,
-                        "${user ?: ""},${receiverPeople.userName}",
+                        "${user},${receiverPeople.userName}",
                         mutableListOf(getUser(), receiverPeople),
                         false
                 )
-                if (group != null) {
-                    setJoiningGroup(group)
-                    lastGroupId = group.groupId
+                createGroupResponse.value?.data?.let {
+                    setJoiningGroup(it)
+                    lastGroupId = it.groupId
                 }
             }
 
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val success = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true, cachedMessageId = tempMessageId)
-                    isLatestPeerSignalKeyProcessed = success
+                    val response = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true, cachedMessageId = tempMessageId)
+                    isLatestPeerSignalKeyProcessed = response.status == Status.SUCCESS
+                    sendMessageResponse.value = response
                 } else {
-                    chatRepository.sendMessageInPeer(
+                    sendMessageResponse.value = chatRepository.sendMessageInPeer(
                         clientId,
                         domain,
                         receiverPeople.userId,
@@ -335,10 +339,12 @@ class RoomViewModel @Inject constructor(
                 signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
             if (result) {
                 _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+                sendMessageResponse.value = chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+            } else {
+                sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
             }
         } else {
-            chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+            sendMessageResponse.value = chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
         }
     }
 
@@ -364,10 +370,10 @@ class RoomViewModel @Inject constructor(
 
     fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
-            val inviteGroupSuccess =
+            inviteToGroupResponse.value =
                 groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId, getOwner())
-            inviteGroupSuccess?.let {
-                setJoiningGroup(inviteGroupSuccess)
+            inviteToGroupResponse.value!!.data?.let {
+                setJoiningGroup(it)
             }
         }
     }
@@ -382,9 +388,9 @@ class RoomViewModel @Inject constructor(
             val remoteMember = groupRepository.removeMemberInGroup(user, groupId, getOwner())
             if (remoteMember) {
                 val ret = groupRepository.getGroupFromAPIById(groupId, domain, clientId)
-                if (ret != null) {
-                    setJoiningGroup(ret)
-                    updateMessagesFromRemote(groupId, ret.lastMessageSyncTimestamp)
+                ret?.data?.let {
+                    setJoiningGroup(it)
+                    updateMessagesFromRemote(groupId, it.lastMessageSyncTimestamp)
                     onSuccess?.invoke()
                 }
             } else {
@@ -408,29 +414,29 @@ class RoomViewModel @Inject constructor(
 
     fun requestCall(groupId: Long, isAudioMode: Boolean) {
         viewModelScope.launch {
-            _requestCallState.value = Resource.loading(null)
+            requestCallState.value = Resource.loading(null)
 
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
                 printlnCK("requestCall $domain")
                 val friend = peopleRepository.getFriend(friendId!!, friendDomain!! , getOwner())!!
-                val group = groupRepository.createGroupFromAPI(
+                createGroupResponse.value = groupRepository.createGroupFromAPI(
                     user.userId,
                     "",
                     mutableListOf(user, friend),
                         false
                 )
-                if (group != null) {
-                    setJoiningGroup(group)
-                    lastGroupId = group.groupId
+                createGroupResponse.value?.data?.let {
+                    setJoiningGroup(it)
+                    lastGroupId = it.groupId
                 }
             }
 
-            if (lastGroupId != GROUP_ID_TEMPO) {
-                _requestCallState.value = Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
+            if (lastGroupId != GROUP_ID_TEMPO && lastGroupId != 0L) {
+                requestCallState.value = Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
             } else {
-                _requestCallState.value = Resource.error("error",
+                requestCallState.value = Resource.error("error",
                     _group.value?.let { RequestInfo(it, isAudioMode) })
             }
         }
@@ -611,15 +617,20 @@ class RoomViewModel @Inject constructor(
                     }
                     val fileHashByteArray = fileDigest.digest()
                     val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
-                    val url = chatRepository.uploadFile(
+                    val urlResponse = chatRepository.uploadFile(
                         mimeType,
                         fileName.replace(" ", "_"),
                         byteStrings,
                         blockDigestStrings,
                         fileHashString
                     )
-                    fileUrls.add(url)
-                    filesSizeInBytes.add(fileSize)
+                    if (urlResponse.status == Status.SUCCESS) {
+                        fileUrls.add(urlResponse.data ?: "")
+                        filesSizeInBytes.add(fileSize)
+                    } else {
+                        sendMessageResponse.value = urlResponse
+                        return@forEach
+                    }
                 }
                 val fileUrlsString = if (appendFileSize) {
                     fileUrls.filter{ it.isNotBlank() }.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }

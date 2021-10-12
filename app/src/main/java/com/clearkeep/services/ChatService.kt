@@ -213,7 +213,7 @@ class ChatService : Service(),
         scope.launch {
             printlnCK("handleShowNotification $groupId")
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
-            group?.let {
+            group?.data?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
                     val userPreference = userPreferenceRepository.getUserPreference(domain, ownerClientId) ?: UserPreference.getDefaultUserPreference("", "", false)
@@ -243,15 +243,17 @@ class ChatService : Service(),
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)!!
-            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), group.lastMessageSyncTimestamp)
+            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)
+            group?.data?.let {
+                messageRepository.updateMessageFromAPI(it.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), it.lastMessageSyncTimestamp)
 
-            if (!group.isGroup()) {
-                val receiver = group.clientList.firstOrNull { client ->
-                    client.userId != currentServer.profile.userId
-                }
-                if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.userId, receiver.domain,currentServer.profile.userId,currentServer.serverDomain)
+                if (!it.isGroup()) {
+                    val receiver = it.clientList.firstOrNull { client ->
+                        client.userId != currentServer.profile.userId
+                    }
+                    if (receiver != null) {
+                        chatRepository.processPeerKey(receiver.userId, receiver.domain,currentServer.profile.userId,currentServer.serverDomain)
+                    }
                 }
             }
         }
