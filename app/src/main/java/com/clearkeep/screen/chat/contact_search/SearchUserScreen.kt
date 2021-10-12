@@ -33,6 +33,7 @@ import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.network.Status
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -50,6 +51,7 @@ fun SearchUserScreen(
     val searchQuery = searchViewModel.searchQuery.observeAsState()
     val server = searchViewModel.currentServer.observeAsState()
     val searchMode = searchViewModel.searchMode.observeAsState()
+    val getPeopleResponse = searchViewModel.getPeopleResponse.observeAsState()
     val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(key1 = Unit) {
@@ -219,6 +221,16 @@ fun SearchUserScreen(
                     grayscale3
                 )
             }
+        }
+
+        if (getPeopleResponse.value?.status == Status.ERROR) {
+            CKAlertDialog(
+                title = stringResource(R.string.network_error_dialog_title),
+                text = stringResource(R.string.network_error_dialog_text),
+                onDismissButtonClick = {
+                    searchViewModel.getPeopleResponse.value = null
+                }
+            )
         }
     }
 }

@@ -81,15 +81,19 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-    suspend fun updatePeople() {
+    suspend fun updatePeople(): Resource<Nothing> {
         try {
             val friends = getFriendsFromAPI()
-            if (friends.isNotEmpty()) {
+            if (friends.status == com.clearkeep.utilities.network.Status.SUCCESS) {
                 printlnCK("updatePeople: $friends")
-                peopleDao.insertPeopleList(friends)
+                peopleDao.insertPeopleList(friends.data ?: emptyList())
+            } else {
+                return Resource.error(friends.message ?: "", null, friends.errorCode)
             }
+            return Resource.success(null)
         } catch(exception: Exception) {
             printlnCK("updatePeople: $exception")
+            return Resource.error(exception.toString(), null)
         }
     }
 
@@ -135,18 +139,17 @@ class PeopleRepository @Inject constructor(
 
     }
 
-    private suspend fun getFriendsFromAPI() : List<UserEntity>  = withContext(Dispatchers.IO) {
+    private suspend fun getFriendsFromAPI() : Resource<List<UserEntity>>  = withContext(Dispatchers.IO) {
         printlnCK("getFriendsFromAPI")
         try {
             val request = UserOuterClass.Empty.newBuilder()
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
-            return@withContext response.lstUserOrBuilderList
+            return@withContext Resource.success(response.lstUserOrBuilderList
                 .map { userInfoResponse ->
                     convertUserResponse(userInfoResponse, Owner(environment.getServer().serverDomain, environment.getServer().profile.userId))
-                }
+                })
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -158,10 +161,10 @@ class PeopleRepository @Inject constructor(
                 else -> parsedError.message
             }
 
-            return@withContext emptyList()
+            return@withContext Resource.error(message, emptyList(), parsedError.code)
         } catch (e: Exception) {
             printlnCK("getFriendsFromAPI: $e")
-            return@withContext emptyList()
+            return@withContext Resource.error(e.toString(), emptyList())
         }
     }
 
