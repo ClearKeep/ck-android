@@ -251,7 +251,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun subscriber() {
         roomViewModel.requestCallState.observe(this, Observer {
-            if (it.status == Status.SUCCESS) {
+            if (it != null && it.status == Status.SUCCESS) {
                 it.data?.let { requestInfo ->
                     NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
                     navigateToInComingCallActivity(

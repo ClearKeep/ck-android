@@ -15,6 +15,7 @@ import com.clearkeep.repo.ServerRepository
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import io.grpc.stub.StreamObserver
@@ -54,8 +55,17 @@ class ChatRepository @Inject constructor(
         return roomId
     }
 
-    suspend fun sendMessageInPeer(senderId: String, ownerWorkSpace: String, receiverId: String, receiverWorkspaceDomain: String, groupId: Long,
-                                  plainMessage: String, isForceProcessKey: Boolean = false, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageInPeer(
+        senderId: String,
+        ownerWorkSpace: String,
+        receiverId: String,
+        receiverWorkspaceDomain: String,
+        groupId: Long,
+        plainMessage: String,
+        isForceProcessKey: Boolean = false,
+        cachedMessageId: Int = 0
+    ): Resource<Nothing> = withContext(Dispatchers.IO) {
+        printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             val signalProtocolAddress =
                 CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
@@ -65,7 +75,7 @@ class ChatRepository @Inject constructor(
                     processPeerKey(receiverId, receiverWorkspaceDomain, senderId, ownerWorkSpace)
                 if (!processSuccess) {
                     printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
-                    return@withContext false
+                    return@withContext Resource.error("init session failed", null)
                 }
             }
             val signalProtocolAddressPublishRequest =
@@ -90,7 +100,7 @@ class ChatRepository @Inject constructor(
             val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
             if (server == null) {
                 printlnCK("sendMessageInPeer: server must be not null")
-                return@withContext false
+                return@withContext Resource.error("", null)
             }
 
             val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
@@ -106,6 +116,7 @@ class ChatRepository @Inject constructor(
                 messageRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
             }
             printlnCK("send message success: $plainMessage")
+            return@withContext Resource.success(null)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
 
@@ -117,13 +128,11 @@ class ChatRepository @Inject constructor(
                 }
                 else -> parsedError.message
             }
-            return@withContext false
+            return@withContext Resource.error(message, null, parsedError.code)
         } catch (e: java.lang.Exception) {
             printlnCK("sendMessage: $e")
-            return@withContext false
+            return@withContext Resource.error(e.toString(), null)
         }
-
-        return@withContext true
     }
 
     suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
@@ -141,17 +150,23 @@ class ChatRepository @Inject constructor(
         )
     }
 
-    suspend fun sendMessageToGroup(senderId: String, ownerWorkSpace: String, groupId: Long, plainMessage: String, cachedMessageId: Int = 0) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendMessageToGroup(
+        senderId: String,
+        ownerWorkSpace: String,
+        groupId: Long,
+        plainMessage: String,
+        cachedMessageId: Int = 0
+    ): Resource<Nothing> = withContext(Dispatchers.IO) {
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId, ownerWorkSpace = $ownerWorkSpace")
         try {
             val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
-            val groupSender  =  SenderKeyName(groupId.toString(), senderAddress)
-            printlnCK("sendMessageToGroup: senderAddress : ${senderAddress}  groupSender: ${groupSender}")
+            val groupSender = SenderKeyName(groupId.toString(), senderAddress)
+            printlnCK("sendMessageToGroup: senderAddress : $senderAddress  groupSender: $groupSender")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
-            val senderKeyStore=senderKeyStore.loadSenderKey(groupSender)
+            val senderKeyStore = senderKeyStore.loadSenderKey(groupSender)
             printlnCK("send message iteration ${senderKeyStore.senderKeyState.senderChainKey.senderMessageKey.iteration}")
             val ciphertextFromAlice: ByteArray =
-                    aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
+                aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
             val request = MessageOuterClass.PublishRequest.newBuilder()
                     .setGroupId(groupId)
@@ -163,7 +178,7 @@ class ChatRepository @Inject constructor(
             val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
             if (server == null) {
                 printlnCK("sendMessageToGroup: server must be not null")
-                return@withContext false
+                return@withContext Resource.error("server must be not null", null)
             }
 
             val paramAPI= ParamAPI(server.serverDomain,server.accessKey,server.hashKey)
@@ -177,9 +192,8 @@ class ChatRepository @Inject constructor(
             }
 
             printlnCK("send message success: $plainMessage")
-            return@withContext true
+            return@withContext Resource.success(null)
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -190,11 +204,11 @@ class ChatRepository @Inject constructor(
                 }
                 else -> parsedError.message
             }
+            return@withContext Resource.error(message, null, parsedError.code)
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
+            return@withContext Resource.error(e.toString(), null)
         }
-
-        return@withContext false
     }
 
     suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
@@ -240,7 +254,7 @@ class ChatRepository @Inject constructor(
         byteStrings: List<ByteString>,
         blockHash: List<String>,
         fileHash: String
-    ): String {
+    ): Resource<String> {
         return withContext(Dispatchers.IO) {
             try {
                 if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
@@ -254,7 +268,7 @@ class ChatRepository @Inject constructor(
                     val response =
                         dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
 
-                    return@withContext response.fileUrl
+                    return@withContext Resource.success(response.fileUrl)
                 } else {
                     val result = suspendCancellableCoroutine <String?> {
                         cont ->
@@ -292,24 +306,24 @@ class ChatRepository @Inject constructor(
                         }
                         requestObserver.onCompleted()
                     }
-                    return@withContext result ?: ""
+                    return@withContext Resource.success(result)
                 }
             } catch (e: StatusRuntimeException) {
-
                 val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("uploadFile token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("uploadFile token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
-            }
-                return@withContext ""
+
+                return@withContext Resource.error(message, null, parsedError.code)
             } catch (e: Exception) {
                 printlnCK("uploadFileToGroup $e")
-                return@withContext ""
+                return@withContext Resource.error(e.toString(), null)
             }
         }
     }

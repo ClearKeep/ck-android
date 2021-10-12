@@ -298,7 +298,7 @@ class MessageRepository @Inject constructor(
 
         val groupId = message.groupId
         val room: ChatGroup? =
-            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data
 
         if (room != null) {
             // update last message in room
