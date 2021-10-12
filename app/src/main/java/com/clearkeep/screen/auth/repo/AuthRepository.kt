@@ -20,6 +20,7 @@ import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
+import io.grpc.Status.DEADLINE_EXCEEDED
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -92,7 +93,9 @@ class AuthRepository @Inject constructor(
                 .setIvParameter(toHex(decrypter.getIv()))
                 .build()
             val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).register(request)
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).register(request)
             if (response.error.isNullOrBlank()) {
                 return@withContext Resource.success(response)
             } else {
@@ -105,7 +108,7 @@ class AuthRepository @Inject constructor(
                 1002 -> "This email address is already being used"
                 else -> parsedError.message
             }
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error(message, null, parsedError.code)
         } catch (e: Exception) {
             printlnCK("register error: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -123,7 +126,7 @@ class AuthRepository @Inject constructor(
                     .setAuthType(1)
                     .build()
                 val response =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).login(request)
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS).login(request)
                 if (response.error.isEmpty()) {
                     printlnCK("login successfully")
                     val accessToken = response.accessToken
@@ -167,7 +170,9 @@ class AuthRepository @Inject constructor(
                     1001 -> "Please check your details and try again"
                     1026 -> "Your account has not been activated. Please check the email for the activation link."
                     1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
-                    else -> parsedError.message
+                    else -> {
+                        parsedError.message
+                    }
                 }
                 return@withContext Resource.error(
                     errorMessage,
@@ -188,7 +193,9 @@ class AuthRepository @Inject constructor(
                 .setIdToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response=paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginGoogle(request)
+            val response=paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+            ).loginGoogle(request)
 
             if (response.error.isEmpty()) {
                 printlnCK("login by google successfully: $response")
@@ -217,7 +224,9 @@ class AuthRepository @Inject constructor(
                 .setAccessToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response= paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginFacebook(request)
+            val response= paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+            ).loginFacebook(request)
 
             if (response.error.isEmpty()) {
                 printlnCK("login by facebook successfully: $response")
@@ -249,7 +258,9 @@ class AuthRepository @Inject constructor(
                 .setAccessToken(accessToken)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginOffice(request)
+            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+            ).loginOffice(request)
             if (response.error.isEmpty()) {
                 printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken} hashKey ${response.hashKey}")
                 return@withContext Resource.success(response)
@@ -318,7 +329,9 @@ class AuthRepository @Inject constructor(
                 .setIvParameter(toHex(decrypter.getIv()))
                 .build()
 
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).registerPincode(request)
+            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+            ).registerPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("registerSocialPin success ${response.requireAction}")
                 val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
@@ -351,7 +364,9 @@ class AuthRepository @Inject constructor(
 
             printlnCK("verifySocialPin rawPin $rawPin preAccessToken $preAccessToken userId $userId hashPincode ${DecryptsPBKDF2.md5(rawPin)}")
 
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).verifyPincode(request)
+            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+            ).verifyPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("verifySocialPin success ${response.requireAction}")
                 return@withContext onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
@@ -420,17 +435,18 @@ class AuthRepository @Inject constructor(
                 .build()
 
             val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).resetPincode(request)
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).resetPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("resetSocialPin success ${response.requireAction}")
-                val profileResponse = onLoginSuccess(
+                return@withContext onLoginSuccess(
                     domain,
                     rawPin,
                     response,
                     isSocialAccount = true,
                     clearOldUserData = true
                 )
-                return@withContext profileResponse
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -456,7 +472,9 @@ class AuthRepository @Inject constructor(
                 .setEmail(email)
                 .build()
             val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).fogotPassword(request)
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).fogotPassword(request)
             if (response?.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {
@@ -466,7 +484,7 @@ class AuthRepository @Inject constructor(
         catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = parsedError.message
-            return@withContext Resource.error(message, null)
+            return@withContext Resource.error(message, null, parsedError.code)
         }
         catch (e: Exception) {
             printlnCK("recoverPassword error: $e")

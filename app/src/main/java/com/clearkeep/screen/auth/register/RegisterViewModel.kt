@@ -41,7 +41,7 @@ class RegisterViewModel @Inject constructor(
 
     var domain: String = ""
 
-    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String ): Resource<AuthOuterClass.RegisterRes>? {
+    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String): Resource<AuthOuterClass.RegisterRes>? {
         _isLoading.value = true
 
         _emailError.value = ""

@@ -34,12 +34,9 @@ import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
 import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 
 
 @ExperimentalAnimationApi
@@ -165,7 +162,7 @@ fun CustomServerScreen(
                         Spacer(modifier = Modifier.height(50.sdp()))
 
                         CKButton(
-                            "Submit", {
+                            stringResource(R.string.all_submit), {
                                 loginViewModel.checkValidServerUrl(rememberServerUrl.value)
                             },
                             modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
@@ -182,19 +179,33 @@ fun CustomServerScreen(
         ErrorDialog(showDialog, setShowDialog)
     }
 
-    if (!serverUrlValidateResponse.value.isNullOrBlank()) {
+    if (serverUrlValidateResponse.value?.status == Status.SUCCESS) {
         loginViewModel.isCustomServer = useCustomServerChecked.value
         loginViewModel.customDomain = rememberServerUrl.value
         loginViewModel.serverUrlValidateResponse.value = null
         onBackPress()
-    } else if (serverUrlValidateResponse.value?.isBlank() == true) {
+    } else if (serverUrlValidateResponse.value?.status == Status.ERROR) {
+        val (title, text, dismissText) = if (serverUrlValidateResponse.value!!.errorCode == ERROR_CODE_TIMEOUT) {
+            Triple(
+                stringResource(R.string.network_error_dialog_title),
+                stringResource(R.string.network_error_dialog_text),
+                stringResource(R.string.ok)
+            )
+        } else {
+            Triple(
+                stringResource(R.string.error),
+                stringResource(R.string.wrong_server_url_error),
+                stringResource(R.string.close)
+            )
+        }
         CKAlertDialog(
-            title = stringResource(R.string.error),
-            text = stringResource(R.string.wrong_server_url_error),
-            dismissTitle = stringResource(R.string.close),
+            title = title,
+            text = text,
+            dismissTitle = dismissText,
             onDismissButtonClick = {
                 loginViewModel.serverUrlValidateResponse.value = null
-            })
+            }
+        )
     }
 }
 

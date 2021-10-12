@@ -33,6 +33,7 @@ import com.clearkeep.screen.chat.social_login.ConfirmSocialLoginPhraseScreen
 import com.clearkeep.screen.chat.social_login.EnterSocialLoginPhraseScreen
 import com.clearkeep.screen.chat.social_login.SetSocialLoginPhraseScreen
 import com.clearkeep.screen.splash.SplashActivity
+import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
@@ -133,6 +134,7 @@ class LoginActivity : AppCompatActivity() {
                         1001 -> "Email or Password is incorrect"
                         1026 -> "Error"
                         1069 -> "Account is Locked"
+                        ERROR_CODE_TIMEOUT -> "Network error"
                         else -> "Error"
                     }
                     val dismissButtonTitle = when (res.data?.errorCode) {
