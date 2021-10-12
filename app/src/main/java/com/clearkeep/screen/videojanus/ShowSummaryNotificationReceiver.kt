@@ -39,10 +39,10 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
         GlobalScope.launch {
             val unreadMessages = messageRepository.getUnreadMessage(groupId, ownerDomain, ownerClientId)
             val group = groupRepository.getGroupByID(groupId, ownerDomain, ownerClientId)
-            if (group != null && unreadMessages.isNotEmpty()) {
-                val me = group.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
+            if (group?.data != null && unreadMessages.isNotEmpty()) {
+                val me = group.data.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
                 val userPreference = userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
-                showMessageNotificationToSystemBar(context, me, group, unreadMessages, userPreference ?: UserPreference.getDefaultUserPreference("", "", false))
+                showMessageNotificationToSystemBar(context, me, group.data, unreadMessages, userPreference ?: UserPreference.getDefaultUserPreference("", "", false))
             }
         }
     }

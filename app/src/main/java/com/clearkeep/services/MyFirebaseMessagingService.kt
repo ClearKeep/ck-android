@@ -171,11 +171,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             )
             val userPreference = userPreferenceRepository.getUserPreference(clientDomain, clientId)
             val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
-            if (group != null) {
+            group?.data?.let {
                 val avatar = peopleRepository.getFriendFromID(fromClientID)?.avatar
                 showMessagingStyleNotification(
                     context = applicationContext,
-                    chatGroup = group,
+                    chatGroup = group.data,
                     decryptedMessage,
                     userPreference ?: UserPreference.getDefaultUserPreference("", "", false),
                     avatar

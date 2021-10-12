@@ -41,7 +41,9 @@ import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
+import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
+import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -72,6 +74,10 @@ fun RoomScreen(
     val isShowDialogCalling = remember { mutableStateOf(false) }
     val listPeerAvatars = roomViewModel.listPeerAvatars.observeAsState()
     val selectedFileUri = remember { mutableStateOf("") }
+    val getGroupResponse = roomViewModel.getGroupResponse.observeAsState()
+    val createGroupResponse = roomViewModel.createGroupResponse.observeAsState()
+    val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()
+    val sendMessageResponse = roomViewModel.sendMessageResponse.observeAsState()
 
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -104,227 +110,255 @@ fun RoomScreen(
         else -> null
     }
 
-        printlnCK("test: ${group?.clientList}")
-        val groupName = if (isNote.value == true) "Note" else group?.groupName ?: ""
-        val requestCallViewState = roomViewModel.requestCallState.observeAsState()
-        ModalBottomSheetLayout(
-            sheetState = bottomSheetState,
-            sheetContent = {
-                FilePickerBottomSheetDialog(roomViewModel) {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                        if (isNote.value == true) {
-                            roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
-                        } else if (group != null) {
-                            val isGroup = group.isGroup()
-                            if (isGroup) {
-                                roomViewModel.uploadFile(context, group.groupId, group.isJoined)
+    printlnCK("test: ${group?.clientList}")
+    val groupName = if (isNote.value == true) "Note" else group?.groupName ?: ""
+    val requestCallViewState = roomViewModel.requestCallState.observeAsState()
+    ModalBottomSheetLayout(
+        sheetState = bottomSheetState,
+        sheetContent = {
+            FilePickerBottomSheetDialog(roomViewModel) {
+                coroutineScope.launch {
+                    bottomSheetState.hide()
+                    if (isNote.value == true) {
+                        roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
+                    } else if (group != null) {
+                        val isGroup = group.isGroup()
+                        if (isGroup) {
+                            roomViewModel.uploadFile(context, group.groupId, group.isJoined)
+                        } else {
+                            val friend = group.clientList.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
+                            }
+                            if (friend != null) {
+                                roomViewModel.uploadFile(context, group.groupId, null, friend)
                             } else {
-                                val friend = group.clientList.firstOrNull { client ->
-                                    client.userId != roomViewModel.clientId
-                                }
-                                if (friend != null) {
-                                    roomViewModel.uploadFile(context, group.groupId, null, friend)
+                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                            }
+                        }
+                    } else {
+                        roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                    }
+                }
+            }
+        },
+        sheetBackgroundColor = bottomSheetColor,
+        scrimColor = colorDialogScrim
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                ToolbarMessage(
+                    modifier = Modifier,
+                    groupName,
+                    listPeerAvatars.value,
+                    isGroup = group?.isGroup() ?: false,
+                    isNote = isNote.value ?: false,
+                    onBackClick = {
+                        onFinishActivity()
+                    },
+                    onUserClick = {
+                        if (group?.isGroup() == true) {
+                            navHostController.navigate("room_info_screen")
+                        }
+                    },
+                    onAudioClick = {
+                        if (AppCall.listenerCallingState.value?.isCalling != true) {
+                            roomViewModel.requestCall(group?.groupId ?: 0L, true)
+                        } else {
+                            isShowDialogCalling.value = true
+                        }
+                    },
+                    onVideoClick = {
+                        if (AppCall.listenerCallingState.value?.isCalling != true) {
+                            roomViewModel.requestCall(group?.groupId ?: 0L, false)
+                        } else {
+                            isShowDialogCalling.value = true
+                        }
+                    })
+                if (messageList?.value != null) {
+                    Column(
+                        modifier = Modifier
+                            .weight(
+                                0.66f
+                            )
+                    ) {
+                        MessageListView(
+                            messageList = messageList.value!!,
+                            clients = group?.clientList ?: emptyList(),
+                            myClientId = roomViewModel.clientId,
+                            group?.isGroup() ?: false,
+                            onClickFile = {
+                                if (isWriteFilePermissionGranted(context)) {
+                                    roomViewModel.downloadFile(context, it)
                                 } else {
-                                    printlnCK("can not found friend")
+                                    selectedFileUri.value = it
+                                    requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                                 }
+                            },
+                            onClickImage = { uris: List<String>, senderName: String ->
+                                roomViewModel.setImageDetailList(uris)
+                                roomViewModel.setImageDetailSenderName(senderName)
+                                navHostController.navigate("photo_detail")
+                            },
+                            onLongClick = {
+                                val vibrator =
+                                    context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                    vibrator.vibrate(
+                                        VibrationEffect.createOneShot(
+                                            100,
+                                            VibrationEffect.DEFAULT_AMPLITUDE
+                                        )
+                                    )
+                                } else {
+                                    vibrator.vibrate(100)
+                                }
+                                roomViewModel.setSelectedMessage(it)
+                                isMessageClickDialogVisible.value = true
+                            }
+                        )
+                    }
+                } else {
+                    Column(Modifier.weight(0.66f)) {
+                        Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
+                            Box(Modifier.fillMaxSize()) {
+                                CKCircularProgressIndicator(Modifier.align(Alignment.Center))
                             }
                         }
                     }
                 }
-            },
-            sheetBackgroundColor = bottomSheetColor,
-            scrimColor = colorDialogScrim
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    ToolbarMessage(
-                        modifier = Modifier,
-                        groupName,
-                        listPeerAvatars.value,
-                        isGroup = group?.isGroup() ?: false,
-                        isNote = isNote.value ?: false,
-                        onBackClick = {
-                            onFinishActivity()
-                        },
-                        onUserClick = {
-                            if (group?.isGroup() == true) {
-                                navHostController.navigate("room_info_screen")
-                            }
-                        },
-                        onAudioClick = {
-                            if (AppCall.listenerCallingState.value?.isCalling != true) {
-                                roomViewModel.requestCall(group?.groupId ?: 0L, true)
-                            }else{
-                                isShowDialogCalling.value = true
-                            }
-                        },
-                        onVideoClick = {
-                            if (AppCall.listenerCallingState.value?.isCalling != true) {
-                                roomViewModel.requestCall(group?.groupId ?: 0L, false)
-                            }else{
-                                isShowDialogCalling.value = true
-                            }
-                        })
-                    if (messageList?.value != null) {
-                        Column(
-                            modifier = Modifier
-                                .weight(
-                                    0.66f
-                                )
-                        ) {
-                            MessageListView(
-                                messageList = messageList.value!!,
-                                clients = group?.clientList ?: emptyList(),
-                                myClientId = roomViewModel.clientId,
-                                group?.isGroup() ?: false,
-                                onClickFile = {
-                                    if (isWriteFilePermissionGranted(context)) {
-                                        roomViewModel.downloadFile(context, it)
-                                    } else {
-                                        selectedFileUri.value = it
-                                        requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                                    }
-                                },
-                                onClickImage = { uris: List<String>, senderName: String ->
-                                    roomViewModel.setImageDetailList(uris)
-                                    roomViewModel.setImageDetailSenderName(senderName)
-                                    navHostController.navigate("photo_detail")
-                                },
-                                onLongClick = {
-                                    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
-                                    } else {
-                                        vibrator.vibrate(100)
-                                    }
-                                    roomViewModel.setSelectedMessage(it)
-                                    isMessageClickDialogVisible.value = true
-                                }
+                SendBottomCompose(
+                    roomViewModel,
+                    navHostController,
+                    onSendMessage = { message ->
+                        val validMessage =
+                            message.trim()
+                                .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                        if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
+                            return@SendBottomCompose
+                        }
+                        val isGroup = group?.isGroup()
+                        if (isNote.value == true) {
+                            roomViewModel.sendNote(context)
+                        } else if (isGroup == true) {
+                            roomViewModel.sendMessageToGroup(
+                                context,
+                                group.groupId,
+                                validMessage,
+                                group.isJoined
                             )
-                        }
-                    } else {
-                        Column(Modifier.weight(0.66f)) {
-                            Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
-                                Box(Modifier.fillMaxSize())  {
-                                    CKCircularProgressIndicator(Modifier.align(Alignment.Center))
-                                }
+                        } else {
+                            val friend = group?.clientList?.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
                             }
-                        }
-                    }
-                    SendBottomCompose(
-                        roomViewModel,
-                        navHostController,
-                        onSendMessage = { message ->
-                            val validMessage =
-                                message.trim()
-                                    .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
-                                return@SendBottomCompose
-                            }
-                            val isGroup = group?.isGroup()
-                            if (isNote.value == true) {
-                                roomViewModel.sendNote(context)
-                            } else if (isGroup == true) {
-                                roomViewModel.sendMessageToGroup(
+                            if (friend != null) {
+                                roomViewModel.sendMessageToUser(
                                     context,
+                                    friend,
                                     group.groupId,
-                                    validMessage,
-                                    group.isJoined
+                                    validMessage
                                 )
                             } else {
-                                val friend = group?.clientList?.firstOrNull { client ->
-                                    client.userId != roomViewModel.clientId
-                                }
-                                if (friend != null) {
-                                    roomViewModel.sendMessageToUser(
-                                        context,
-                                        friend,
-                                        group.groupId,
-                                        validMessage
-                                    )
-                                } else {
-                                    printlnCK("can not found friend")
-                                }
-                            }
-                        },
-                        onClickUploadPhoto = {
-                            focusManager.clearFocus()
-                            Handler(Looper.getMainLooper()).postDelayed(
-                                KEYBOARD_HIDE_DELAY_MILLIS
-                            ) {
-                                isUploadPhotoDialogVisible.value = true
-                            }
-                        },
-                        onClickUploadFile = {
-                            keyboardController?.hide()
-                            coroutineScope.launch {
-                                delay(KEYBOARD_HIDE_DELAY_MILLIS)
-                                bottomSheetState.show()
+                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
                             }
                         }
+                    },
+                    onClickUploadPhoto = {
+                        focusManager.clearFocus()
+                        Handler(Looper.getMainLooper()).postDelayed(
+                            KEYBOARD_HIDE_DELAY_MILLIS
+                        ) {
+                            isUploadPhotoDialogVisible.value = true
+                        }
+                    },
+                    onClickUploadFile = {
+                        keyboardController?.hide()
+                        coroutineScope.launch {
+                            delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                            bottomSheetState.show()
+                        }
+                    }
+                )
+            }
+        }
+    }
+    requestCallViewState.value?.let {
+        printlnCK("status = ${it.status}")
+        if (Status.LOADING == it.status) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator(color = Color.Blue)
+                    Spacer(modifier = Modifier.height(10.sdp()))
+                    Text(
+                        text = "",
+                        style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
                     )
                 }
             }
-        }
-        requestCallViewState.value?.let {
-            printlnCK("status = ${it.status}")
-            if (Status.LOADING == it.status) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        CircularProgressIndicator(color = Color.Blue)
-                        Spacer(modifier = Modifier.height(10.sdp()))
-                        Text(
-                            text = "",
-                            style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
+        } else if (it.status == Status.ERROR) {
+            CKAlertDialog(
+                title = stringResource(R.string.network_error_dialog_title),
+                text = stringResource(R.string.network_error_dialog_text),
+                onDismissButtonClick = {
+                    roomViewModel.requestCallState.value = null
                 }
+            )
+        }
+    }
+    UploadPhotoDialog(isUploadPhotoDialogVisible.value, getPhotoUri = {
+        roomViewModel.getPhotoUri(context)
+    }, onDismiss = {
+        isUploadPhotoDialogVisible.value = false
+    }, onNavigateToAlbums = {
+        isUploadPhotoDialogVisible.value = false
+        navHostController.navigate("image_picker")
+    }, onTakePhoto = {
+        roomViewModel.addImage()
+    })
+    MessageClickDialog(roomViewModel, isMessageClickDialogVisible.value, onDismiss = {
+        isMessageClickDialogVisible.value = false
+    })
+    val response = uploadFileResponse.value
+    if (response?.status == Status.ERROR) {
+        CKAlertDialog(
+            onDismissButtonClick = {
+                roomViewModel.uploadFileResponse.value = null
+            },
+            title = stringResource(R.string.message_sent_error),
+            text = response.message ?: "",
+            dismissTitle = stringResource(R.string.close)
+        )
+    }
+    if (isShowDialogCalling.value) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(R.string.profile_new_call_warning),
+            onDismissButtonClick = {
+                isShowDialogCalling.value = false
             }
-        }
-        UploadPhotoDialog(isUploadPhotoDialogVisible.value, getPhotoUri = {
-            roomViewModel.getPhotoUri(context)
-        }, onDismiss = {
-            isUploadPhotoDialogVisible.value = false
-        }, onNavigateToAlbums = {
-            isUploadPhotoDialogVisible.value = false
-            navHostController.navigate("image_picker")
-        }, onTakePhoto = {
-            roomViewModel.addImage()
-        })
-        MessageClickDialog(roomViewModel, isMessageClickDialogVisible.value, onDismiss = {
-            isMessageClickDialogVisible.value = false
-        })
-        val response = uploadFileResponse.value
-        if (response?.status == Status.ERROR) {
-            CKAlertDialog(
-                onDismissButtonClick = {
-                    roomViewModel.uploadFileResponse.value = null
-                },
-                title = stringResource(R.string.message_sent_error),
-                text = response.message ?: "",
-                dismissTitle = stringResource(R.string.close)
-            )
-        }
-        if (isShowDialogCalling.value) {
-            CKAlertDialog(
-                title = stringResource(R.string.warning),
-                text = stringResource(R.string.profile_new_call_warning),
-                onDismissButtonClick = {
-                    isShowDialogCalling.value = false
-                }
-            )
-        }
+        )
+    }
+    if (getGroupResponse.value?.status == Status.ERROR || createGroupResponse.value?.status == Status.ERROR || inviteToGroupResponse.value?.status == Status.ERROR || sendMessageResponse.value?.status == Status.ERROR) {
+        CKAlertDialog(
+            title = stringResource(R.string.network_error_dialog_title),
+            text = stringResource(R.string.network_error_dialog_text),
+            onDismissButtonClick = {
+                roomViewModel.getGroupResponse.value = null
+                roomViewModel.createGroupResponse.value = null
+                roomViewModel.inviteToGroupResponse.value = null
+                roomViewModel.sendMessageResponse.value = null
+            }
+        )
+    }
 }
 
 @ExperimentalComposeUiApi
