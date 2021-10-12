@@ -120,4 +120,7 @@
     <string name="social_login_phrase_screen_title">Set Your Security Phrase</string>
     <string name="reset_social_login_pin_warning">Resetting your Security Phrase will reset all your data</string>
     <string name="ok">OK</string>
+    <string name="network_error_dialog_title">Network error</string>
+    <string name="network_error_dialog_text">We are unable to detect an internet connection. Please try again when you have a stronger connection.</string>
+    <string name="all_submit">Submit</string>
 </resources>

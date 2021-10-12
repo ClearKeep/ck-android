@@ -70,3 +70,6 @@ const val CALL_TYPE_AUDIO = "audio"
 const val CALL_TYPE_VIDEO = "video"
 const val CALL_UPDATE_TYPE_CANCEL = "cancel_request_call"
 const val CALL_UPDATE_TYPE_BUSY = "busy_request_call"
+
+const val ERROR_CODE_TIMEOUT = 504
+const val REQUEST_DEADLINE_SECONDS = 30L
