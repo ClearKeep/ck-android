@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.change_pass_word
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
+import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
@@ -43,6 +46,8 @@ fun ChangePasswordScreen(
                 )
             )
     ) {
+        val context = LocalContext.current
+
         val currentPassWord = remember { mutableStateOf("") }
         val newPassWord = remember { mutableStateOf("") }
         val confirmPassWord = remember { mutableStateOf("") }
@@ -51,6 +56,7 @@ fun ChangePasswordScreen(
         val newPassWordError = viewModel.newPasswordError.observeAsState()
         val confirmPassWordError = viewModel.newPasswordConfirmError.observeAsState()
         val changePasswordResponse = viewModel.changePasswordResponse.observeAsState()
+        val isResetPassword = viewModel.isResetPassword.observeAsState()
 
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
@@ -71,23 +77,25 @@ fun ChangePasswordScreen(
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
-            CKTextInputField(
-                placeholder = "Current Password",
-                textValue = currentPassWord,
-                onValueChange = { viewModel.setOldPassword(it) },
-                keyboardType = KeyboardType.Password,
-                singleLine = true,
-                leadingIcon = {
-                    Image(
-                        painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null,
-                        Modifier.size(dimensionResource(R.dimen._24sdp)),
-                        contentScale = ContentScale.FillBounds
-                    )
-                },
-                error = currentPassWordError.value
-            )
-            Spacer(Modifier.height(24.sdp()))
+            if (isResetPassword.value != true) {
+                CKTextInputField(
+                    placeholder = "Current Password",
+                    textValue = currentPassWord,
+                    onValueChange = { viewModel.setOldPassword(it) },
+                    keyboardType = KeyboardType.Password,
+                    singleLine = true,
+                    leadingIcon = {
+                        Image(
+                            painterResource(R.drawable.ic_icon_lock),
+                            contentDescription = null,
+                            Modifier.size(dimensionResource(R.dimen._24sdp)),
+                            contentScale = ContentScale.FillBounds
+                        )
+                    },
+                    error = currentPassWordError.value
+                )
+                Spacer(Modifier.height(24.sdp()))
+            }
             CKTextInputField(
                 placeholder = "New Password",
                 textValue = newPassWord,
@@ -122,19 +130,20 @@ fun ChangePasswordScreen(
                 error = confirmPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
+            val currentPasswordValid = if (isResetPassword.value == true) true else currentPassWordError.value.isNullOrBlank() && currentPassWord.value.isNotBlank()
+            val changePasswordButtonEnabled = currentPasswordValid
+                    && newPassWordError.value.isNullOrBlank()
+                    && confirmPassWordError.value.isNullOrBlank()
+                    && newPassWord.value.isNotBlank()
+                    && confirmPassWord.value.isNotBlank()
             CKButton(
                 stringResource(R.string.save),
                 onClick = {
-                    viewModel.changePassword()
+                    viewModel.onClickConfirm()
                 },
                 modifier = Modifier.fillMaxWidth(),
                 buttonType = ButtonType.White,
-                enabled = currentPassWordError.value.isNullOrBlank()
-                        && newPassWordError.value.isNullOrBlank()
-                        && confirmPassWordError.value.isNullOrBlank()
-                        && currentPassWord.value.isNotBlank()
-                        && newPassWord.value.isNotBlank()
-                        && confirmPassWord.value.isNotBlank()
+                enabled = changePasswordButtonEnabled
             )
 
             if (changePasswordResponse.value?.status == Status.SUCCESS) {
@@ -142,6 +151,11 @@ fun ChangePasswordScreen(
                     title = "Password changed successfully",
                     text = "Please login again with new password!",
                     onDismissButtonClick = {
+                        if (isResetPassword.value == true) {
+                            val intent = Intent(context, RoomActivity::class.java)
+                            context.startActivity(intent)
+                        }
+
                         onBackPress()
                     }
                 )

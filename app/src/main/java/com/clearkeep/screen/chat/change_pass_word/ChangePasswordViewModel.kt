@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.change_pass_word
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,6 +32,13 @@ class ChangePasswordViewModel @Inject constructor(
     val newPasswordConfirmError: LiveData<String> get() = _newPasswordConfirmError
 
     val changePasswordResponse = MutableLiveData<Resource<String>>()
+
+    private val _isResetPassword = MutableLiveData<Boolean>()
+    val isResetPassword : LiveData<Boolean> get() = _isResetPassword
+
+    private var preAccessToken = ""
+    private var userId = ""
+    private var serverDomain = ""
 
     fun setOldPassword(password: String) {
         _oldPassword.value = password
@@ -52,19 +61,61 @@ class ChangePasswordViewModel @Inject constructor(
         _newPasswordConfirmError.value = getConfirmPasswordError(password, confirmPassword)
     }
 
-    fun changePassword() {
+    fun onClickConfirm() {
+        if (isResetPassword.value == true) {
+            resetPassword()
+        } else {
+            changePassword()
+        }
+    }
+
+    fun processDeepLinkUri(uri: Uri?) {
+        val isResetPassword = uri != null && uri.toString().isNotBlank()
+        _isResetPassword.value = isResetPassword
+
+        if (isResetPassword) {
+            val stringUri = uri.toString()
+            val dataString = stringUri.replace(DEEP_LINK_URI_PREFIX, "")
+            val data: Map<String, String> = dataString.split("&").map {
+                val keyValuePair = it.split("=")
+                val key = keyValuePair[0]
+                val value = keyValuePair[1]
+                key to value
+            }.toMap()
+
+            preAccessToken = data["pre_access_token"] ?: ""
+            userId = data["user_id"] ?: ""
+            serverDomain = data["server_domain"] ?: ""
+        }
+    }
+
+    private fun changePassword() {
         val oldPassword = _oldPassword.value ?: ""
         val newPassword = _newPassword.value ?: ""
         val server = environment.getServer()
         val owner = Owner(server.serverDomain, server.profile.userId)
 
         viewModelScope.launch {
-            val response = profileRepository.changePassword(owner, server.profile.email?: "", oldPassword, newPassword)
+            val response = profileRepository.changePassword(
+                owner,
+                server.profile.email ?: "",
+                oldPassword,
+                newPassword
+            )
             if (response.status == Status.ERROR) {
                 _oldPasswordError.value = response.message
             } else {
                 changePasswordResponse.value = response
             }
+        }
+    }
+
+    private fun resetPassword() {
+        val newPassword = _newPassword.value ?: ""
+        changePasswordResponse.value = Resource.success(null)
+
+        viewModelScope.launch {
+            printlnCK("ChangePasswordViewModel preAccess $preAccessToken userId $userId domain $serverDomain")
         }
     }
 
@@ -114,5 +165,9 @@ class ChangePasswordViewModel @Inject constructor(
                 null
             }
         }
+    }
+
+    companion object {
+        val DEEP_LINK_URI_PREFIX = "clearkeep://resetpassword([?]?)".toRegex()
     }
 }
