@@ -169,7 +169,7 @@ message MfaResendOtpRes{
     string error = 3;
 }
 
-//new flow login with rpc
+//new flow login with srp
 //Login message struct
 message AuthChallengeReq {
     string email = 1;
@@ -183,7 +183,8 @@ message AuthChallengeRes {
 
 message AuthenticateReq {
     string email = 1;
-    string client_session_key_proof = 2;
+    string client_public = 2;
+    string client_session_key_proof = 3;
 }
 
 message RegisterSRPReq {
@@ -203,9 +204,6 @@ message RegisterSRPRes {
 
 service Auth {
     rpc login(AuthReq) returns (AuthRes) {};
-    rpc login_challenge(AuthChallengeReq) returns (AuthChallengeRes) {};
-    rpc login_authenticate(AuthenticateReq) returns (AuthRes) {};
-
     rpc login_google(GoogleLoginReq) returns (AuthRes) {};
     rpc login_office(OfficeLoginReq) returns (AuthRes) {};
     rpc login_facebook(FacebookLoginReq) returns (AuthRes) {};
@@ -215,7 +213,11 @@ service Auth {
     rpc fogot_password(FogotPassWord) returns (BaseResponse) {};
     rpc logout(LogoutReq) returns (BaseResponse) {};
     rpc register_pincode(RegisterPinCodeReq) returns (AuthRes) {};
-    rpc register_srp(RegisterSRPReq) returns (RegisterSRPRes) {};
     rpc verify_pincode(VerifyPinCodeReq) returns (AuthRes) {};
     rpc reset_pincode(ResetPinCodeReq) returns (AuthRes) {};
+    //new flow login with srp
+    rpc login_challenge(AuthChallengeReq) returns (AuthChallengeRes) {};
+    rpc login_authenticate(AuthenticateReq) returns (AuthRes) {};
+    rpc register_srp(RegisterSRPReq) returns (RegisterSRPRes) {};
+    //end new flow login with srp
 }
