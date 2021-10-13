@@ -31,7 +31,7 @@ fun EnterGroupNameScreen(
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     val friends = createGroupViewModel.invitedFriends
     val isLoadingState = remember { mutableStateOf(false) }
-    Box() {
+    Box {
     Surface(
         color = MaterialTheme.colors.background
     ) {

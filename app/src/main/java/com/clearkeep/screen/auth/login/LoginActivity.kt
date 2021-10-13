@@ -49,6 +49,7 @@ import com.google.android.gms.tasks.Task
 import com.microsoft.identity.client.*
 import com.microsoft.identity.client.exception.MsalException
 import com.facebook.login.LoginResult
+import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
 
 @AndroidEntryPoint
@@ -377,6 +378,12 @@ class LoginActivity : AppCompatActivity() {
             }
         } catch (e: ApiException) {
             e.printStackTrace()
+            val (title, text) = if (e.statusCode == NETWORK_ERROR) {
+                "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+            } else {
+                "Error" to (e.message ?: "unknown")
+            }
+            showErrorDiaLog?.invoke(ErrorMessage(title, text))
         }
     }
 
@@ -394,7 +401,12 @@ class LoginActivity : AppCompatActivity() {
             override fun onError(exception: MsalException) {
                 val isLoginCancelled = exception is MsalServiceException && exception.httpStatusCode == MsalServiceException.DEFAULT_STATUS_CODE
                 if (!isLoginCancelled) {
-                    showErrorDiaLog?.invoke(ErrorMessage("Error", exception.message ?: "unknown"))
+                    val (title, text) = if (exception.errorCode == "device_network_not_available") {
+                        "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                    } else {
+                        "Error" to (exception.message ?: "unknown")
+                    }
+                    showErrorDiaLog?.invoke(ErrorMessage(title, text))
                 }
             }
 
@@ -439,7 +451,12 @@ class LoginActivity : AppCompatActivity() {
 
                 override fun onError(exception: FacebookException) {
                     printlnCK("login with FB error $exception")
-                    showErrorDiaLog?.invoke(ErrorMessage("Error", exception.message ?: "unknown"))
+                    val (title, text) = if (exception.message != null && exception.message!!.contains("CONNECTION_FAILURE")) {
+                        "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                    } else {
+                        "Error" to (exception.message ?: "unknown")
+                    }
+                    showErrorDiaLog?.invoke(ErrorMessage(title, text))
                 }
             })
     }
