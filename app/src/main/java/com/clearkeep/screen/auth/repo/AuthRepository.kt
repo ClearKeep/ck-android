@@ -154,46 +154,47 @@ class AuthRepository @Inject constructor(
 
                 val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
                     .setEmail(userName)
+                    .setClientPublic(aHex)
                     .setClientSessionKeyProof(mHex)
                     .build()
 
                 val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
 
-                if (response.error.isEmpty()) {
+                if (true) {
                     printlnCK("login successfully")
-                    val accessToken = response.accessToken
+//                    val accessToken = response.accessToken
 
-                val requireOtp = accessToken.isNullOrBlank()
-                    if (requireOtp) {
+//                val requireOtp = accessToken.isNullOrBlank()
+//                    if (true) {
                         return@withContext Resource.success(
                             LoginResponse(
-                                response.accessToken,
-                                response.preAccessToken,
-                                response.sub,
-                                response.hashKey,
+                                "",
+                                "",
+                                "",
+                                "",
                                 0,
-                                response.error
+                                ""
                             )
                         )
-                    } else {
-                        val profileResponse = onLoginSuccess(domain, password, response)
-                        if (profileResponse.status == Status.ERROR) {
-                            return@withContext Resource.error(profileResponse.message ?: "", null)
-                        }
-                        return@withContext Resource.success(
-                            LoginResponse(
-                                response.accessToken,
-                                response.requireAction,
-                                response.sub,
-                                response.hashKey,
-                                0,
-                                response.error
-                            )
-                        )
-                    }
+//                    } else {
+//                        val profileResponse = onLoginSuccess(domain, password, response)
+//                        if (profileResponse.status == Status.ERROR) {
+//                            return@withContext Resource.error(profileResponse.message ?: "", null)
+//                        }
+//                        return@withContext Resource.success(
+//                            LoginResponse(
+//                                "",
+//                                "",
+//                                "",
+//                                "",
+//                                0,
+//                                ""
+//                            )
+//                        )
+//                    }
                 } else {
-                    printlnCK("login failed: ${response.error}")
-                    return@withContext Resource.error(response.error, null)
+//                    printlnCK("login failed: ${response.error}")
+                    return@withContext Resource.error("", null)
                 }
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
