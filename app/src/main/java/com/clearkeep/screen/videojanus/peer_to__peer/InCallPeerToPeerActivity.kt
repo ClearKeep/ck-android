@@ -713,11 +713,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
         switchVideoReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
-                if (mGroupId == groupId && mIsAudioMode) {
+                if (mGroupId == groupId && mIsAudioMode && callViewModel.mIsAudioMode.value == true) {
                     callViewModel.mIsAudioMode.postValue(false)
                     configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
-                    if (!isShowedDialogCamera)
-                    showOpenCameraDialog()
+                    if (!isShowedDialogCamera) {
+                        showOpenCameraDialog()
+                    }
             }
         }}
         registerReceiver(switchVideoReceiver, IntentFilter(ACTION_CALL_SWITCH_VIDEO))
