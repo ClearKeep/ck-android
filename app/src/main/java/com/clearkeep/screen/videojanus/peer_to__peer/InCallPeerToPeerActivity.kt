@@ -125,12 +125,13 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mOwnerClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
+        printlnCK("InCallPeerToPeer onCreate isAudioMode $mIsAudioMode")
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
         mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
         //TODO: Remove test hardcode
         mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
-        callViewModel.mIsAudioMode.postValue(mIsAudioMode)
+        callViewModel.mIsAudioMode.value = mIsAudioMode
         isShowedDialogCamera = !mIsAudioMode
 
         initViews()
@@ -151,6 +152,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
         onClickControlCall()
         dispatchCallStatus(true)
         createInCallNotification(this, InCallPeerToPeerActivity::class.java)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        printlnCK("InCallPeerToPeer onNewIntent()")
+        super.onNewIntent(intent)
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
