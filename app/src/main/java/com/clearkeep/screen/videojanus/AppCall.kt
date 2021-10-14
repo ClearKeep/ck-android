@@ -47,6 +47,7 @@ object AppCall {
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
         intent.putExtra(EXTRA_IS_AUDIO_MODE, isAudioMode)
+        printlnCK("AppCall call isAudioMode $isAudioMode")
         intent.putExtra(EXTRA_OWNER_DOMAIN, domain)
         intent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
         intent.putExtra(EXTRA_USER_NAME, userName)
@@ -97,13 +98,13 @@ object AppCall {
         val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true, currentUserName, currentUserAvatar)
         val pendingWaitIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, waitIntent,
-            PendingIntent.FLAG_ONE_SHOT)
+            PendingIntent.FLAG_UPDATE_CURRENT)
 
         val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
             ownerDomain, ownerClientId,
             userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false, currentUserName, currentUserAvatar)
         val pendingInCallIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, inCallIntent,
-            PendingIntent.FLAG_ONE_SHOT)
+            PendingIntent.FLAG_UPDATE_CURRENT)
 
         val titleCallResource = if (isGroup(groupType)) {
             if (isAudioMode) R.string.notification_incoming_group else R.string.notification_incoming_video_group
@@ -185,7 +186,7 @@ object AppCall {
                  Intent(context, InCallPeerToPeerActivity::class.java)
              }
         }
-        printlnCK("createIncomingCallIntent isWaitingScreen $isWaitingScreen groupName $groupName groupType $groupType")
+        printlnCK("createIncomingCallIntent isAudioMode $isAudioMode")
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
