@@ -382,7 +382,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 Intent(context, InCallPeerToPeerActivity::class.java)
             }
         }
-        printlnCK("createIncomingCallIntent isWaitingScreen $isWaitingScreen groupName $groupName groupType $groupType")
+        printlnCK("createIncomingCallIntent isAudioMode $isAudioMode")
         intent.putExtra(EXTRA_GROUP_ID, groupId)
         intent.putExtra(EXTRA_GROUP_NAME, groupName)
         intent.putExtra(EXTRA_GROUP_TYPE, groupType)
