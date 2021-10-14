@@ -181,12 +181,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
+        printlnCK("configMedia")
         mIsSpeaker = isSpeaker
         enableSpeaker(mIsSpeaker)
 
         mIsMuteVideo = isMuteVideo
         enableMuteVideo(mIsMuteVideo)
-
     }
 
     private fun initViews() {
@@ -591,7 +591,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             audioManager.mode = AudioManager.MODE_IN_CALL
             audioManager.isSpeakerphoneOn = isOn
         } catch (e: Exception) {
-            printlnCK("setSpeakerphoneOn, $e")
+            printlnCK("setSpeakerphoneOn, exception!! $e")
         }
     }
 
@@ -608,7 +608,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         unRegisterSwitchVideoReceiver()
         stopRingBackTone()
         stopBusySignalSound()
-        Log.e("antx","finishAndReleaseResource ${!isFromComingCall} ,mCurrentCallState : $mCurrentCallState   ${mCurrentCallState==CallState.CALLING}")
+        Log.e("antx","finishAndReleaseResource ${!isFromComingCall}, mCurrentCallState : $mCurrentCallState   ${mCurrentCallState==CallState.CALLING}")
         if (!isFromComingCall && (mCurrentCallState == CallState.CALLING || mCurrentCallState == CallState.CALL_NOT_READY)) {
             cancelCallAPI()
         }
@@ -762,8 +762,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             val remoteInfo = renders.elementAt(index)
             val user = group?.clientList?.find { it.userId == remoteInfo.clientId }
             printlnCK("updateRenders remoteSurfacePosition() user ${user?.userName} position remoteSurfacePosition $remoteSurfacePosition")
-            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
-                , remoteSurfacePosition)
+            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown", remoteSurfacePosition)
             binding.surfaceRootContainer.addView(view)
         }
     }
@@ -868,9 +867,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     if (mIsAudioMode && !isShowDialogCamera)
                         showOpenCameraDialog()
                     mIsAudioMode = false
-                    configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
+                    configMedia(isSpeaker = mIsSpeaker, isMuteVideo = mIsMuteVideo)
                     updateUIByStateAndMode()
-
                 }
             }
         }
