@@ -5,8 +5,12 @@ import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.LoginResponse
+import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.WorkSpaceRepository
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -26,7 +30,10 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository,
-    private val workSpaceRepository: WorkSpaceRepository
+    private val workSpaceRepository: WorkSpaceRepository,
+    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    private val signalKeyDAO: SignalKeyDAO,
+    private val signalPreKeyDAO: SignalPreKeyDAO
 ): ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
@@ -85,6 +92,15 @@ class LoginViewModel @Inject constructor(
 
     private var isResetPincode = false
 
+    /*init {
+        viewModelScope.launch {
+            val test = signalIdentityKeyDAO.getAll()
+            val test2 = signalKeyDAO.getSignalSenderKeys().value?.size
+            val test3 = signalPreKeyDAO.getAll()
+            printlnCK("signalIdentityKeyDAO: ${test} ${test2} ${test3}")
+        }
+    }
+*/
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
