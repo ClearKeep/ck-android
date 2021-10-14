@@ -176,13 +176,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
         remoteRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setEnableHardwareScaler(true)
-            setMirror(true)
         }
         localRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
-            setMirror(true)
         }
 
         pipCallNamePeer.text = mCurrentUsername
@@ -341,7 +339,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
             }
             this.bottomToggleSwitchCamera.setOnClickListener {
                 callViewModel.onCameraChange((it as ToggleButton).isChecked)
-                localRender.setMirror(it.isChecked)
             }
             this.bottomImgEndCall.setOnClickListener {
                 endCall()
