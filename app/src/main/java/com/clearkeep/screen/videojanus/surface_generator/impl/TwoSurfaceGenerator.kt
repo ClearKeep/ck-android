@@ -4,7 +4,10 @@ import android.content.Context
 import android.widget.LinearLayout
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
-class TwoSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
+class TwoSurfaceGenerator(context: Context, width: Int, height: Int) : SurfaceGeneratorImpl(
+    width,
+    height
+) {
     override fun getLocalSurface(): SurfacePosition {
         val heightPx = getHeight()
         val halfHeightPx = heightPx / 2

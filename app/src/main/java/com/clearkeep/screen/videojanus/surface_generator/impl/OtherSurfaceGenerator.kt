@@ -10,8 +10,10 @@ import kotlin.math.roundToInt
 
 class OtherSurfaceGenerator(
     var size: Int,
-    val context: Context
-) : SurfaceGeneratorImpl(context) {
+    val context: Context,
+    width: Int,
+    height: Int
+) : SurfaceGeneratorImpl(width, height) {
     private val numberOfRow : Int = ceil(size / 2.0).roundToInt()
 
     override fun getLocalSurface(): SurfacePosition {

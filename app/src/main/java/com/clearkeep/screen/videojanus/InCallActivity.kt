@@ -86,6 +86,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
 
+    private var screenWidth : Int = 0
+    private var screenHeight : Int = 0
+
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
 
@@ -128,6 +131,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+
+        screenWidth = resources.displayMetrics.widthPixels
+        screenHeight = resources.displayMetrics.heightPixels
+
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         if (environment.getServerCanNull() == null) {
@@ -318,6 +325,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             imgEndWaiting.visible()
             tvEndButtonDescription.visible()
             pipInfo.gone()
+            updateRenders()
             surfaceRootContainer.visible()
             if (!mIsAudioMode) {
                 controlCallVideoView.visible()
@@ -736,6 +744,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun updateRenders() {
+        printlnCK("updateRenders()")
         for (child in binding.surfaceRootContainer.iterator()) {
             (child as RelativeLayout).removeAllViews()
         }
@@ -745,7 +754,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val me = group?.clientList?.find { it.userId == environment.getServer().profile.userId }
         val surfaceGenerator =
-            SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
+            SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1, screenWidth, screenHeight)
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
         val cameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
@@ -756,6 +765,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
             val remoteInfo = renders.elementAt(index)
             val user = group?.clientList?.find { it.userId == remoteInfo.clientId }
+            printlnCK("updateRenders remoteSurfacePosition() user ${user?.userName} position remoteSurfacePosition $remoteSurfacePosition")
             val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
                 , remoteSurfacePosition)
             binding.surfaceRootContainer.addView(view)

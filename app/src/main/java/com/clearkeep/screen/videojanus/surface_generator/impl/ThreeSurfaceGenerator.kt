@@ -3,7 +3,10 @@ package com.clearkeep.screen.videojanus.surface_generator.impl
 import android.content.Context
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
-class ThreeSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
+class ThreeSurfaceGenerator(context: Context, width: Int, height: Int) : SurfaceGeneratorImpl(
+    width,
+    height
+) {
     override fun getLocalSurface(): SurfacePosition {
         val heightPx = getHeight()
         val halfHeightPx = heightPx / 2

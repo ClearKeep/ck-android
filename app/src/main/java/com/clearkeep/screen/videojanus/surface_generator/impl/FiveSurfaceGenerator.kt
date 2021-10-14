@@ -3,7 +3,10 @@ package com.clearkeep.screen.videojanus.surface_generator.impl
 import android.content.Context
 import com.clearkeep.screen.videojanus.surface_generator.SurfacePosition
 
-class FiveSurfaceGenerator(context: Context) : SurfaceGeneratorImpl(context) {
+class FiveSurfaceGenerator(context: Context, width: Int, height: Int) : SurfaceGeneratorImpl(
+    width,
+    height
+) {
     override fun getLocalSurface(): SurfacePosition {
         val heightPx = getHeight()
         val widthPx = getWidth()
