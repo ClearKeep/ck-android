@@ -8,11 +8,13 @@ import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
@@ -24,6 +26,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.whispersystems.libsignal.groups.GroupCipher
+import org.whispersystems.libsignal.groups.SenderKeyName
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -37,7 +41,7 @@ class RoomViewModel @Inject constructor(
     serverRepository: ServerRepository,
     messageRepository: MessageRepository,
     private val peopleRepository: PeopleRepository,
-    private val environment: Environment
+    private val environment: Environment,
 ): BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
     val isLogout = serverRepository.isLogout
 

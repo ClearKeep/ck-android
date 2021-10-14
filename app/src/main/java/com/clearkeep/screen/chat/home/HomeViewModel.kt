@@ -290,7 +290,7 @@ class HomeViewModel @Inject constructor(
         checkValidServerJob?.cancel()
     }
 
-     fun deleteKey(){
+    fun deleteKey() {
          viewModelScope.launch {
             val index= signalIdentityKeyDAO
                  .deleteSignalKeyByOwnerDomain(
@@ -298,13 +298,6 @@ class HomeViewModel @Inject constructor(
                      environment.getServer().serverDomain
                  )
              printlnCK("delete signalIdentityKeyDAO $index")
-             val senderAddress = CKSignalProtocolAddress(
-                 Owner(
-                     currentServer.value!!.serverDomain,
-                     currentServer.value!!.ownerClientId
-                 ), 111
-             )
-
             val senderAddress2 = CKSignalProtocolAddress(
                 Owner(
                     currentServer.value!!.serverDomain,
@@ -319,15 +312,22 @@ class HomeViewModel @Inject constructor(
 
             printlnCK("deleteKey 2 ${currentServer.value!!.serverDomain}   ${test4}")
 
-            chatGroups.value?.forEach {
-                //printlnCK("deleteKey: ${it.groupId}")
-                val groupSender = SenderKeyName(it.groupId.toString(), senderAddress)
-                val groupSender2 = SenderKeyName(it.groupId.toString(), senderAddress2)
-                senderKeyStore.deleteSenderKey(groupSender)
+            chatGroups.value?.forEach { group->
+                val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress2)
                 senderKeyStore.deleteSenderKey(groupSender2)
-                var test2=signalKeyDAO.deleteSignalSenderKey(groupSender.groupId,groupSender.sender.name)
-                var test3=signalKeyDAO.deleteSignalSenderKey(groupSender2.groupId,groupSender2.sender.name)
-                printlnCK("delete signalKey ${test2} $test3")
+                printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
+                group.clientList.forEach {
+                    val senderAddress = CKSignalProtocolAddress(
+                        Owner(
+                            it.domain,
+                            it.userId
+                        ), 111
+                    )
+                    val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
+                    val test2 =
+                        signalKeyDAO.deleteSignalSenderKey(groupSender.groupId, groupSender.sender.name)
+                    printlnCK("chatGroups signalKey ${groupSender.sender.name} ${test2}")
+                }
             }
         }
     }

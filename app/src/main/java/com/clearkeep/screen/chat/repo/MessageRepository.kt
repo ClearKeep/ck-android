@@ -293,7 +293,7 @@ class MessageRepository @Inject constructor(
     }
 
     suspend fun saveNewMessage(message: Message): Message {
-        printlnCK("saveNewMessage: ${message.messageId}, ${message.message}")
+        printlnCK("saveMessage: ${message.messageId}, ${message.message}")
         insertMessage(message)
 
         val groupId = message.groupId
@@ -406,12 +406,21 @@ class MessageRepository @Inject constructor(
             return@withContext ""
         }
 
-        val senderAddress = CKSignalProtocolAddress(sender, 222)
-        val groupSender = SenderKeyName(groupId.toString(), senderAddress)
-        val bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+        val bobGroupCipher:GroupCipher
+        val groupSender: SenderKeyName
+        if (sender.clientId == owner.clientId) {
+            val senderAddress = CKSignalProtocolAddress(sender, 111)
+            groupSender = SenderKeyName(groupId.toString(), senderAddress)
+            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+        } else {
+            val senderAddress = CKSignalProtocolAddress(sender, 222)
+            groupSender = SenderKeyName(groupId.toString(), senderAddress)
+            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+        }
         initSessionUserInGroup(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
+
             /*val record = senderKeyStore.loadSenderKey(groupSender)
 
             if (record.isEmpty) {

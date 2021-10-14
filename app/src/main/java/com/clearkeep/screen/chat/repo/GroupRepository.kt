@@ -544,10 +544,10 @@ class GroupRepository @Inject constructor(
         }
 
         try {
-            printlnCK("convertGroupFromResponse senderKeyID ${response.clientKey.senderKeyId} ${response.groupType} ")
             val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
-            if (response.clientKey.senderKeyId > 0 && senderKeyStore.loadSenderKey(groupSender).isEmpty && response.groupType=="group") {
+            if (response.clientKey.senderKeyId > 0 && senderKeyStore.loadSenderKey(groupSender).isEmpty && response.groupType == "group") {
+                printlnCK("convertGroupFromResponse senderKeyID ${response.clientKey.senderKeyId} ${response.groupType}  owner: ${response.clientKey.clientId == ownerId}")
                 val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
                 val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
                 val senderKeyID = response.clientKey.senderKeyId
@@ -566,8 +566,11 @@ class GroupRepository @Inject constructor(
                     senderKey,
                     identityKeyPair
                 )
+
                 senderKeyStore.storeSenderKey(groupSender, senderKeyRecord)
-                isRegisteredKey = true
+
+                if (response.clientKey.clientId == ownerId)
+                    remarkGroupKeyRegistered(response.groupId)
             }
         } catch (e: Exception) {
             e.printStackTrace()

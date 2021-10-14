@@ -497,7 +497,7 @@ class AuthRepository @Inject constructor(
         try {
             val request = AuthOuterClass.LogoutReq.newBuilder()
                     .setDeviceId(userManager.getUniqueDeviceID())
-                    .setRefreshToken("")
+                    .setRefreshToken(server.refreshToken)
                     .build()
 
             val  authBlockingWithHeader = paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
