@@ -132,7 +132,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else if (res.status == Status.ERROR) {
                     val title = when (res.data?.errorCode) {
-                        1001 -> "Email or Password is incorrect"
+                        1001, 1079 -> "Email or Password is incorrect"
                         1026 -> "Error"
                         1069 -> "Account is Locked"
                         ERROR_CODE_TIMEOUT -> "Network error"
