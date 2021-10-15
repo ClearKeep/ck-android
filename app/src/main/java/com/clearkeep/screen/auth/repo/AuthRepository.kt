@@ -62,34 +62,35 @@ class AuthRepository @Inject constructor(
         email: String,
         domain: String
     ): Resource<AuthOuterClass.RegisterSRPRes> = withContext(Dispatchers.IO) {
-//        val decrypter = DecryptsPBKDF2(password)
-//        val key= KeyHelper.generateIdentityKeyPair()
-//        val preKeys = KeyHelper.generatePreKeys(1, 1)
-//        val preKey = preKeys[0]
-//        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
-//        val transitionID=KeyHelper.generateRegistrationId(false)
-//        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-//            .setDeviceId(111)
-//            .setRegistrationId(transitionID)
-//            .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-//            .setPreKey(ByteString.copyFrom(preKey.serialize()))
-//            .setPreKeyId(preKey.id)
-//            .setSignedPreKeyId(signedPreKey.id)
-//            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
-//            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize())?.let {
-//                toHex(it)
-//            }
-//            )
-//            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-//            .build()
-
         val nativeLib = NativeLib()
 
         val salt = nativeLib.getSalt(email, password)
         val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
         val verificator = nativeLib.getVerificator()
-        val verificatorHex = verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        val verificatorHex =
+            verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+        val decrypter = DecryptsPBKDF2(password)
+        val key = KeyHelper.generateIdentityKeyPair()
+        val preKeys = KeyHelper.generatePreKeys(1, 1)
+        val preKey = preKeys[0]
+        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
+        val transitionID = KeyHelper.generateRegistrationId(false)
+        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+            .setDeviceId(111)
+            .setRegistrationId(transitionID)
+            .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+            .setPreKey(ByteString.copyFrom(preKey.serialize()))
+            .setPreKeyId(preKey.id)
+            .setSignedPreKeyId(signedPreKey.id)
+            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
+            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+                toHex(it)
+            }
+            )
+            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+            .build()
 
         val request = AuthOuterClass.RegisterSRPReq.newBuilder()
             .setWorkspaceDomain(domain)
@@ -98,12 +99,10 @@ class AuthRepository @Inject constructor(
             .setSalt(saltHex)
             .setDisplayName(displayName)
             .setAuthType(0L)
-            .setFirstName("abc")
-            .setLastName("abc")
-////                .setHashPassword(DecryptsPBKDF2.md5(password))
-////                .setClientKeyPeer(setClientKeyPeer)
-////            .setSalt(decrypter.getSaltEncryptValue())
-////                .setIvParameter(toHex(decrypter.getIv()))
+            .setFirstName("")
+            .setLastName("")
+            .setClientKeyPeer(setClientKeyPeer)
+            .setIvParameter(toHex(decrypter.getIv()))
             .build()
         try {
             val response =
@@ -160,40 +159,40 @@ class AuthRepository @Inject constructor(
 
                 val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
 
-                if (true) {
+                if (authResponse.error.isNullOrBlank()) {
                     printlnCK("login successfully")
-//                    val accessToken = response.accessToken
+                    val accessToken = authResponse.accessToken
 
-//                val requireOtp = accessToken.isNullOrBlank()
-//                    if (true) {
+                    val requireOtp = accessToken.isNullOrBlank()
+                    if (requireOtp) {
                         return@withContext Resource.success(
                             LoginResponse(
-                                "",
-                                "",
-                                "",
-                                "",
+                                authResponse.accessToken,
+                                authResponse.preAccessToken,
+                                authResponse.sub,
+                                authResponse.hashKey,
                                 0,
-                                ""
+                                authResponse.error
                             )
                         )
-//                    } else {
-//                        val profileResponse = onLoginSuccess(domain, password, response)
-//                        if (profileResponse.status == Status.ERROR) {
-//                            return@withContext Resource.error(profileResponse.message ?: "", null)
-//                        }
-//                        return@withContext Resource.success(
-//                            LoginResponse(
-//                                "",
-//                                "",
-//                                "",
-//                                "",
-//                                0,
-//                                ""
-//                            )
-//                        )
-//                    }
+                    } else {
+                        val profileResponse = onLoginSuccess(domain, password, authResponse, "")
+                        if (profileResponse.status == Status.ERROR) {
+                            return@withContext Resource.error(profileResponse.message ?: "", null)
+                        }
+                        return@withContext Resource.success(
+                            LoginResponse(
+                                authResponse.accessToken,
+                                authResponse.requireAction,
+                                authResponse.sub,
+                                authResponse.hashKey,
+                                0,
+                                authResponse.error
+                            )
+                        )
+                    }
                 } else {
-//                    printlnCK("login failed: ${response.error}")
+                    printlnCK("login failed: ${authResponse.error}")
                     return@withContext Resource.error("", null)
                 }
             } catch (e: StatusRuntimeException) {
@@ -615,29 +614,6 @@ class AuthRepository @Inject constructor(
             printlnCK("mfaResendOtp: $exception")
             return@withContext Resource.error("", 0 to exception.toString())
         }
-    }
-
-    private suspend fun loginSrp(username: String, rawPassword: String) = withContext(Dispatchers.IO) {
-//        val nativeLib = NativeLib()
-//
-//        val a = nativeLib.getA(username, rawPassword).toUpperCase(Locale.ROOT)
-//        printlnCK("Test call get A $a")
-//        val newSaltAndB = nativeLib.testVerifyGetSalt(username, verificator, salt, a).toUpperCase(Locale.ROOT)
-//        printlnCK("Test call new salt and b $newSaltAndB")
-//        val newSalt = newSaltAndB.split(",")[0]
-//        val b = newSaltAndB.split(",")[1]
-//        printlnCK("Test call verify get new salt $newSalt")
-//        printlnCK("Test call verify get B $b")
-//
-//        val m1 = nativeLib.getM1(salt, b).toUpperCase(Locale.ROOT)
-//        printlnCK("Test call get M1 $m1")
-//        val m2 = nativeLib.testVerifyGetM2(m1)
-//        val kFromServer = nativeLib.testVerifyGetK(m1)
-//        println("Test call verify get M2 $m2")
-//        println("Test call verify get K $kFromServer")
-//        val kFromClient = nativeLib.getK(m2)
-//        println("Test call client has K $kFromClient")
-//        println("Test call correct? ${kFromClient == kFromServer}")
     }
 
     private suspend fun onLoginSuccess(
