@@ -347,7 +347,11 @@ fun RoomScreen(
             }
         )
     }
-    if (getGroupResponse.value?.status == Status.ERROR || createGroupResponse.value?.status == Status.ERROR || inviteToGroupResponse.value?.status == Status.ERROR || (sendMessageResponse.value?.status == Status.ERROR && sendMessageResponse.value?.errorCode == ERROR_CODE_TIMEOUT)) {
+    if ((getGroupResponse.value?.status == Status.ERROR && getGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (createGroupResponse.value?.status == Status.ERROR && createGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (inviteToGroupResponse.value?.status == Status.ERROR && inviteToGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (sendMessageResponse.value?.status == Status.ERROR && sendMessageResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+    ) {
         CKAlertDialog(
             title = stringResource(R.string.network_error_dialog_title),
             text = stringResource(R.string.network_error_dialog_text),
