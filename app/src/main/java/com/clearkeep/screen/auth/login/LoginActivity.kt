@@ -416,7 +416,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun onSignInResult(navController: NavController, res: Resource<AuthOuterClass.AuthRes>?) {
+    fun onSignInResult(navController: NavController, res: Resource<AuthOuterClass.SocialLoginRes>?) {
         //Third party result
         when (res?.status) {
             Status.SUCCESS -> {
