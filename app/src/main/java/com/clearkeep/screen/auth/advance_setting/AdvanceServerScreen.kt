@@ -54,7 +54,6 @@ fun CustomServerScreen(
     val isLoading = loginViewModel.isLoading.observeAsState()
 
     BackHandler {
-        printlnCK("Advanced server settings back press")
         loginViewModel.isCustomServer = false
         loginViewModel.customDomain = ""
         loginViewModel.clearLoading()
