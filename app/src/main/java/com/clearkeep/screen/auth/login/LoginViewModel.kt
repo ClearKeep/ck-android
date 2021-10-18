@@ -10,7 +10,6 @@ import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.WorkSpaceRepository
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -73,7 +72,7 @@ class LoginViewModel @Inject constructor(
     private var userId: String = ""
     private var hashKey: String = ""
 
-    private var preAccessToken: String = ""
+    private var resetPincodeToken: String = ""
 
     private val _isAccountLocked = MutableLiveData<Boolean>()
     val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
@@ -154,24 +153,24 @@ class LoginViewModel @Inject constructor(
             })
     }
 
-    suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.AuthRes> {
+    suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = authRepo.loginByGoogle(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
-                preAccessToken = it.data?.preAccessToken ?: ""
-                userId = it.data?.sub ?: ""
+                resetPincodeToken = it.data?.resetPincodeToken ?: ""
+                userId = it.data?.userName ?: ""
             }
         }
         _isLoading.value = false
         return result
     }
 
-    suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.AuthRes> {
+    suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = authRepo.loginByFacebook(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
-                preAccessToken = it.data?.preAccessToken ?: ""
-                userId = it.data?.sub ?: ""
+                resetPincodeToken = it.data?.resetPincodeToken ?: ""
+                userId = it.data?.userName ?: ""
             }
         }
         _isLoading.value = false
@@ -192,12 +191,12 @@ class LoginViewModel @Inject constructor(
         request.executeAsync()
     }
 
-    suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.AuthRes>{
+    suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.SocialLoginRes>{
         _isLoading.value = true
         val result = authRepo.loginByMicrosoft(accessToken, getDomain()).also {
             if (it.status == Status.SUCCESS) {
-                preAccessToken = it.data?.preAccessToken ?: ""
-                userId = it.data?.sub ?: ""
+                resetPincodeToken = it.data?.resetPincodeToken ?: ""
+                userId = it.data?.userName ?: ""
             }
         }
         _isLoading.value = false
@@ -258,9 +257,9 @@ class LoginViewModel @Inject constructor(
             _isLoading.value = true
             val pin = _confirmSecurityPhrase.value?.trim() ?: ""
             registerSocialPinResponse.value = if (isResetPincode) {
-                authRepo.resetSocialPin(getDomain(), pin, userId, preAccessToken)
+                authRepo.resetSocialPin(getDomain(), pin, userId, resetPincodeToken)
             } else {
-                authRepo.registerSocialPin(getDomain(), pin, userId, preAccessToken)
+                authRepo.registerSocialPin(getDomain(), pin, userId)
             }
             _isLoading.value = false
         }
@@ -270,7 +269,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val pin = _securityPhrase.value?.trim() ?: ""
-            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId, preAccessToken)
+            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId)
             _isLoading.value = false
         }
     }
