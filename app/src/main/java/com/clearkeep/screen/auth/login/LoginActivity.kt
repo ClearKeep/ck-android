@@ -293,7 +293,6 @@ class LoginActivity : AppCompatActivity() {
                 dismissTitle = it.dismissButtonText
             )
         }
-
     }
 
     private fun onLoginSuccess() {
