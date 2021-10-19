@@ -93,6 +93,7 @@ class MessageRepository @Inject constructor(
             responses.lstMessageList
                 .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
                 .forEachIndexed { _, data ->
+                    printlnCK("updateMessageFromAPI!")
                     listMessage.add(parseMessageResponse(data, owner))
                 }
             if (listMessage.isNotEmpty()) {
@@ -384,6 +385,7 @@ class MessageRepository @Inject constructor(
         sender: Owner, message: ByteString,
         signalProtocolStore: InMemorySignalProtocolStore,
     ): String = withContext(Dispatchers.IO) {
+        printlnCK("decryptPeerMessage!")
         if (message.isEmpty) {
             return@withContext ""
         }
