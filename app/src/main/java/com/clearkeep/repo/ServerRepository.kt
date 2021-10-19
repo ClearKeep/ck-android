@@ -1,24 +1,12 @@
 package com.clearkeep.repo
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
-import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.dao.ServerDAO
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.dynamicapi.ParamAPI
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
-import io.grpc.StatusRuntimeException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import workspace.WorkspaceOuterClass
-import java.lang.Exception
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,5 +58,9 @@ class ServerRepository @Inject constructor(
 
     suspend fun updateServerProfile(domain: String, profile: Profile) {
         serverDAO.updateDefaultServerProfile(domain, profile)
+    }
+
+    suspend fun getOwnerClientIds(): List<String> {
+        return getServers().map { it.ownerClientId }
     }
 }
