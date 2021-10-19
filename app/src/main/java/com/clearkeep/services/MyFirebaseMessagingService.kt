@@ -62,7 +62,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        printlnCK("onMessageReceived: ${remoteMessage.data}")
+        printlnCK("MyFirebaseMessagingService onMessageReceived: ${remoteMessage.data}")
         handleNotification(remoteMessage)
     }
 
