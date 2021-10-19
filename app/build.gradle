@@ -29,7 +29,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 57
-        versionName "1.57-ui"
+        versionName "1.58-ui"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
