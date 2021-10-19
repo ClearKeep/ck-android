@@ -378,6 +378,8 @@ class LoginActivity : AppCompatActivity() {
             }
         } catch (e: ApiException) {
             e.printStackTrace()
+            //unknown error
+            if (e.statusCode == 12501) return
             val (title, text) = if (e.statusCode == NETWORK_ERROR) {
                 "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
             } else {
