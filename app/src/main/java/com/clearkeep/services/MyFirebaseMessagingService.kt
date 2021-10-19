@@ -169,17 +169,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 messageContent,
                 Owner(clientDomain, clientId)
             )
-            val userPreference = userPreferenceRepository.getUserPreference(clientDomain, clientId)
-            val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
-            group?.data?.let {
-                val avatar = peopleRepository.getFriendFromID(fromClientID)?.avatar
-                showMessagingStyleNotification(
-                    context = applicationContext,
-                    chatGroup = group.data,
-                    decryptedMessage,
-                    userPreference ?: UserPreference.getDefaultUserPreference("", "", false),
-                    avatar
-                )
+            val isShowNotification = serverRepository.getOwnerClientIds().contains(fromClientID)
+            if (!isShowNotification) {
+                val userPreference =
+                    userPreferenceRepository.getUserPreference(clientDomain, clientId)
+                val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
+                group?.data?.let {
+                    val avatar = peopleRepository.getFriendFromID(fromClientID)?.avatar
+                    showMessagingStyleNotification(
+                        context = applicationContext,
+                        chatGroup = group.data,
+                        decryptedMessage,
+                        userPreference ?: UserPreference.getDefaultUserPreference("", "", false),
+                        avatar
+                    )
+                }
             }
         } catch (e: Exception) {
             printlnCK("onMessageReceived: error -> $e")

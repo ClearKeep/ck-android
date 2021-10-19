@@ -151,9 +151,19 @@ class ChatService : Service(),
                 value.message,
                 Owner(domain, value.clientId)
             )
-            val roomId = chatRepository.getJoiningRoomId()
-            val groupId = value.groupId
-            handleShowNotification(joiningRoomId = roomId, groupId = groupId, res, domain, value.clientId)
+            val isShowNotification =
+                serverRepository.getOwnerClientIds().contains(value.fromClientId)
+            if (!isShowNotification) {
+                val roomId = chatRepository.getJoiningRoomId()
+                val groupId = value.groupId
+                handleShowNotification(
+                    joiningRoomId = roomId,
+                    groupId = groupId,
+                    res,
+                    domain,
+                    value.clientId
+                )
+            }
         }
     }
 
