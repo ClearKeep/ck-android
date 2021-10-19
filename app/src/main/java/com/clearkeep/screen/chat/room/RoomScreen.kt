@@ -244,11 +244,12 @@ fun RoomScreen(
                         if (isNote.value == true) {
                             roomViewModel.sendNote(context)
                         } else if (isGroup == true) {
+                            val isJoined=group.isJoined
                             roomViewModel.sendMessageToGroup(
                                 context,
                                 group.groupId,
                                 validMessage,
-                                group.isJoined
+                                isJoined
                             )
                         } else {
                             val friend = group?.clientList?.firstOrNull { client ->

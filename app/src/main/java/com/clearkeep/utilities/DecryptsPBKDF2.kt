@@ -31,7 +31,6 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     init {
         dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
         factory= SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-
     }
 
     @Throws(Exception::class)
@@ -55,7 +54,6 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         val tmp = factory.generateSecret(spec)
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.ENCRYPT_MODE, key)
-        val params: AlgorithmParameters? = dcipher?.parameters
         iv = fromHex(oldIv)
         printlnCK("encrypt: iv ${iv}")
         printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")

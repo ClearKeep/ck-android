@@ -31,7 +31,6 @@ class ProfileRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
     private val userKeyRepository: UserKeyRepository,
-
     private val userManager: AppStorage
 ) {
     suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {

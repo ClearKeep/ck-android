@@ -50,9 +50,22 @@ class InMemorySenderKeyStore(
         }
     }
 
-    suspend fun deleteSenderKey(senderKeyName: SenderKeyName){
-       var test= signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId,senderKeyName.sender.name)
-        printlnCK("deleteSenderKey $test")
+    fun hasSenderKey(senderKeyName: SenderKeyName): Boolean {
+        try {
+            val senderKey = signalKeyDAO.getSignalSenderKey(
+                senderKeyName.groupId,
+                senderKeyName.sender.name,
+                senderKeyName.sender.deviceId
+            )
+            if (senderKey.senderKey.isEmpty()) return false
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
 
+    suspend fun deleteSenderKey(senderKeyName: SenderKeyName){
+       val test= signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId,senderKeyName.sender.name)
+        printlnCK("deleteSenderKey $test")
     }
 }
