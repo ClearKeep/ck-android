@@ -116,18 +116,18 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             RemoteViews(context.packageName, R.layout.notification_message_view_expand)
         val messageContent =
             if (preference.showNotificationPreview) message.message else "You have new message"
-        val messageFrom = "New message from ${sender}"
+        val messageFrom = "New message from $sender"
         smallLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
-            setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
+            setViewVisibility(R.id.imageButton, View.VISIBLE)
         }
         headsUpLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
             if (groupSender.isNotBlank()) setViewVisibility(R.id.tvGroupSenderName, View.VISIBLE)
             setTextViewText(R.id.tvGroupSenderName, "$groupSender:")
-            setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
+            setViewVisibility(R.id.imageButton, View.VISIBLE)
         }
 
         val notificationManager =
@@ -162,20 +162,18 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
             .build()
 
-        if (preference.showNotificationPreview) {
-            val target = NotificationTarget(
-                context,
-                R.id.imageButton,
-                headsUpLayout,
-                notification,
-                notificationId
-            )
-            Glide.with(context.applicationContext)
-                .asBitmap()
-                .circleCrop()
-                .load(avatar)
-                .into(target)
-        }
+        val target = NotificationTarget(
+            context,
+            R.id.imageButton,
+            headsUpLayout,
+            notification,
+            notificationId
+        )
+        Glide.with(context.applicationContext)
+            .asBitmap()
+            .circleCrop()
+            .load(avatar)
+            .into(target)
 
         notificationManager.notify(notificationId, notification)
     }
@@ -220,8 +218,7 @@ fun showMessageNotificationToSystemBar(
                         }
                     }
                 } else "You have new message"
-            val username =
-                if (userPreference.showNotificationPreview) people?.userName else ""
+            val username = people?.userName
             messagingStyle.addMessage(
                 NotificationCompat.MessagingStyle.Message(
                     messageContent,
