@@ -96,6 +96,10 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return GroupGrpc.newBlockingStub(managedChannel)
+            .withCallCredentials(CallCredentials(
+            server!!.accessKey,
+            server!!.hashKey
+        ))
     }
 
     override fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub {

@@ -3,6 +3,8 @@ package com.clearkeep.screen.chat.repo
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
+import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
@@ -10,12 +12,10 @@ import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.*
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
-import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
-import com.clearkeep.utilities.getCurrentDateTime
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
 import group.GroupGrpc
 import group.GroupOuterClass
 import io.grpc.StatusRuntimeException
@@ -46,7 +46,9 @@ class GroupRepository @Inject constructor(
     private val serverRepository: ServerRepository,
 
     private val environment: Environment,
-    private val senderKeyStore: InMemorySenderKeyStore
+    private val senderKeyStore: InMemorySenderKeyStore,
+    private val userKeyRepository: UserKeyRepository,
+    private val signalIdentityKeyDAO: SignalIdentityKeyDAO
 ) {
     fun getAllRooms() = groupDAO.getRoomsAsState()
 
@@ -168,8 +170,13 @@ class GroupRepository @Inject constructor(
             printlnCK("inviteToGroupFromAPIs: ${it.userName}")
             inviteToGroupFromAPI(it, groupId, owner)
         }
-        val grpc = dynamicAPIProvider.provideGroupBlockingStub()
-        val group = getGroupFromAPI(groupId, grpc, owner)
+        val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
+        if (server == null) {
+            printlnCK("fetchNewGroup: can not find server")
+        }
+        val paramAPI = ParamAPI(server!!.serverDomain, server.accessKey, server.hashKey)
+        val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
+        val group = getGroupFromAPI(groupId, groupGrpc, owner)
         group.data?.let { insertGroup(it) }
         return@withContext group
     }
@@ -316,6 +323,13 @@ class GroupRepository @Inject constructor(
     ): Resource<ChatGroup> = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
         try {
+            val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
+            if (server == null) {
+                printlnCK("fetchNewGroup: can not find server")
+                return@withContext Resource.error("", null, 1001)
+            }
+            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+            val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
                 .setGroupId(groupId)
                 .build()
@@ -325,6 +339,7 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupFromAPI: ${group.clientList}")
             return@withContext Resource.success(group)
         } catch (e: StatusRuntimeException) {
+            printlnCK(e.message.toString())
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -340,6 +355,10 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupFromAPI error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
+    }
+
+    suspend fun getGroupByGroupId(groupId: Long): ChatGroup ? {
+        return groupDAO.getGroupById(groupId, getDomain(), getClientId())
     }
 
     @Throws(Exception::class)
@@ -524,7 +543,6 @@ class GroupRepository @Inject constructor(
     ): ChatGroup {
         val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
-        printlnCK("convertGroupFromResponse isRegisteredKey: ${oldGroup?.isJoined} ")
         var isRegisteredKey = oldGroup?.isJoined ?: false
         val lastMessageSyncTime =
             oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
@@ -546,12 +564,21 @@ class GroupRepository @Inject constructor(
         try {
             val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
-            if (response.clientKey.senderKeyId > 0 && senderKeyStore.loadSenderKey(groupSender).isEmpty && response.groupType == "group") {
+            if (response.clientKey.senderKeyId > 0  && response.groupType == "group" && !isRegisteredKey ) {
                 printlnCK("convertGroupFromResponse senderKeyID ${response.clientKey.senderKeyId} ${response.groupType}  owner: ${response.clientKey.clientId == ownerId}")
-                val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
-                val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
                 val senderKeyID = response.clientKey.senderKeyId
                 val senderKey = response.clientKey.senderKey.toByteArray()
+                val privateKeyEncrypt=response.clientKey.privateKey
+                val userKey = userKeyRepository.get(serverDomain, ownerId)
+                val identityKey=signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
+                val privateKey = identityKey?.identityKeyPair?.privateKey
+                val test2=toHex(privateKey?.serialize()!!)
+                printlnCK("DecryptsPBKDF2 : $test2  $privateKeyEncrypt salt: ${fromHex(userKey.salt)}  iv:${fromHex(userKey.iv)}")
+                /*val privateKeyDecrypt = DecryptsPBKDF2("ck").decrypt(
+                    fromHex(privateKeyEncrypt),
+                    fromHex(userKey.salt),
+                    fromHex(userKey.iv)
+                )*/
                 val eCPublicKey: ECPublicKey =
                     Curve.decodePoint(response.clientKey.publicKey.toByteArray(), 0)
                 val eCPrivateKey: ECPrivateKey =
@@ -568,12 +595,12 @@ class GroupRepository @Inject constructor(
                 )
 
                 senderKeyStore.storeSenderKey(groupSender, senderKeyRecord)
+                isRegisteredKey = true
 
-                if (response.clientKey.clientId == ownerId)
-                    remarkGroupKeyRegistered(response.groupId)
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            printlnCK("${e.printStackTrace()}")
         }
 
         return ChatGroup(

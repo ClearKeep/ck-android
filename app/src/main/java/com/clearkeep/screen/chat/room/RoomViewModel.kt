@@ -338,17 +338,32 @@ class RoomViewModel @Inject constructor(
         isRegisteredGroup: Boolean,
         cachedMessageId: Int = 0
     ) {
-        if (!isRegisteredGroup) {
-            val result =
-                signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
-            if (result) {
-                _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                sendMessageResponse.value = chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
+         val group = groupRepository.getGroupByGroupId(groupId)
+        group?.let {
+            if (!group.isJoined) {
+                val result =
+                    signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
+                if (result) {
+                    _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
+                    sendMessageResponse.value = chatRepository.sendMessageToGroup(
+                        clientId,
+                        domain,
+                        groupId,
+                        message,
+                        cachedMessageId
+                    )
+                } else {
+                    sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                }
             } else {
-                sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                sendMessageResponse.value = chatRepository.sendMessageToGroup(
+                    clientId,
+                    domain,
+                    groupId,
+                    message,
+                    cachedMessageId
+                )
             }
-        } else {
-            sendMessageResponse.value = chatRepository.sendMessageToGroup(clientId, domain, groupId, message, cachedMessageId)
         }
     }
 
