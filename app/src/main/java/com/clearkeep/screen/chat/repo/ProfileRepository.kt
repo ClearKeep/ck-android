@@ -4,14 +4,13 @@ import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
+import com.clearkeep.dragonsrp.NativeLib
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.utilities.AppStorage
-import com.clearkeep.utilities.DecryptsPBKDF2
+import com.clearkeep.utilities.*
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -333,27 +332,71 @@ class ProfileRepository @Inject constructor(
 
     suspend fun changePassword(owner: Owner, email: String, oldPassword: String, newPassword: String): Resource<String> =
         withContext(Dispatchers.IO) {
-            val userKey = userKeyRepository.get(owner.domain, owner.clientId)
-            val decrypter = DecryptsPBKDF2(newPassword)
-            printlnCK("changePassword: privateKey ${signalKeyRepository.getSignedKey().keyPair.privateKey.serialize()}")
-            val decryptResult = decrypter.encrypt(
-                signalKeyRepository.getSignedKey().keyPair.privateKey.serialize(),
-                userKey.salt,
-                userKey.iv
-            )?.let {
-                DecryptsPBKDF2.toHex(
-                    it
-                )
-            }
-            printlnCK("changePassword: privateKey ${DecryptsPBKDF2.toHex(signalKeyRepository.getSignedKey().keyPair.privateKey.serialize())}  decryptResult: $decryptResult")
-
             try {
                 val server = serverRepository.getServerByOwner(owner)
                     ?: return@withContext Resource.error("", null)
-                val request = UserOuterClass.ChangePasswordRequest.newBuilder()
-                    .setOldHashPassword(DecryptsPBKDF2.md5(oldPassword))
-                    .setNewHashPassword(DecryptsPBKDF2.md5(newPassword))
-                    .setIdentityKeyEncrypted(decryptResult)
+
+                val nativeLib = NativeLib()
+                val a = nativeLib.getA(email, oldPassword)
+
+                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                val request = UserOuterClass.RequestChangePasswordReq.newBuilder()
+                    .setClientPublic(aHex)
+                    .build()
+                val response = apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                ).requestChangePassword(request)
+
+                val salt = response.salt
+                val b = response.publicChallengeB
+
+                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
+                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                val newPasswordNativeLib = NativeLib()
+
+                val newSalt = newPasswordNativeLib.getSalt(email, newPassword)
+                val newSaltHex = newSalt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                val verificator = newPasswordNativeLib.getVerificator()
+                val verificatorHex =
+                    verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                val decrypter = DecryptsPBKDF2(newPassword)
+                val key = KeyHelper.generateIdentityKeyPair()
+                val preKeys = KeyHelper.generatePreKeys(1, 1)
+                val preKey = preKeys[0]
+                val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + owner.domain).hashCode())
+                val transitionID = KeyHelper.generateRegistrationId(false)
+
+                //Generate client key peer for new password
+                val setClientKeyPeer = UserOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+                    .setDeviceId(111)
+                    .setRegistrationId(transitionID)
+                    .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+                    .setPreKey(ByteString.copyFrom(preKey.serialize()))
+                    .setPreKeyId(preKey.id)
+                    .setSignedPreKeyId(signedPreKey.id)
+                    .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
+                    .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize(), newSaltHex)?.let {
+                        toHex(it)
+                    }
+                    )
+                    .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+                    .build()
+
+                val changePasswordRequest = UserOuterClass.ChangePasswordRequest.newBuilder()
+                    .setClientPublic(aHex)
+                    .setClientSessionKeyProof(mHex)
+                    .setHashPassword(verificatorHex)
+                    .setSalt(newSaltHex)
+                    .setIvParameter(toHex(decrypter.getIv()))
+                    .setClientKeyPeer(setClientKeyPeer)
                     .build()
                 val stub = apiProvider.provideUserBlockingStub(
                     ParamAPI(
@@ -362,15 +405,15 @@ class ProfileRepository @Inject constructor(
                         server.hashKey
                     )
                 )
-                val response = stub.changePassword(request)
-                return@withContext if (response.error.isNullOrBlank()) Resource.success(null) else Resource.error(
+                val changePasswordResponse = stub.changePassword(changePasswordRequest)
+                return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(null) else Resource.error(
                     "",
                     null
                 )
             } catch (exception: StatusRuntimeException) {
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
-                    1001 -> {
+                    1001, 1079 -> {
                         "The password is incorrect. Try again"
                     }
                     1000, 1077 -> {
