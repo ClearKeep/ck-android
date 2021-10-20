@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
     private val profileRepository: ProfileRepository,
+    private val authRepository: AuthRepository,
 ): ViewModel() {
     private val _oldPassword = MutableLiveData<String>()
     private val _oldPasswordError = MutableLiveData<String>()
@@ -31,7 +33,7 @@ class ChangePasswordViewModel @Inject constructor(
     private val _newPasswordConfirmError = MutableLiveData<String>()
     val newPasswordConfirmError: LiveData<String> get() = _newPasswordConfirmError
 
-    val changePasswordResponse = MutableLiveData<Resource<String>>()
+    val changePasswordResponse = MutableLiveData<Resource<Any>>()
 
     private val _isResetPassword = MutableLiveData<Boolean>()
     val isResetPassword : LiveData<Boolean> get() = _isResetPassword
@@ -84,7 +86,7 @@ class ChangePasswordViewModel @Inject constructor(
             }.toMap()
 
             preAccessToken = data["pre_access_token"] ?: ""
-            userId = data["user_id"] ?: ""
+            userId = data["user_name"] ?: ""
             serverDomain = data["server_domain"] ?: ""
         }
     }
@@ -112,10 +114,10 @@ class ChangePasswordViewModel @Inject constructor(
 
     private fun resetPassword() {
         val newPassword = _newPassword.value ?: ""
-        changePasswordResponse.value = Resource.success(null)
 
         viewModelScope.launch {
             printlnCK("ChangePasswordViewModel preAccess $preAccessToken userId $userId domain $serverDomain")
+            changePasswordResponse.value = authRepository.resetPassword(preAccessToken, userId, serverDomain, newPassword)
         }
     }
 
@@ -168,6 +170,6 @@ class ChangePasswordViewModel @Inject constructor(
     }
 
     companion object {
-        val DEEP_LINK_URI_PREFIX = "clearkeep://resetpassword([?]?)".toRegex()
+        val DEEP_LINK_URI_PREFIX = "http://www.clearkeep.com/resetpassword([?]?)".toRegex()
     }
 }
