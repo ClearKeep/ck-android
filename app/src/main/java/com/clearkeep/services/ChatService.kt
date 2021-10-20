@@ -194,7 +194,6 @@ class ChatService : Service(),
                 "member-removal", "member-leave" -> {
                     groupRepository.getGroupFromAPIById(value.refGroupId,domain,value.clientId)
                     groupRepository.removeGroupOnWorkSpace(value.refGroupId,domain,value.refClientId)
-
                     val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                     updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
                     sendBroadcast(updateGroupIntent)

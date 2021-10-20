@@ -31,7 +31,8 @@ class ProfileRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
     private val userKeyRepository: UserKeyRepository,
-    private val userManager: AppStorage
+    private val userManager: AppStorage,
+    private val signalKeyRepository: SignalKeyRepository
 ) {
     suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {
         printlnCK("registerToken: token = $token")
@@ -333,17 +334,10 @@ class ProfileRepository @Inject constructor(
     suspend fun changePassword(owner: Owner, email: String, oldPassword: String, newPassword: String): Resource<String> =
         withContext(Dispatchers.IO) {
             val userKey = userKeyRepository.get(owner.domain, owner.clientId)
-
             val decrypter = DecryptsPBKDF2(newPassword)
-            val key= KeyHelper.generateIdentityKeyPair()
-
-            val preKeys = KeyHelper.generatePreKeys(1, 1)
-            val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+owner.domain).hashCode())
-            val transitionID=KeyHelper.generateRegistrationId(false)
-
+            printlnCK("changePassword: privateKey ${signalKeyRepository.getSignedKey().keyPair.privateKey.serialize()}")
             val decryptResult = decrypter.encrypt(
-                key.privateKey.serialize(),
+                signalKeyRepository.getSignedKey().keyPair.privateKey.serialize(),
                 userKey.salt,
                 userKey.iv
             )?.let {
@@ -351,22 +345,7 @@ class ProfileRepository @Inject constructor(
                     it
                 )
             }
-
-             AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(111)
-                .setRegistrationId(transitionID)
-                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-                .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                .setPreKeyId(preKey.id)
-                .setSignedPreKeyId(signedPreKey.id)
-                .setSignedPreKey(
-                    ByteString.copyFrom(signedPreKey.serialize())
-                )
-                .setIdentityKeyEncrypted(
-                    decryptResult
-                )
-                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
+            printlnCK("changePassword: privateKey ${DecryptsPBKDF2.toHex(signalKeyRepository.getSignedKey().keyPair.privateKey.serialize())}  decryptResult: $decryptResult")
 
             try {
                 val server = serverRepository.getServerByOwner(owner)

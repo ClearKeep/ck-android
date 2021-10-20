@@ -242,12 +242,15 @@ class PeopleRepository @Inject constructor(
 
      suspend fun getListClientStatus(list: List<User>):List<User>? = withContext(Dispatchers.IO){
         try {
-            printlnCK("getListClientStatus")
+            printlnCK("getListClientStatus: ${list.size}")
 
             val listMemberInfoRequest= list.map {
                 UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId).setWorkspaceDomain(it.domain).build()
             }
-            val request = UserOuterClass.GetClientsStatusRequest.newBuilder().addAllLstClient(listMemberInfoRequest).setShouldGetProfile(false)
+            val request = UserOuterClass.GetClientsStatusRequest
+                .newBuilder()
+                .addAllLstClient(listMemberInfoRequest)
+                .setShouldGetProfile(true)
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().getClientsStatus(request)
             list.map { user ->
@@ -255,7 +258,8 @@ class PeopleRepository @Inject constructor(
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
-                // user.avatar = newUser?.avatar
+                user.avatar = newUser?.avatar
+                printlnCK("avata: ${user.avatar}")
             }
             return@withContext list
         } catch (e: StatusRuntimeException) {
