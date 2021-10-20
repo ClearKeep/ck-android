@@ -237,12 +237,32 @@ class ProfileRepository @Inject constructor(
     suspend fun mfaValidatePassword(owner: Owner, password: String) : Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", "" to "")
-            val request = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
-                .setPassword(DecryptsPBKDF2.md5(password))
+
+            val nativeLib = NativeLib()
+            val a = nativeLib.getA(server.profile.email ?: "", password)
+            val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            val request = UserOuterClass.MfaAuthChallengeRequest.newBuilder()
+                .setClientPublic(aHex)
+                .build()
+
+            val response =
+                apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+                    .mfaAuthChallenge(request)
+
+            val salt = response.salt
+            val b = response.publicChallengeB
+
+            val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
+            val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            val validateRequest = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
+                .setClientPublic(aHex)
+                .setClientSessionKeyProof(mHex)
                 .build()
             val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
-            val response = stub.mfaValidatePassword(request)
-            return@withContext if (response.success) Resource.success("" to "") else Resource.error("", "" to response.error.toString())
+            val validateResponse = stub.mfaValidatePassword(validateRequest)
+            return@withContext if (validateResponse.success) Resource.success("" to "") else Resource.error("", "" to response.toString())
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaValidatePassword: $exception")
 
