@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.change_pass_word
 
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -23,7 +24,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
+import com.clearkeep.screen.chat.home.MainActivity
 import com.clearkeep.screen.chat.room.RoomActivity
+import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
@@ -152,11 +155,21 @@ fun ChangePasswordScreen(
                     text = "Please login again with new password!",
                     onDismissButtonClick = {
                         if (isResetPassword.value == true) {
-                            val intent = Intent(context, RoomActivity::class.java)
+                            val intent = Intent(context, SplashActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)
+                            (context as AppCompatActivity).finish()
                         }
 
                         onBackPress()
+                    }
+                )
+            } else if (changePasswordResponse.value?.status == Status.ERROR) {
+                CKAlertDialog(
+                    title = stringResource(R.string.error),
+                    text = changePasswordResponse.value?.message ?: "",
+                    onDismissButtonClick = {
+                        viewModel.changePasswordResponse.value = null
                     }
                 )
             }
