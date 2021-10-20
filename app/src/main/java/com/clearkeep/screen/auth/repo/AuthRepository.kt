@@ -662,7 +662,7 @@ class AuthRepository @Inject constructor(
         try {
             val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
                 .setOtpCode(otp)
-                .setOtpHash(otpHash)
+                .setPreAccessToken(otpHash)
                 .setUserId(userId)
                 .build()
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
@@ -704,13 +704,13 @@ class AuthRepository @Inject constructor(
     suspend fun mfaResendOtp(domain: String, otpHash: String, userId: String) : Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
-                .setOtpHash(otpHash)
+                .setPreAccessToken(otpHash)
                 .setUserId(userId)
                 .build()
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.resendOtp(request)
-            printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.otpHash} success? ${response.success}")
-            return@withContext if (response.otpHash.isNotBlank()) Resource.success(0 to response.otpHash) else Resource.error("", 0 to "")
+            printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.preAccessToken} success? ${response.success}")
+            return@withContext if (response.preAccessToken.isNotBlank()) Resource.success(0 to response.preAccessToken) else Resource.error("", 0 to "")
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
