@@ -16,7 +16,7 @@ class InMemorySenderKeyStore(
     private val store: MutableMap<SenderKeyName, SenderKeyRecord> = HashMap()
 
     override fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) {
-        printlnCK("insert signalKeyDAO")
+        printlnCK("insert signalKeyDAO: ${senderKeyName}")
         store[senderKeyName] = record
         signalKeyDAO.insert(SignalSenderKey(
             senderKeyName.groupId + senderKeyName.sender.name,

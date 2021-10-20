@@ -93,8 +93,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             roomRepository.fetchGroups()
             isRefreshing.postValue(false)
-
         }
+        getStatusUserInDirectGroup()
     }
 
     val chatGroups = liveData<List<ChatGroup>> {
@@ -134,7 +134,7 @@ class HomeViewModel @Inject constructor(
         }
         result.addSource(selectingJoinServer) { _ ->
             val server = environment.getServer()
-            getStatusUserInDirectGroup()
+            //getStatusUserInDirectGroup()
             result.value = groups.value?.filter {
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
@@ -145,35 +145,37 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun getStatusUserInDirectGroup() {
-//        viewModelScope.launch {
-//            groups.asFlow().collect {
-//                val listUserRequest = arrayListOf<User>()
-//                it.forEach { group ->
-//                    if (!group.isGroup()) {
-//                        val user = group.clientList.firstOrNull { client ->
-//                            client.userId != getClientIdOfActiveServer()
-//                        }
-//                        if (user != null) {
-//                            listUserRequest.add(user)
-//                        }
-//                    }
-//                }
-//                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
-//                _listUserStatus.postValue(listClientStatus)
-//                listClientStatus?.forEach {
-//                    currentServer.value?.serverDomain?.let { it1 ->
-//                        currentServer.value?.ownerClientId?.let { it2 ->
-//                            Owner(it1, it2)
-//                        }
-//                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
-//                }
-//            }
-//        }
-    }
+        viewModelScope.launch {
+            val listUserRequest = arrayListOf<User>()
+            roomRepository.getAllPeerGroupByDomain(owner = Owner(getDomainOfActiveServer(),getClientIdOfActiveServer()))
+                .forEach { group ->
+                    if (!group.isGroup()) {
+                        val user = group.clientList.firstOrNull { client ->
+                            client.userId != getClientIdOfActiveServer()
+                        }
+                        if (user != null) {
+                            listUserRequest.add(user)
+                        }
+                    }
+                }
+                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+                _listUserStatus.postValue(listClientStatus)
+                listClientStatus?.forEach {
+                    currentServer.value?.serverDomain?.let { it1 ->
+                        currentServer.value?.ownerClientId?.let { it2 ->
+                            Owner(it1, it2)
+                        }
+                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
+                }
+                delay(60*1000)
+                getStatusUserInDirectGroup()
+            }
+
+        }
 
     private fun sendPing() {
         viewModelScope.launch {
-            delay(30*1000)
+            delay(60*1000)
             peopleRepository.sendPing()
             sendPing()
         }
@@ -298,7 +300,7 @@ class HomeViewModel @Inject constructor(
                      environment.getServer().serverDomain
                  )
              printlnCK("delete signalIdentityKeyDAO $index")
-            val senderAddress2 = CKSignalProtocolAddress(
+            val senderAddress = CKSignalProtocolAddress(
                 Owner(
                     currentServer.value!!.serverDomain,
                     currentServer.value!!.ownerClientId
@@ -313,7 +315,7 @@ class HomeViewModel @Inject constructor(
             printlnCK("deleteKey 2 ${currentServer.value!!.serverDomain}   ${test4}")
 
             chatGroups.value?.forEach { group->
-                val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress2)
+                val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)
                 senderKeyStore.deleteSenderKey(groupSender2)
                 printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
                 group.clientList.forEach {

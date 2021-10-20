@@ -6,9 +6,11 @@ import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.UserPreference
+import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
@@ -22,6 +24,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.whispersystems.libsignal.groups.SenderKeyName
+import org.whispersystems.libsignal.groups.state.SenderKeyStore
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
@@ -53,6 +57,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var  environment: Environment
 
+    @Inject
+    lateinit var senderKeyStore: InMemorySenderKeyStore
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -199,11 +205,35 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
-            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain")
+            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: ${groupId}")
                 groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
-                groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
                 peopleRepository.deleteFriend(removedMember)
+                if (serverRepository.getOwnerClientIds().contains(removedMember)) {
+                    messageRepository.deleteMessageInGroup(groupId, clientDomain, removedMember)
+                }
+                printlnCK("getListClientInGroup ${groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.size}")
+                groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.forEach {
+
+                    val senderAddress2 = CKSignalProtocolAddress(
+                        Owner(
+                            clientDomain,
+                            it
+                        ), 222
+                    )
+                    val senderAddress1 = CKSignalProtocolAddress(
+                        Owner(
+                            clientDomain,
+                            it
+                        ), 111
+                    )
+                    val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                    val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                    senderKeyStore.deleteSenderKey(groupSender2)
+                    senderKeyStore.deleteSenderKey(groupSender)
+                    printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
+                }
+                groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             }
             val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
             updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)

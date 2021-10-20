@@ -604,7 +604,7 @@ class AuthRepository @Inject constructor(
                 fromHex(salt),
                 fromHex(iv)
             )
-            printlnCK("onLoginSuccess decrypt private key success:signedPreKeyID:  ${response.clientKeyPeer.signedPreKeyId}")
+            printlnCK("onLoginSuccess decrypt private key success:signedPreKeyID:  ${response.clientKeyPeer.signedPreKeyId}  privateKeyDecrypt: ${privateKeyDecrypt}")
             val preKey = response.clientKeyPeer.preKey
             val preKeyID = response.clientKeyPeer.preKeyId
             val preKeyRecord = PreKeyRecord(preKey.toByteArray())
@@ -633,9 +633,12 @@ class AuthRepository @Inject constructor(
                 ?: return Resource.error("Can not get profile", null)
             printlnCK("insert signalIdentityKeyDAO")
             signalIdentityKeyDAO.insert(signalIdentityKey)
+
+
             environment.setUpTempDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
+            printlnCK("onLoginSuccess privateKey ${toHex(signalKeyRepository.getSignedKey().keyPair.privateKey.serialize())}")
             printlnCK("onLoginSuccess store key success")
             printlnCK("onLoginSuccess get key success")
 

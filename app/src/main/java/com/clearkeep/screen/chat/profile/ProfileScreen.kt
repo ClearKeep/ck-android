@@ -127,7 +127,7 @@ fun ProfileScreen(
                                         else -> {
                                             emptyList()
                                         }
-                                    },
+                                    } as List<String>,
                                     user.userName ?: "",
                                     size = 72.sdp(),
                                     modifier = Modifier.clickable {

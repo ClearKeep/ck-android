@@ -529,7 +529,7 @@ class MessageRepository @Inject constructor(
                     printlnCK("initSessionUserInGroup: server must be not null")
                     return false
                 }
-                printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain}")
+                printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
                 val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
                 val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)
@@ -553,11 +553,15 @@ class MessageRepository @Inject constructor(
                 }
                 return false
             } catch (e: java.lang.Exception) {
-                printlnCK("initSessionUserInGroup: $e")
+                printlnCK("initSessionUserInGroup:${fromClientId} ${e.message}")
                 return false
             }
         }
         return true
+    }
+
+    suspend fun deleteMessageInGroup(groupId: Long,ownerDomain: String,ownerClientId: String){
+        messageDAO.deleteMessageFromGroupId(groupId,ownerDomain,ownerClientId)
     }
 
     suspend fun clearMessageByDomain(domain: String, userId: String) {

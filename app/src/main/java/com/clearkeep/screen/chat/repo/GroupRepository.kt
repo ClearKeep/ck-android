@@ -473,6 +473,7 @@ class GroupRepository @Inject constructor(
 
     suspend fun removeGroupOnWorkSpace(groupId: Long, domain: String, ownerClientId: String){
         val result= groupDAO.deleteGroupById(groupId, domain, ownerClientId)
+
         if (result>0){
             printlnCK("removeGroupOnWorkSpace: groupId: ${groupId}")
         }else {
@@ -535,6 +536,18 @@ class GroupRepository @Inject constructor(
 
     fun getGroupsByDomain(ownerDomain: String, ownerClientId: String) =
         groupDAO.getGroupsByDomain(ownerDomain, ownerClientId)
+
+    suspend fun getAllPeerGroupByDomain(owner: Owner) =
+        groupDAO.getPeerGroups(owner.domain, owner.clientId)
+
+    suspend fun getListClientInGroup(
+        groupId: Long,
+        domain: String,
+        clientId: String
+    ): List<String>? {
+        printlnCK("getListClientInGroup: ${groupDAO.getGroupById(groupId, domain)?.clientList?.size}")
+        return groupDAO.getGroupById(groupId, domain)?.clientList?.map { it -> it.userId }
+    }
 
     private suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,

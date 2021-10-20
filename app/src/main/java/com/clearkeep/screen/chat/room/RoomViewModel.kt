@@ -8,14 +8,11 @@ import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
-import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
-import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
@@ -23,11 +20,8 @@ import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.groups.GroupCipher
-import org.whispersystems.libsignal.groups.SenderKeyName
 import java.lang.IllegalArgumentException
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -280,11 +274,12 @@ class RoomViewModel @Inject constructor(
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
+                user.avatar = ""
                 createGroupResponse.value = groupRepository.createGroupFromAPI(
-                        user.userId,
-                        "${user},${receiverPeople.userName}",
-                        mutableListOf(getUser(), receiverPeople),
-                        false
+                    user.userId,
+                    "$user,${receiverPeople.userName}",
+                    mutableListOf(getUser(), receiverPeople),
+                    false
                 )
                 createGroupResponse.value?.data?.let {
                     setJoiningGroup(it)
@@ -422,6 +417,7 @@ class RoomViewModel @Inject constructor(
         roomId?.let {
             viewModelScope.launch {
                 val result = groupRepository.leaveGroup(it, getOwner())
+
                 if (result) {
                     onSuccess?.invoke()
                 } else {
