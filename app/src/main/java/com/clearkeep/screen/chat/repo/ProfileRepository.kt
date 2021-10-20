@@ -367,25 +367,38 @@ class ProfileRepository @Inject constructor(
                 val verificatorHex =
                     verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+                val userKey = userKeyRepository.get(owner.domain, owner.clientId)
+
                 val decrypter = DecryptsPBKDF2(newPassword)
-                val key = KeyHelper.generateIdentityKeyPair()
+                val key= KeyHelper.generateIdentityKeyPair()
+
                 val preKeys = KeyHelper.generatePreKeys(1, 1)
                 val preKey = preKeys[0]
-                val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + owner.domain).hashCode())
-                val transitionID = KeyHelper.generateRegistrationId(false)
+                val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+owner.domain).hashCode())
+                val transitionID=KeyHelper.generateRegistrationId(false)
 
-                //Generate client key peer for new password
-                val setClientKeyPeer = UserOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+                val decryptResult = decrypter.encrypt(
+                    key.privateKey.serialize(),
+                    userKey.salt,
+                    userKey.iv
+                )?.let {
+                    toHex(
+                        it
+                    )
+                }
+
+                AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
                     .setDeviceId(111)
                     .setRegistrationId(transitionID)
                     .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
                     .setPreKey(ByteString.copyFrom(preKey.serialize()))
                     .setPreKeyId(preKey.id)
                     .setSignedPreKeyId(signedPreKey.id)
-                    .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
-                    .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize(), newSaltHex)?.let {
-                        toHex(it)
-                    }
+                    .setSignedPreKey(
+                        ByteString.copyFrom(signedPreKey.serialize())
+                    )
+                    .setIdentityKeyEncrypted(
+                        decryptResult
                     )
                     .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                     .build()
@@ -396,7 +409,7 @@ class ProfileRepository @Inject constructor(
                     .setHashPassword(verificatorHex)
                     .setSalt(newSaltHex)
                     .setIvParameter(toHex(decrypter.getIv()))
-                    .setClientKeyPeer(setClientKeyPeer)
+                    .setIdentityKeyEncrypted(decryptResult)
                     .build()
                 val stub = apiProvider.provideUserBlockingStub(
                     ParamAPI(

@@ -525,19 +525,96 @@ class AuthRepository @Inject constructor(
         }
     }
 
+    suspend fun resetPassword(preAccessToken: String, email: String, domain: String, rawNewPassword: String): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
+        try {
+            val nativeLib = NativeLib()
+
+            val salt = nativeLib.getSalt(email, rawNewPassword)
+            val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            val verificator = nativeLib.getVerificator()
+            val verificatorHex =
+                verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            val decrypter = DecryptsPBKDF2(rawNewPassword)
+            val key= KeyHelper.generateIdentityKeyPair()
+
+            val preKeys = KeyHelper.generatePreKeys(1, 1)
+            val preKey = preKeys[0]
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
+            val transitionID=KeyHelper.generateRegistrationId(false)
+            val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+                toHex(it)
+            }
+
+            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
+                .setDeviceId(111)
+                .setRegistrationId(transitionID)
+                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
+                .setPreKey(ByteString.copyFrom(preKey.serialize()))
+                .setPreKeyId(preKey.id)
+                .setSignedPreKeyId(signedPreKey.id)
+                .setSignedPreKey(
+                    ByteString.copyFrom(signedPreKey.serialize())
+                )
+                .setIdentityKeyEncrypted(
+                    decryptResult
+                )
+                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
+                .build()
+
+            printlnCK("resetPassword preAccessToken $preAccessToken email $email verificatorHex $verificatorHex saltHex $saltHex iv ${toHex(decrypter.getIv())}")
+
+            val request = AuthOuterClass
+                .ForgotPasswordUpdateReq
+                .newBuilder()
+                .setPreAccessToken(preAccessToken)
+                .setEmail(email)
+                .setHashPassword(verificatorHex)
+                .setSalt(saltHex)
+                .setIvParameter(toHex(decrypter.getIv()))
+                .setClientKeyPeer(clientKeyPeer)
+                .build()
+
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).forgotPasswordUpdate(request)
+            if (response.error.isEmpty()) {
+                return@withContext onLoginSuccess(
+                    domain,
+                    rawNewPassword,
+                    response,
+                    clearOldUserData = true
+                )
+            }
+            return@withContext Resource.error(response.error, null)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                else -> parsedError.message
+            }
+            printlnCK("resetSocialPin error statusRuntime $e $message")
+            return@withContext Resource.error(message, null)
+        } catch (e: Exception) {
+            printlnCK("resetSocialPin error $e")
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
     suspend fun recoverPassword(
         email: String,
         domain: String
     ): Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
         printlnCK("recoverPassword: $email")
         try {
-            val request = AuthOuterClass.FogotPassWord.newBuilder()
+            val request = AuthOuterClass.ForgotPasswordReq.newBuilder()
                 .setEmail(email)
                 .build()
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
                     REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).fogotPassword(request)
+                ).forgotPassword(request)
             if (response?.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {

@@ -48,8 +48,17 @@ message LogoutReq {
 }
 
 // fogot password
-message FogotPassWord {
+message ForgotPasswordReq {
     string email = 1;
+}
+
+message ForgotPasswordUpdateReq{
+    string pre_access_token = 1;
+    string email = 2;
+    string hash_password = 3;
+    string salt = 4;
+    string iv_parameter = 5;
+    PeerRegisterClientKeyRequest client_key_peer = 6;
 }
 
 message AuthRes {
@@ -96,6 +105,7 @@ message GoogleLoginReq {
     string workspace_domain = 1;
     string id_token = 2;
 }
+
 
 //Login Office365 message struct
 message OfficeLoginReq {
@@ -187,6 +197,7 @@ message AuthenticateReq {
     string client_session_key_proof = 3;
 }
 
+
 message RegisterSRPReq {
     string workspace_domain = 1;
     string email = 2;
@@ -209,9 +220,10 @@ service Auth {
     // rpc register(RegisterReq) returns (RegisterRes) {};
     // rpc login(AuthReq) returns (AuthRes) {};
     rpc register_srp(RegisterSRPReq) returns (RegisterSRPRes) {};
-    rpc fogot_password(FogotPassWord) returns (BaseResponse) {};
+    rpc forgot_password(ForgotPasswordReq) returns (BaseResponse) {};
     //new flow login with srp
     rpc login_challenge(AuthChallengeReq) returns (AuthChallengeRes) {};
+    rpc forgot_password_update(ForgotPasswordUpdateReq) returns (AuthRes) {};
     //login with social
     rpc login_google(GoogleLoginReq) returns (SocialLoginRes) {};
     rpc login_office(OfficeLoginReq) returns (SocialLoginRes) {};
