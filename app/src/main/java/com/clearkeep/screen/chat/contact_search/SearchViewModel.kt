@@ -140,6 +140,8 @@ class SearchViewModel @Inject constructor(
             val usersInServerFiltered =
                 b.filter { it.userName.contains(query, true) && it.userId != server.profile.userId }
 
+            printlnCK("usersInServerFiltered $usersInServerFiltered")
+
             (usersFromGroupChatFiltered + usersInServerFiltered).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.userName }))
         }
 
