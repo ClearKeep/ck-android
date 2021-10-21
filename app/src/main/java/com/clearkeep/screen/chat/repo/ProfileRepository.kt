@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.repo
 
-import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
@@ -9,6 +8,7 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.*
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
@@ -387,22 +387,17 @@ class ProfileRepository @Inject constructor(
                 val verificatorHex =
                     verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-                val userKey = userKeyRepository.get(owner.domain, owner.clientId)
-
                 val decrypter = DecryptsPBKDF2(newPassword)
                 val oldIdentityKey = signalKeyRepository.getIdentityKey(server.profile.userId, server.serverDomain)!!.identityKeyPair.privateKey.serialize()
 
                 val decryptResult = decrypter.encrypt(
                     oldIdentityKey,
                     newSaltHex,
-                    userKey.iv
                 )?.let {
                     toHex(
                         it
                     )
                 }
-
-                printlnCK("changePassword identKeyEncrypted $decryptResult old private key ${toHex(oldIdentityKey)} salt hex $newSaltHex iv ${userKey.iv}")
 
                 val changePasswordRequest = UserOuterClass.ChangePasswordRequest.newBuilder()
                     .setClientPublic(aHex)
