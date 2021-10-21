@@ -190,6 +190,7 @@ fun RoomScreen(
                             clients = group?.clientList ?: emptyList(),
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
+                            isLoading = false,
                             onClickFile = {
                                 if (isWriteFilePermissionGranted(context)) {
                                     roomViewModel.downloadFile(context, it)
