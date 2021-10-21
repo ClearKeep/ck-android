@@ -103,7 +103,7 @@ class RoomViewModel @Inject constructor(
     val sendMessageResponse = MutableLiveData<Resource<Any>>()
 
     init {
-        getStatusUserInGroup()
+        //getStatusUserInGroup()
     }
 
     fun setMessage(message: String) {
@@ -147,34 +147,34 @@ class RoomViewModel @Inject constructor(
 
             if (roomId != null && roomId != 0L) {
                 updateGroupWithId(roomId)
+                getStatusUserInGroup()
             } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
                 updateGroupWithFriendId(friendId, friendDomain)
             }
+
         }
+
     }
 
-    fun getStatusUserInGroup() {
-//        viewModelScope.launch {
-//            group.asFlow().collect {
-//                val listClient = group.value?.clientList
-//                val listClientStatus = listClient?.let { it1 ->
-//                    peopleRepository.getListClientStatus(it1)
-//                }
-//
-//                _listUserStatus.postValue(listClientStatus)
-//                listClientStatus?.forEach {
-//                    peopleRepository.updateAvatarUserEntity(it, getOwner())
-//                }
-//                if (group.value?.isGroup() == false) {
-//                    val avatars = arrayListOf<String>()
-//                    listClientStatus?.forEach {
-//                        if (it.userId != getUser().userId)
-//                            it.avatar?.let { it1 -> avatars.add(it1) }
-//                    }
-//                    listPeerAvatars.postValue(avatars)
-//                }
-//            }
-//        }
+    private suspend fun getStatusUserInGroup() {
+        group.value?.clientList?.let {
+            val listClientStatus = it.let { it1 ->
+                peopleRepository.getListClientStatus(it1)
+            }
+            _listUserStatus.postValue(listClientStatus)
+
+            listClientStatus?.forEach {
+                peopleRepository.updateAvatarUserEntity(it, getOwner())
+            }
+            if (group.value?.isGroup() == false) {
+                val avatars = arrayListOf<String>()
+                listClientStatus?.forEach {
+                    if (it.userId != getUser().userId)
+                        it.avatar?.let { it1 -> avatars.add(it1) }
+                }
+                listPeerAvatars.postValue(avatars)
+            }
+        }
     }
 
     fun initNotes(

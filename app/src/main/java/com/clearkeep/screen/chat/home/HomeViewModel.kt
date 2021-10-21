@@ -83,8 +83,9 @@ class HomeViewModel @Inject constructor(
             messageRepository.clearTempNotes()
             messageRepository.clearTempMessage()
             roomRepository.fetchGroups()
+            getStatusUserInDirectGroup()
         }
-        getStatusUserInDirectGroup()
+
         sendPing()
     }
 
@@ -94,8 +95,9 @@ class HomeViewModel @Inject constructor(
             roomRepository.fetchGroups()
             isRefreshing.postValue(false)
         }
-        getStatusUserInDirectGroup()
     }
+
+
 
     val chatGroups = liveData<List<ChatGroup>> {
         val result = MediatorLiveData<List<ChatGroup>>()
@@ -144,20 +146,25 @@ class HomeViewModel @Inject constructor(
         emitSource(result)
     }
 
-    private fun getStatusUserInDirectGroup() {
-        viewModelScope.launch {
-            val listUserRequest = arrayListOf<User>()
-            roomRepository.getAllPeerGroupByDomain(owner = Owner(getDomainOfActiveServer(),getClientIdOfActiveServer()))
-                .forEach { group ->
-                    if (!group.isGroup()) {
-                        val user = group.clientList.firstOrNull { client ->
-                            client.userId != getClientIdOfActiveServer()
-                        }
-                        if (user != null) {
-                            listUserRequest.add(user)
+    private suspend fun getStatusUserInDirectGroup() {
+        try {
+                val listUserRequest = arrayListOf<User>()
+                roomRepository.getAllPeerGroupByDomain(
+                    owner = Owner(
+                        getDomainOfActiveServer(),
+                        getClientIdOfActiveServer()
+                    )
+                )
+                    .forEach { group ->
+                        if (!group.isGroup()) {
+                            val user = group.clientList.firstOrNull { client ->
+                                client.userId != getClientIdOfActiveServer()
+                            }
+                            if (user != null) {
+                                listUserRequest.add(user)
+                            }
                         }
                     }
-                }
                 val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
                 _listUserStatus.postValue(listClientStatus)
                 listClientStatus?.forEach {
@@ -165,13 +172,15 @@ class HomeViewModel @Inject constructor(
                         currentServer.value?.ownerClientId?.let { it2 ->
                             Owner(it1, it2)
                         }
-                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it,owner = it2) }
+                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
                 }
-                delay(60*1000)
+                delay(60 * 1000)
                 getStatusUserInDirectGroup()
-            }
 
+        } catch (e: Exception) {
+            printlnCK("getStatusUserInDirectGroup error: ${e.message}")
         }
+    }
 
     private fun sendPing() {
         viewModelScope.launch {
