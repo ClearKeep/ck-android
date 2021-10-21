@@ -85,7 +85,7 @@ fun FriendListItemInfo(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
-                emptyList(),
+                arrayListOf(friend.avatar ?:""),
                 friend.userName,
                 size = 36.sdp()
             )

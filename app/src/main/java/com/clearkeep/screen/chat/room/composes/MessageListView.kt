@@ -36,6 +36,7 @@ var mIsNewMessage = true
 fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
+    listAvatar:List<User>,
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -48,6 +49,7 @@ fun MessageListView(
     MessageListView(
         messageList = messageList,
         clients = clients,
+        listAvatar=listAvatar,
         myClientId = myClientId,
         isGroup = isGroup,
         isLoading = isLoading,
@@ -63,6 +65,7 @@ fun MessageListView(
 private fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
+    listAvatar:List<User>,
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
@@ -72,7 +75,7 @@ private fun MessageListView(
 ) {
     val reversedMessage = messageList.reversed()
     val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.filter{ it.message.isNotBlank() }.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
-        convertMessageList(entry.value, clients, myClientId, isGroup)
+        convertMessageList(entry.value, clients,listAvatar, myClientId, isGroup)
     }
     Surface(
         color = grayscaleBackground

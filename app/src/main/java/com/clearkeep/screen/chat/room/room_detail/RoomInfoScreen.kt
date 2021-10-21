@@ -79,9 +79,10 @@ fun RoomInfoScreen(
                 ) {
                     val maxItems = 4
                     Box(modifier = Modifier.wrapContentWidth()) {
+                        val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         for (i in group.clientList.indices) {
                             if (i < maxItems) {
-                                FriendListItemInfo(group.clientList[i], null, 28 * i)
+                                FriendListItemInfo(listUserStatusState.value?.get(i) ?:group.clientList[i], null, 28 * i)
                             } else {
                                 FriendListMoreItem(group.clientList.size - maxItems, 28 * i)
                                 break
@@ -135,7 +136,7 @@ fun RoomInfoScreen(
                                 R.drawable.ic_user,
                                 textColor = grayscale1,
                                 onClickAction = {
-                                    roomViewModel.getStatusUserInGroup()
+                                    //roomViewModel.getStatusUserInGroup()
                                     navHostController.navigate("member_group_screen")
                                 })
                         }

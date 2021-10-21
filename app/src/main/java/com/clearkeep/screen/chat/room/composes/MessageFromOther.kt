@@ -36,7 +36,7 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                     horizontalAlignment = Alignment.Start
                 ) {
                     if (messageDisplayInfo.showAvatarAndName) {
-                        CircleAvatar(emptyList(), messageDisplayInfo.userName, size = 18.sdp())
+                        CircleAvatar(arrayListOf(messageDisplayInfo.avatar), messageDisplayInfo.userName, size = 18.sdp())
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth()) {

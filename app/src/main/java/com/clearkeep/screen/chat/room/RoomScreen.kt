@@ -152,8 +152,8 @@ fun RoomScreen(
             ) {
                 ToolbarMessage(
                     modifier = Modifier,
-                    groupName,
-                    listPeerAvatars.value,
+                    title = groupName,
+                    avatars = listPeerAvatars.value,
                     isGroup = group?.isGroup() ?: false,
                     isNote = isNote.value ?: false,
                     onBackClick = {
@@ -185,9 +185,11 @@ fun RoomScreen(
                                 0.66f
                             )
                     ) {
+                        val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
+                            listAvatar= listUserStatusState.value?: emptyList(),
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,
