@@ -86,9 +86,13 @@ class ProfileRepository @Inject constructor(
         try {
             printlnCK("updateProfile $profile")
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
+            val phoneNumber = profile.phoneNumber?.trim()
             val requestBuilder = UserOuterClass.UpdateProfileRequest.newBuilder()
                 .setDisplayName(profile.userName?.trim())
-                .setPhoneNumber(profile.phoneNumber?.trim())
+                .setPhoneNumber(phoneNumber)
+            if (phoneNumber.isNullOrBlank()) {
+                requestBuilder.setClearPhoneNumber(true)
+            }
             if (profile.avatar != null) requestBuilder.avatar = profile.avatar
             val request = requestBuilder.build()
             val userGrpc = apiProvider.provideUserBlockingStub(
