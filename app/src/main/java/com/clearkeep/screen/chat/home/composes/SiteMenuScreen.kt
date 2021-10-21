@@ -129,9 +129,7 @@ fun SiteMenuScreen(
                             SettingGeneral(onNavigateAccountSetting)
                             SettingServer(
                                 onNavigateServerSetting,
-                                onNavigateNotificationSetting,
-                                onNavigateInvite,
-                                onNavigateBannedUser
+                                onNavigateNotificationSetting
                             )
                         }
                     }
@@ -225,7 +223,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
                 val image = createRef()
-                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sdp().toNonScalableTextSize(), modifier = Modifier.constrainAs(text){
+                Text(homeViewModel.getProfileLink(), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sdp().toNonScalableTextSize(), modifier = Modifier.constrainAs(text){
                     linkTo(parent.start, image.start, endMargin = 4.dp)
                     width = Dimension.fillToConstraints
                 })
@@ -251,9 +249,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
 @Composable
 fun SettingServer(
     onNavigateServerSetting: () -> Unit,
-    onNavigateNotificationSetting: () -> Unit,
-    onNavigateInvite: () -> Unit,
-    onNavigateBannedUser: () -> Unit
+    onNavigateNotificationSetting: () -> Unit
 ) {
     Column(Modifier.padding(bottom = 16.sdp())) {
         ItemSiteSetting(stringResource(R.string.server), R.drawable.ic_adjustment, {
@@ -261,12 +257,6 @@ fun SettingServer(
         })
         ItemSiteSetting(stringResource(R.string.notification), R.drawable.ic_server_notification, {
             onNavigateNotificationSetting()
-        })
-        ItemSiteSetting(stringResource(R.string.invite), R.drawable.ic_user_plus, {
-            onNavigateInvite()
-        })
-        ItemSiteSetting(stringResource(R.string.blocked), R.drawable.ic_user_off, {
-            onNavigateBannedUser()
         })
     }
 }
