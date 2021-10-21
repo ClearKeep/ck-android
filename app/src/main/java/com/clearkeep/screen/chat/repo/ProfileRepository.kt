@@ -390,16 +390,11 @@ class ProfileRepository @Inject constructor(
                 val userKey = userKeyRepository.get(owner.domain, owner.clientId)
 
                 val decrypter = DecryptsPBKDF2(newPassword)
-                val key= KeyHelper.generateIdentityKeyPair()
-
-                val preKeys = KeyHelper.generatePreKeys(1, 1)
-                val preKey = preKeys[0]
-                val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+owner.domain).hashCode())
-                val transitionID=KeyHelper.generateRegistrationId(false)
+                val oldIdentityKey = signalKeyRepository.getIdentityKey(server.profile.userId, server.serverDomain)!!.identityKeyPair.privateKey.serialize()
 
                 val decryptResult = decrypter.encrypt(
-                    key.privateKey.serialize(),
-                    userKey.salt,
+                    oldIdentityKey,
+                    newSaltHex,
                     userKey.iv
                 )?.let {
                     toHex(
@@ -407,21 +402,7 @@ class ProfileRepository @Inject constructor(
                     )
                 }
 
-                AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                    .setDeviceId(111)
-                    .setRegistrationId(transitionID)
-                    .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-                    .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                    .setPreKeyId(preKey.id)
-                    .setSignedPreKeyId(signedPreKey.id)
-                    .setSignedPreKey(
-                        ByteString.copyFrom(signedPreKey.serialize())
-                    )
-                    .setIdentityKeyEncrypted(
-                        decryptResult
-                    )
-                    .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                    .build()
+                printlnCK("changePassword identKeyEncrypted $decryptResult old private key ${toHex(oldIdentityKey)} salt hex $newSaltHex iv ${userKey.iv}")
 
                 val changePasswordRequest = UserOuterClass.ChangePasswordRequest.newBuilder()
                     .setClientPublic(aHex)
