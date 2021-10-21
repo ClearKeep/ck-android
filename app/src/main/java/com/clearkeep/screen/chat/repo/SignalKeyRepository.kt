@@ -64,6 +64,9 @@ class SignalKeyRepository @Inject constructor(
         }
     }
 
+    fun getIdentityKey(clientId: String, domain: String) =
+        signalIdentityKeyDAO.getIdentityKey(clientId, domain)
+
     suspend fun  registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String) : Boolean = withContext(Dispatchers.IO) {
         //get private key
         val identityKey=signalIdentityKeyDAO.getIdentityKey(clientId, domain)
