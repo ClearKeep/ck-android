@@ -564,7 +564,7 @@ class RoomViewModel @Inject constructor(
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    Resource.error("File is larger than 1 GB.", null)
+                    Resource.error("Your file cannot be larger than 200MB.", null)
                 return
             }
 
@@ -752,7 +752,7 @@ class RoomViewModel @Inject constructor(
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10
-        private const val FILE_MAX_SIZE = 1_000_000_000 //1GB
+        private const val FILE_MAX_SIZE = 200_000_000 //200MB
     }
 }
 

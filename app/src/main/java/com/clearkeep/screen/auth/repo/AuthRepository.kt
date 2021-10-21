@@ -570,7 +570,7 @@ class AuthRepository @Inject constructor(
                 .newBuilder()
                 .setPreAccessToken(preAccessToken)
                 .setEmail(email)
-                .setHashPassword(verificatorHex)
+                .setPasswordVerifier(verificatorHex)
                 .setSalt(saltHex)
                 .setIvParameter(toHex(decrypter.getIv()))
                 .setClientKeyPeer(clientKeyPeer)
@@ -769,6 +769,7 @@ class AuthRepository @Inject constructor(
                 )
             )
                 ?: return Resource.error("Can not get profile", null)
+            printlnCK("onLoginSuccess userId ${profile.userId}")
             printlnCK("insert signalIdentityKeyDAO")
             signalIdentityKeyDAO.insert(signalIdentityKey)
 
