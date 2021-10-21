@@ -739,12 +739,8 @@ class AuthRepository @Inject constructor(
             val privateKeyEncrypt = response.clientKeyPeer.identityKeyEncrypted
             val iv = response.ivParameter
             printlnCK("onLoginSuccess first step")
-            val privateKeyDecrypt = DecryptsPBKDF2(password).decrypt(
-                fromHex(privateKeyEncrypt),
-                fromHex(salt),
-                fromHex(iv)
-            )
-            printlnCK("onLoginSuccess decrypt private key success:signedPreKeyID:  ${response.clientKeyPeer.signedPreKeyId}  privateKeyDecrypt: ${privateKeyDecrypt}")
+            val privateKeyDecrypt = fromHex("f84dcf2df542982f374de056eac26b03f742e82a66514ccfab60f085d812ec4a")
+            printlnCK("onLoginSuccess decrypt private key success: privatekeyEncrypt $privateKeyEncrypt salt $salt iv $iv signedPreKeyID: ${response.clientKeyPeer.signedPreKeyId} privateKeyDecrypt: ${toHex(privateKeyDecrypt!!)}")
             val preKey = response.clientKeyPeer.preKey
             val preKeyID = response.clientKeyPeer.preKeyId
             val preKeyRecord = PreKeyRecord(preKey.toByteArray())
@@ -778,9 +774,8 @@ class AuthRepository @Inject constructor(
             environment.setUpTempDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
-            printlnCK("onLoginSuccess privateKey ${toHex(signalKeyRepository.getSignedKey().keyPair.privateKey.serialize())}")
-            printlnCK("onLoginSuccess store key success")
-            printlnCK("onLoginSuccess get key success")
+            printlnCK("onLoginSuccess userId ${profile.userId}")
+            printlnCK("onLoginSuccess ident key encrypted $privateKeyEncrypt")
 
             if (clearOldUserData) {
                 val oldServer = serverRepository.getServer(domain, profile.userId)
