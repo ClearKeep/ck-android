@@ -33,7 +33,16 @@ class PeopleRepository @Inject constructor(
     private val serverRepository: ServerRepository
 ) {
     fun getFriends(ownerDomain: String, ownerClientId: String) : LiveData<List<User>> = peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
-        list.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
+        if (list.isNotEmpty()) {
+            val request = UserOuterClass.Empty.newBuilder()
+                .build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
+            val activeUserIds = response.lstUserOrBuilderList.map { it.id }
+
+            list.filter { it.userId in activeUserIds }.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
+        } else {
+            emptyList()
+        }
     }
 
     suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner) : User? = withContext(Dispatchers.IO) {
