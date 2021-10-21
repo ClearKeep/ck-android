@@ -592,8 +592,6 @@ fun WorkSpaceView(
                 ),
             )
         }
-        Spacer(modifier = Modifier.size(24.sdp()))
-        NoteView(onNavigateNotes)
         Column(
             modifier = Modifier
                 .fillMaxSize()
