@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.db.clear_keep.model.Message
@@ -38,6 +39,7 @@ fun MessageListView(
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
+    isLoading: Boolean = false,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
@@ -48,6 +50,7 @@ fun MessageListView(
         clients = clients,
         myClientId = myClientId,
         isGroup = isGroup,
+        isLoading = isLoading,
         onClickFile,
         onClickImage,
         onLongClick
@@ -62,6 +65,7 @@ private fun MessageListView(
     clients: List<User>,
     myClientId: String,
     isGroup: Boolean,
+    isLoading: Boolean,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
@@ -95,6 +99,13 @@ private fun MessageListView(
                         }
                         if (item.isOwner) MessageByMe(item, onClickFile, onClickImage, onLongClick) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
                         if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
+                    }
+                }
+                item {
+                    if (isLoading) {
+                        Column(Modifier.fillMaxWidth().padding(vertical = 16.sdp()).size(16.sdp())) {
+                            CKCircularProgressIndicator(Modifier.size(28.sdp()).align(Alignment.CenterHorizontally), strokeWidth = 4.sdp())
+                        }
                     }
                 }
             }
