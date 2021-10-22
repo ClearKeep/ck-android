@@ -10,18 +10,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.CKTopAppBarSample
-import com.clearkeep.components.base.TopAppBarSampleType
+import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun ServerSettingScreen(
@@ -32,90 +31,83 @@ fun ServerSettingScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())) {
-        CKTopAppBarSample(
-            title = server.serverName,
-            onBackPressed = onBackPressed,
-            type = TopAppBarSampleType.Black
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.sdp())
+    ) {
+        HeaderServerSetting(onBackPressed)
+        Spacer(modifier = Modifier.height(28.sdp()))
+        CKText(
+            "Server Name", style = MaterialTheme.typography.body2.copy(
+                color = MaterialTheme.colors.onBackground,
+                fontSize = defaultNonScalableTextSize()
+            )
         )
-        Column(
-            modifier = Modifier.padding(horizontal = 16.sdp())
-        ) {
-            Spacer(modifier = Modifier.height(45.sdp()))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                CircleAvatarWorkSpace(server, false, contentSize = 85.sdp())
-            }
-            Spacer(modifier = Modifier.height(25.sdp()))
-            CKText("General", style = MaterialTheme.typography.body2.copy(
+        CKTextInputField(
+            placeholder = server.serverName,
+            textValue = null,
+            keyboardType = KeyboardType.Text,
+            singleLine = true,
+            readOnly = true
+        )
+        Spacer(modifier = Modifier.height(16.sdp()))
+        CKText(
+            "Server URL", style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground,
                 fontSize = defaultNonScalableTextSize()
-            ))
-            Spacer(modifier = Modifier.height(8.sdp()))
-            ServerItem(
-                iconPainter = painterResource(R.drawable.ic_user),
-                title = "Notification",
-                subTitle = "18 Members",
-                onClick = {}
             )
-            Spacer(modifier = Modifier.height(16.sdp()))
-            ServerItem(
-                iconPainter = painterResource(R.drawable.ic_server_notification),
-                title = "See Members",
-                subTitle = "Current: On",
-                onClick = {}
-            )
-            Spacer(modifier = Modifier.height(25.sdp()))
-            CKText("Details", style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.onBackground,
-                fontSize = defaultNonScalableTextSize()
-            ))
-            Spacer(modifier = Modifier.height(16.sdp()))
-            CKText("Server Name", style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.onBackground,
-                fontSize = defaultNonScalableTextSize()
-            ))
-            CKTextInputField(
-                placeholder = server.serverName,
-                textValue = null,
-                keyboardType = KeyboardType.Text,
-                singleLine = true,
-                readOnly = true
-            )
-            Spacer(modifier = Modifier.height(16.sdp()))
-            CKText("Server URL", style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.onBackground,
-                fontSize = defaultNonScalableTextSize()
-            ))
-            Spacer(modifier = Modifier.height(4.sdp()))
-            Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-                Row(
-                    modifier = Modifier.weight(1.0f, true)
-                ) {
-                    CKTextInputField(
-                        placeholder = server.serverDomain,
-                        textValue = null,
-                        keyboardType = KeyboardType.Text,
-                        singleLine = true,
-                        readOnly = true
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.sdp()))
-                Image(
-                    painter = painterResource(R.drawable.ic_copy_link),
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(52.sdp())
-                        .clickable(
-                            onClick = {
-                                onCopiedServerDomain(server.serverDomain)
-                            }
-                        )
+        )
+        Spacer(modifier = Modifier.height(4.sdp()))
+        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.weight(1.0f, true)) {
+                CKTextInputField(
+                    placeholder = server.serverDomain,
+                    textValue = null,
+                    keyboardType = KeyboardType.Text,
+                    singleLine = true,
+                    readOnly = true
                 )
             }
+            Spacer(modifier = Modifier.width(16.sdp()))
+            Image(
+                painter = painterResource(R.drawable.ic_copy_link),
+                contentDescription = "",
+                modifier = Modifier
+                    .size(52.sdp())
+                    .clickable(
+                        onClick = {
+                            onCopiedServerDomain(server.serverDomain)
+                        }
+                    )
+            )
         }
+    }
+}
+
+@Composable
+fun HeaderServerSetting(onCloseView: () -> Unit) {
+    val focusManager = LocalFocusManager.current
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+    ) {
+        Spacer(Modifier.size(32.sdp()))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_cross),
+                contentDescription = null, modifier = Modifier
+                    .clickable {
+                        onCloseView.invoke()
+                    },
+                alignment = Alignment.CenterStart
+            )
+        }
+        Spacer(modifier = Modifier.size(16.sdp()))
+        CKHeaderText("Server Settings", headerTextType = HeaderTextType.Medium)
+        Spacer(modifier = Modifier.size(16.sdp()))
     }
 }
 

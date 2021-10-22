@@ -251,6 +251,10 @@ dependencies {
 
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.2.0'
 
+    //Paging 3
+    implementation "androidx.paging:paging-runtime-ktx:3.0.1"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha02"
+
     implementation project(':dragonsrp')
 }
 
