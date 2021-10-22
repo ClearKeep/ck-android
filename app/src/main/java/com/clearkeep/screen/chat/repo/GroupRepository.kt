@@ -556,7 +556,7 @@ class GroupRepository @Inject constructor(
             lastMessage = group.lastMessage,
             lastMessageAt = group.lastMessageAt,
             lastMessageSyncTimestamp = group.lastMessageSyncTimestamp,
-            isDeletedUserPeer = false
+            isDeletedUserPeer = group.isDeletedUserPeer
         )
         groupDAO.updateGroup(updateGroup)
         return updateGroup

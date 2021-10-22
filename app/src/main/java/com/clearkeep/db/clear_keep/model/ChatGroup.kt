@@ -43,7 +43,7 @@ data class ChatGroup(
         fun isGroupTempo() = GROUP_ID_TEMPO != groupId
 
         override fun toString(): String {
-                return "groupName = $groupName, groupType = $groupType, isJoined = $isJoined, clientList = $clientList"
+                return "groupName = $groupName, groupType = $groupType, isJoined = $isJoined, clientList = $clientList, isDeletedUserPeer = $isDeletedUserPeer"
         }
 
         val owner: Owner
