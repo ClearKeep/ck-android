@@ -64,12 +64,13 @@ class GroupRepository @Inject constructor(
                 val groups = getGroupListFromAPI(server.profile.userId)
                 for (group in groups) {
                     printlnCK("fetchGroups ${group.groupName} ${group.lstClientList}")
-                    group.lstClientList.forEach {
-                        printlnCK("item member: ${it.displayName} ${it.status}")
-                    }
                     val decryptedGroup =
                         convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
-                    insertGroup(decryptedGroup)
+
+                    val oldGroup = groupDAO.getGroupById(group.groupId, server.serverDomain)
+                    if (oldGroup?.isDeletedUserPeer != true) {
+                        insertGroup(decryptedGroup)
+                    }
                 }
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
@@ -85,6 +86,16 @@ class GroupRepository @Inject constructor(
                 printlnCK("fetchGroups: $exception")
             }
         }
+    }
+
+    suspend fun disableChatOfDeactivatedUser(clientId: String, domain: String, userId: String) {
+        printlnCK("disableChatOfDeactivatedUser clientId $clientId domain $domain $userId")
+        val peerRooms = groupDAO.getPeerGroups(domain, clientId).filter {
+            printlnCK("disableChatOfDeactivatedUser peerRooms before filter $it")
+            it.clientList.find { it.userId == userId } != null
+        }.map { it.generateId ?: 0 }
+        printlnCK("disableChatOfDeactivatedUser peerRooms $peerRooms")
+        groupDAO.disableChatOfDeactivatedUser(peerRooms)
     }
 
     suspend fun fetchNewGroup(groupId: Long, owner: Owner) = withContext(Dispatchers.IO) {
@@ -417,12 +428,15 @@ class GroupRepository @Inject constructor(
 
             lastMessage = null,
             lastMessageAt = 0,
-            lastMessageSyncTimestamp = 0
+            lastMessageSyncTimestamp = 0,
+            isDeletedUserPeer = false
         )
     }
 
     private suspend fun insertGroup(group: ChatGroup) {
-        groupDAO.insert(group)
+        val oldGroup = groupDAO.getGroupById(group.groupId, group.ownerDomain)
+        printlnCK("insertGroup called oldGroup $oldGroup")
+        groupDAO.insert(group.copy(isDeletedUserPeer = oldGroup?.isDeletedUserPeer ?: false))
     }
 
     suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): Resource<ChatGroup>? {
@@ -522,7 +536,8 @@ class GroupRepository @Inject constructor(
 
             lastMessage = group.lastMessage,
             lastMessageAt = group.lastMessageAt,
-            lastMessageSyncTimestamp = group.lastMessageSyncTimestamp
+            lastMessageSyncTimestamp = group.lastMessageSyncTimestamp,
+            isDeletedUserPeer = false
         )
         groupDAO.updateGroup(updateGroup)
         return updateGroup
@@ -633,7 +648,8 @@ class GroupRepository @Inject constructor(
             ownerClientId = ownerId,
             lastMessage = null,
             lastMessageAt = response.lastMessageAt,
-            lastMessageSyncTimestamp = lastMessageSyncTime
+            lastMessageSyncTimestamp = lastMessageSyncTime,
+            isDeletedUserPeer = false
         )
     }
 }

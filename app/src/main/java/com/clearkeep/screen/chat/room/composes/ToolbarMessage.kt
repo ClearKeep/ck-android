@@ -25,6 +25,7 @@ fun ToolbarMessage(
     avatars: List<String>? = arrayListOf(),
     isGroup: Boolean = false,
     isNote: Boolean = false,
+    isDeletedUserChat: Boolean = false,
     onBackClick: () -> Unit,
     onUserClick: () -> Unit,
     onAudioClick: () -> Unit,
@@ -42,7 +43,7 @@ fun ToolbarMessage(
         if (!isGroup && !isNote && title.isNotBlank()) {
             CircleAvatar(
                 avatars ?: arrayListOf(),
-                name = title,
+                name = if (isDeletedUserChat) "" else title,
                 size = 36.sdp(),
                 isGroup = isGroup
             )
@@ -66,7 +67,7 @@ fun ToolbarMessage(
             )
         }
 
-        if (!isNote) {
+        if (!isNote && !isDeletedUserChat) {
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically

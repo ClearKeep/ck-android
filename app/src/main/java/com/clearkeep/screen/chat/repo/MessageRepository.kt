@@ -178,7 +178,8 @@ class MessageRepository @Inject constructor(
             lastMessage = lastMessage,
             lastMessageAt = lastMessage.createdTime,
             // update
-            lastMessageSyncTimestamp = lastMessage.createdTime
+            lastMessageSyncTimestamp = lastMessage.createdTime,
+            isDeletedUserPeer = false
         )
         groupDAO.updateGroup(updateGroup)
     }
@@ -323,7 +324,8 @@ class MessageRepository @Inject constructor(
 
                 lastMessage = message,
                 lastMessageAt = message.createdTime,
-                lastMessageSyncTimestamp = room.lastMessageSyncTimestamp
+                lastMessageSyncTimestamp = room.lastMessageSyncTimestamp,
+                isDeletedUserPeer = false
             )
             groupDAO.updateGroup(updateRoom)
         } else {

@@ -183,7 +183,8 @@ fun SearchUserScreen(
                                         "",
                                         null,
                                         0L,
-                                        0L
+                                        0L,
+                                        false
                                     ),
                                     query = searchQuery.value!!
                                 ) {
@@ -206,7 +207,8 @@ fun SearchUserScreen(
                                                 "",
                                                 null,
                                                 0L,
-                                                0L
+                                                0L,
+                                                false
                                             )
                                         )
                                 }

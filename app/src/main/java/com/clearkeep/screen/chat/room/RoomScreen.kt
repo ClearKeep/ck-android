@@ -40,6 +40,7 @@ import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
+import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
@@ -78,6 +79,7 @@ fun RoomScreen(
     val createGroupResponse = roomViewModel.createGroupResponse.observeAsState()
     val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()
     val sendMessageResponse = roomViewModel.sendMessageResponse.observeAsState()
+//    val isDeletedUserChat = roomViewModel.isDeletedUserChat.observeAsState()
 
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -111,7 +113,7 @@ fun RoomScreen(
     }
 
     printlnCK("test: ${group?.clientList}")
-    val groupName = if (isNote.value == true) "Note" else group?.groupName ?: ""
+    val groupName = if (isNote.value == true) "Note" else if (group?.isDeletedUserPeer == true) "Deleted user" else group?.groupName ?: ""
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -156,6 +158,7 @@ fun RoomScreen(
                     avatars = listPeerAvatars.value,
                     isGroup = group?.isGroup() ?: false,
                     isNote = isNote.value ?: false,
+                    isDeletedUserChat = group?.isDeletedUserPeer ?: false,
                     onBackClick = {
                         onFinishActivity()
                     },
@@ -233,59 +236,61 @@ fun RoomScreen(
                         }
                     }
                 }
-                SendBottomCompose(
-                    roomViewModel,
-                    navHostController,
-                    onSendMessage = { message ->
-                        val validMessage =
-                            message.trim()
-                                .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                        if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
-                            return@SendBottomCompose
-                        }
-                        val isGroup = group?.isGroup()
-                        if (isNote.value == true) {
-                            roomViewModel.sendNote(context)
-                        } else if (isGroup == true) {
-                            val isJoined=group.isJoined
-                            roomViewModel.sendMessageToGroup(
-                                context,
-                                group.groupId,
-                                validMessage,
-                                isJoined
-                            )
-                        } else {
-                            val friend = group?.clientList?.firstOrNull { client ->
-                                client.userId != roomViewModel.clientId
+                if (group != null && !group.isDeletedUserPeer) {
+                    SendBottomCompose(
+                        roomViewModel,
+                        navHostController,
+                        onSendMessage = { message ->
+                            val validMessage =
+                                message.trim()
+                                    .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
+                                return@SendBottomCompose
                             }
-                            if (friend != null) {
-                                roomViewModel.sendMessageToUser(
+                            val isGroup = group?.isGroup()
+                            if (isNote.value == true) {
+                                roomViewModel.sendNote(context)
+                            } else if (isGroup == true) {
+                                val isJoined=group.isJoined
+                                roomViewModel.sendMessageToGroup(
                                     context,
-                                    friend,
                                     group.groupId,
-                                    validMessage
+                                    validMessage,
+                                    isJoined
                                 )
                             } else {
-                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                val friend = group?.clientList?.firstOrNull { client ->
+                                    client.userId != roomViewModel.clientId
+                                }
+                                if (friend != null) {
+                                    roomViewModel.sendMessageToUser(
+                                        context,
+                                        friend,
+                                        group.groupId,
+                                        validMessage
+                                    )
+                                } else {
+                                    roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                }
+                            }
+                        },
+                        onClickUploadPhoto = {
+                            focusManager.clearFocus()
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                KEYBOARD_HIDE_DELAY_MILLIS
+                            ) {
+                                isUploadPhotoDialogVisible.value = true
+                            }
+                        },
+                        onClickUploadFile = {
+                            keyboardController?.hide()
+                            coroutineScope.launch {
+                                delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                                bottomSheetState.show()
                             }
                         }
-                    },
-                    onClickUploadPhoto = {
-                        focusManager.clearFocus()
-                        Handler(Looper.getMainLooper()).postDelayed(
-                            KEYBOARD_HIDE_DELAY_MILLIS
-                        ) {
-                            isUploadPhotoDialogVisible.value = true
-                        }
-                    },
-                    onClickUploadFile = {
-                        keyboardController?.hide()
-                        coroutineScope.launch {
-                            delay(KEYBOARD_HIDE_DELAY_MILLIS)
-                            bottomSheetState.show()
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }
