@@ -1,6 +1,7 @@
 package com.clearkeep.screen.chat.contact_search
 
 import androidx.lifecycle.*
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import java.lang.Exception
 import javax.inject.Inject
+
 
 class SearchViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,

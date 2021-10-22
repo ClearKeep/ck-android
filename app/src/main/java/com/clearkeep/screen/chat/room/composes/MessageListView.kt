@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
@@ -34,7 +35,7 @@ var mIsNewMessage = true
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
-    messageList: List<Message>,
+    messageList: LazyPagingItems<Message>,
     clients: List<User>,
     listAvatar:List<User>,
     myClientId: String,
@@ -63,7 +64,7 @@ fun MessageListView(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MessageListView(
-    messageList: List<Message>,
+    messageList: LazyPagingItems<Message>,
     clients: List<User>,
     listAvatar:List<User>,
     myClientId: String,
@@ -73,8 +74,7 @@ private fun MessageListView(
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
-    val reversedMessage = messageList.reversed()
-    val groupedMessages: Map<String, List<MessageDisplayInfo>> = reversedMessage.filter{ it.message.isNotBlank() }.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
+    val groupedMessages: Map<String, List<MessageDisplayInfo>> = messageList.snapshot().filterNotNull().filter { it.message.isNotBlank() }.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
         convertMessageList(entry.value, clients,listAvatar, myClientId, isGroup)
     }
     Surface(

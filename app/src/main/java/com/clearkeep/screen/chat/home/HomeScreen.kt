@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
@@ -40,6 +41,7 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -233,6 +235,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 
 }
 
+
 @Composable
 fun ItemListDirectMessage(
     modifier: Modifier,
@@ -277,6 +280,7 @@ fun ItemListDirectMessage(
     }
 }
 
+
 @Composable
 fun ChatGroupItemView(
     modifier: Modifier,
@@ -302,6 +306,7 @@ fun ChatGroupItemView(
         }
     }
 }
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -380,6 +385,7 @@ fun ChatGroupView(
         }
     }
 }
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -465,6 +471,7 @@ fun DirectMessagesView(
     }
 }
 
+
 @Composable
 fun JoinServerComposable(
     onJoinServer: (serverUrl: String) -> Unit,
@@ -534,6 +541,7 @@ fun JoinServerComposable(
         }
     }
 }
+
 
 @Composable
 fun WorkSpaceView(
@@ -613,6 +621,7 @@ fun WorkSpaceView(
     }
 }
 
+
 @Composable
 fun NoteView(onNavigateNotes: () -> Unit) {
     Row(
@@ -633,6 +642,7 @@ fun NoteView(onNavigateNotes: () -> Unit) {
         )
     }
 }
+
 
 @Composable
 fun AddWorkspace(mainViewModel: HomeViewModel) {
@@ -657,6 +667,7 @@ fun AddWorkspace(mainViewModel: HomeViewModel) {
         AddWorkspaceButton(mainViewModel)
     }
 }
+
 
 @Composable
 fun AddWorkspaceButton(mainViewModel: HomeViewModel) {

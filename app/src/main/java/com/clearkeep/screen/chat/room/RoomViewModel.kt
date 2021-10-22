@@ -7,6 +7,8 @@ import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.PagingData
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -20,6 +22,7 @@ import com.clearkeep.utilities.network.Status
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.IllegalArgumentException
@@ -27,7 +30,9 @@ import java.security.MessageDigest
 import javax.inject.Inject
 import java.util.*
 
-class RoomViewModel @Inject constructor(
+
+class RoomViewModel
+@Inject constructor(
     private val chatRepository: ChatRepository,
     private val groupRepository: GroupRepository,
     private val signalKeyRepository: SignalKeyRepository,
@@ -110,12 +115,14 @@ class RoomViewModel @Inject constructor(
         _message.value = message
     }
 
+
     fun clearTempMessage() {
         viewModelScope.launch {
             messageRepository.clearTempMessage()
             messageRepository.clearTempNotes()
         }
     }
+
 
     fun joinRoom(
         ownerDomain: String,
@@ -177,6 +184,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+
     fun initNotes(
         ownerDomain: String,
         ownerClientId: String,
@@ -196,6 +204,7 @@ class RoomViewModel @Inject constructor(
         setJoiningRoomId(-1)
     }
 
+
     fun refreshRoom(){
         printlnCK("refreshRoom")
         viewModelScope.launch {
@@ -207,14 +216,17 @@ class RoomViewModel @Inject constructor(
         chatRepository.setJoiningRoomId(roomId)
     }
 
-    fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
+    @ExperimentalPagingApi
+    fun getMessages(groupId: Long, domain: String, clientId: String): Flow<PagingData<Message>> {
         printlnCK("getMessages: groupId $groupId")
         return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
     }
 
+
     fun getNotes() : LiveData<List<Message>> {
         return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, it.createdTime, it.createdTime, it.ownerDomain, it.ownerClientId) } }
     }
+
 
     private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
@@ -224,6 +236,7 @@ class RoomViewModel @Inject constructor(
             updateMessagesFromRemote(groupId, it.lastMessageSyncTimestamp)
         }
     }
+
 
     private suspend fun updateGroupWithFriendId(friendId: String, friendDomain: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
@@ -245,15 +258,18 @@ class RoomViewModel @Inject constructor(
         return Owner(domain, clientId)
     }
 
+
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
         messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
     }
 
+
     private suspend fun updateNotesFromRemote() {
         val server = environment.getServer()
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
+
 
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
         viewModelScope.launch {
@@ -307,6 +323,7 @@ class RoomViewModel @Inject constructor(
             }
         }
     }
+
 
     fun sendMessageToGroup(
         context: Context,
@@ -362,6 +379,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+
     fun sendNote(context: Context) {
         viewModelScope.launch {
             try {
@@ -391,6 +409,7 @@ class RoomViewModel @Inject constructor(
             }
         }
     }
+
 
     fun removeMember(
         user: User,
@@ -457,6 +476,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+
     fun deleteSelectedMessage() {
         viewModelScope.launch {
             if (isNote.value == true) {
@@ -506,6 +526,7 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
+
     private fun uploadImage(
         context: Context,
         groupId: Long = 0L,
@@ -519,6 +540,7 @@ class RoomViewModel @Inject constructor(
             uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople, persistablePermission = false)
         }
     }
+
 
     fun uploadFile(
         context: Context, groupId: Long,
@@ -539,6 +561,7 @@ class RoomViewModel @Inject constructor(
             )
         }
     }
+
 
     private fun uploadFile(
         urisList: List<String>,

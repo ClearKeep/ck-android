@@ -4,6 +4,7 @@ import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
+import androidx.paging.*
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.dao.MessageDAO
 import com.clearkeep.db.clear_keep.dao.NoteDAO
@@ -21,6 +22,7 @@ import com.clearkeep.utilities.getUnableErrorMessage
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
+import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -42,10 +44,13 @@ import org.whispersystems.libsignal.state.PreKeyBundle
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import signal.Signal
+import java.lang.IllegalArgumentException
+import java.lang.NullPointerException
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+
 
 @Singleton
 class MessageRepository @Inject constructor(
@@ -62,32 +67,71 @@ class MessageRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val groupRepository: GroupRepository,
 ) {
-    fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
+    @ExperimentalPagingApi
+    fun getMessagesAsState(groupId: Long, owner: Owner) =
+        Pager(PagingConfig(pageSize = MessageRemoteMediator.PAGE_SIZE),
+            remoteMediator = MessageRemoteMediator(
+                groupId,
+                owner,
+                serverRepository,
+                groupRepository,
+                messageDAO,
+                groupDAO,
+                apiProvider,
+                signalProtocolStore,
+                senderKeyStore
+            )
+        ) {
+            messageDAO.getMessagesPaged(groupId, owner.domain, owner.clientId)
+        }.flow
 
-    fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
+    fun getNotesAsState(owner: Owner) =
+        noteDAO.getNotesAsState(owner.domain, owner.clientId)
 
-    suspend fun getMessages(groupId: Long, owner: Owner) = messageDAO.getMessages(groupId, owner.domain, owner.clientId)
+    suspend fun getMessages(groupId: Long, owner: Owner) =
+        messageDAO.getMessages(groupId, owner.domain, owner.clientId)
 
-    suspend fun getMessage(messageId: String,groupId: Long) = messageDAO.getMessage(messageId,groupId)
+    suspend fun getMessage(messageId: String, groupId: Long) =
+        messageDAO.getMessage(messageId, groupId)
 
-    suspend fun getUnreadMessage(groupId: Long, domain: String, ourClientId: String) : List<Message> {
+    suspend fun getUnreadMessage(
+        groupId: Long,
+        domain: String,
+        ourClientId: String
+    ): List<Message> {
         val group = groupDAO.getGroupById(groupId, domain, ourClientId)!!
-        return messageDAO.getMessagesAfterTime(groupId, group.lastMessageSyncTimestamp, domain, ourClientId).dropWhile { it.senderId ==  ourClientId}
+        return messageDAO.getMessagesAfterTime(
+            groupId,
+            group.lastMessageSyncTimestamp,
+            domain,
+            ourClientId
+        ).dropWhile { it.senderId == ourClientId }
     }
 
     private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
 
     private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
-    suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
+    suspend fun updateMessageFromAPI(
+        groupId: Long,
+        owner: Owner,
+        lastMessageAt: Long,
+        offSet: Int = 0
+    ) = withContext(Dispatchers.IO) {
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext
-            val messageGrpc = apiProvider.provideMessageBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val messageGrpc = apiProvider.provideMessageBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
-                    .setGroupId(groupId)
-                    .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt-(3*24*60*60*1000))
-                    .build()
+                .setGroupId(groupId)
+                .setOffSet(offSet)
+                .setLastMessageAt(lastMessageAt - (3 * 24 * 60 * 60 * 1000))
+                .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val listMessage = arrayListOf<Message>()
             responses.lstMessageList
@@ -183,8 +227,11 @@ class MessageRepository @Inject constructor(
         groupDAO.updateGroup(updateGroup)
     }
 
-    private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner): Message {
-        val oldMessage = messageDAO.getMessage(response.id,response.groupId)
+    private suspend fun parseMessageResponse(
+        response: MessageOuterClass.MessageObjectResponse,
+        owner: Owner
+    ): Message {
+        val oldMessage = messageDAO.getMessage(response.id, response.groupId)
         if (oldMessage != null) {
             return oldMessage
         }
@@ -206,12 +253,21 @@ class MessageRepository @Inject constructor(
         )
     }
 
-    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNoteResponse, owner: Owner): Note {
+    private suspend fun parseNoteResponse(
+        response: NoteOuterClass.UserNoteResponse,
+        owner: Owner
+    ): Note {
         val oldNote = noteDAO.getNote(response.createdAt)
         if (oldNote != null) {
             return oldNote
         }
-        return Note(null, response.content.toString(Charsets.UTF_8), response.createdAt, owner.domain, owner.clientId)
+        return Note(
+            null,
+            response.content.toString(Charsets.UTF_8),
+            response.createdAt,
+            owner.domain,
+            owner.clientId
+        )
     }
 
     suspend fun decryptMessage(
@@ -233,7 +289,7 @@ class MessageRepository @Inject constructor(
                 printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
-                }else {
+                } else {
                     decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
                 }
             } else {
@@ -253,7 +309,7 @@ class MessageRepository @Inject constructor(
              * Need wait 1.5s to load old message before save unableDecryptMessage
              */
             delay(1500)
-            val oldMessage = messageDAO.getMessage(messageId,groupId)
+            val oldMessage = messageDAO.getMessage(messageId, groupId)
             if (oldMessage != null) {
                 printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
                 return oldMessage
@@ -286,8 +342,14 @@ class MessageRepository @Inject constructor(
             val groupsList = it.map { it.groupId }.distinct().map {
                 groupDAO.getGroupById(it, ownerDomain, ownerClientId)
             }
-            val clientList = groupsList.map { it?.clientList ?: emptyList() }.flatten().distinctBy { it.userId }
-            val result = it.map { message -> MessageSearchResult(message, clientList.find { message.senderId == it.userId }, groupsList.find { message.groupId == it?.groupId }) }
+            val clientList =
+                groupsList.map { it?.clientList ?: emptyList() }.flatten().distinctBy { it.userId }
+            val result = it.map { message ->
+                MessageSearchResult(
+                    message,
+                    clientList.find { message.senderId == it.userId },
+                    groupsList.find { message.groupId == it?.groupId })
+            }
             printlnCK("====================== result get message")
             result
         }.asLiveData()
@@ -345,7 +407,7 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    suspend fun saveNote(note: Note) : Long {
+    suspend fun saveNote(note: Note): Long {
         return insertNote(note)
     }
 
@@ -361,11 +423,15 @@ class MessageRepository @Inject constructor(
         noteDAO.deleteNote(generatedId)
     }
 
-    suspend fun saveMessage(message: Message) : Int {
+    suspend fun saveMessage(message: Message): Int {
         return messageDAO.insert(message).toInt()
     }
 
-    fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String, owner: Owner): Message {
+    fun convertMessageResponse(
+        value: MessageOuterClass.MessageObjectResponse,
+        decryptedMessage: String,
+        owner: Owner
+    ): Message {
         return Message(
             messageId = value.id,
             groupId = value.groupId,
@@ -408,7 +474,7 @@ class MessageRepository @Inject constructor(
             return@withContext ""
         }
 
-        val bobGroupCipher:GroupCipher
+        val bobGroupCipher: GroupCipher
         val groupSender: SenderKeyName
         if (sender.clientId == owner.clientId) {
             val senderAddress = CKSignalProtocolAddress(sender, 111)
@@ -423,20 +489,21 @@ class MessageRepository @Inject constructor(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
 
-            /*val record = senderKeyStore.loadSenderKey(groupSender)
+        /*val record = senderKeyStore.loadSenderKey(groupSender)
 
-            if (record.isEmpty) {
-                throw NoSessionException("No sender key for: $groupSender")
-            }
+        if (record.isEmpty) {
+            throw NoSessionException("No sender key for: $groupSender")
+        }
 
-            val senderKeyMessage = SenderKeyMessage(message.toByteArray())
-            val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
+        val senderKeyMessage = SenderKeyMessage(message.toByteArray())
+        val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
 
-            senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
-            printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
+        senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
+        printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
 
 
-*/        val plaintextFromAlice = try {
+*/
+        val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx
@@ -457,7 +524,7 @@ class MessageRepository @Inject constructor(
     suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
         signalProtocolStore: InMemorySignalProtocolStore,
-        owner:Owner
+        owner: Owner
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
         printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
@@ -475,7 +542,13 @@ class MessageRepository @Inject constructor(
                 .setWorkspaceDomain(signalProtocolAddress.owner.domain)
                 .build()
 
-            val remoteKeyBundle = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain,server.accessKey,server.hashKey)).peerGetClientKey(requestUser)
+            val remoteKeyBundle = apiProvider.provideSignalKeyDistributionBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            ).peerGetClientKey(requestUser)
 
             val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
             val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
@@ -532,7 +605,13 @@ class MessageRepository @Inject constructor(
                     return false
                 }
                 printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
-                val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+                val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
                 val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)
                     .setClientId(fromClientId)
@@ -562,11 +641,374 @@ class MessageRepository @Inject constructor(
         return true
     }
 
-    suspend fun deleteMessageInGroup(groupId: Long,ownerDomain: String,ownerClientId: String){
-        messageDAO.deleteMessageFromGroupId(groupId,ownerDomain,ownerClientId)
+    suspend fun deleteMessageInGroup(
+        groupId: Long,
+        ownerDomain: String,
+        ownerClientId: String
+    ) {
+        messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
     }
 
     suspend fun clearMessageByDomain(domain: String, userId: String) {
         messageDAO.deleteMessageByDomain(domain, userId)
+    }
+}
+
+@ExperimentalPagingApi
+class MessageRemoteMediator(
+    private val groupId: Long,
+    private val owner: Owner,
+    private val serverRepository: ServerRepository,
+    private val groupRepository: GroupRepository,
+    private val messageDAO: MessageDAO,
+    private val groupDAO: GroupDAO,
+    private val apiProvider: ParamAPIProvider,
+    private val signalProtocolStore: InMemorySignalProtocolStore,
+    private val senderKeyStore: InMemorySenderKeyStore
+) : RemoteMediator<Int, Message>() {
+    override suspend fun load(
+        loadType: LoadType,
+        state: PagingState<Int, Message>
+    ): MediatorResult {
+        return try {
+            val offSet = when (loadType) {
+                LoadType.REFRESH -> {
+                    // No need to load refresh
+                    0 //TODO: Replace
+                }
+                LoadType.PREPEND -> {
+                    0 //TODO: Replace
+                }
+                LoadType.APPEND -> {
+                    // No need to load append
+                    0 //TODO: Replace
+                }
+            }
+            val lastMessageAt = 1L //TODO: Replace
+            val server = serverRepository.getServerByOwner(owner) ?: return MediatorResult.Error(
+                IllegalArgumentException()
+            )
+            val messageGrpc = apiProvider.provideMessageBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
+            val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
+                .setGroupId(groupId)
+                .setOffSet(offSet)
+                .setLastMessageAt(lastMessageAt - (3 * 24 * 60 * 60 * 1000))
+                .build()
+            val responses = messageGrpc.getMessagesInGroup(request)
+            val listMessage = arrayListOf<Message>()
+            responses.lstMessageList
+                .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
+                .forEachIndexed { _, data ->
+                    printlnCK("updateMessageFromAPI!")
+                    listMessage.add(parseMessageResponse(data, owner))
+                }
+            if (listMessage.isNotEmpty()) {
+                messageDAO.insertMessages(listMessage)
+                val lastMessage = listMessage.maxByOrNull { it.createdTime }
+                if (lastMessage != null) {
+                    updateLastSyncMessageTime(groupId, owner, lastMessage)
+                }
+            }
+
+            MediatorResult.Success(true) //TODO: Define endOfPaginationReached
+        } catch (e: Exception) {
+            MediatorResult.Error(e)
+        }
+    }
+
+    private suspend fun parseMessageResponse(
+        response: MessageOuterClass.MessageObjectResponse,
+        owner: Owner
+    ): Message {
+        val oldMessage = messageDAO.getMessage(response.id, response.groupId)
+        if (oldMessage != null) {
+            return oldMessage
+        }
+        if (owner.clientId == response.fromClientId) {
+            return decryptMessage(
+                response.id, response.groupId, response.groupType,
+                response.fromClientId, response.fromClientWorkspaceDomain,
+                response.createdAt, response.updatedAt,
+                response.senderMessage,
+                owner
+            )
+        }
+        return decryptMessage(
+            response.id, response.groupId, response.groupType,
+            response.fromClientId, response.fromClientWorkspaceDomain,
+            response.createdAt, response.updatedAt,
+            response.message,
+            owner
+        )
+    }
+
+    suspend fun decryptMessage(
+        messageId: String,
+        groupId: Long,
+        groupType: String,
+        fromClientId: String,
+        fromDomain: String,
+        createdTime: Long,
+        updatedTime: Long,
+        encryptedMessage: ByteString,
+        owner: Owner,
+    ): Message {
+        var messageText: String
+        try {
+            val sender = Owner(fromDomain, fromClientId)
+            messageText = if (!isGroup(groupType)) {
+                //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
+                printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
+                if (owner.clientId == sender.clientId) {
+                    decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
+                } else {
+                    decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
+                }
+            } else {
+                printlnCK("signalProtocolStore 2 messageId : ${messageId} encryptedMessage: ${encryptedMessage}")
+                decryptGroupMessage(
+                    sender,
+                    groupId,
+                    encryptedMessage,
+                    senderKeyStore,
+                    owner
+                )
+            }
+        } catch (e: DuplicateMessageException) {
+            printlnCK("decryptMessage, maybe this message decrypted, waiting 1,5s and check again")
+            /**
+             * To fix case: both load message and receive message from socket at the same time
+             * Need wait 1.5s to load old message before save unableDecryptMessage
+             */
+            delay(1500)
+            val oldMessage = messageDAO.getMessage(messageId, groupId)
+            if (oldMessage != null) {
+                printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
+                return oldMessage
+            } else {
+                messageText = getUnableErrorMessage(e.message)
+            }
+        } catch (e: Exception) {
+            printlnCK("decryptMessage error : $e")
+            messageText = getUnableErrorMessage(e.message)
+        }
+
+        printlnCK("decryptMessage done: $messageText")
+        return saveNewMessage(
+            Message(
+                messageId = messageId, groupId = groupId, groupType = groupType,
+                senderId = fromClientId, receiverId = owner.clientId, message = messageText,
+                createdTime = createdTime, updatedTime = updatedTime,
+                ownerDomain = owner.domain, ownerClientId = owner.clientId
+            ),
+        )
+    }
+
+    @Throws(java.lang.Exception::class, DuplicateMessageException::class)
+    private suspend fun decryptPeerMessage(
+        sender: Owner, message: ByteString,
+        signalProtocolStore: InMemorySignalProtocolStore,
+    ): String = withContext(Dispatchers.IO) {
+        printlnCK("decryptPeerMessage!")
+        if (message.isEmpty) {
+            return@withContext ""
+        }
+
+        val signalProtocolAddress = CKSignalProtocolAddress(sender, 222)
+        val preKeyMessage = PreKeySignalMessage(message.toByteArray())
+
+        val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
+        val message = sessionCipher.decrypt(preKeyMessage)
+        return@withContext String(message, StandardCharsets.UTF_8)
+    }
+
+    @Throws(java.lang.Exception::class, DuplicateMessageException::class)
+    private suspend fun decryptGroupMessage(
+        sender: Owner, groupId: Long, message: ByteString,
+        senderKeyStore: InMemorySenderKeyStore,
+        owner: Owner,
+    ): String = withContext(Dispatchers.IO) {
+        if (message.isEmpty) {
+            return@withContext ""
+        }
+
+        val bobGroupCipher: GroupCipher
+        val groupSender: SenderKeyName
+        if (sender.clientId == owner.clientId) {
+            val senderAddress = CKSignalProtocolAddress(sender, 111)
+            groupSender = SenderKeyName(groupId.toString(), senderAddress)
+            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+        } else {
+            val senderAddress = CKSignalProtocolAddress(sender, 222)
+            groupSender = SenderKeyName(groupId.toString(), senderAddress)
+            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+        }
+        initSessionUserInGroup(
+            groupId, sender.clientId, groupSender, senderKeyStore, false, owner
+        )
+
+        /*val record = senderKeyStore.loadSenderKey(groupSender)
+
+        if (record.isEmpty) {
+            throw NoSessionException("No sender key for: $groupSender")
+        }
+
+        val senderKeyMessage = SenderKeyMessage(message.toByteArray())
+        val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
+
+        senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
+        printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
+
+
+*/
+        val plaintextFromAlice = try {
+            bobGroupCipher.decrypt(message.toByteArray())
+        } catch (messageEx: DuplicateMessageException) {
+            throw messageEx
+        } catch (ex: Exception) {
+            printlnCK("decryptGroupMessage, $ex")
+            val initSessionAgain = initSessionUserInGroup(
+                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
+            )
+            if (!initSessionAgain) {
+                throw java.lang.Exception("can not init session in group $groupId")
+            }
+            bobGroupCipher.decrypt(message.toByteArray())
+        }
+
+        return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
+    }
+
+    private suspend fun initSessionUserInGroup(
+        groupId: Long, fromClientId: String,
+        groupSender: SenderKeyName,
+        senderKeyStore: InMemorySenderKeyStore, isForceProcess: Boolean,
+        owner: Owner
+    ): Boolean {
+        val senderKeyRecord: SenderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
+        if (senderKeyRecord.isEmpty || isForceProcess) {
+            try {
+                val server = serverRepository.getServerByOwner(owner)
+                if (server == null) {
+                    printlnCK("initSessionUserInGroup: server must be not null")
+                    return false
+                }
+                printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
+                val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
+                val request = Signal.GroupGetClientKeyRequest.newBuilder()
+                    .setGroupId(groupId)
+                    .setClientId(fromClientId)
+                    .build()
+                val senderKeyDistribution = signalGrpc.groupGetClientKey(request)
+                val receivedAliceDistributionMessage =
+                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
+                val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
+                bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("initSessionUsInGroup token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
+                }
+                return false
+            } catch (e: java.lang.Exception) {
+                printlnCK("initSessionUserInGroup:${fromClientId} ${e.message}")
+                return false
+            }
+        }
+        return true
+    }
+
+    suspend fun saveNewMessage(message: Message): Message {
+        printlnCK("saveMessage: ${message.messageId}, ${message.message}")
+        insertMessage(message)
+
+        val groupId = message.groupId
+        val room: ChatGroup? =
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data
+
+        if (room != null) {
+            // update last message in room
+            val updateRoom = ChatGroup(
+                generateId = room.generateId,
+                groupId = room.groupId,
+                groupName = room.groupName,
+                groupAvatar = room.groupAvatar,
+                groupType = room.groupType,
+                createBy = room.createBy,
+                createdAt = room.createdAt,
+                updateBy = message.senderId,
+                updateAt = getCurrentDateTime().time,
+                rtcToken = room.rtcToken,
+                clientList = room.clientList,
+
+                // update
+                isJoined = room.isJoined,
+                ownerDomain = room.ownerDomain,
+                ownerClientId = room.ownerClientId,
+
+                lastMessage = message,
+                lastMessageAt = message.createdTime,
+                lastMessageSyncTimestamp = room.lastMessageSyncTimestamp
+            )
+            groupDAO.updateGroup(updateRoom)
+        } else {
+            printlnCK("can not find owner group ${message.groupId} for this message")
+        }
+
+        return message
+    }
+
+    private suspend fun updateLastSyncMessageTime(
+        groupId: Long,
+        owner: Owner,
+        lastMessage: Message
+    ) {
+        printlnCK("updateLastSyncMessageTime, groupId = $groupId")
+        val group = groupDAO.getGroupById(groupId, owner.domain, owner.clientId)!!
+        val updateGroup = ChatGroup(
+            generateId = group.generateId,
+            groupId = group.groupId,
+            groupName = group.groupName,
+            groupAvatar = group.groupAvatar,
+            groupType = group.groupType,
+            createBy = group.createBy,
+            createdAt = group.createdAt,
+            updateBy = group.updateBy,
+            updateAt = group.updateAt,
+            rtcToken = group.rtcToken,
+            clientList = group.clientList,
+            isJoined = group.isJoined,
+            ownerDomain = group.ownerDomain,
+            ownerClientId = group.ownerClientId,
+            lastMessage = lastMessage,
+            lastMessageAt = lastMessage.createdTime,
+            // update
+            lastMessageSyncTimestamp = lastMessage.createdTime
+        )
+        groupDAO.updateGroup(updateGroup)
+    }
+
+    private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
+
+    companion object {
+        const val PAGE_SIZE = 10
     }
 }

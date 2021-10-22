@@ -37,6 +37,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
@@ -50,6 +52,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.util.*
 
+@ExperimentalPagingApi
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -102,10 +105,7 @@ fun RoomScreen(
     val messageList = when {
         group != null -> {
             roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
-                .observeAsState()
-        }
-        isNote.value == true -> {
-            roomViewModel.getNotes().observeAsState()
+                .collectAsLazyPagingItems()
         }
         else -> null
     }
@@ -178,7 +178,7 @@ fun RoomScreen(
                             isShowDialogCalling.value = true
                         }
                     })
-                if (messageList?.value != null) {
+                if (messageList != null) {
                     Column(
                         modifier = Modifier
                             .weight(
@@ -187,7 +187,7 @@ fun RoomScreen(
                     ) {
                         val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         MessageListView(
-                            messageList = messageList.value!!,
+                            messageList = messageList,
                             clients = group?.clientList ?: emptyList(),
                             listAvatar= listUserStatusState.value?: emptyList(),
                             myClientId = roomViewModel.clientId,
@@ -368,6 +368,7 @@ fun RoomScreen(
         )
     }
 }
+
 
 @ExperimentalComposeUiApi
 @Composable

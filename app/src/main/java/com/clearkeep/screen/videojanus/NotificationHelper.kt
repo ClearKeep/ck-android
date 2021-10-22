@@ -20,6 +20,7 @@ import com.clearkeep.utilities.*
 import androidx.core.app.Person
 import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
+import androidx.paging.ExperimentalPagingApi
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
@@ -30,6 +31,7 @@ import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.screen.chat.home.MainActivity
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
+
 
 fun showMessagingStyleNotification(
     context: Context,
@@ -67,6 +69,7 @@ fun showMessagingStyleNotification(
 
     showHeadsUpMessageWithNoAutoLaunch(context, sender, message.copy(message = messageNotificationContent), preference, avatar, groupSender)
 }
+
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
@@ -178,6 +181,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         notificationManager.notify(notificationId, notification)
     }
 }
+
 
 fun showMessageNotificationToSystemBar(
     context: Context,

@@ -1,6 +1,7 @@
 package com.clearkeep.db.clear_keep.dao
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
 import com.clearkeep.db.clear_keep.model.Message
@@ -30,6 +31,9 @@ interface MessageDAO {
 
     @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time  ASC")
     fun getMessagesAsState(groupId: Long, domain: String, ownerClientId: String): LiveData<List<Message>>
+
+    @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time  ASC")
+    fun getMessagesPaged(groupId: Long, domain: String, ownerClientId: String): PagingSource<Int, Message>
 
     @Query("DELETE FROM message WHERE message_id = ''")
     suspend fun deleteTempMessages()

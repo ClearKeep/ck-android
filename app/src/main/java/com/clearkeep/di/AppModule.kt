@@ -1,5 +1,6 @@
 package com.clearkeep.di
 
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.dynamicapi.*
 import com.clearkeep.dynamicapi.channel.ChannelSelector
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
@@ -9,6 +10,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import javax.inject.Singleton
+
 
 @InstallIn(ApplicationComponent::class)
 @Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])

@@ -2,6 +2,7 @@ package com.clearkeep.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.screen.auth.forgot.ForgotViewModel
 import com.clearkeep.screen.chat.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -25,6 +26,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.multibindings.IntoMap
+
 
 @Suppress("unused")
 @InstallIn(ApplicationComponent::class)

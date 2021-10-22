@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.*
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
@@ -39,6 +40,7 @@ import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.utilities.sdp
 import org.whispersystems.libsignal.groups.SenderKeyName
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {

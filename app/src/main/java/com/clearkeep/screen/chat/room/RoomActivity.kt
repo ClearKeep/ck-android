@@ -42,6 +42,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.compose.*
+import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.screen.chat.room.photo_detail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
@@ -70,6 +71,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
 
+    @ExperimentalPagingApi
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
     @ExperimentalComposeUiApi

@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.repo
 
+import androidx.paging.ExperimentalPagingApi
 import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.db.clear_keep.model.Server
@@ -39,8 +40,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
+
 @Singleton
-class AuthRepository @Inject constructor(
+class AuthRepository
+@Inject constructor(
     // network
     private val paramAPIProvider: ParamAPIProvider,
 
