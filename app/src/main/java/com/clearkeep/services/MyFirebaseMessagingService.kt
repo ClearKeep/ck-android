@@ -69,10 +69,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun handleNotification(remoteMessage: RemoteMessage) {
         val clientId = remoteMessage.data["client_id"] ?: ""
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
-        printlnCK("notification  $clientId")
+        printlnCK("notification $clientId")
         GlobalScope.launch {
             val server = serverRepository.getServer(clientDomain, clientId)
-            printlnCK("handleNotification server  clientDomain: ${clientDomain} clientId: $clientId")
+            printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
                 environment.setUpTempDomain(server)
@@ -92,13 +92,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "member_leave","new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
+                    "deactive_account" -> {
+                        printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
+                        handleRequestDeactiveAccount(remoteMessage)
+                    }
                     CALL_TYPE_VIDEO -> {
                         val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
                         val groupId = remoteMessage.data["group_id"]
                         switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, groupId)
                         sendBroadcast(switchIntent)
                     }
-
                 }
             }
         }
@@ -244,6 +247,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         } catch (e: Exception) {
             printlnCK("handlerRequestAddRemoteMember Exception ${e.message}")
         }
+    }
+    
+    private suspend fun handleRequestDeactiveAccount(remoteMessage: RemoteMessage) {
+        val data: Map<String, String> = Gson().fromJson(
+            remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
+        )
+        val clientId = data["client_id"] ?: ""
+        val clientDomain = data["client_workspace_domain"] ?: ""
+        val deactivatedAccountId = data["deactive_account_id"] ?: ""
+        printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
+
+        groupRepository.disableChatOfDeactivatedUser(clientId, clientDomain, deactivatedAccountId)
     }
 
     private suspend fun handleCancelCall(remoteMessage: RemoteMessage) {

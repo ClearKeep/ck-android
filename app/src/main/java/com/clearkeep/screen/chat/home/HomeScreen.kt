@@ -250,7 +250,7 @@ fun ItemListDirectMessage(
         val partnerUser= chatGroup.clientList.firstOrNull { client ->
             client.userId != clintId
         }
-        val roomName = partnerUser?.userName ?: ""
+        val roomName = if (chatGroup.isDeletedUserPeer) "Deleted User" else partnerUser?.userName ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -291,7 +291,7 @@ fun ChatGroupItemView(
     ) {
         Row(modifier = Modifier.padding(top = 16.sdp())) {
             Text(
-                text = chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
+                text = if (chatGroup.isDeletedUserPeer) "Deleted User" else chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = MaterialTheme.colors.onBackground,

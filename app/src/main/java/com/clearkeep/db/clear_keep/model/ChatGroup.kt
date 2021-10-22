@@ -36,6 +36,7 @@ data class ChatGroup(
         @ColumnInfo(name = "last_message_at") val lastMessageAt: Long,
 
         @ColumnInfo(name = "last_message_sync_stamp") val lastMessageSyncTimestamp: Long,
+        @ColumnInfo(name = "is_deleted_user_peer") val isDeletedUserPeer: Boolean
 ) {
         fun isGroup() = isGroup(groupType)
 
