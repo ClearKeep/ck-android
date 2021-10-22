@@ -228,7 +228,7 @@ fun RoomScreen(
                     Column(Modifier.weight(0.66f)) {
                         Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
                             Box(Modifier.fillMaxSize()) {
-                                CKCircularProgressIndicator(Modifier.align(Alignment.Center))
+                                //CKCircularProgressIndicator(Modifier.align(Alignment.Center))
                             }
                         }
                     }
@@ -287,7 +287,11 @@ fun RoomScreen(
                     }
                 )
             }
+            val isLoading = roomViewModel.isLoading.observeAsState()
+            if (isLoading.value == true)
+                CKCircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
+
     }
     requestCallViewState.value?.let {
         printlnCK("status = ${it.status}")

@@ -86,7 +86,7 @@ class MessageRepository @Inject constructor(
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
                     .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt-(3*24*60*60*1000))
+                    .setLastMessageAt(lastMessageAt-(365*24*60*60*1000))
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val listMessage = arrayListOf<Message>()
@@ -538,6 +538,7 @@ class MessageRepository @Inject constructor(
                     .setClientId(fromClientId)
                     .build()
                 val senderKeyDistribution = signalGrpc.groupGetClientKey(request)
+                printlnCK("")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
@@ -563,7 +564,8 @@ class MessageRepository @Inject constructor(
     }
 
     suspend fun deleteMessageInGroup(groupId: Long,ownerDomain: String,ownerClientId: String){
-        messageDAO.deleteMessageFromGroupId(groupId,ownerDomain,ownerClientId)
+        val index = messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
+        printlnCK("deleteMessageInGroup: $index")
     }
 
     suspend fun clearMessageByDomain(domain: String, userId: String) {

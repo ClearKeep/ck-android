@@ -291,6 +291,25 @@ class GroupRepository @Inject constructor(
 
             val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
             if (response.error.isNullOrEmpty()) {
+                getListClientInGroup(groupId, owner.domain,owner.clientId)?.forEach {
+                    val senderAddress2 = CKSignalProtocolAddress(
+                        Owner(
+                            owner.domain,
+                            it
+                        ), 222
+                    )
+                    val senderAddress1 = CKSignalProtocolAddress(
+                        Owner(
+                            owner.domain,
+                            it
+                        ), 111
+                    )
+                    val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                    val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                    senderKeyStore.deleteSenderKey(groupSender2)
+                    senderKeyStore.deleteSenderKey(groupSender)
+                    printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
+                }
                 removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
                 printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.error}")
                 return@withContext true
