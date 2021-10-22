@@ -160,6 +160,7 @@ class MessageRepository @Inject constructor(
     ) {
         printlnCK("updateLastSyncMessageTime, groupId = $groupId")
         val group = groupDAO.getGroupById(groupId, owner.domain, owner.clientId)!!
+        printlnCK("updateLastSyncMessageTime group $group")
         val updateGroup = ChatGroup(
             generateId = group.generateId,
             groupId = group.groupId,
@@ -179,7 +180,7 @@ class MessageRepository @Inject constructor(
             lastMessageAt = lastMessage.createdTime,
             // update
             lastMessageSyncTimestamp = lastMessage.createdTime,
-            isDeletedUserPeer = false
+            isDeletedUserPeer = group.isDeletedUserPeer
         )
         groupDAO.updateGroup(updateGroup)
     }
@@ -302,6 +303,8 @@ class MessageRepository @Inject constructor(
         val room: ChatGroup? =
             groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data
 
+        printlnCK("saveNewMessage group $room")
+
         if (room != null) {
             // update last message in room
             val updateRoom = ChatGroup(
@@ -325,7 +328,7 @@ class MessageRepository @Inject constructor(
                 lastMessage = message,
                 lastMessageAt = message.createdTime,
                 lastMessageSyncTimestamp = room.lastMessageSyncTimestamp,
-                isDeletedUserPeer = false
+                isDeletedUserPeer = room.isDeletedUserPeer
             )
             groupDAO.updateGroup(updateRoom)
         } else {
