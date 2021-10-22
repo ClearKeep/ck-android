@@ -91,6 +91,10 @@ class RoomViewModel @Inject constructor(
     val listUserStatus: LiveData<List<User>>
         get() = _listUserStatus
 
+    private val _isDeletedUserChat = MutableLiveData<Boolean>()
+    val isDeletedUserChat: LiveData<Boolean>
+        get() = _isDeletedUserChat
+
     val listPeerAvatars = MutableLiveData<List<String>>()
 
     private var _selectedMessage : MessageDisplayInfo? = null

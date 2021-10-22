@@ -35,6 +35,9 @@ interface GroupDAO {
 
     @Query("DELETE  FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
+
+    @Query("UPDATE chatgroup SET is_deleted_user_peer = 1 WHERE generateId IN (:ids)")
+    suspend fun disableChatOfDeactivatedUser(ids: List<Int>)
 /*    @Query("SELECT chatgroup.*, message.* FROM chatgroup LEFT JOIN message ON chatgroup.last_message_id = message.id")
     fun getRoomWithLastMessageAsState(): LiveData<List<GroupAndLastMessage>>*/
 

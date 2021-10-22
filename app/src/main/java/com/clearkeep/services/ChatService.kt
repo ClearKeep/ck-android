@@ -171,6 +171,7 @@ class ChatService : Service(),
         value: NotifyOuterClass.NotifyObjectResponse,
         domain: String
     ) {
+        printlnCK("chatService onNotificationReceived")
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
@@ -198,6 +199,9 @@ class ChatService : Service(),
                     updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
                     sendBroadcast(updateGroupIntent)
 
+                }
+                "notify_type" -> {
+                    printlnCK("chatService Deactive account ref_client_id ${value.refClientId} ref_group_id ${value.refGroupId}")
                 }
                 CALL_TYPE_VIDEO -> {
                     val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)

@@ -17,7 +17,7 @@ import com.clearkeep.db.clear_keep.model.*
     Note::class,
     UserPreference::class,
     UserKey::class
-], version = 14, exportSchema = false)
+], version = 15, exportSchema = false)
 @TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun profileDao(): ProfileDao
