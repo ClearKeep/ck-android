@@ -113,6 +113,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val groupCallType = remoteMessage.data["call_type"]
         var avatar = remoteMessage.data["from_client_avatar"] ?: ""
         val fromClientName = remoteMessage.data["from_client_name"]
+        val fromClientId = remoteMessage.data["from_client_id"]?:""
         val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
         val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
         val webRtcUrl = remoteMessage.data["group_rtc_url"] ?: ""
@@ -128,7 +129,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
         if(!isGroup(groupType)){
-            peopleRepository.getFriendFromID(clientId)?.avatar?.let {
+            peopleRepository.getFriendFromID(fromClientId)?.avatar?.let {
                 avatar=it
             }
         }
