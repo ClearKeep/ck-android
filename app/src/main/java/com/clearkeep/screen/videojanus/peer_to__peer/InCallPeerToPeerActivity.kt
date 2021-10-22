@@ -30,6 +30,7 @@ import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.ServerRepository
+import com.clearkeep.screen.chat.repo.PeopleRepository
 import com.clearkeep.screen.chat.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.*
@@ -91,6 +92,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
     @Inject
     lateinit var serverRepository: ServerRepository
 
+    @Inject
+    lateinit var peopleRepository: PeopleRepository
+
     // surface and render
     private var endCallReceiver: BroadcastReceiver? = null
     private var busyCallReceiver: BroadcastReceiver? = null
@@ -101,7 +105,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private var ringBackPlayer: MediaPlayer? = null
     private var busySignalPlayer: MediaPlayer? = null
     var isFromComingCall: Boolean = false
-    var avatarInConversation = ""
     var groupName = ""
 
     private var mTimeStarted: Long = 0
@@ -130,7 +133,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
         mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
         //TODO: Remove test hardcode
-        mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.mIsAudioMode.value = mIsAudioMode
         isShowedDialogCamera = !mIsAudioMode
 
@@ -184,10 +186,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
 
         pipCallNamePeer.text = mCurrentUsername
-        avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
+        printlnCK("avatarInConversation: $mCurrentUserAvatar")
         //todo avatarInConversation hardcode test
-        avatarInConversation =
-            "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()
@@ -405,22 +405,19 @@ class InCallPeerToPeerActivity : BaseActivity() {
         tvUserName.text = mGroupName
         tvNickName.visibility = View.VISIBLE
         val displayName =
-            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(
-                0,
-                1
-            ) else mGroupName
+            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
         tvNickName.text = displayName
 
         if (!mIsGroupCall) {
             Glide.with(this)
-                .load(avatarInConversation)
+                .load(mCurrentUserAvatar)
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
                 .into(imageBackground)
 
             Glide.with(this)
-                .load(avatarInConversation)
+                .load(mCurrentUserAvatar)
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .listener(object : RequestListener<Drawable> {
@@ -465,7 +462,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvConnecting.visible()
         else tvConnecting.gone()
         Glide.with(this)
-            .load(avatarInConversation)
+            .load(mCurrentUserAvatar)
             .placeholder(R.drawable.ic_bg_gradient)
             .error(R.drawable.ic_bg_gradient)
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))

@@ -97,8 +97,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
-        //todo mAvatarInConversation hardcode test
-        mAvatarInConversation="https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
+        printlnCK("mAvatarInConversation: $mAvatarInConversation")
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
         mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
@@ -171,7 +170,11 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             tvUserName.text = mGroupName
         }
         if (!TextUtils.isEmpty(mAvatarInConversation)) {
-            AvatarImageTask(imgThumb).execute(mAvatarInConversation)
+            Glide.with(this)
+                .load(mAvatarInConversation)
+                .placeholder(R.drawable.ic_bg_gradient)
+                .error(R.drawable.ic_bg_gradient)
+                .into(imgThumb)
         } else {
             tvNickName.visibility = View.VISIBLE
             val displayName =

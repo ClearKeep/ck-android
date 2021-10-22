@@ -152,18 +152,19 @@ object AppCall {
         val notification: Notification = builder.build()
 
         if (!isGroup(groupType)) {
-            val target = NotificationTarget(
+/*            val target = NotificationTarget(
                 context,
                 R.id.imageButton,
                 headsUpLayout,
                 notification,
                 notificationId
-            )
-            Glide.with(context.applicationContext)
+            )*/
+            /*Glide.with(context.applicationContext)
                 .asBitmap()
                 .circleCrop()
                 .load(avatar)
-                .into(target)
+                .placeholder(context.applicationContext.getDrawable(R.drawable.ic_logo))
+                .into(target)*/
         }
 
         notificationManager.notify(notificationId, notification)

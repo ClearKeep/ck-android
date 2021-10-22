@@ -53,7 +53,7 @@ class PeopleRepository @Inject constructor(
 
     suspend fun getFriendFromID(friendClientId: String) : User? = withContext(Dispatchers.IO) {
         val ret = peopleDao.getFriendFromUserId(friendClientId)
-        printlnCK("getFriendFromID: ${ret?.avatar}  id: $friendClientId")
+        printlnCK("getFriendFromID: ${ret}  id: $friendClientId")
         return@withContext if (ret != null) convertEntityToUser(ret) else null
     }
 

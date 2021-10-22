@@ -737,7 +737,8 @@ class RoomViewModel @Inject constructor(
     }
 
     fun getUserAvatarUrl() : String {
-        return ""
+        printlnCK("getUserAvatarUrl: ${listPeerAvatars.value?.get(0)}")
+        return listPeerAvatars.value?.get(0) ?: ""
     }
 
     fun setSelectedMessage(selectedMessage: MessageDisplayInfo) {
