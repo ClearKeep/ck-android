@@ -9,9 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.components.base.*
+import com.clearkeep.components.colorSuccessDefault
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
+import com.clearkeep.screen.chat.home.composes.StatusIndicator
 import com.clearkeep.utilities.sdp
 
 @Composable
@@ -20,13 +22,15 @@ fun NewFriendListItem(
     user: User,
     description: @Composable ColumnScope.() -> Unit = {},
     action: @Composable RowScope.() -> Unit = {},
+    statusIcon: @Composable (BoxScope.() -> Unit) = { StatusIndicator(colorSuccessDefault) }
 ) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatarStatus(
             user.avatar,
             user.userName,
             size = 64.sdp(),
-            status = user.userStatus ?: UserStatus.ONLINE.value
+            user.userStatus ?: UserStatus.ONLINE.value,
+            16.sdp()
         )
         Column(
             Modifier
