@@ -207,6 +207,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
             printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: ${groupId}")
+            if (!serverRepository.getOwnerClientIds().contains(removedMember))
                 groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
                 peopleRepository.deleteFriend(removedMember)
@@ -215,7 +216,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 printlnCK("getListClientInGroup ${groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.size}")
                 groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.forEach {
-
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
@@ -232,13 +232,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
-                    printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
+                    printlnCK("deleteSignalSenderKey2: ${groupSender.groupId}  ${groupSender2.sender.name}")
                 }
                 groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             }
-            val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
-            updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
-            sendBroadcast(updateGroupIntent)
+            if (!serverRepository.getOwnerClientIds().contains(removedMember)) {
+                val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
+                updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
+                sendBroadcast(updateGroupIntent)
+            }
         } catch (e: Exception) {
             printlnCK("handlerRequestAddRemoteMember Exception ${e.message}")
         }

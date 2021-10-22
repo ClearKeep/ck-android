@@ -102,6 +102,8 @@ class RoomViewModel @Inject constructor(
     val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val sendMessageResponse = MutableLiveData<Resource<Any>>()
 
+    val isLoading=MutableLiveData<Boolean>(false)
+
     init {
         //getStatusUserInGroup()
     }
@@ -146,7 +148,9 @@ class RoomViewModel @Inject constructor(
             serverRepository.setActiveServer(selectedServer)
 
             if (roomId != null && roomId != 0L) {
+                isLoading.postValue(true)
                 updateGroupWithId(roomId)
+                isLoading.postValue(false)
                 getStatusUserInGroup()
             } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
                 updateGroupWithFriendId(friendId, friendDomain)
@@ -251,6 +255,7 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun updateNotesFromRemote() {
+
         val server = environment.getServer()
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
@@ -417,8 +422,8 @@ class RoomViewModel @Inject constructor(
         roomId?.let {
             viewModelScope.launch {
                 val result = groupRepository.leaveGroup(it, getOwner())
-
                 if (result) {
+                    messageRepository.deleteMessageInGroup(it, getOwner().domain, getOwner().clientId)
                     onSuccess?.invoke()
                 } else {
                     onError?.invoke()
