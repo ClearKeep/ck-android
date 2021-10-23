@@ -254,7 +254,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
         val clientId = data["client_id"] ?: ""
-        val clientDomain = data["client_workspace_domain"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val deactivatedAccountId = data["deactive_account_id"] ?: ""
         printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
 
