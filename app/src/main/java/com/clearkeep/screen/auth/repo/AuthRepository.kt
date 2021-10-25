@@ -70,6 +70,8 @@ class AuthRepository @Inject constructor(
         val verificatorHex =
             verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+        //nativeLib.freeMemoryCreateAccount()
+
         val decrypter = DecryptsPBKDF2(password)
         val key = KeyHelper.generateIdentityKeyPair()
         val preKeys = KeyHelper.generatePreKeys(1, 1)
@@ -149,6 +151,8 @@ class AuthRepository @Inject constructor(
 
                 val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
                 val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                nativeLib.freeMemoryAuthenticate()
 
                 val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
                     .setUserName(userName)
@@ -328,6 +332,8 @@ class AuthRepository @Inject constructor(
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+            //nativeLib.freeMemoryCreateAccount()
+
             val decrypter = DecryptsPBKDF2(rawPin)
             val key= KeyHelper.generateIdentityKeyPair()
 
@@ -410,6 +416,8 @@ class AuthRepository @Inject constructor(
             val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
             val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+            nativeLib.freeMemoryAuthenticate()
+
             val request = AuthOuterClass
                 .VerifyPinCodeReq
                 .newBuilder()
@@ -454,6 +462,8 @@ class AuthRepository @Inject constructor(
             val verificator = nativeLib.getVerificator()
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            //nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawPin)
             val key= KeyHelper.generateIdentityKeyPair()
@@ -535,6 +545,8 @@ class AuthRepository @Inject constructor(
             val verificator = nativeLib.getVerificator()
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+            //nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawNewPassword)
             val key= KeyHelper.generateIdentityKeyPair()

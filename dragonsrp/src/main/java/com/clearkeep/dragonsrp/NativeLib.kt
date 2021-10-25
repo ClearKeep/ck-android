@@ -2,26 +2,16 @@ package com.clearkeep.dragonsrp
 
 class NativeLib {
     @JvmField
-    var srpClientPtr = 0L
-    @JvmField
-    var srpClientAuthenticatorPtr = 0L
-
-    @JvmField
-    var srpServerPtr = 0L
-    @JvmField
-    var srpVerificatorPtr = 0L
-
-    @JvmField
     var verificatorPtr = 0L
     @JvmField
     var usrPtr = 0L
 
-    external fun stringFromJNI(): String
     external fun getSalt(username: String, rawPassword: String): ByteArray
     external fun getVerificator(): ByteArray
     external fun getA(username: String, rawPassword: String): ByteArray
     external fun getM(salt: ByteArray, b: ByteArray): ByteArray
-    external fun getK(m2: String): String
+    external fun freeMemoryCreateAccount()
+    external fun freeMemoryAuthenticate()
 
     companion object {
         // Used to load the 'dragonsrp' library on application startup.
