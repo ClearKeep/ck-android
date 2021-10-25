@@ -85,7 +85,9 @@ fun getHourTimeAsString(timeMs: Long) : String {
 }
 
 fun printlnCK(str: String) {
-    println("CKLog_$str")
+    if (BuildConfig.DEBUG) {
+        println("CKLog_$str")
+    }
 }
 
 fun getUnableErrorMessage(message: String?): String {

@@ -260,6 +260,8 @@ class ProfileRepository @Inject constructor(
             val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
             val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
+            nativeLib.freeMemoryAuthenticate()
+
             val validateRequest = UserOuterClass.MfaValidatePasswordRequest.newBuilder()
                 .setClientPublic(aHex)
                 .setClientSessionKeyProof(mHex)
@@ -381,6 +383,7 @@ class ProfileRepository @Inject constructor(
 
                 val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
                 val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                nativeLib.freeMemoryAuthenticate()
 
                 val newPasswordNativeLib = NativeLib()
 
@@ -390,6 +393,8 @@ class ProfileRepository @Inject constructor(
                 val verificator = newPasswordNativeLib.getVerificator()
                 val verificatorHex =
                     verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+
+                //nativeLib.freeMemoryCreateAccount()
 
                 val decrypter = DecryptsPBKDF2(newPassword)
                 val oldIdentityKey = signalKeyRepository.getIdentityKey(server.profile.userId, server.serverDomain)!!.identityKeyPair.privateKey.serialize()
