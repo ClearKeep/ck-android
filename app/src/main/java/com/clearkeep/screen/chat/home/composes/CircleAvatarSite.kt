@@ -30,12 +30,10 @@ import okhttp3.Cache
 
 @Composable
 fun CircleAvatarSite(url: String?, name: String, size: Dp = dimensionResource(R.dimen._56sdp), status: String, cacheKey: String = "") {
-    val context = LocalContext.current
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
 
     Column(Modifier.size(size)) {
         if (!url.isNullOrEmpty()) {
-            printlnCK("CircleAvatarSite $cacheKey") // Force recomposition when cache key changes
             Image(
                 rememberCoilPainter(
                     request = "$url?cache=$cacheKey", //Force reload when cache key changes

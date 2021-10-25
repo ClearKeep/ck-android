@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,8 +45,8 @@ fun NotificationSettingScreen(
         Spacer(modifier = Modifier.height(26.sdp()))
         CKSetting(
             modifier = Modifier,
-            name = "Show previews",
-            description = "Tips: Show message previews in alerts and banners when you are not using app",
+            name = stringResource(R.string.notification_setting_preview),
+            description = stringResource(R.string.notification_setting_preview_description),
             checked = userPreference.value?.showNotificationPreview ?: true
         ) {
             notificationSettingsViewModel.toggleShowPreview(it)
@@ -53,7 +54,7 @@ fun NotificationSettingScreen(
         Spacer(modifier = Modifier.height(40.sdp()))
         CKSetting(
             modifier = Modifier,
-            name = "Do not disturb",
+            name = stringResource(R.string.notification_setting_do_not_disturb),
             checked = userPreference.value?.doNotDisturb ?: false
         ) {
             notificationSettingsViewModel.toggleDoNotDisturb(it)
@@ -83,6 +84,6 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
             )
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText("Notification", headerTextType = HeaderTextType.Medium)
+        CKHeaderText(stringResource(R.string.notification), headerTextType = HeaderTextType.Medium)
     }
 }

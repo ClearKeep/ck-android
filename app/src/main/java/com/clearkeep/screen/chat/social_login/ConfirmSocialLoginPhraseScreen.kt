@@ -44,7 +44,7 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
             .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(58.sdp()))
-            CKTopAppBarSample(title = "Confirm Your Security Phrase", onBackPressed = { onBackPress() })
+            CKTopAppBarSample(title = stringResource(R.string.confirm_social_pin_screen_title), onBackPressed = { onBackPress() })
             Spacer(Modifier.height(30.sdp()))
 
             Column(
@@ -53,14 +53,14 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
                     .fillMaxSize(),
             ) {
                 CKText(
-                    text = "Remember this security phrase. If you forget it, you’ll need to reset your account and all data will be erased.",
+                    text = stringResource(R.string.social_pin_reminder),
                     style = MaterialTheme.typography.caption,
                     color = grayscaleOffWhite,
                     fontSize = 16.sdp().toNonScalableTextSize()
                 )
                 Spacer(Modifier.height(32.sdp()))
                 CKTextInputField(
-                    "Confirm Security Phrase",
+                    stringResource(R.string.confirm_social_pin),
                     securityPhrase, singleLine = true,
                     leadingIcon = {
                         Image(

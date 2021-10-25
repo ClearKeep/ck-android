@@ -26,9 +26,6 @@ class DynamicAPIProviderImpl @Inject constructor(
     private var server: Server? = null
     
     override fun setUpDomain(server: Server) {
-        if (server == null) {
-            throw IllegalArgumentException("server must be not null")
-        }
         printlnCK("setUpDomain, domain = ${server.serverDomain}")
         this.server = server
     }

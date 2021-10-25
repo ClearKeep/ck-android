@@ -19,7 +19,6 @@ interface GroupDAO {
     @Update
     suspend fun updateGroup(vararg group: ChatGroup)
 
-    //@Query("SELECT * FROM chatgroup WHERE id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
     suspend fun getGroupById(groupId: Long, domain: String, ownerId: String): ChatGroup?
 

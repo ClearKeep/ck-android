@@ -1,8 +1,6 @@
 package com.clearkeep.screen.chat.room.photo_detail
 
 import android.Manifest
-import android.content.Context
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -32,14 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.imageLoader
+import com.clearkeep.R
 import com.clearkeep.components.colorDialogScrim
 import com.clearkeep.components.colorLightBlue
 import com.clearkeep.screen.chat.room.RoomViewModel
-import com.clearkeep.utilities.isPermissionGranted
 import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
@@ -199,7 +197,7 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
                         .background(Color.White)
                 ) {
                     Text(
-                        "Save",
+                        stringResource(R.string.save),
                         Modifier
                             .fillMaxWidth()
                             .padding(16.sdp())
@@ -212,7 +210,7 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
                 Spacer(Modifier.height(8.sdp()))
                 Box {
                     Text(
-                        "Cancel", modifier = Modifier
+                        stringResource(R.string.cancel), modifier = Modifier
                             .clip(RoundedCornerShape(14.sdp()))
                             .background(Color.White)
                             .align(Alignment.Center)
@@ -236,7 +234,6 @@ fun BottomImageList(
     selectedImageUri: String,
     onSelect: (String) -> Unit
 ) {
-    println("imagesList $imagesList")
     LazyRow(modifier) {
         itemsIndexed(imagesList) { _, uri: String ->
             val isSelected = uri == selectedImageUri

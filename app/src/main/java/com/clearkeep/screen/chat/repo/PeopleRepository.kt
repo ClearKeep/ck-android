@@ -2,7 +2,7 @@ package com.clearkeep.screen.chat.repo
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import com.clearkeep.db.clear_keep.dao.UserDao
+import com.clearkeep.db.clear_keep.dao.UserDAO
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserEntity
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class PeopleRepository @Inject constructor(
     // dao
-    private val peopleDao: UserDao,
+    private val peopleDao: UserDAO,
 
     private val environment: Environment,
 

@@ -70,7 +70,7 @@ class AuthRepository @Inject constructor(
         val verificatorHex =
             verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-        //nativeLib.freeMemoryCreateAccount()
+        nativeLib.freeMemoryCreateAccount()
 
         val decrypter = DecryptsPBKDF2(password)
         val key = KeyHelper.generateIdentityKeyPair()
@@ -332,7 +332,7 @@ class AuthRepository @Inject constructor(
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-            //nativeLib.freeMemoryCreateAccount()
+            nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawPin)
             val key= KeyHelper.generateIdentityKeyPair()
@@ -463,7 +463,7 @@ class AuthRepository @Inject constructor(
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-            //nativeLib.freeMemoryCreateAccount()
+            nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawPin)
             val key= KeyHelper.generateIdentityKeyPair()
@@ -546,7 +546,7 @@ class AuthRepository @Inject constructor(
             val verificatorHex =
                 verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-            //nativeLib.freeMemoryCreateAccount()
+            nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawNewPassword)
             val key= KeyHelper.generateIdentityKeyPair()

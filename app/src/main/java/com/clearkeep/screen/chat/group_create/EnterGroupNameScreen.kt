@@ -65,18 +65,18 @@ fun EnterGroupNameScreen(
                                 tint = grayscale1
                             )
                         }
-                        CKHeaderText("Create group", headerTextType = HeaderTextType.Medium)
+                        CKHeaderText(stringResource(R.string.create_group), headerTextType = HeaderTextType.Medium)
                     }
                 }
                 Spacer(modifier = Modifier.height(24.sdp()))
-                CKHeaderText("Group Name", headerTextType = HeaderTextType.Normal)
+                CKHeaderText(stringResource(R.string.create_group_group_name), headerTextType = HeaderTextType.Normal)
                 Spacer(modifier = Modifier.height(16.sdp()))
                 CKTextInputField(
-                    "Name this group",
+                    stringResource(R.string.create_group_group_name_placeholder),
                     groupName
                 )
                 Spacer(modifier = Modifier.height(16.sdp()))
-                CKHeaderText("Users in this group", headerTextType = HeaderTextType.Normal, color = grayscale3)
+                CKHeaderText(stringResource(R.string.create_group_users), headerTextType = HeaderTextType.Normal, color = grayscale3)
                 Spacer(modifier = Modifier.height(16.sdp()))
                 friends.let { values ->
                     LazyColumn(

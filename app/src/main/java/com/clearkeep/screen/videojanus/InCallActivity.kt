@@ -181,7 +181,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
-        printlnCK("configMedia")
         mIsSpeaker = isSpeaker
         enableSpeaker(mIsSpeaker)
 
@@ -213,12 +212,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private fun initViewConnecting() {
         if (mIsAudioMode) viewConnecting.gone()
         if (isFromComingCall) {
-            tvCallStateVideo.text = "Connecting"
-            tvCallState.text = "Connecting"
+            tvCallStateVideo.text = getString(R.string.call_connecting)
+            tvCallState.text = getString(R.string.call_connecting)
             tvConnecting.visible()
         } else {
-            tvCallStateVideo.text = "Calling Group"
-            tvCallState.text = "Calling Group"
+            tvCallStateVideo.text = getString(R.string.calling_group)
+            tvCallState.text = getString(R.string.calling_group)
             tvConnecting.gone()
         }
         Glide.with(this)
@@ -405,12 +404,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             enterPIPMode()
         } else {
             Builder(this)
-                .setTitle("Warning")
-                .setMessage("Are you sure you would like to leave call?")
-                .setPositiveButton("Leave") { _,_ ->
+                .setTitle(getString(R.string.warning))
+                .setMessage(getString(R.string.dialog_leave_call_title))
+                .setPositiveButton(getString(R.string.leave)) { _,_ ->
                     endCall()
                 }
-                .setNegativeButton("Cancel") { _,_ ->
+                .setNegativeButton(getString(R.string.cancel)) { _,_ ->
 
                 }
                 .create()
@@ -521,11 +520,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private fun showOpenCameraDialog() {
         isShowDialogCamera = true
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Requesting to video call ?")
-            .setPositiveButton("Ok") { _, _ ->
+        alertDialogBuilder.setTitle(getString(R.string.call_request_video_dialog_title))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 configMedia(isSpeaker = true, isMuteVideo = false)
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
             }
             .setCancelable(false)
             .create()
@@ -540,7 +539,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             if (mIsAudioMode) {
                 includeToolbar.visible()
                 controlCallVideoView.gone()
-                tvEndButtonDescription.text="End Call"
+                tvEndButtonDescription.text = getString(R.string.end_call)
             } else {
                 waitingCallView.gone()
                 includeToolbar.visible()
@@ -813,15 +812,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private fun showAskPermissionDialog() {
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Permissions Required")
-            .setMessage(
-                "You have forcefully denied some of the required permissions " +
-                        "for this action. Please open settings, go to permissions and allow them."
-            )
-            .setPositiveButton("Settings") { _, _ ->
+        alertDialogBuilder.setTitle(getString(R.string.dialog_call_permission_denied_title))
+            .setMessage(getString(R.string.dialog_call_permission_denied_text))
+            .setPositiveButton(getString(R.string.settings)) { _, _ ->
                 openSettingScreen()
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                 finishAndReleaseResource()
             }
             .setCancelable(false)

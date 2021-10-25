@@ -54,11 +54,11 @@ fun showMessagingStyleNotification(
     val messageNotificationContent = when {
         isImageMessage(message.message) -> {
             val messageSender = if (groupSender.isNotBlank()) groupSender else sender
-            getImageNotificationContent(message.message, messageSender, chatGroup.isGroup())
+            getImageNotificationContent(context, message.message, messageSender, chatGroup.isGroup())
         }
         isFileMessage(message.message) -> {
             val messageSender = if (groupSender.isNotBlank()) groupSender else sender
-            getFileNotificationContent(message.message, messageSender, chatGroup.isGroup())
+            getFileNotificationContent(context, message.message, messageSender, chatGroup.isGroup())
         }
         else -> {
             message.message
@@ -115,8 +115,8 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         val headsUpLayout =
             RemoteViews(context.packageName, R.layout.notification_message_view_expand)
         val messageContent =
-            if (preference.showNotificationPreview) message.message else "You have new message"
-        val messageFrom = "New message from $sender"
+            if (preference.showNotificationPreview) message.message else context.getString(R.string.notification_content_no_preview)
+        val messageFrom = context.getString(R.string.notification_sender_no_preview, sender)
         smallLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
@@ -208,16 +208,16 @@ fun showMessageNotificationToSystemBar(
                 if (userPreference.showNotificationPreview) {
                     when {
                         isImageMessage(message.message) -> {
-                            getImageNotificationContent(message.message, people?.userName ?: "", chatGroup.isGroup())
+                            getImageNotificationContent(context, message.message, people?.userName ?: "", chatGroup.isGroup())
                         }
                         isFileMessage(message.message) -> {
-                            getFileNotificationContent(message.message, people?.userName ?: "", chatGroup.isGroup())
+                            getFileNotificationContent(context, message.message, people?.userName ?: "", chatGroup.isGroup())
                         }
                         else -> {
                             message.message
                         }
                     }
-                } else "You have new message"
+                } else context.getString(R.string.notification_content_no_preview)
             val username = people?.userName
             messagingStyle.addMessage(
                 NotificationCompat.MessagingStyle.Message(
@@ -270,8 +270,8 @@ fun showMessageNotificationToSystemBar(
         builder // MESSAGING_STYLE sets title and content for API 16 and above devices.
             .setStyle(messagingStyle) // Title for API < 16 devices.
             .setContentTitle(contentTitle) // Content for API < 16 devices.
-            .setContentTitle("${messages.size} new messages with " + me.userName)
-            .setContentText("new messages")
+            .setContentTitle(context.getString(R.string.notification_new_messages_title, messages.size, me.userName))
+            .setContentText(context.getString(R.string.notification_new_messages_content))
             .setSmallIcon(R.drawable.ic_logo)
             .setContentIntent(mainPendingIntent)
             .setColor(
@@ -326,7 +326,7 @@ fun dismissInCallNotification(context: Context) {
     NotificationManagerCompat.from(context).cancel(null, CALL_NOTIFICATION_ID)
 }
 
-private fun getImageNotificationContent(message: String, sender: String, isGroup: Boolean) : String {
+private fun getImageNotificationContent(context: Context, message: String, sender: String, isGroup: Boolean) : String {
     val imageCount = getImageUriStrings(message).size
 
     val pluralString = if (imageCount > 1) "s" else ""
@@ -334,12 +334,12 @@ private fun getImageNotificationContent(message: String, sender: String, isGroup
     val messageContent = if (getMessageContent(message).isNotBlank()) "\n${getMessageContent(message)}" else ""
     val senderString = if (isGroup) "" else "$sender "
 
-    return "${senderString}sent $imageCount image$pluralString$messageContent"
+    return context.getString(R.string.notification_new_message_image_content, senderString, imageCount, pluralString, messageContent)
 }
 
-private fun getFileNotificationContent(message: String, sender: String, isGroup: Boolean): String {
+private fun getFileNotificationContent(context: Context, message: String, sender: String, isGroup: Boolean): String {
     val fileCount = getFileUriStrings(message).size
     val pluralString = if (fileCount > 1) "s" else ""
     val senderString = if (isGroup) "" else "$sender "
-    return "${senderString}sent $fileCount file$pluralString"
+    return context.getString(R.string.notification_new_message_file_content, senderString, fileCount, pluralString)
 }

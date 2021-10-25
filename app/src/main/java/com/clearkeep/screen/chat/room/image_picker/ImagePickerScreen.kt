@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -80,7 +81,7 @@ fun ImagePickerScreen(
                 actions = {
                     if (!onlyPickOne) {
                         CKText(
-                            "Upload (${urisSelected?.size})",
+                            stringResource(R.string.image_picker_file_count, urisSelected.size),
                             modifier = Modifier
                                 .padding(end = 16.sdp())
                                 .clickable {

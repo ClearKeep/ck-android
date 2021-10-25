@@ -58,15 +58,15 @@ fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val time = if (includeTime) " at ${SimpleDateFormat("hh:mm aa", Locale.US).format(inputTime.time)}" else ""
 
     return if (
-        inputTime[Calendar.YEAR] === nowTime[Calendar.YEAR]
-        && inputTime[Calendar.MONTH] === nowTime[Calendar.MONTH]
-        && inputTime[Calendar.WEEK_OF_MONTH] === nowTime[Calendar.WEEK_OF_MONTH]
+        inputTime[Calendar.YEAR] == nowTime[Calendar.YEAR]
+        && inputTime[Calendar.MONTH] == nowTime[Calendar.MONTH]
+        && inputTime[Calendar.WEEK_OF_MONTH] == nowTime[Calendar.WEEK_OF_MONTH]
     ) {
         when {
-            nowTime[Calendar.DATE] === inputTime[Calendar.DATE] -> {
+            nowTime[Calendar.DATE] == inputTime[Calendar.DATE] -> {
                 "Today$time"
             }
-            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] === 1 -> {
+            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] == 1 -> {
                 "Yesterday$time"
             }
             else -> {
