@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.repo
 
+import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
@@ -91,7 +92,7 @@ class ProfileRepository @Inject constructor(
                 .setDisplayName(profile.userName?.trim())
                 .setPhoneNumber(phoneNumber)
             if (phoneNumber.isNullOrBlank()) {
-                requestBuilder.setClearPhoneNumber(true)
+                requestBuilder.clearPhoneNumber = true
             }
             if (profile.avatar != null) requestBuilder.avatar = profile.avatar
             val request = requestBuilder.build()
@@ -394,7 +395,7 @@ class ProfileRepository @Inject constructor(
                 val verificatorHex =
                     verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-                //nativeLib.freeMemoryCreateAccount()
+                nativeLib.freeMemoryCreateAccount()
 
                 val decrypter = DecryptsPBKDF2(newPassword)
                 val oldIdentityKey = signalKeyRepository.getIdentityKey(server.profile.userId, server.serverDomain)!!.identityKeyPair.privateKey.serialize()

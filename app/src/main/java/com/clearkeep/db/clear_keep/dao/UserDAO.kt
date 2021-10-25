@@ -9,7 +9,7 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserEntity
 
 @Dao
-interface UserDao {
+interface UserDAO {
     @Insert(onConflict = REPLACE)
     suspend fun insert(people: UserEntity)
 

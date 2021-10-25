@@ -25,7 +25,6 @@ import com.google.accompanist.coil.rememberCoilPainter
 @Composable
 fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.sdp(), status: String,sizeIndicator:Dp=8.sdp()) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
-    printlnCK("CircleAvatarStatus: url $url  _name: $name")
     val color= when(status){
         UserStatus.ONLINE.value->{
             colorSuccessDefault

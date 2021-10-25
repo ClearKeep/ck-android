@@ -53,7 +53,7 @@ fun ForgotScreen(
             )
             Spacer(Modifier.height(16.sdp()))
             CKTextInputField(
-                "Email",
+                stringResource(R.string.tv_email),
                 email, singleLine = true,
                 leadingIcon = {
                     Image(

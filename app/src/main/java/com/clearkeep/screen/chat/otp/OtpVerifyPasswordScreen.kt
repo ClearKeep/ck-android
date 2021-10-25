@@ -64,7 +64,7 @@ fun OtpVerifyPasswordScreen(
             )
             Spacer(Modifier.height(16.sdp()))
             CKTextInputField(
-                placeholder = "Current Password",
+                placeholder = stringResource(R.string.current_password),
                 textValue = currentPassWord,
                 keyboardType = KeyboardType.Password,
                 singleLine = true,
@@ -89,8 +89,8 @@ fun OtpVerifyPasswordScreen(
         when (verifyPasswordResponse.value?.status) {
             Status.ERROR -> {
                 CKAlertDialog(
-                    title = verifyPasswordResponse.value!!.data?.first ?: "Error",
-                    text = verifyPasswordResponse.value!!.data?.second ?: "The password is incorrect. Try again",
+                    title = verifyPasswordResponse.value!!.data?.first ?: stringResource(R.string.error),
+                    text = verifyPasswordResponse.value!!.data?.second ?: stringResource(R.string.otp_verify_password_incorrect),
                     onDismissButtonClick = {
                         otpViewModel.verifyPasswordResponse.value = null
                     },

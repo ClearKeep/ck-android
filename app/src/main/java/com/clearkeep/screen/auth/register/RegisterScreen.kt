@@ -80,7 +80,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(24.sdp()))
                 CKTextInputField(
-                    "Email",
+                    stringResource(R.string.tv_email),
                     email,
                     keyboardType = KeyboardType.Email,
                     error = emailError.value,
@@ -112,7 +112,7 @@ fun RegisterScreen(
                 )
                 Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
-                    "Password",
+                    stringResource(R.string.tv_password),
                     password,
                     keyboardType = KeyboardType.Password,
                     error = passError.value,
@@ -150,7 +150,7 @@ fun RegisterScreen(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         CKTextButton(
-                            title = "Sign in instead",
+                            title = stringResource(R.string.register_sign_in_instead),
                             onClick = onBackPress,
                             textButtonType = TextButtonType.Blue,
                             fontSize = 12.sdp().toNonScalableTextSize()
@@ -176,35 +176,5 @@ fun RegisterScreen(
             }
         }
         Spacer(Modifier.height(28.sdp()))
-    }
-}
-
-@Composable
-@Preview(fontScale = 1.00f, device = Devices.PIXEL_4_XL)
-fun ScalableTextPreview() {
-    Row(Modifier.fillMaxSize()) {
-        Text(
-            text = "em", //Default text size converted to em
-            color = grayscaleBlack,
-            textAlign = TextAlign.Justify,
-            fontSize = defaultNonScalableTextSize()
-        )
-        Text(
-            text = "em", //Default text size
-            color = grayscaleBlack,
-            textAlign = TextAlign.Justify,
-        )
-        Text(
-            text = "em", //Default text size in sp
-            color = grayscaleBlack,
-            textAlign = TextAlign.Justify,
-            fontSize = 14.sdp().toNonScalableTextSize()
-        )
-        Text(
-            text = "em", //14 dp converted to em
-            color = grayscaleBlack,
-            textAlign = TextAlign.Justify,
-            fontSize = 14.sdp().toNonScalableTextSize()
-        )
     }
 }

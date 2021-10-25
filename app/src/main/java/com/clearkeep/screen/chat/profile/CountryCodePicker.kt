@@ -62,7 +62,6 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
                     item.second,
                     countryCode
                 ) {
-                    printlnCK("Pick country code $countryCode")
                     onPick.invoke(countryCode)
                 }
                 Divider(Modifier.height(1.sdp()), separatorDarkNonOpaque)

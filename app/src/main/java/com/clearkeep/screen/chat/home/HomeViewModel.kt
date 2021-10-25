@@ -205,8 +205,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun searchGroup(text: String) {}
-
     override fun selectChannel(server: Server) {
         viewModelScope.launch {
             serverRepository.setActiveServer(server)

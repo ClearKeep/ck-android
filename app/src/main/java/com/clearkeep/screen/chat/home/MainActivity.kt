@@ -246,11 +246,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
-    private fun navigateToChangePassword(){
-        val intent = Intent(this, ChangePasswordActivity::class.java)
-        startActivity(intent)
-    }
-
     private fun navigateToRoomScreen(groupId: Long) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.GROUP_ID, groupId)

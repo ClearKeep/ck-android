@@ -38,17 +38,13 @@ class ProfileViewModel @Inject constructor(
         _username.postValue(it.userName)
         _email.postValue(it.email)
 
-        printlnCK("Profile full phone ${it.phoneNumber}")
         try {
             val numberProto: PhoneNumber = phoneUtil.parse(it.phoneNumber, "")
             val countryCode = numberProto.countryCode
-            printlnCK("Profile country code $countryCode")
             val phoneNum = it.phoneNumber?.replace("+$countryCode", "")
-            printlnCK("Profile phone num $phoneNum")
             _countryCode.postValue("+$countryCode")
             _phoneNumber.postValue(phoneNum)
         } catch (e: Exception) {
-            printlnCK("Profile phone number parse failed $e")
             _phoneNumber.postValue(it.phoneNumber)
             _countryCode.postValue("")
         }
@@ -191,7 +187,6 @@ class ProfileViewModel @Inject constructor(
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
-                printlnCK("uploadAvatar exceed file size limit")
                 uploadAvatarResponse.value =
                     Resource.error("Your Profile Picture cannot be larger than 5MB", null)
                 undoAvatarChange()

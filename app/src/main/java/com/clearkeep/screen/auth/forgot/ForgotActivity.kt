@@ -78,7 +78,7 @@ class ForgotActivity : AppCompatActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
             ) {
-                Row(/*modifier = Modifier.weight(1.0f, true)*/) {
+                Row {
                     ForgotScreen(
                             onForgotPressed = onForgotPressed,
                             onBackPress = {

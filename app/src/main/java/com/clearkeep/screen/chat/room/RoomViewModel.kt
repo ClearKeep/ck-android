@@ -6,7 +6,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
@@ -106,7 +110,7 @@ class RoomViewModel @Inject constructor(
     val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val sendMessageResponse = MutableLiveData<Resource<Any>>()
 
-    val isLoading=MutableLiveData<Boolean>(false)
+    val isLoading=MutableLiveData(false)
 
     init {
         //getStatusUserInGroup()
@@ -559,12 +563,11 @@ class RoomViewModel @Inject constructor(
         appendFileSize: Boolean = false,
         persistablePermission: Boolean = true
     ) {
-        printlnCK("upload files uri list $urisList")
         if (!urisList.isNullOrEmpty()) {
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
                     Resource.error(
-                        "Maximum number of attachments in a message reached (10)",
+                        context.getString(R.string.upload_file_error_too_many),
                         null
                     )
                 )
@@ -573,7 +576,7 @@ class RoomViewModel @Inject constructor(
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    Resource.error("Your file cannot be larger than 200MB.", null)
+                    Resource.error(context.getString(R.string.upload_file_error_too_large), null)
                 return
             }
 
@@ -581,7 +584,6 @@ class RoomViewModel @Inject constructor(
                 val tempMessageUris = urisList.joinToString(" ")
                 val tempMessageContent =
                     if (message != null) "$tempMessageUris $message" else tempMessageUris
-                println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
                     messageRepository.saveNote(
                         Note(
@@ -668,7 +670,6 @@ class RoomViewModel @Inject constructor(
                     if (isNote.value == true) {
                         sendNote(messageContent, tempMessageId.toLong())
                     } else {
-                        println("take photo upload success messageContent $messageContent")
                         if (isRegisteredGroup != null) {
                             sendMessageToGroup(
                                 groupId,

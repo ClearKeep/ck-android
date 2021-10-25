@@ -12,15 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun ServerSettingScreen(
@@ -37,7 +35,7 @@ fun ServerSettingScreen(
         HeaderServerSetting(onBackPressed)
         Spacer(modifier = Modifier.height(28.sdp()))
         CKText(
-            "Server Name", style = MaterialTheme.typography.body2.copy(
+            stringResource(R.string.server_setting_server_name), style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground,
                 fontSize = defaultNonScalableTextSize()
             )
@@ -51,7 +49,7 @@ fun ServerSettingScreen(
         )
         Spacer(modifier = Modifier.height(16.sdp()))
         CKText(
-            "Server URL", style = MaterialTheme.typography.body2.copy(
+            stringResource(R.string.server_url), style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground,
                 fontSize = defaultNonScalableTextSize()
             )
@@ -106,7 +104,7 @@ fun HeaderServerSetting(onCloseView: () -> Unit) {
             )
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText("Server Settings", headerTextType = HeaderTextType.Medium)
+        CKHeaderText(stringResource(R.string.server_settings), headerTextType = HeaderTextType.Medium)
         Spacer(modifier = Modifier.size(16.sdp()))
     }
 }

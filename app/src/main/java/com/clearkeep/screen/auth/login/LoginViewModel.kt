@@ -91,15 +91,6 @@ class LoginViewModel @Inject constructor(
 
     private var isResetPincode = false
 
-    /*init {
-        viewModelScope.launch {
-            val test = signalIdentityKeyDAO.getAll()
-            val test2 = signalKeyDAO.getSignalSenderKeys().value?.size
-            val test3 = signalPreKeyDAO.getAll()
-            printlnCK("signalIdentityKeyDAO: ${test} ${test2} ${test3}")
-        }
-    }
-*/
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
@@ -316,7 +307,6 @@ class LoginViewModel @Inject constructor(
         checkValidServerJob?.cancel()
         checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
-                printlnCK("checkValidServerUrl local validation invalid")
                 serverUrlValidateResponse.value = Resource.error("Wrong server URL. Please try again", null, 0)
                 _isLoading.value = false
                 return@launch
@@ -325,7 +315,6 @@ class LoginViewModel @Inject constructor(
             val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(domain = url)
             _isLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
-                printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = workspaceInfoResponse
                 return@launch
             }

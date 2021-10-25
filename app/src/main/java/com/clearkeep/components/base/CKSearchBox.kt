@@ -43,7 +43,7 @@ fun CKSearchBox(
 
     val keyboardFocusRequester = focusRequester ?: remember { FocusRequester() }
 
-    var rememberBorderShow = remember { mutableStateOf(false) }
+    val rememberBorderShow = remember { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,

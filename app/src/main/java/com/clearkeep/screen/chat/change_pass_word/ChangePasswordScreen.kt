@@ -82,7 +82,7 @@ fun ChangePasswordScreen(
             Spacer(Modifier.height(16.sdp()))
             if (isResetPassword.value != true) {
                 CKTextInputField(
-                    placeholder = "Current Password",
+                    placeholder = stringResource(R.string.current_password),
                     textValue = currentPassWord,
                     onValueChange = { viewModel.setOldPassword(it) },
                     keyboardType = KeyboardType.Password,
@@ -100,7 +100,7 @@ fun ChangePasswordScreen(
                 Spacer(Modifier.height(24.sdp()))
             }
             CKTextInputField(
-                placeholder = "New Password",
+                placeholder = stringResource(R.string.new_password),
                 textValue = newPassWord,
                 keyboardType = KeyboardType.Password,
                 onValueChange = { viewModel.setNewPassword(it) },
@@ -151,8 +151,8 @@ fun ChangePasswordScreen(
 
             if (changePasswordResponse.value?.status == Status.SUCCESS) {
                 CKAlertDialog(
-                    title = "Password changed successfully",
-                    text = "Please login again with new password!",
+                    title = stringResource(R.string.password_change_success_title),
+                    text = stringResource(R.string.password_change_success_text),
                     onDismissButtonClick = {
                         if (isResetPassword.value == true) {
                             val intent = Intent(context, SplashActivity::class.java)

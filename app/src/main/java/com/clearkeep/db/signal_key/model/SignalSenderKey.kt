@@ -9,10 +9,10 @@ import androidx.room.PrimaryKey
 data class SignalSenderKey(
     @NonNull
     @PrimaryKey val id: String,
-        @ColumnInfo(name = "group_id") val groupId: String,
-        @ColumnInfo(name = "sender_name") val senderName: String,
-        @ColumnInfo(name = "device_id") val deviceId: Int,
-        @ColumnInfo(name = "sender_key") val senderKey: ByteArray,
+    @ColumnInfo(name = "group_id") val groupId: String,
+    @ColumnInfo(name = "sender_name") val senderName: String,
+    @ColumnInfo(name = "device_id") val deviceId: Int,
+    @ColumnInfo(name = "sender_key") val senderKey: ByteArray,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

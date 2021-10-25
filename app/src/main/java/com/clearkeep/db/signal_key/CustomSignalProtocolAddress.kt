@@ -6,7 +6,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 class CKSignalProtocolAddress(
     val owner: Owner,
     private var deviceId: Int
-    ) :
+) :
     SignalProtocolAddress(getName(owner), deviceId) {
     override fun equals(other: Any?): Boolean {
         return super.equals(other)

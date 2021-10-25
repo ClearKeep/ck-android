@@ -74,7 +74,7 @@ fun EnterOtpScreen(
     ) {
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
-            title = "Enter Your Code", onBackPressed = {
+            title = stringResource(R.string.enter_otp_screen_title), onBackPressed = {
                 onBackPress.invoke()
             })
         Spacer(Modifier.height(30.sdp()))
@@ -88,8 +88,8 @@ fun EnterOtpScreen(
             Spacer(Modifier.height(16.sdp()))
             OtpInput(input, focusRequesters)
             Spacer(Modifier.height(32.sdp()))
-            Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sdp().toNonScalableTextSize(), fontWeight = FontWeight.W400)
-            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sdp().toNonScalableTextSize())
+            Text(stringResource(R.string.enter_otp_no_code), Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sdp().toNonScalableTextSize(), fontWeight = FontWeight.W400)
+            Text(stringResource(R.string.enter_otp_resend), Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sdp().toNonScalableTextSize())
             Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.verify),

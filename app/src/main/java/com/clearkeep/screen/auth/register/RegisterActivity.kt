@@ -83,7 +83,7 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
         val isLoadingState = registerViewModel.isLoading.observeAsState()
-        Box() {
+        Box {
             RegisterScreen(
                 registerViewModel,
                 onRegisterPressed = onRegisterPressed,
@@ -127,8 +127,8 @@ class RegisterActivity : AppCompatActivity() {
     fun ReminderDialog(showReminder: Boolean) {
         if (showReminder) {
             CKAlertDialog(
-                title = "Register successfully",
-                text = "Please check your email to activate account",
+                title = stringResource(R.string.register_success_title),
+                text = stringResource(R.string.register_success_text),
                 onDismissButtonClick = {
                     finish()
                 },

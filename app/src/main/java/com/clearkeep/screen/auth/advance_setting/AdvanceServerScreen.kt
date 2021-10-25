@@ -110,7 +110,7 @@ fun CustomServerScreen(
                     contentScale = ContentScale.FillBounds
                 )
                 Text(
-                    text = "Use Custom Server",
+                    text = stringResource(R.string.advance_server_settings_custom_server),
                     modifier = Modifier.padding(16.sdp()),
                     style = MaterialTheme.typography.body1.copy(
                         color = grayscaleOffWhite,
@@ -156,7 +156,7 @@ fun CustomServerScreen(
                                     .padding(end = 16.sdp()), verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
-                                    "Server URL",
+                                    stringResource(R.string.server_url),
                                     rememberServerUrl,
                                     keyboardType = KeyboardType.Text,
                                     singleLine = true,
@@ -218,7 +218,7 @@ fun CustomServerScreen(
 fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
     if (showDialog.isNotEmpty()) {
         CKAlertDialog(
-            title = "Error",
+            title = stringResource(R.string.error),
             text = showDialog,
             onDismissButtonClick = {
                 // Change the state to close the dialog
