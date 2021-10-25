@@ -114,8 +114,6 @@ class SearchViewModel @Inject constructor(
             try {
                 _groups.addSource(groupSource) {
                     _groups.value = it.filter { it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value }.sortedByDescending { it.lastMessageAt }
-                    printlnCK("group raw $it current profile id ${profile.value?.userId}")
-                    printlnCK("group result ${_groups.value}")
                 }
             } catch (e: Exception) {
                 printlnCK("searchGroups exception $e")
@@ -140,14 +138,11 @@ class SearchViewModel @Inject constructor(
             val usersInServerFiltered =
                 b.filter { it.userName.contains(query, true) && it.userId != server.profile.userId }
 
-            printlnCK("usersInServerFiltered $usersInServerFiltered")
-
             (usersFromGroupChatFiltered + usersInServerFiltered).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.userName }))
         }
 
         allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
             val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
-                printlnCK("searchUsers private chat group $it")
                 val user = it.clientList.find { it.userId != server.profile.userId }
                 User(
                     user?.userId ?: it.ownerClientId,
@@ -162,7 +157,6 @@ class SearchViewModel @Inject constructor(
             }
             (usersInPeerChat + b).distinctBy { it.userId }
         }.collect {
-            printlnCK("searchUsers result ${it.distinctBy { it.userId }}")
             _friends.value = it.distinctBy { it.userId }
         }
     }
@@ -172,14 +166,12 @@ class SearchViewModel @Inject constructor(
             _messages.removeSource(messagesSource)
             withContext(Dispatchers.IO) {
                 messagesSource = messageRepository.getMessageByText(server.serverDomain, server.profile.userId, query)
-                printlnCK("message result ${messagesSource.value}")
             }
             try {
                 _messages.addSource(messagesSource) {
                     _messages.value =
                         it.distinctBy { it.message.messageId }.filterNot { isFileMessage(it.message.message) || isImageMessage(it.message.message) }
                             .sortedByDescending { it.message.createdTime }
-                    printlnCK("message result ${_messages.value}")
                 }
             } catch (e: Exception) {
                 printlnCK("searchGroups exception $e")

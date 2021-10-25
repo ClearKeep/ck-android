@@ -1,12 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.text.TextUtils
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,27 +11,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
@@ -53,7 +37,6 @@ import com.google.accompanist.coil.rememberCoilPainter
 @Composable
 fun SendBottomCompose(
     roomViewModel: RoomViewModel,
-    navController: NavController,
     onSendMessage: (String) -> Unit,
     onClickUploadPhoto: () -> Unit,
     onClickUploadFile: () -> Unit
@@ -61,7 +44,6 @@ fun SendBottomCompose(
     val msgState = roomViewModel.message.observeAsState()
     val selectedImagesList = roomViewModel.imageUriSelected.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
-    val context = LocalContext.current
 
     Column(Modifier.background(grayscaleBackground)) {
         selectedImagesList.value.let { values ->

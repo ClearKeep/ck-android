@@ -266,7 +266,7 @@ fun SettingGeneral(
     onNavigateAccountSetting: () -> Unit,
 ) {
     Column {
-        ItemSiteSetting("Profile", R.drawable.ic_user, onNavigateAccountSetting)
+        ItemSiteSetting(stringResource(R.string.profile), R.drawable.ic_user, onNavigateAccountSetting)
     }
 }
 
@@ -354,6 +354,6 @@ private fun copyProfileLinkToClipBoard(context: Context, label: String, text: St
     val clipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
 }
 

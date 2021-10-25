@@ -253,8 +253,8 @@ fun LoginScreen(
     if (confirmForgotPasswordVisible.value) {
         CKAlertDialog(
             title = stringResource(R.string.warning),
-            text = "Forgetting your Password will reset all your data",
-            confirmTitle = "Forgot",
+            text = stringResource(R.string.reset_password_dialog_text),
+            confirmTitle = stringResource(R.string.forgot),
             dismissTitle = stringResource(R.string.cancel),
             onConfirmButtonClick = {
                 confirmForgotPasswordVisible.value = false

@@ -4,7 +4,6 @@ import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
@@ -16,20 +15,15 @@ import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
-import group.GroupGrpc
 import group.GroupOuterClass
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.ecc.ECKeyPair
 import org.whispersystems.libsignal.ecc.ECPrivateKey
 import org.whispersystems.libsignal.ecc.ECPublicKey
 import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyStore
-import org.whispersystems.libsignal.util.KeyHelper
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -108,7 +102,7 @@ class GroupRepository @Inject constructor(
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
         val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
         try {
-            val group = getGroupFromAPI(groupId, groupGrpc, Owner(owner.domain, owner.clientId))
+            val group = getGroupFromAPI(groupId, Owner(owner.domain, owner.clientId))
             if (group.data != null) {
                 insertGroup(group.data)
             }
@@ -187,7 +181,7 @@ class GroupRepository @Inject constructor(
         }
         val paramAPI = ParamAPI(server!!.serverDomain, server.accessKey, server.hashKey)
         val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
-        val group = getGroupFromAPI(groupId, groupGrpc, owner)
+        val group = getGroupFromAPI(groupId, owner)
         group.data?.let { insertGroup(it) }
         return@withContext group
     }
@@ -348,7 +342,6 @@ class GroupRepository @Inject constructor(
 
     private suspend fun getGroupFromAPI(
         groupId: Long,
-        groupGrpc: GroupGrpc.GroupBlockingStub,
         owner: Owner
     ): Resource<ChatGroup> = withContext(Dispatchers.IO) {
         printlnCK("getGroupFromAPI: $groupId")
@@ -474,7 +467,7 @@ class GroupRepository @Inject constructor(
                 server.hashKey
             )
         )
-        room = getGroupFromAPI(groupId, groupGrpc, Owner(domain, ownerId))
+        room = getGroupFromAPI(groupId, Owner(domain, ownerId))
         if (room.data != null) {
             insertGroup(room.data!!)
         }
@@ -497,7 +490,7 @@ class GroupRepository @Inject constructor(
                 it
             )
         }
-        val room = groupGrpc?.let { getGroupFromAPI(groupId, it, Owner(domain, ownerId)) }
+        val room = groupGrpc?.let { getGroupFromAPI(groupId, Owner(domain, ownerId)) }
         if (room?.data != null) {
             insertGroup(room.data)
         }
@@ -621,11 +614,6 @@ class GroupRepository @Inject constructor(
                 val privateKey = identityKey?.identityKeyPair?.privateKey
                 val test2=toHex(privateKey?.serialize()!!)
                 printlnCK("DecryptsPBKDF2 : $test2  $privateKeyEncrypt salt: ${fromHex(userKey.salt)}  iv:${fromHex(userKey.iv)}")
-                /*val privateKeyDecrypt = DecryptsPBKDF2("ck").decrypt(
-                    fromHex(privateKeyEncrypt),
-                    fromHex(userKey.salt),
-                    fromHex(userKey.iv)
-                )*/
                 val eCPublicKey: ECPublicKey =
                     Curve.decodePoint(response.clientKey.publicKey.toByteArray(), 0)
                 val eCPrivateKey: ECPrivateKey =

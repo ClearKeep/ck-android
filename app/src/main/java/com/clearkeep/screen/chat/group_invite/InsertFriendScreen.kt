@@ -11,9 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
@@ -60,14 +62,14 @@ fun InsertFriendScreen(
                 }
 
                 CKTextButton(
-                    title = "Create",
+                    title = stringResource(R.string.create),
                     onClick = {
                         val people = getPeopleFromLink(link.value)
                         if (people != null) {
                             if (people.userId != inviteGroupViewModel.getClientId()) {
                                 onInsertFriend(people)
                             } else {
-                                Toast.makeText(context,"Error user !",Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.insert_friend_error),Toast.LENGTH_SHORT).show()
                             }
                         }
                     },
@@ -76,10 +78,10 @@ fun InsertFriendScreen(
                 )
             }
             Spacer(modifier = Modifier.height(25.sdp()))
-            CKHeaderText("New User", headerTextType = HeaderTextType.Medium)
+            CKHeaderText(stringResource(R.string.insert_friend_new_user), headerTextType = HeaderTextType.Medium)
             Spacer(modifier = Modifier.height(24.sdp()))
             CKTextInputField(
-                "Profile url",
+                stringResource(R.string.insert_friend_profile_url),
                 link
             )
         }

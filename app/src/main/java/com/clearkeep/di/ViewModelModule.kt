@@ -7,7 +7,6 @@ import com.clearkeep.screen.chat.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
-import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordViewModel
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
@@ -19,7 +18,7 @@ import com.clearkeep.screen.chat.otp.OtpViewModel
 import com.clearkeep.screen.chat.settings.ServerSettingViewModel
 import com.clearkeep.screen.videojanus.CallViewModel
 import com.clearkeep.utilities.BaseViewModel
-import com.setel.di.factory.ViewModelFactory
+import com.clearkeep.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

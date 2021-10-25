@@ -1,6 +1,5 @@
 package com.clearkeep.screen.chat.group_invite
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -28,8 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import com.clearkeep.R
 import com.clearkeep.components.*
@@ -40,10 +37,8 @@ import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
-import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -58,7 +53,6 @@ fun InviteGroupScreen(
     onFriendSelected: (List<User>) -> Unit,
     onDirectFriendSelected: (User) -> Unit,
     onBackPressed: () -> Unit,
-    onInsertFriend: () -> Unit,
     isCreateDirectGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
@@ -104,10 +98,14 @@ fun InviteGroupScreen(
                             CKHeaderText(
                                 text = when (managerMember) {
                                     InviteMemberUIType -> {
-                                        if (isCreateDirectGroup) "Create direct message" else "Create group"
+                                        if (isCreateDirectGroup) {
+                                            stringResource(R.string.create_direct_message)
+                                        } else {
+                                            stringResource(R.string.create_group)
+                                        }
                                     }
-                                    AddMemberUIType -> "Add member"
-                                    else -> "Create group"
+                                    AddMemberUIType -> stringResource(R.string.add_member)
+                                    else -> stringResource(R.string.create_group)
                                 }, headerTextType = HeaderTextType.Medium
                             )
                         }
@@ -148,7 +146,7 @@ fun InviteGroupScreen(
                         )
                         Spacer(modifier = Modifier.width(16.sdp()))
                         Text(
-                            text = "Add user from other server",
+                            text = stringResource(R.string.add_user_other_server),
                             modifier = Modifier.padding(vertical = 16.sdp()),
                             style = MaterialTheme.typography.body1.copy(
                                 color = grayscaleBlack,
@@ -198,7 +196,9 @@ fun InviteGroupScreen(
 
                     Spacer(modifier = Modifier.height(16.sdp()))
                     friends.value?.let { values ->
-                        val membersId = group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }?.map { it.userId } ?: emptyList()
+                        val membersId =
+                            group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }
+                                ?.map { it.userId } ?: emptyList()
                         val listShow = values.filterNot { membersId.contains(it.userId) }
                         LazyColumn(
                             contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
@@ -231,27 +231,38 @@ fun InviteGroupScreen(
                 ) {
                     if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup)) {
                         CKButton(
-                            if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(id = R.string.btn_add)
-                            else  stringResource(R.string.btn_next),
+                            if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(
+                                id = R.string.btn_add
+                            )
+                            else stringResource(R.string.btn_next),
                             onClick = {
                                 if (useCustomServerChecked.value) {
                                     val people = getPeopleFromLink(urlOtherServer.value)
-                                    if (people?.userId != inviteGroupViewModel.getClientId()){
+                                    if (people?.userId != inviteGroupViewModel.getClientId()) {
                                         if (isCreateDirectGroup) {
                                             if (people != null) {
-                                                inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                                inviteGroupViewModel.checkUserUrlValid(
+                                                    people.userId,
+                                                    people.domain
+                                                )
                                             } else {
-                                                addUserFromOtherServerError.value = "Profile link is incorrect."
+                                                addUserFromOtherServerError.value =
+                                                    context.getString(R.string.invite_friend_profile_link_incorrect)
                                             }
                                         } else {
                                             if (people != null) {
-                                                inviteGroupViewModel.checkUserUrlValid(people.userId, people.domain)
+                                                inviteGroupViewModel.checkUserUrlValid(
+                                                    people.userId,
+                                                    people.domain
+                                                )
                                             } else {
-                                                addUserFromOtherServerError.value = "Profile link is incorrect."
+                                                addUserFromOtherServerError.value =
+                                                    context.getString(R.string.invite_friend_profile_link_incorrect)
                                             }
                                         }
                                     } else {
-                                        addUserFromOtherServerError.value = "You can't create conversation with yourself"
+                                        addUserFromOtherServerError.value =
+                                            context.getString(R.string.invite_friend_profile_link_self)
                                     }
                                     urlOtherServer.value = ""
                                     useCustomServerChecked.value = false

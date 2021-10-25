@@ -387,12 +387,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
             enterPIPMode()
         } else {
             androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Warning")
-                .setMessage("Are you sure you would like to leave call?")
-                .setPositiveButton("Leave") { _,_ ->
+                .setTitle(getString(R.string.warning))
+                .setMessage(getString(R.string.dialog_leave_call_title))
+                .setPositiveButton(getString(R.string.leave)) { _,_ ->
                     endCall()
                 }
-                .setNegativeButton("Cancel") { _,_ ->
+                .setNegativeButton(getString(R.string.cancel)) { _,_ ->
 
                 }
                 .create()
@@ -451,7 +451,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 .into(pipCallAvatar)
 
         } else {
-            tvStateCall.text = "Calling Group"
+            tvStateCall.text = getString(R.string.calling_group)
             imgThumb2.visibility = View.GONE
             tvNickName.visibility = View.GONE
         }
@@ -623,15 +623,14 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private fun showAskPermissionDialog() {
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Permissions Required")
+        alertDialogBuilder.setTitle(getString(R.string.dialog_call_permission_denied_title))
             .setMessage(
-                "You have forcefully denied some of the required permissions " +
-                        "for this action. Please open settings, go to permissions and allow them."
+                getString(R.string.dialog_call_permission_denied_text)
             )
-            .setPositiveButton("Settings") { _, _ ->
+            .setPositiveButton(getString(R.string.settings)) { _, _ ->
                 openSettingScreen()
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                 finishAndReleaseResource()
             }
             .setCancelable(false)
@@ -642,11 +641,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun showOpenCameraDialog() {
         isShowedDialogCamera = true
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Requesting to video call ?")
-            .setPositiveButton("Ok") { _, _ ->
+        alertDialogBuilder.setTitle(getString(R.string.call_request_video_dialog_title))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 configMedia(isSpeaker = true, isMuteVideo = false)
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
             }
             .setCancelable(false)
             .create()

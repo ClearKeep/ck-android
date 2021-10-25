@@ -31,7 +31,7 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideUserDao(db: ClearKeepDatabase): ProfileDao {
+    fun provideUserDao(db: ClearKeepDatabase): ProfileDAO {
         return db.profileDao()
     }
 
@@ -55,7 +55,7 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun providePeopleDAO(db: ClearKeepDatabase): UserDao {
+    fun providePeopleDAO(db: ClearKeepDatabase): UserDAO {
         return db.userDao()
     }
 

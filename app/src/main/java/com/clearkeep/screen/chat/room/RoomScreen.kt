@@ -40,7 +40,6 @@ import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
-import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
@@ -79,7 +78,6 @@ fun RoomScreen(
     val createGroupResponse = roomViewModel.createGroupResponse.observeAsState()
     val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()
     val sendMessageResponse = roomViewModel.sendMessageResponse.observeAsState()
-//    val isDeletedUserChat = roomViewModel.isDeletedUserChat.observeAsState()
 
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -113,7 +111,7 @@ fun RoomScreen(
     }
 
     printlnCK("test: ${group?.clientList}")
-    val groupName = if (isNote.value == true) "Note" else if (group?.isDeletedUserPeer == true) "Deleted user" else group?.groupName ?: ""
+    val groupName = if (isNote.value == true) stringResource(R.string.note) else if (group?.isDeletedUserPeer == true) stringResource(R.string.deleted_user) else group?.groupName ?: ""
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -239,7 +237,6 @@ fun RoomScreen(
                 if (group != null && !group.isDeletedUserPeer) {
                     SendBottomCompose(
                         roomViewModel,
-                        navHostController,
                         onSendMessage = { message ->
                             val validMessage =
                                 message.trim()
@@ -247,10 +244,10 @@ fun RoomScreen(
                             if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
                                 return@SendBottomCompose
                             }
-                            val isGroup = group?.isGroup()
+                            val isGroup = group.isGroup()
                             if (isNote.value == true) {
                                 roomViewModel.sendNote(context)
-                            } else if (isGroup == true) {
+                            } else if (isGroup) {
                                 val isJoined=group.isJoined
                                 roomViewModel.sendMessageToGroup(
                                     context,
@@ -259,7 +256,7 @@ fun RoomScreen(
                                     isJoined
                                 )
                             } else {
-                                val friend = group?.clientList?.firstOrNull { client ->
+                                val friend = group.clientList.firstOrNull { client ->
                                     client.userId != roomViewModel.clientId
                                 }
                                 if (friend != null) {
@@ -281,15 +278,14 @@ fun RoomScreen(
                             ) {
                                 isUploadPhotoDialogVisible.value = true
                             }
-                        },
-                        onClickUploadFile = {
-                            keyboardController?.hide()
-                            coroutineScope.launch {
-                                delay(KEYBOARD_HIDE_DELAY_MILLIS)
-                                bottomSheetState.show()
-                            }
                         }
-                    )
+                    ) {
+                        keyboardController?.hide()
+                        coroutineScope.launch {
+                            delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                            bottomSheetState.show()
+                        }
+                    }
                 }
             }
             val isLoading = roomViewModel.isLoading.observeAsState()
@@ -407,14 +403,14 @@ fun MessageClickDialog(
                         .background(Color.White)
                 ) {
                     Text(
-                        "Copy",
+                        stringResource(R.string.copy),
                         Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                             .clickable {
                                 roomViewModel.copySelectedMessage(context)
                                 Toast
-                                    .makeText(context, "You copied", Toast.LENGTH_SHORT)
+                                    .makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT)
                                     .show()
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
@@ -423,7 +419,7 @@ fun MessageClickDialog(
                 Spacer(Modifier.height(8.dp))
                 Box {
                     Text(
-                        "Cancel", modifier = Modifier
+                        stringResource(R.string.cancel), modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
                             .background(Color.White)
                             .align(Alignment.Center)

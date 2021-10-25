@@ -42,21 +42,25 @@ fun CKButton(
         },
         enabled = enabled,
         shape = RoundedCornerShape(radius),
-        border = if (buttonType == ButtonType.BorderWhite) {
-            BorderStroke(
-                2.sdp(),
-                grayscaleOffWhite
-            )
-        } else if (buttonType == ButtonType.BorderGradient) {
-            BorderStroke(
-                2.sdp(), Brush.horizontalGradient(
-                    colors = listOf(
-                        backgroundGradientStart,
-                        backgroundGradientEnd
+        border = when (buttonType) {
+            ButtonType.BorderWhite -> {
+                BorderStroke(
+                    2.sdp(),
+                    grayscaleOffWhite
+                )
+            }
+            ButtonType.BorderGradient -> {
+                BorderStroke(
+                    2.sdp(), Brush.horizontalGradient(
+                        colors = listOf(
+                            backgroundGradientStart,
+                            backgroundGradientEnd
+                        )
                     )
                 )
-                )
-        } else null,
+            }
+            else -> null
+        },
         modifier = modifier.height(height),
         contentPadding = PaddingValues(),
         colors = ButtonDefaults.outlinedButtonColors(

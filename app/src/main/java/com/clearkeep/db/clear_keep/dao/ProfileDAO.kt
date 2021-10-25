@@ -5,7 +5,7 @@ import androidx.room.OnConflictStrategy.REPLACE
 import com.clearkeep.db.clear_keep.model.Profile
 
 @Dao
-interface ProfileDao {
+interface ProfileDAO {
     @Insert(onConflict = REPLACE)
     suspend fun save(profile: Profile)
 

@@ -37,7 +37,7 @@ fun EnterSocialLoginPhraseScreen(
     val isLoading = viewModel.isLoading.observeAsState()
 
     val error = if (verifyResponse.value?.status == Status.ERROR) {
-        "Security phrase is incorrect. Please try again"
+        stringResource(R.string.social_pin_incorrect)
     } else  {
         null
     }
@@ -52,7 +52,7 @@ fun EnterSocialLoginPhraseScreen(
             .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(58.sdp()))
-            CKTopAppBarSample(title = "Enter Your Security Phrase", onBackPressed = { onBackPress() })
+            CKTopAppBarSample(title = stringResource(R.string.enter_social_pin_screen_title), onBackPressed = { onBackPress() })
             Spacer(Modifier.height(30.sdp()))
 
             Column(
@@ -61,14 +61,14 @@ fun EnterSocialLoginPhraseScreen(
                     .fillMaxSize(),
             ) {
                 CKText(
-                    text = "Please enter your security phrase",
+                    text = stringResource(R.string.enter_social_pin),
                     style = MaterialTheme.typography.caption,
                     color = grayscaleOffWhite,
                     fontSize = 16.sdp().toNonScalableTextSize()
                 )
                 Spacer(Modifier.height(32.sdp()))
                 CKTextInputField(
-                    "Security Phrase",
+                    stringResource(R.string.security_phrase),
                     securityPhrase, singleLine = true,
                     leadingIcon = {
                         Image(
@@ -106,8 +106,8 @@ fun EnterSocialLoginPhraseScreen(
                     CKAlertDialog(
                         title = stringResource(R.string.warning),
                         text = stringResource(R.string.reset_social_login_pin_warning),
-                        confirmTitle = "Reset",
-                        dismissTitle = "Cancel",
+                        confirmTitle = stringResource(R.string.reset),
+                        dismissTitle = stringResource(R.string.cancel),
                         onDismissButtonClick = {
                             isConfirmForgotPassphraseDialogVisible.value = false && isLoading.value == false
                         },
