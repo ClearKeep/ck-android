@@ -38,7 +38,6 @@ import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
 
-
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
@@ -54,8 +53,10 @@ fun CustomServerScreen(
     val isLoading = loginViewModel.isLoading.observeAsState()
 
     BackHandler {
-        loginViewModel.isCustomServer = false
-        loginViewModel.customDomain = ""
+        if (!useCustomServerChecked.value) {
+            loginViewModel.isCustomServer = false
+            loginViewModel.customDomain = ""
+        }
         loginViewModel.clearLoading()
         loginViewModel.cancelCheckValidServer()
         onBackPress()
@@ -79,8 +80,13 @@ fun CustomServerScreen(
                 modifier = Modifier.padding(start = 6.sdp()),
                 title = stringResource(R.string.advance_server_settings),
                 onBackPressed = {
-                    loginViewModel.isCustomServer = isCustom
-                    loginViewModel.customDomain = url
+                    if (!useCustomServerChecked.value) {
+                        loginViewModel.isCustomServer = false
+                        loginViewModel.customDomain = ""
+                    } else {
+                        loginViewModel.isCustomServer = isCustom
+                        loginViewModel.customDomain = url
+                    }
                     loginViewModel.clearLoading()
                     loginViewModel.cancelCheckValidServer()
                     onBackPress()
