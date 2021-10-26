@@ -41,7 +41,6 @@ fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.sdp(), status: 
         Column(Modifier.size(size)) {
             if (!url.isNullOrEmpty())
             {
-                    printlnCK("CircleAvatarSite url") // Force recomposition when cache key changes
                     Image(
                         rememberCoilPainter(
                             request = "$url", //Force reload when cache key changes

@@ -16,7 +16,6 @@ class InMemorySenderKeyStore(
     private val store: MutableMap<SenderKeyName, SenderKeyRecord> = HashMap()
 
     override fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) {
-        printlnCK("insert signalKeyDAO: ${senderKeyName}")
         store[senderKeyName] = record
         signalKeyDAO.insert(SignalSenderKey(
             senderKeyName.groupId + senderKeyName.sender.name,
@@ -65,7 +64,6 @@ class InMemorySenderKeyStore(
     }
 
     suspend fun deleteSenderKey(senderKeyName: SenderKeyName){
-       val test= signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId,senderKeyName.sender.name)
-        printlnCK("deleteSenderKey $test")
+       signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId,senderKeyName.sender.name)
     }
 }

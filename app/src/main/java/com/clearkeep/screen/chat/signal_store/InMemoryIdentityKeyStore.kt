@@ -46,7 +46,6 @@ class InMemoryIdentityKeyStore(
             identityKey = getOrGenerateIdentityKey(clientId, domain)
         }
 
-        printlnCK("InMemoryIdentityKeyStore getLocalRegistrationId regId ${identityKey!!.registrationId}")
         return identityKey!!.registrationId
     }
 
@@ -81,10 +80,7 @@ class InMemoryIdentityKeyStore(
     private fun getOrGenerateIdentityKey(clientId: String, domain: String) : SignalIdentityKey {
         var signalIdentityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
 
-        printlnCK("InMemoryIdentityKeyStore getOrGenerateIdentityKey all identity keys ${signalIdentityKeyDAO.getAllIdentityKey()}")
-
         if (signalIdentityKey == null) {
-            printlnCK("InMemoryIdentityKeyStore getOrGenerateIdentityKey generating identity key ${signalIdentityKeyDAO.getAllIdentityKey()} for clientId $clientId domain $domain")
             signalIdentityKey = generateIdentityKeyPair(clientId, domain)
 
             signalIdentityKeyDAO.insert(signalIdentityKey)

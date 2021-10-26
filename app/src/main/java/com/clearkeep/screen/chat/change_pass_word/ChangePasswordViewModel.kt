@@ -115,7 +115,6 @@ class ChangePasswordViewModel @Inject constructor(
         val newPassword = _newPassword.value ?: ""
 
         viewModelScope.launch {
-            printlnCK("ChangePasswordViewModel preAccess $preAccessToken userId $userId domain $serverDomain")
             changePasswordResponse.value = authRepository.resetPassword(preAccessToken, userId, serverDomain, newPassword)
         }
     }

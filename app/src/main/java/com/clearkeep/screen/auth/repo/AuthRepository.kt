@@ -130,7 +130,6 @@ class AuthRepository @Inject constructor(
 
     suspend fun login(userName: String, password: String, domain: String): Resource<LoginResponse> =
         withContext(Dispatchers.IO) {
-            printlnCK("login: $userName, password = $password, domain = $domain")
             try {
                 val nativeLib = NativeLib()
                 val a = nativeLib.getA(userName, password)
@@ -145,7 +144,6 @@ class AuthRepository @Inject constructor(
                         .loginChallenge(request)
 
                 val salt = response.salt
-                printlnCK("salt bytestring ${ByteString.copyFrom(salt.decodeHex())}")
                 val b = response.publicChallengeB
 
                 val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
@@ -219,7 +217,6 @@ class AuthRepository @Inject constructor(
         }
 
     suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO){
-        printlnCK("loginByGoogle: token = $token, domain = $domain")
         try {
             val request=AuthOuterClass
                 .GoogleLoginReq
@@ -296,7 +293,6 @@ class AuthRepository @Inject constructor(
                 REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
             ).loginOffice(request)
 
-            printlnCK("loginByMicrosoft response ${response.resetPincodeToken}")
 //        if (response.error.isEmpty()) {
 //                printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken} hashKey ${response.hashKey}")
                 return@withContext Resource.success(response)
@@ -491,8 +487,6 @@ class AuthRepository @Inject constructor(
                 .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                 .build()
 
-            printlnCK("resetSocialPin clientKeyPeer transitionID $transitionID setIdentityKeyPublic ${key.publicKey.serialize()} ivParam ${toHex(decrypter.getIv())} resetToken $resetPincodeToken clientKeyPeer $clientKeyPeer")
-
             val request = AuthOuterClass
                 .ResetPinCodeReq
                 .newBuilder()
@@ -503,8 +497,6 @@ class AuthRepository @Inject constructor(
                 .setIvParameter(toHex(decrypter.getIv()))
                 .setClientKeyPeer(clientKeyPeer)
                 .build()
-
-            printlnCK("resetSocialPin salt $saltHex verificator $verificatorHex ivParam ${toHex(decrypter.getIv())} resetToken $resetPincodeToken clientKeyPeer $clientKeyPeer")
 
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
@@ -573,8 +565,6 @@ class AuthRepository @Inject constructor(
                 )
                 .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
                 .build()
-
-            printlnCK("resetPassword preAccessToken $preAccessToken email $email verificatorHex $verificatorHex saltHex $saltHex iv ${toHex(decrypter.getIv())}")
 
             val request = AuthOuterClass
                 .ForgotPasswordUpdateReq

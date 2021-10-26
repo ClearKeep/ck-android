@@ -251,7 +251,6 @@ class ChatService : Service(),
     }
 
     private suspend fun updateMessageAndKeyInOnlineRoom() {
-        printlnCK("updateMessageAndKeyInOnlineRoom")
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
