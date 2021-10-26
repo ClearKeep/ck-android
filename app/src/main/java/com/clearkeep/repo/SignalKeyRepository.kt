@@ -1,13 +1,15 @@
 package com.clearkeep.repo
 
+import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
@@ -17,8 +19,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.util.KeyHelper
 import signal.Signal
 import javax.inject.Inject
@@ -28,14 +28,39 @@ import javax.inject.Singleton
 class SignalKeyRepository @Inject constructor(
     // network calls
     private val senderKeyStore: InMemorySenderKeyStore,
-    private val myStore: InMemorySignalProtocolStore,
-    private val preKeyDAO: SignalPreKeyDAO,
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    private val signalPreKeyDAO: SignalPreKeyDAO,
+    private val signalKeyDAO: SignalKeyDAO
 ) {
     fun getIdentityKey(clientId: String, domain: String) =
         signalIdentityKeyDAO.getIdentityKey(clientId, domain)
+
+    suspend fun deleteKey(owner: Owner, server: Server, chatGroups: List<ChatGroup>?) {
+        val (domain, clientId) = owner
+
+        signalIdentityKeyDAO
+            .deleteSignalKeyByOwnerDomain(domain, clientId)
+        val senderAddress = CKSignalProtocolAddress(Owner(server.serverDomain, server.ownerClientId), 222)
+
+        signalPreKeyDAO.deleteSignalSenderKey(server.serverDomain, server.ownerClientId)
+
+        chatGroups?.forEach { group ->
+            val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)
+            senderKeyStore.deleteSenderKey(groupSender2)
+            group.clientList.forEach {
+                val senderAddress = CKSignalProtocolAddress(
+                    Owner(
+                        it.domain,
+                        it.userId
+                    ), 111
+                )
+                val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
+                signalKeyDAO.deleteSignalSenderKey(groupSender.groupId, groupSender.sender.name)
+            }
+        }
+    }
 
     suspend fun  registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String) : Boolean = withContext(Dispatchers.IO) {
         //get private key

@@ -808,11 +808,6 @@ class RoomViewModel @Inject constructor(
         _selectedMessage = selectedMessage
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        printlnCK("Share file cancel onCleared")
-    }
-
     companion object {
         private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10

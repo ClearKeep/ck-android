@@ -224,14 +224,12 @@ class MessageRepository @Inject constructor(
             val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
                 //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
-                printlnCK("signalProtocolStore localRegistrationId : ${signalProtocolStore.localRegistrationId}")
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 }else {
                     decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
                 }
             } else {
-                printlnCK("signalProtocolStore 2 messageId : ${messageId}  encryptedMessage: ${encryptedMessage}")
                 decryptGroupMessage(
                     sender,
                     groupId,
