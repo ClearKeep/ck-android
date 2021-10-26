@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.screen.chat.repo.ProfileRepository
+import com.clearkeep.repo.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import kotlinx.coroutines.launch

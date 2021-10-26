@@ -9,7 +9,7 @@ import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.WorkSpaceRepository
+import com.clearkeep.repo.WorkSpaceRepository
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status

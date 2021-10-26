@@ -19,7 +19,6 @@ import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.services.utils.MessageChannelSubscriber
 import com.clearkeep.services.utils.NotificationChannelSubscriber

@@ -30,8 +30,8 @@ import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.PeopleRepository
-import com.clearkeep.screen.chat.repo.VideoCallRepository
+import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.*
 import com.clearkeep.screen.videojanus.common.CallState

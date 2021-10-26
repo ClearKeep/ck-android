@@ -1,15 +1,12 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
-import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dragonsrp.NativeLib
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
@@ -17,7 +14,6 @@ import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notify_push.NotifyPushOuterClass
-import org.whispersystems.libsignal.util.KeyHelper
 import user.UserOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,14 +26,13 @@ class ProfileRepository @Inject constructor(
     // data
     private val serverRepository: ServerRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
-    private val userKeyRepository: UserKeyRepository,
     private val userManager: AppStorage,
     private val signalKeyRepository: SignalKeyRepository
 ) {
     suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {
         printlnCK("registerToken: token = $token")
         val server = serverRepository.getServers()
-        server?.forEach { server ->
+        server.forEach { server ->
             registerTokenByOwner(token, server)
         }
     }

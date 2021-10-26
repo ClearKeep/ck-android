@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import com.clearkeep.db.clear_keep.dao.UserKeyDAO
 import com.clearkeep.db.clear_keep.dao.UserPreferenceDAO

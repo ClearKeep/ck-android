@@ -20,13 +20,8 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import org.whispersystems.libsignal.groups.SenderKeyName
 import javax.inject.Inject
-import java.security.SecureRandom
-import java.security.spec.KeySpec
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 
 
 class HomeViewModel @Inject constructor(
