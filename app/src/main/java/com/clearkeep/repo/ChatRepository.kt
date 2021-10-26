@@ -243,10 +243,6 @@ class ChatRepository @Inject constructor(
         return@withContext false
     }
 
-    suspend fun deleteNote(generateId: Long) {
-        messageRepository.deleteNote(generateId)
-    }
-
     suspend fun uploadFile(
         mimeType: String,
         fileName: String,

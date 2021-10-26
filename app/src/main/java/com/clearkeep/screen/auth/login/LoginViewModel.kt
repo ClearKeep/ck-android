@@ -5,9 +5,6 @@ import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.LoginResponse
-import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.repo.WorkSpaceRepository
 import com.clearkeep.utilities.*
@@ -29,67 +26,54 @@ import kotlinx.coroutines.launch
 
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository,
-    private val workSpaceRepository: WorkSpaceRepository,
-    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val signalKeyDAO: SignalKeyDAO,
-    private val signalPreKeyDAO: SignalPreKeyDAO
-): ViewModel() {
-    private val _isLoading = MutableLiveData<Boolean>()
-
+    private val workSpaceRepository: WorkSpaceRepository
+) : ViewModel() {
     lateinit var googleSignIn: GoogleSignInOptions
     lateinit var googleSignInClient: GoogleSignInClient
-    val SCOPES_MICROSOFT = arrayOf("Files.Read","User.Read")
     var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
-    var loginFacebookManager=LoginManager.getInstance()
+    val loginFacebookManager: LoginManager = LoginManager.getInstance()
 
     var isCustomServer: Boolean = false
     var customDomain: String = ""
 
+    private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
     private val _emailError = MutableLiveData<String>()
-
     val emailError: LiveData<String>
         get() = _emailError
 
-    private val _passError = MutableLiveData<String>()
-
     val passError: LiveData<String>
         get() = _passError
-
-    val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
-
-    val urlCustomServer= MutableLiveData<String>()
-
-    val verifyOtpResponse = MutableLiveData<Resource<String>>()
-
-    val serverUrlValidateResponse = MutableLiveData<Resource<String>>()
-
-    private var checkValidServerJob: Job? = null
-
-    private var otpHash: String = ""
-    private var userId: String = ""
-    private var hashKey: String = ""
-
-    private var resetPincodeToken: String = ""
+    private val _passError = MutableLiveData<String>()
 
     private val _isAccountLocked = MutableLiveData<Boolean>()
-    val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
+    val isAccountLocked: LiveData<Boolean> get() = _isAccountLocked
 
     private val _securityPhrase = MutableLiveData<String>()
     private val _confirmSecurityPhrase = MutableLiveData<String>()
 
     private val _isSecurityPhraseValid = MutableLiveData<Boolean>()
-    val isSecurityPhraseValid : LiveData<Boolean> get() = _isSecurityPhraseValid
+    val isSecurityPhraseValid: LiveData<Boolean> get() = _isSecurityPhraseValid
 
     private val _isConfirmSecurityPhraseValid = MutableLiveData<Boolean>()
-    val isConfirmSecurityPhraseValid : LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
+    val isConfirmSecurityPhraseValid: LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
 
+    val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
     val verifyPassphraseResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
     val registerSocialPinResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
+    val verifyOtpResponse = MutableLiveData<Resource<String>>()
+    val serverUrlValidateResponse = MutableLiveData<Resource<String>>()
+
+    private var otpHash: String = ""
+    private var userId: String = ""
+    private var hashKey: String = ""
+
+    private var checkValidServerJob: Job? = null
 
     private var isResetPincode = false
+    private var resetPincodeToken: String = ""
 
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
@@ -111,8 +95,8 @@ class LoginViewModel @Inject constructor(
         _isConfirmSecurityPhraseValid.value = isConfirmSecurityPhraseValid()
     }
 
-    fun initGoogleSingIn(context: Context){
-        googleSignIn= GoogleSignInOptions
+    fun initGoogleSingIn(context: Context) {
+        googleSignIn = GoogleSignInOptions
             .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestProfile()
@@ -122,7 +106,11 @@ class LoginViewModel @Inject constructor(
         googleSignInClient.signOut()
     }
 
-    fun initMicrosoftSignIn(context: Context,onSuccess: (()->Unit),onError: ((String?)->Unit)){
+    fun initMicrosoftSignIn(
+        context: Context,
+        onSuccess: (() -> Unit),
+        onError: ((String?) -> Unit)
+    ) {
         PublicClientApplication.createSingleAccountPublicClientApplication(
             context, R.raw.auth_config_single_account, object :
                 IPublicClientApplication.ISingleAccountApplicationCreatedListener {
@@ -131,7 +119,7 @@ class LoginViewModel @Inject constructor(
                     viewModelScope.launch(Dispatchers.IO) {
                         try {
                             mSingleAccountApp?.signOut()
-                        } catch (e:Exception){
+                        } catch (e: Exception) {
                             printlnCK(e.message.toString())
                         }
                         onSuccess.invoke()
@@ -182,7 +170,7 @@ class LoginViewModel @Inject constructor(
         request.executeAsync()
     }
 
-    suspend fun loginByMicrosoft(accessToken:String):Resource<AuthOuterClass.SocialLoginRes>{
+    suspend fun loginByMicrosoft(accessToken: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = authRepo.loginByMicrosoft(accessToken, getDomain()).also {
             if (it.status == Status.SUCCESS) {
@@ -267,14 +255,18 @@ class LoginViewModel @Inject constructor(
 
     fun validateOtp(otp: String) {
         if (otp.isBlank() || otp.length != 4) {
-            verifyOtpResponse.value = Resource.error("The code you’ve entered is incorrect. Please try again", null)
+            verifyOtpResponse.value =
+                Resource.error("The code you’ve entered is incorrect. Please try again", null)
             return
         }
 
         viewModelScope.launch {
             val response = authRepo.validateOtp(getDomain(), otp, otpHash, userId, hashKey)
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(
+                    response.message ?: "The code you’ve entered is incorrect. Please try again",
+                    null
+                )
             } else {
                 verifyOtpResponse.value = Resource.success(null)
             }
@@ -287,7 +279,10 @@ class LoginViewModel @Inject constructor(
             val errorCode = response.data?.first
 
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.data?.second ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(
+                    response.data?.second
+                        ?: "The code you’ve entered is incorrect. Please try again", null
+                )
 
                 if (errorCode == 1069) {
                     _isAccountLocked.value = true
@@ -307,7 +302,8 @@ class LoginViewModel @Inject constructor(
         checkValidServerJob?.cancel()
         checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
-                serverUrlValidateResponse.value = Resource.error("Wrong server URL. Please try again", null, 0)
+                serverUrlValidateResponse.value =
+                    Resource.error("Wrong server URL. Please try again", null, 0)
                 _isLoading.value = false
                 return@launch
             }
@@ -341,6 +337,12 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun isConfirmSecurityPhraseValid(): Boolean {
-        return isSecurityPhraseValid((_securityPhrase.value ?: "").trim()) && _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
+        return isSecurityPhraseValid(
+            (_securityPhrase.value ?: "").trim()
+        ) && _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
+    }
+
+    companion object {
+        val SCOPES_MICROSOFT = arrayOf("Files.Read", "User.Read")
     }
 }

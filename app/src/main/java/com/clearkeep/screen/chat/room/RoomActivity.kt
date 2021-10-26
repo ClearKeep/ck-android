@@ -82,7 +82,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         roomViewModel.isLogOutCompleted.observe(this) {
-            println("RoomActivity isLogoutCompleted $it")
+            printlnCK("RoomActivity isLogoutCompleted $it")
             if (it) {
                 restartToRoot(this)
             }

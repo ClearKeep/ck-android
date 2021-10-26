@@ -25,7 +25,6 @@ class InviteGroupViewModel @Inject constructor(
 
     val checkUserUrlResponse = MutableLiveData<Resource<User>>()
 
-    private var insertFriendJob: Job? = null
     private var checkUserUrlJob: Job? = null
 
     private val _isLoading = MutableLiveData<Boolean>()
@@ -34,7 +33,6 @@ class InviteGroupViewModel @Inject constructor(
     val filterFriends = liveData<List<User>> {
         val result = MediatorLiveData<List<User>>()
         result.addSource(friends) { _ ->
-            //     result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
         }
         result.addSource(textSearch) { text ->
             result.value = getFilterFriends(friends.value ?: emptyList(), text)
