@@ -30,8 +30,8 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.VideoCallRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.repo.GroupRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture

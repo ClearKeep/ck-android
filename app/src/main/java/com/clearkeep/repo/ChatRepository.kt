@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import android.app.DownloadManager
 import android.content.Context
@@ -11,7 +11,6 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.ParamAPI
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*

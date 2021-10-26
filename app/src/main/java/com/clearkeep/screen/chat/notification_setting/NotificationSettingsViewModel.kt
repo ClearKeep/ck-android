@@ -1,14 +1,11 @@
 package com.clearkeep.screen.chat.notification_setting
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.screen.chat.repo.PeopleRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.repo.UserPreferenceRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

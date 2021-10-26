@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
@@ -8,7 +8,6 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserEntity
 import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
@@ -53,41 +52,8 @@ class PeopleRepository @Inject constructor(
 
     suspend fun getFriendFromID(friendClientId: String) : User? = withContext(Dispatchers.IO) {
         val ret = peopleDao.getFriendFromUserId(friendClientId)
-        printlnCK("getFriendFromID: ${ret}  id: $friendClientId")
+        printlnCK("getFriendFromID: $ret id: $friendClientId")
         return@withContext if (ret != null) convertEntityToUser(ret) else null
-    }
-
-
-    suspend fun searchUser(userName: String) : List<User>  = withContext(Dispatchers.IO) {
-        printlnCK("searchUser: $userName")
-        try {
-            val request = UserOuterClass.SearchUserRequest.newBuilder()
-                    .setKeyword(userName).build()
-            val response = dynamicAPIProvider.provideUserBlockingStub().searchUser(request)
-            return@withContext response.lstUserOrBuilderList
-                    .map { userInfoResponseOrBuilder ->
-                        User(
-                            userId = userInfoResponseOrBuilder.id,
-                            userName = userInfoResponseOrBuilder.displayName,
-                            domain = userInfoResponseOrBuilder.workspaceDomain,
-                        )
-                    }
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("searchUser token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext emptyList()
-        } catch (e: Exception) {
-            printlnCK("searchUser: $e")
-            return@withContext emptyList()
-        }
     }
 
     suspend fun updatePeople(): Resource<Nothing> {
@@ -119,9 +85,9 @@ class PeopleRepository @Inject constructor(
         try {
             val result = peopleDao.deleteFriend(clientId)
             if (result > 0) {
-                printlnCK("deleteFriend: clientId: ${clientId}")
+                printlnCK("deleteFriend: clientId: $clientId")
             } else {
-                printlnCK("deleteFriend: clientId: ${clientId} fail")
+                printlnCK("deleteFriend: clientId: $clientId fail")
             }
         } catch (e: Exception) {
             printlnCK("updatePeople:Exception $e")

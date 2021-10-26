@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import android.text.TextUtils
 import androidx.lifecycle.LiveData
@@ -11,7 +11,6 @@ import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.contact_search.MessageSearchResult
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -32,12 +31,9 @@ import org.whispersystems.libsignal.*
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.ratchet.SenderMessageKey
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
-import org.whispersystems.libsignal.groups.state.SenderKeyState
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import org.whispersystems.libsignal.protocol.SenderKeyMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
@@ -65,10 +61,6 @@ class MessageRepository @Inject constructor(
     fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
 
     fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
-
-    suspend fun getMessages(groupId: Long, owner: Owner) = messageDAO.getMessages(groupId, owner.domain, owner.clientId)
-
-    suspend fun getMessage(messageId: String,groupId: Long) = messageDAO.getMessage(messageId,groupId)
 
     suspend fun getUnreadMessage(groupId: Long, domain: String, ourClientId: String) : List<Message> {
         val group = groupDAO.getGroupById(groupId, domain, ourClientId)!!
@@ -428,20 +420,7 @@ class MessageRepository @Inject constructor(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
 
-            /*val record = senderKeyStore.loadSenderKey(groupSender)
-
-            if (record.isEmpty) {
-                throw NoSessionException("No sender key for: $groupSender")
-            }
-
-            val senderKeyMessage = SenderKeyMessage(message.toByteArray())
-            val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
-
-            senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
-            printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
-
-
-*/        val plaintextFromAlice = try {
+        val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx

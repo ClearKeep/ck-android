@@ -8,8 +8,7 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
@@ -25,7 +24,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyStore
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
@@ -217,8 +215,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 if (serverRepository.getOwnerClientIds().contains(removedMember)) {
                     messageRepository.deleteMessageInGroup(groupId, clientDomain, removedMember)
                 }
-                printlnCK("getListClientInGroup ${groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.size}")
-                groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.forEach {
+                printlnCK("getListClientInGroup ${groupRepository.getListClientInGroup(
+                    groupId,
+                    clientDomain
+                )?.size}")
+                groupRepository.getListClientInGroup(groupId, clientDomain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,

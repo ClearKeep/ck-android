@@ -1,10 +1,8 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.CALL_TYPE_VIDEO
 import kotlinx.coroutines.Dispatchers
