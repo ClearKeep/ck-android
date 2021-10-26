@@ -9,18 +9,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class PeopleViewModel @Inject constructor(
-    private val peopleRepository: PeopleRepository,
+    peopleRepository: PeopleRepository,
 
     private val environment: Environment
 ): ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
     val friends: LiveData<List<User>> = peopleRepository.getFriends(environment.getServer().serverDomain, getClientId())
-
-    fun updateContactList() {
-        printlnCK("update contact list from remote API")
-        viewModelScope.launch {
-            peopleRepository.updatePeople()
-        }
-    }
 }

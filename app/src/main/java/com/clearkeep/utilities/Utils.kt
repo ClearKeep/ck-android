@@ -194,7 +194,7 @@ fun parseError(e: StatusRuntimeException) : ProtoResponse {
     return try {
         Gson().fromJson(rawError, ProtoResponse::class.java)
     } catch (e: Exception) {
-        println("parseError exception rawError $rawError, exception ${e.message}")
+        printlnCK("parseError exception rawError $rawError, exception ${e.message}")
         ProtoResponse(0, rawError)
     }
 }

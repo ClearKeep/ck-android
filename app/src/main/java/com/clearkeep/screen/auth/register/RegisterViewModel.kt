@@ -20,22 +20,18 @@ class RegisterViewModel @Inject constructor(
         get() = _isLoading
 
     private val _emailError = MutableLiveData<String>()
-
     val emailError: LiveData<String>
         get() = _emailError
 
     private val _passError = MutableLiveData<String>()
-
     val passError: LiveData<String>
         get() = _passError
 
     private val _confirmPassError = MutableLiveData<String>()
-
     val confirmPassError: LiveData<String>
         get() = _confirmPassError
 
     private val _displayNameError = MutableLiveData<String>()
-
     val displayNameError: LiveData<String>
         get() = _displayNameError
 

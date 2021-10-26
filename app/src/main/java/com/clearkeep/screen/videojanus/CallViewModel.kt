@@ -73,7 +73,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
+        peerConnectionClient.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -133,7 +133,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     }
 
     private fun offerPeerConnection(handleId: BigInteger) {
-        peerConnectionClient?.createPeerConnection(
+        peerConnectionClient.createPeerConnection(
             rootEglBase.eglBaseContext,
             mLocalSurfaceRenderer.get(),
             mContext.get()?.let { createVideoCapture(it) },
@@ -174,9 +174,5 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         mWebSocketChannel?.close()
         peerConnectionClient.close()
         totalTimeRunJob?.cancel()
-    }
-
-    fun isAudioCall(){
-
     }
 }

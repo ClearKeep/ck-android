@@ -11,7 +11,6 @@ import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
@@ -73,7 +72,6 @@ class HomeViewModel @Inject constructor(
     private var checkValidServerJob: Job? = null
 
     init {
-        printlnCK("Share file cancel HomeViewModel init")
         viewModelScope.launch {
             messageRepository.clearTempNotes()
             messageRepository.clearTempMessage()
@@ -220,8 +218,6 @@ class HomeViewModel @Inject constructor(
     val isLogOutProcessing: LiveData<Boolean>
         get() = _isLogOutProcessing
 
-    private val _isLogOutCompleted = MutableLiveData(false)
-
     private fun updateFirebaseToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -237,13 +233,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    private suspend fun clearDatabase() = withContext(Dispatchers.IO) {
-        storage.clear()
-        signalProtocolStore.clear()
-        clearKeepDatabase.clearAllTables()
-        signalKeyDatabase.clearAllTables()
     }
 
     private suspend fun pushFireBaseTokenToServer() = withContext(Dispatchers.IO) {
