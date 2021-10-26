@@ -26,6 +26,7 @@ import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 import com.google.accompanist.coil.rememberCoilPainter
@@ -34,7 +35,7 @@ import com.google.accompanist.imageloading.rememberDrawablePainter
 
 @Composable
 fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem: (uri: String) -> Unit) {
-    println("ImageMessageContent $imageUris")
+    printlnCK("ImageMessageContent $imageUris")
     if (imageUris.size == 1) {
         ImageMessageItem(
             Modifier
@@ -46,7 +47,7 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
             Modifier
                 .wrapContentSize()
                 .padding(12.sdp())) {
-            println("multi item grid")
+            printlnCK("multi item grid")
             Row(Modifier.wrapContentSize()) {
                 for (i in 0..minOf(imageUris.size, 1)) {
                     ImageMessageItem(

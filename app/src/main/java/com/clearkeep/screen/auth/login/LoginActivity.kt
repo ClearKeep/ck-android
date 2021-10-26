@@ -94,14 +94,14 @@ class LoginActivity : AppCompatActivity() {
         }
 
         setContent {
-            MyApp(isJoinServer)
+            MyApp()
         }
 
         subscriberError()
     }
 
     @Composable
-    fun MyApp(isJoinServer: Boolean) {
+    fun MyApp() {
         CKTheme {
             MainComposable()
         }
@@ -352,14 +352,13 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.initMicrosoftSignIn(this,
             onSuccess = {
                 loginViewModel.mSingleAccountApp?.signIn(
-                    this, null, loginViewModel.SCOPES_MICROSOFT,
+                    this, null, LoginViewModel.SCOPES_MICROSOFT,
                     getAuthInteractiveCallback(navController)
                 )
             }, onError = {
                 showErrorDiaLog?.invoke(ErrorMessage(getString(R.string.error), it.toString()))
             })
     }
-
 
     private fun onSignInGoogleResult(
         navController: NavController,
@@ -473,8 +472,3 @@ class LoginActivity : AppCompatActivity() {
         const val SERVER_DOMAIN = "server_url_join"
     }
 }
-
-
-
-
-
