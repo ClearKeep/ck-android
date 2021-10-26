@@ -157,7 +157,7 @@ class GroupRepository @Inject constructor(
     suspend fun removeMemberInGroup(remoteUsers: User, groupId: Long, owner: Owner): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                printlnCK("remoteMemberInGroup: remoteUser ${remoteUsers.toString()}  groupId: $groupId")
+                printlnCK("remoteMemberInGroup: remoteUser $remoteUsers groupId: $groupId")
                 val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
                     .setId(remoteUsers.userId)
                     .setWorkspaceDomain(remoteUsers.domain)
@@ -281,7 +281,6 @@ class GroupRepository @Inject constructor(
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
-                    printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
                 }
                 removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
                 printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.error}")
@@ -565,22 +564,22 @@ class GroupRepository @Inject constructor(
             val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
             if (response.clientKey.senderKeyId > 0  && response.groupType == "group" && !isRegisteredKey ) {
-                printlnCK("convertGroupFromResponse senderKeyID ${response.clientKey.senderKeyId} ${response.groupType}  owner: ${response.clientKey.clientId == ownerId}")
                 val senderKeyID = response.clientKey.senderKeyId
                 val senderKey = response.clientKey.senderKey.toByteArray()
                 val privateKeyEncrypt=response.clientKey.privateKey
                 val userKey = userKeyRepository.get(serverDomain, ownerId)
                 val identityKey=signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
                 val privateKey = identityKey?.identityKeyPair?.privateKey
-                val test2=toHex(privateKey?.serialize()!!)
-                printlnCK("DecryptsPBKDF2 : $test2  $privateKeyEncrypt salt: ${fromHex(userKey.salt)}  iv:${fromHex(userKey.iv)}")
+
+                val decryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
+                val privateSenderKey = decryptor.decrypt(fromHex(privateKeyEncrypt), fromHex(userKey.salt), fromHex(userKey.iv))
+
                 val eCPublicKey: ECPublicKey =
                     Curve.decodePoint(response.clientKey.publicKey.toByteArray(), 0)
                 val eCPrivateKey: ECPrivateKey =
-                    Curve.decodePrivatePoint(fromHex(response.clientKey.privateKey))
+                    Curve.decodePrivatePoint(privateSenderKey)
                 val identityKeyPair = ECKeyPair(eCPublicKey, eCPrivateKey)
                 val senderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
-                printlnCK("convertGroupFromResponse privateKey ${response.groupName} ${response.clientKey.privateKey.toByteArray()}")
 
                 senderKeyRecord.setSenderKeyState(
                     senderKeyID.toInt(),
