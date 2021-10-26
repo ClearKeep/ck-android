@@ -15,7 +15,4 @@ interface UserKeyDAO {
 
     @Query("SELECT * FROM userkey WHERE server_domain = :serverDomain AND user_id = :userId")
     suspend fun getKey(serverDomain: String, userId: String): UserKey?
-
-    @Query("UPDATE userkey SET salt = :salt, iv = :iv WHERE server_domain = :serverDomain AND user_id = :userId")
-    suspend fun updateKey(serverDomain: String, userId: String, salt: String, iv: String)
 }

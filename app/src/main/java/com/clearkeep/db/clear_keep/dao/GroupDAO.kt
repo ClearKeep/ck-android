@@ -13,9 +13,6 @@ interface GroupDAO {
     @Insert(onConflict = REPLACE)
     suspend fun insert(group: ChatGroup) : Long
 
-    @Insert(onConflict = REPLACE)
-    suspend fun insertGroupList(groups: List<ChatGroup>)
-
     @Update
     suspend fun updateGroup(vararg group: ChatGroup)
 
@@ -25,10 +22,6 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup WHERE group_type = \"peer\" AND owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun getPeerGroups(domain: String, ownerId: String): List<ChatGroup>
 
-    @Query("SELECT * FROM chatgroup")
-    suspend fun getRooms(): List<ChatGroup>
-
-    // tracking
     @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
     fun getRoomsAsState(): LiveData<List<ChatGroup>>
 
@@ -37,8 +30,6 @@ interface GroupDAO {
 
     @Query("UPDATE chatgroup SET is_deleted_user_peer = 1 WHERE generateId IN (:ids)")
     suspend fun disableChatOfDeactivatedUser(ids: List<Int>)
-/*    @Query("SELECT chatgroup.*, message.* FROM chatgroup LEFT JOIN message ON chatgroup.last_message_id = message.id")
-    fun getRoomWithLastMessageAsState(): LiveData<List<GroupAndLastMessage>>*/
 
     @Query("DELETE  FROM chatgroup WHERE  owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun deleteGroupByOwnerDomain( domain: String, ownerId: String): Int

@@ -65,7 +65,6 @@ fun CKTextInputField(
             } else null,
             color = Color.Transparent,
             elevation = 0.sdp()
-            
         ) {
             TextField(
                 value = textValue?.value ?: "",
