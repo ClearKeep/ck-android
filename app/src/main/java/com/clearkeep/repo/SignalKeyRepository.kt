@@ -10,6 +10,8 @@ import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
+import com.clearkeep.utilities.DecryptsPBKDF2
+import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
@@ -30,6 +32,7 @@ class SignalKeyRepository @Inject constructor(
     private val senderKeyStore: InMemorySenderKeyStore,
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository,
+    private val userKeyRepository: UserKeyRepository,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val signalPreKeyDAO: SignalPreKeyDAO,
     private val signalKeyDAO: SignalKeyDAO
@@ -62,15 +65,13 @@ class SignalKeyRepository @Inject constructor(
         }
     }
 
-    suspend fun  registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String) : Boolean = withContext(Dispatchers.IO) {
         //get private key
         val identityKey=signalIdentityKeyDAO.getIdentityKey(clientId, domain)
         val privateKey = identityKey?.identityKeyPair?.privateKey
-        printlnCK("privateKey ${toHex(privateKey?.serialize()!!)} $clientId:$domain  toString: ${privateKey?.serialize()}  " )
         //end get private key
         val senderAddress = CKSignalProtocolAddress(Owner(domain, clientId), 111)
         val groupSender  =  SenderKeyName(groupID.toString(), senderAddress)
-        printlnCK("registerSenderKeyToGroup: $groupID  hasSenderKey: ${senderKeyStore.hasSenderKey(groupSender)}")
         if (!senderKeyStore.hasSenderKey(groupSender)) {
             val senderKeyID = KeyHelper.generateSenderKeyId()
             val senderKey = KeyHelper.generateSenderKey()
@@ -90,11 +91,17 @@ class SignalKeyRepository @Inject constructor(
                 state.senderChainKey.seed,
                 state.signingKeyPublic
             )
+
+            //Encrypt sender key
+            val userKey = userKeyRepository.get(domain, clientId)
+            val encryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
+            val encryptedGroupPrivateKey = encryptor.encrypt(key.privateKey.serialize(), userKey.salt, userKey.iv)
+
             val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
                 .setDeviceId(senderAddress.deviceId)
                 .setGroupId(groupID)
                 .setClientKeyDistribution(ByteString.copyFrom(sentAliceDistributionMessage.serialize()))
-                .setPrivateKey(toHex(key.privateKey.serialize()))
+                .setPrivateKey(toHex(encryptedGroupPrivateKey!!))
                 .setPublicKey(ByteString.copyFrom(key.publicKey.serialize()))
                 .setSenderKeyId(senderKeyID.toLong())
                 .setSenderKey(ByteString.copyFrom(senderKey))
@@ -103,7 +110,6 @@ class SignalKeyRepository @Inject constructor(
                 val server = serverRepository.getServer(domain = domain, ownerId = clientId)
                 if (server == null) {
                     printlnCK("fetchNewGroup: can not find server")
-                    NullPointerException("groupRegisterClientKey: can not find server")
                     return@withContext false
                 }
                 val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)

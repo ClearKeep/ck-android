@@ -34,20 +34,6 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     }
 
     @Throws(Exception::class)
-    fun encrypt(data: ByteArray): ByteArray? {
-        saltEncrypt = getSalt()
-        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
-        val tmp = factory.generateSecret(spec)
-        key = SecretKeySpec(tmp.encoded, "AES")
-        dcipher?.init(Cipher.ENCRYPT_MODE, key)
-        val params: AlgorithmParameters? = dcipher?.parameters
-        iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
-        printlnCK("encrypt: iv ${iv}")
-        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
-        return dcipher?.doFinal(data)
-    }
-
-    @Throws(Exception::class)
     fun encrypt(data: ByteArray, saltHex: String): ByteArray? {
         saltEncrypt = fromHex(saltHex)
         val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
@@ -56,8 +42,18 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         dcipher?.init(Cipher.ENCRYPT_MODE, key)
         val params: AlgorithmParameters? = dcipher?.parameters
         iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
-        printlnCK("encrypt: iv ${iv}")
-        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
+        return dcipher?.doFinal(data)
+    }
+
+    @kotlin.jvm.Throws(Exception::class)
+    fun encrypt(data: ByteArray, salt: String, oldIv: String): ByteArray? {
+        saltEncrypt = fromHex(salt)
+        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val tmp = factory.generateSecret(spec)
+        key = SecretKeySpec(tmp.encoded, "AES")
+        dcipher?.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(fromHex(oldIv)))
+        val params: AlgorithmParameters? = dcipher?.parameters
+        iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
         return dcipher?.doFinal(data)
     }
 
@@ -71,37 +67,17 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         printlnCK("decrypt spec success")
         val tmp = factory.generateSecret(spec)
         printlnCK("decrypt gen secret success")
-        printlnCK("decrypt: iv $ivParameterSpec")
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivParameterSpec))
         printlnCK("decrypt dcipher init success")
         return dcipher?.doFinal(base64EncryptedData) ?: return null
     }
 
-    @JvmName("getSalt1")
-    @Throws(NoSuchAlgorithmException::class)
-    private fun getSalt(): ByteArray {
-        val sr = SecureRandom.getInstance("SHA1PRNG")
-        val salt = ByteArray(16)
-        sr.nextBytes(salt)
-        return salt
-    }
-
-    fun getSaltEncryptValue(): String {
-        return toHex(saltEncrypt)
-    }
     fun getIv(): ByteArray {
-        printlnCK("encrypt: iv ${iv}")
         return iv
     }
 
-
     companion object {
-        fun md5(input: String): String {
-            val md = MessageDigest.getInstance("MD5")
-            return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
-        }
-
         @Throws(NoSuchAlgorithmException::class)
          fun toHex(array: ByteArray): String {
             val bi = BigInteger(1, array)
