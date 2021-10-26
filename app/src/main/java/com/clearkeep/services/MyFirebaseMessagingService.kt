@@ -207,7 +207,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
-            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: ${groupId}")
+            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: groupId")
             if (!serverRepository.getOwnerClientIds().contains(removedMember))
                 groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
@@ -236,7 +236,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
-                    printlnCK("deleteSignalSenderKey2: ${groupSender.groupId}  ${groupSender2.sender.name}")
                 }
                 groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             }
@@ -295,9 +294,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
 
     override fun onNewToken(token: String) {
-        Log.w(TAG, "onNewToken: $token")
-
-        printlnCK("onNewToken: $token")
         super.onNewToken(token)
     }
 

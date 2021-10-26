@@ -38,7 +38,6 @@ open class BaseViewModel @Inject constructor(
                     if (removeResult > 0) {
                         printlnCK("serverRepository: ${serverRepository.getServers().size}")
                         if (serverRepository.getServers().isNotEmpty()) {
-                            printlnCK("servers.value!![0]: ${servers.value!![0]}")
                             selectChannel(servers.value!![0])
                         } else {
                             _isLogOutCompleted.value = true

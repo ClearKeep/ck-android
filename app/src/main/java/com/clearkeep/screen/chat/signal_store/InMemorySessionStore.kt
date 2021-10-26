@@ -18,10 +18,8 @@ class InMemorySessionStore : SessionStore, Closeable {
     override fun loadSession(remoteAddress: SignalProtocolAddress): SessionRecord {
         return try {
             if (containsSession(remoteAddress)) {
-                printlnCK("InMemorySessionStore loadSession already contain address $remoteAddress}")
                 SessionRecord(sessions[remoteAddress])
             } else {
-                printlnCK("InMemorySessionStore loadSession new address $remoteAddress}")
                 SessionRecord()
             }
         } catch (e: IOException) {
@@ -43,7 +41,6 @@ class InMemorySessionStore : SessionStore, Closeable {
 
     @Synchronized
     override fun storeSession(address: SignalProtocolAddress, record: SessionRecord) {
-        printlnCK("InMemorySessionStore storeSession address $address record ${Arrays.toString(record.serialize())}")
         sessions[address] = record.serialize()
     }
 
