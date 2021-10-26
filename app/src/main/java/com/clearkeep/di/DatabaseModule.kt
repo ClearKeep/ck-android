@@ -31,12 +31,6 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideUserDao(db: ClearKeepDatabase): ProfileDAO {
-        return db.profileDao()
-    }
-
-    @Singleton
-    @Provides
     fun provideMessageDAO(db: ClearKeepDatabase): MessageDAO {
         return db.messageDao()
     }

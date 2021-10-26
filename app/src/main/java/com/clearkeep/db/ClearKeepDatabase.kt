@@ -19,7 +19,6 @@ import com.clearkeep.db.clear_keep.model.*
 ], version = 15, exportSchema = false)
 @TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
-    abstract fun profileDao(): ProfileDAO
     abstract fun serverDao(): ServerDAO
     abstract fun messageDao(): MessageDAO
     abstract fun noteDao(): NoteDAO

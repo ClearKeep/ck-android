@@ -20,9 +20,6 @@ interface ServerDAO {
     @Query("SELECT * FROM server WHERE is_active = 1 LIMIT 1")
     suspend fun getDefaultServer(): Server
 
-    @Query("UPDATE server SET is_active = CASE id WHEN :serverId THEN 1 ELSE 0 END")
-    suspend fun setDefaultServer(serverId: Int)
-
     @Query("UPDATE server SET is_active = CASE server_domain WHEN :domain THEN 1 ELSE 0 END")
     suspend fun setDefaultServerByDomain(domain: String)
 
