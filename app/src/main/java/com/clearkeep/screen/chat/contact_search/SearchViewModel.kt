@@ -4,9 +4,9 @@ import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.PeopleRepository
+import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MessageRepository
+import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.network.Resource

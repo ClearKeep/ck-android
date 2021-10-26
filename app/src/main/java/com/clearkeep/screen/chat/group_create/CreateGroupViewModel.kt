@@ -3,7 +3,7 @@ package com.clearkeep.screen.chat.group_create
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.repo.GroupRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

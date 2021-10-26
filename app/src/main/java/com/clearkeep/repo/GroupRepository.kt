@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import com.clearkeep.db.clear_keep.dao.GroupDAO
 import com.clearkeep.db.clear_keep.model.*
@@ -8,7 +8,6 @@ import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.*
 import com.clearkeep.utilities.*
@@ -92,35 +91,6 @@ class GroupRepository @Inject constructor(
         groupDAO.disableChatOfDeactivatedUser(peerRooms)
     }
 
-    suspend fun fetchNewGroup(groupId: Long, owner: Owner) = withContext(Dispatchers.IO) {
-        printlnCK("fetchNewGroup: $groupId for owner -> ${owner.domain} + ${owner.clientId}")
-        val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
-        if (server == null) {
-            printlnCK("fetchNewGroup: can not find server")
-            return@withContext
-        }
-        val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
-        val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
-        try {
-            val group = getGroupFromAPI(groupId, Owner(owner.domain, owner.clientId))
-            if (group.data != null) {
-                insertGroup(group.data)
-            }
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("fetchNewGroup token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-        } catch (exception: Exception) {
-            printlnCK("fetchNewGroup: $exception")
-        }
-    }
-
     suspend fun createGroupFromAPI(
         createClientId: String,
         groupName: String,
@@ -179,8 +149,6 @@ class GroupRepository @Inject constructor(
         if (server == null) {
             printlnCK("fetchNewGroup: can not find server")
         }
-        val paramAPI = ParamAPI(server!!.serverDomain, server.accessKey, server.hashKey)
-        val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
         val group = getGroupFromAPI(groupId, owner)
         group.data?.let { insertGroup(it) }
         return@withContext group
@@ -296,7 +264,7 @@ class GroupRepository @Inject constructor(
 
             val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
             if (response.error.isNullOrEmpty()) {
-                getListClientInGroup(groupId, owner.domain,owner.clientId)?.forEach {
+                getListClientInGroup(groupId, owner.domain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             owner.domain,
@@ -460,13 +428,6 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupByID: null server")
             return null
         }
-        val groupGrpc = apiProvider.provideGroupBlockingStub(
-            ParamAPI(
-                server.serverDomain,
-                server.accessKey,
-                server.hashKey
-            )
-        )
         room = getGroupFromAPI(groupId, Owner(domain, ownerId))
         if (room.data != null) {
             insertGroup(room.data!!)
@@ -501,9 +462,9 @@ class GroupRepository @Inject constructor(
         val result= groupDAO.deleteGroupById(groupId, domain, ownerClientId)
 
         if (result>0){
-            printlnCK("removeGroupOnWorkSpace: groupId: ${groupId}")
+            printlnCK("removeGroupOnWorkSpace: groupId: $groupId")
         }else {
-            printlnCK("removeGroupOnWorkSpace: groupId: ${groupId} fail")
+            printlnCK("removeGroupOnWorkSpace: groupId: $groupId fail")
         }
     }
 
@@ -569,8 +530,7 @@ class GroupRepository @Inject constructor(
 
     suspend fun getListClientInGroup(
         groupId: Long,
-        domain: String,
-        clientId: String
+        domain: String
     ): List<String>? {
         printlnCK("getListClientInGroup: ${groupDAO.getGroupById(groupId, domain)?.clientList?.size}")
         return groupDAO.getGroupById(groupId, domain)?.clientList?.map { it -> it.userId }

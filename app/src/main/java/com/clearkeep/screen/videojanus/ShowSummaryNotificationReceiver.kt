@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserPreference
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MessageRepository
+import com.clearkeep.repo.UserPreferenceRepository
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope

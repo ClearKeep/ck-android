@@ -1,9 +1,7 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
-import com.clearkeep.dynamicapi.DynamicAPIProvider
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
@@ -18,33 +16,9 @@ import javax.inject.Singleton
 
 @Singleton
 class WorkSpaceRepository @Inject constructor(
-    private val dynamicAPIProvider: DynamicAPIProvider,
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository
 ) {
-    suspend fun leaveServer(): WorkspaceOuterClass.BaseResponse? = withContext(Dispatchers.IO) {
-        try {
-            val request = WorkspaceOuterClass.LeaveWorkspaceRequest.newBuilder().build()
-            return@withContext dynamicAPIProvider.provideWorkSpaceBlockingStub()
-                .leaveWorkspace(request)
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("leaveServer token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            printlnCK("leaveServer =====EROR: ${e.message}")
-            return@withContext null
-        }
-    }
-
     suspend fun getWorkspaceInfo(currentDomain: String? = null, domain: String): Resource<String> = withContext(Dispatchers.IO) {
         try {
             val request = WorkspaceOuterClass

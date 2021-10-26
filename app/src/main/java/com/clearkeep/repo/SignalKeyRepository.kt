@@ -1,4 +1,4 @@
-package com.clearkeep.screen.chat.repo
+package com.clearkeep.repo
 
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
@@ -6,12 +6,9 @@ import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.utilities.DecryptsPBKDF2
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
+import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toString
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
@@ -31,39 +28,12 @@ import javax.inject.Singleton
 class SignalKeyRepository @Inject constructor(
     // network calls
     private val senderKeyStore: InMemorySenderKeyStore,
-    private val myStore: com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore,
+    private val myStore: InMemorySignalProtocolStore,
     private val preKeyDAO: SignalPreKeyDAO,
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val userKeyRepository: UserKeyRepository,
 ) {
-    suspend fun getPreKey() : PreKeyRecord {
-        val preKeyRecord = preKeyDAO.getFirstUnSignedPreKey()?.preKeyRecord ?: null
-        return if (preKeyRecord == null) {
-            val preKeys = KeyHelper.generatePreKeys(1, 1)
-            val preKey = preKeys[0]
-            printlnCK("generate PreKeys: ${preKey.id}")
-            myStore.storePreKey(preKey.id, preKey)
-            preKey
-        } else {
-            PreKeyRecord(preKeyRecord)
-        }
-    }
-
-    suspend fun getSignedKey() : SignedPreKeyRecord {
-        val signedKeyRecord = preKeyDAO.getFirstSignedPreKey()?.preKeyRecord ?: null
-        return if (signedKeyRecord == null) {
-            val identityKeyPair = myStore.identityKeyPair
-            val signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, 5)
-            printlnCK("generate Signed PreKey: ${signedPreKey.id}")
-            myStore.storeSignedPreKey(signedPreKey.id, signedPreKey)
-            signedPreKey
-        } else {
-            SignedPreKeyRecord(signedKeyRecord)
-        }
-    }
-
     fun getIdentityKey(clientId: String, domain: String) =
         signalIdentityKeyDAO.getIdentityKey(clientId, domain)
 
@@ -95,19 +65,6 @@ class SignalKeyRepository @Inject constructor(
                 state.senderChainKey.seed,
                 state.signingKeyPublic
             )
-            /*val userKey = userKeyRepository.get(domain, clientId)
-            val test2=toHex(privateKey.serialize()!!)
-
-            val decryptResult = DecryptsPBKDF2("ck").encrypt(
-                key.privateKey.serialize(),
-                userKey.salt,
-                userKey.iv
-            )?.let {
-                toHex(
-                    it
-                )
-            }*/
-            //printlnCK("DecryptsPBKDF2 : $test2  $decryptResult salt: ${fromHex(userKey.salt)}  iv:${fromHex(userKey.iv)}")
             val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
                 .setDeviceId(senderAddress.deviceId)
                 .setGroupId(groupID)
