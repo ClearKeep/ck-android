@@ -164,7 +164,7 @@ class GroupRepository @Inject constructor(
                     .setDisplayName(remoteUsers.userName)
                     .build()
 
-                val removing=GroupOuterClass.MemberInfo.newBuilder()
+                val removing = GroupOuterClass.MemberInfo.newBuilder()
                     .setId(getClientId())
                     .setWorkspaceDomain(owner.domain)
                     .setDisplayName(environment.getServer().profile.userName)
@@ -184,14 +184,14 @@ class GroupRepository @Inject constructor(
 
                 val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("removeMemberInGroup token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("removeMemberInGroup token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
-            }
                 return@withContext false
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
@@ -200,7 +200,11 @@ class GroupRepository @Inject constructor(
             return@withContext false
         }
 
-    private suspend fun inviteToGroupFromAPI(invitedUser: User, groupId: Long,owner: Owner): GroupOuterClass.BaseResponse? =
+    private suspend fun inviteToGroupFromAPI(
+        invitedUser: User,
+        groupId: Long,
+        owner: Owner
+    ): GroupOuterClass.BaseResponse? =
         withContext(Dispatchers.IO) {
             printlnCK("inviteToGroupFromAPI: $groupId ")
             try {
@@ -211,7 +215,7 @@ class GroupRepository @Inject constructor(
                     .setStatus("")
                     .build()
 
-                val adding=GroupOuterClass.MemberInfo.newBuilder()
+                val adding = GroupOuterClass.MemberInfo.newBuilder()
                     .setId(getClientId())
                     .setWorkspaceDomain(owner.domain)
                     .setDisplayName(environment.getServer().profile.userName)
@@ -231,14 +235,14 @@ class GroupRepository @Inject constructor(
 
                 val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("inviteToGroupFromAPI token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("inviteToGroupFromAPI token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
-            }
                 return@withContext null
             } catch (e: Exception) {
                 printlnCK("inviteToGroupFromAPI error: $e")
@@ -248,64 +252,64 @@ class GroupRepository @Inject constructor(
 
     suspend fun leaveGroup(groupId: Long, owner: Owner): Boolean =
         withContext(Dispatchers.IO) {
-        try {
-            printlnCK("leaveGroup groupId: groupId: $groupId ")
-            val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
-                .setId(getClientId())
-                .setWorkspaceDomain(owner.domain)
-                .setDisplayName(environment.getServer().profile.userName)
-                .build()
+            try {
+                printlnCK("leaveGroup groupId: groupId: $groupId ")
+                val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                    .setId(getClientId())
+                    .setWorkspaceDomain(owner.domain)
+                    .setDisplayName(environment.getServer().profile.userName)
+                    .build()
 
-            val request = GroupOuterClass.LeaveGroupRequest.newBuilder()
-                .setLeaveMember(memberInfo)
-                .setLeaveMemberBy(memberInfo)
-                .setGroupId(groupId)
-                .build()
+                val request = GroupOuterClass.LeaveGroupRequest.newBuilder()
+                    .setLeaveMember(memberInfo)
+                    .setLeaveMemberBy(memberInfo)
+                    .setGroupId(groupId)
+                    .build()
 
-            val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
-            if (response.error.isNullOrEmpty()) {
-                getListClientInGroup(groupId, owner.domain)?.forEach {
-                    val senderAddress2 = CKSignalProtocolAddress(
-                        Owner(
-                            owner.domain,
-                            it
-                        ), RECEIVER_DEVICE_ID
-                    )
-                    val senderAddress1 = CKSignalProtocolAddress(
-                        Owner(
-                            owner.domain,
-                            it
-                        ), SENDER_DEVICE_ID
-                    )
-                    val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
-                    val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
-                    senderKeyStore.deleteSenderKey(groupSender2)
-                    senderKeyStore.deleteSenderKey(groupSender)
+                val response = dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
+                if (response.error.isNullOrEmpty()) {
+                    getListClientInGroup(groupId, owner.domain)?.forEach {
+                        val senderAddress2 = CKSignalProtocolAddress(
+                            Owner(
+                                owner.domain,
+                                it
+                            ), RECEIVER_DEVICE_ID
+                        )
+                        val senderAddress1 = CKSignalProtocolAddress(
+                            Owner(
+                                owner.domain,
+                                it
+                            ), SENDER_DEVICE_ID
+                        )
+                        val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                        val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                        senderKeyStore.deleteSenderKey(groupSender2)
+                        senderKeyStore.deleteSenderKey(groupSender)
+                    }
+                    removeGroupOnWorkSpace(groupId, owner.domain, owner.clientId)
+                    printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.error}")
+                    return@withContext true
                 }
-                removeGroupOnWorkSpace(groupId,owner.domain,owner.clientId)
-                printlnCK("leaveGroup success: groupId: $groupId groupname: ${response.error}")
-                return@withContext true
-            }
-            return@withContext false
-        } catch (e: StatusRuntimeException) {
+                return@withContext false
+            } catch (e: StatusRuntimeException) {
 
-            val parsedError = parseError(e)
+                val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("leaveGroup token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("leaveGroup token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
+                return@withContext false
+            } catch (e: Exception) {
+                e.printStackTrace()
+                printlnCK("leaveGroup error: " + e.message.toString())
+                return@withContext false
             }
-            return@withContext false
-        } catch (e: Exception) {
-            e.printStackTrace()
-            printlnCK("leaveGroup error: " + e.message.toString())
-            return@withContext false
         }
-    }
 
     private suspend fun getGroupFromAPI(
         groupId: Long,
@@ -323,7 +327,8 @@ class GroupRepository @Inject constructor(
             val request = GroupOuterClass.GetGroupRequest.newBuilder()
                 .setGroupId(groupId)
                 .build()
-            val response = groupGrpc.withDeadlineAfter(REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS).getGroup(request)
+            val response = groupGrpc.withDeadlineAfter(REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS)
+                .getGroup(request)
 
             val group = convertGroupFromResponse(response, owner.domain, owner.clientId)
             printlnCK("getGroupFromAPI: ${group.clientList}")
@@ -347,7 +352,7 @@ class GroupRepository @Inject constructor(
         }
     }
 
-    suspend fun getGroupByGroupId(groupId: Long): ChatGroup ? {
+    suspend fun getGroupByGroupId(groupId: Long): ChatGroup? {
         return groupDAO.getGroupById(groupId, getDomain(), getClientId())
     }
 
@@ -434,7 +439,11 @@ class GroupRepository @Inject constructor(
         return room
     }
 
-    suspend fun getGroupFromAPIById(groupId: Long, domain: String, ownerId: String) : Resource<ChatGroup>? {
+    suspend fun getGroupFromAPIById(
+        groupId: Long,
+        domain: String,
+        ownerId: String
+    ): Resource<ChatGroup>? {
         val server = serverRepository.getServer(domain, ownerId)
         if (server == null) {
             printlnCK("getGroupByID: null server")
@@ -457,18 +466,18 @@ class GroupRepository @Inject constructor(
         return room
     }
 
-    suspend fun removeGroupOnWorkSpace(groupId: Long, domain: String, ownerClientId: String){
-        val result= groupDAO.deleteGroupById(groupId, domain, ownerClientId)
+    suspend fun removeGroupOnWorkSpace(groupId: Long, domain: String, ownerClientId: String) {
+        val result = groupDAO.deleteGroupById(groupId, domain, ownerClientId)
 
-        if (result>0){
+        if (result > 0) {
             printlnCK("removeGroupOnWorkSpace: groupId: $groupId")
-        }else {
+        } else {
             printlnCK("removeGroupOnWorkSpace: groupId: $groupId fail")
         }
     }
 
-    suspend fun removeGroupByDomain(domain: String, ownerClientId: String){
-        val result= groupDAO.deleteGroupByOwnerDomain(domain, ownerClientId)
+    suspend fun removeGroupByDomain(domain: String, ownerClientId: String) {
+        val result = groupDAO.deleteGroupByOwnerDomain(domain, ownerClientId)
         printlnCK("removeGroupOnWorkSpace: groupId: $domain $result  $ownerClientId")
     }
 
@@ -531,7 +540,14 @@ class GroupRepository @Inject constructor(
         groupId: Long,
         domain: String
     ): List<String>? {
-        printlnCK("getListClientInGroup: ${groupDAO.getGroupById(groupId, domain)?.clientList?.size}")
+        printlnCK(
+            "getListClientInGroup: ${
+                groupDAO.getGroupById(
+                    groupId,
+                    domain
+                )?.clientList?.size
+            }"
+        )
         return groupDAO.getGroupById(groupId, domain)?.clientList?.map { it -> it.userId }
     }
 
@@ -561,18 +577,23 @@ class GroupRepository @Inject constructor(
         }
 
         try {
-            val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
+            val senderAddress =
+                CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
-            if (response.clientKey.senderKeyId > 0  && response.groupType == "group" && !isRegisteredKey ) {
+            if (response.clientKey.senderKeyId > 0 && response.groupType == "group" && !isRegisteredKey) {
                 val senderKeyID = response.clientKey.senderKeyId
                 val senderKey = response.clientKey.senderKey.toByteArray()
-                val privateKeyEncrypt=response.clientKey.privateKey
+                val privateKeyEncrypt = response.clientKey.privateKey
                 val userKey = userKeyRepository.get(serverDomain, ownerId)
-                val identityKey=signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
+                val identityKey = signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
                 val privateKey = identityKey?.identityKeyPair?.privateKey
 
                 val decryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
-                val privateSenderKey = decryptor.decrypt(fromHex(privateKeyEncrypt), fromHex(userKey.salt), fromHex(userKey.iv))
+                val privateSenderKey = decryptor.decrypt(
+                    fromHex(privateKeyEncrypt),
+                    fromHex(userKey.salt),
+                    fromHex(userKey.iv)
+                )
 
                 val eCPublicKey: ECPublicKey =
                     Curve.decodePoint(response.clientKey.publicKey.toByteArray(), 0)

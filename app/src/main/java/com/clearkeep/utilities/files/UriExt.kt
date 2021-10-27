@@ -27,7 +27,7 @@ fun Uri.getFileSize(context: Context, persistablePermission: Boolean = true): Lo
     }
     val cursor = contentResolver.query(this, null, null, null, null, null)
     if (cursor != null && cursor.moveToFirst()) {
-        val fileSize =  cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
+        val fileSize = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE))
         cursor.close()
         return fileSize
     }

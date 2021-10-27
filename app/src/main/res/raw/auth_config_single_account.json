@@ -1,10 +1,10 @@
 {
-  "client_id" : "f30e4d3e-b8e0-4aea-a6fe-445089c1f34b",
-  "authorization_user_agent" : "DEFAULT",
-  "redirect_uri" : "msauth://com.clearkeep/fBOt60bSb5qa58yoGD2M6HiecyY%3D",
-  "broker_redirect_uri_registered" : true,
-  "account_mode" : "SINGLE",
-  "authorities" : [
+  "client_id": "f30e4d3e-b8e0-4aea-a6fe-445089c1f34b",
+  "authorization_user_agent": "DEFAULT",
+  "redirect_uri": "msauth://com.clearkeep/fBOt60bSb5qa58yoGD2M6HiecyY%3D",
+  "broker_redirect_uri_registered": true,
+  "account_mode": "SINGLE",
+  "authorities": [
     {
       "type": "AAD",
       "audience": {

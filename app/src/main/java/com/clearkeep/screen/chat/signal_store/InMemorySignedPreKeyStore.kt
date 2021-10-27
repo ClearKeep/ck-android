@@ -16,8 +16,8 @@ import java.io.IOException
 import java.util.*
 
 class InMemorySignedPreKeyStore(
-        private val preKeyDAO: SignalPreKeyDAO,
-        private val environment: Environment
+    private val preKeyDAO: SignalPreKeyDAO,
+    private val environment: Environment
 ) : SignedPreKeyStore, Closeable {
     private var store: MutableMap<Int, ByteArray> = HashMap()
 
@@ -53,7 +53,15 @@ class InMemorySignedPreKeyStore(
     override fun storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord) {
         store[signedPreKeyId] = record.serialize()
         val server = environment.getTempServer()
-        preKeyDAO.insert(SignalPreKey(signedPreKeyId, record.serialize(), true, server.serverDomain, server.profile.userId))
+        preKeyDAO.insert(
+            SignalPreKey(
+                signedPreKeyId,
+                record.serialize(),
+                true,
+                server.serverDomain,
+                server.profile.userId
+            )
+        )
     }
 
     override fun containsSignedPreKey(signedPreKeyId: Int): Boolean {
@@ -62,7 +70,7 @@ class InMemorySignedPreKeyStore(
                 || (preKeyDAO.getSignedPreKey(signedPreKeyId) != null)
     }
 
-    override fun removeSignedPreKey(signedPreKeyId: Int) { }
+    override fun removeSignedPreKey(signedPreKeyId: Int) {}
 
     override fun clear() {
         store.clear()

@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
-): ViewModel() {
+) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
     val isLoading: LiveData<Boolean>
@@ -37,7 +37,13 @@ class RegisterViewModel @Inject constructor(
 
     var domain: String = ""
 
-    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String): Resource<AuthOuterClass.RegisterSRPRes>? {
+    suspend fun register(
+        context: Context,
+        email: String,
+        displayName: String,
+        password: String,
+        confirmPassword: String
+    ): Resource<AuthOuterClass.RegisterSRPRes>? {
         _isLoading.value = true
 
         _emailError.value = ""

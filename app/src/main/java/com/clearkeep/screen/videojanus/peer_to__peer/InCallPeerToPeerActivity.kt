@@ -117,7 +117,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_call_peer_to_peer)
-    //    allowOnLockScreen()
+        //    allowOnLockScreen()
         isInPeerCall = true
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -208,11 +208,20 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
 
                 val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
-                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                startVideo(
+                    webRtcGroupId,
+                    webRtcUrl,
+                    stunUrl,
+                    turnUrl,
+                    turnUserName,
+                    turnPassword,
+                    token
+                )
                 callViewModel.onSpeakChange(mIsSpeaker)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result =
+                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
@@ -222,7 +231,15 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
                     val webRtcGroupId = result.groupRtcId
                     val webRtcUrl = result.groupRtcUrl
-                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+                    startVideo(
+                        webRtcGroupId.toInt(),
+                        webRtcUrl,
+                        stunUrl,
+                        turnUrl,
+                        turnConfig.user,
+                        turnConfig.pwd,
+                        token
+                    )
                     callViewModel.onSpeakChange(mIsSpeaker)
                 } else {
                     runOnUiThread {
@@ -377,8 +394,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
         } else {
             this.window.addFlags(
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
         }
     }
 
@@ -389,10 +407,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
             androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle(getString(R.string.warning))
                 .setMessage(getString(R.string.dialog_leave_call_title))
-                .setPositiveButton(getString(R.string.leave)) { _,_ ->
+                .setPositiveButton(getString(R.string.leave)) { _, _ ->
                     endCall()
                 }
-                .setNegativeButton(getString(R.string.cancel)) { _,_ ->
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
 
                 }
                 .create()
@@ -405,7 +423,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         tvUserName.text = mGroupName
         tvNickName.visibility = View.VISIBLE
         val displayName =
-            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(0, 1) else mGroupName
+            if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(
+                0,
+                1
+            ) else mGroupName
         tvNickName.text = displayName
 
         if (!mIsGroupCall) {
@@ -716,8 +737,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
                     if (!isShowedDialogCamera) {
                         showOpenCameraDialog()
                     }
+                }
             }
-        }}
+        }
         registerReceiver(switchVideoReceiver, IntentFilter(ACTION_CALL_SWITCH_VIDEO))
     }
 
@@ -778,8 +800,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         localRender.layoutParams =
             fullView(localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
-    private fun setLocalFixScreen(){
-        localRender.layoutParams = fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
+
+    private fun setLocalFixScreen() {
+        localRender.layoutParams =
+            fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
 
     private fun fullView(localView: ConstraintLayout.LayoutParams): ConstraintLayout.LayoutParams {

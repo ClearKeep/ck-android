@@ -36,7 +36,7 @@ interface ParamAPIProvider {
 
     fun provideVideoCallBlockingStub(paramAPI: ParamAPI): VideoCallGrpc.VideoCallBlockingStub
 
-    fun provideWorkspaceBlockingStub(paramAPI: ParamAPI) : WorkspaceGrpc.WorkspaceBlockingStub
+    fun provideWorkspaceBlockingStub(paramAPI: ParamAPI): WorkspaceGrpc.WorkspaceBlockingStub
 }
 
 class ParamAPI(

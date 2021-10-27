@@ -21,17 +21,19 @@ import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 
 class InMemorySignalProtocolStore(
-        preKeyDAO: SignalPreKeyDAO,
-        signalIdentityKeyDAO: SignalIdentityKeyDAO,
-        environment: Environment
+    preKeyDAO: SignalPreKeyDAO,
+    signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    environment: Environment
 ) : SignalProtocolStore, Closeable {
     private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO, environment)
 
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
 
-    private val signedPreKeyStore: InMemorySignedPreKeyStore = InMemorySignedPreKeyStore(preKeyDAO, environment)
+    private val signedPreKeyStore: InMemorySignedPreKeyStore =
+        InMemorySignedPreKeyStore(preKeyDAO, environment)
 
-    private val identityKeyStore: InMemoryIdentityKeyStore = InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
+    private val identityKeyStore: InMemoryIdentityKeyStore =
+        InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
 
     @WorkerThread
     override fun getIdentityKeyPair(): IdentityKeyPair {
@@ -47,7 +49,11 @@ class InMemorySignalProtocolStore(
         return identityKeyStore.saveIdentity(address, identityKey)
     }
 
-    override fun isTrustedIdentity(address: SignalProtocolAddress, identityKey: IdentityKey, direction: IdentityKeyStore.Direction): Boolean {
+    override fun isTrustedIdentity(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+        direction: IdentityKeyStore.Direction
+    ): Boolean {
         return identityKeyStore.isTrustedIdentity(address, identityKey, direction)
     }
 

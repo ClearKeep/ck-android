@@ -86,8 +86,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
 
-    private var screenWidth : Int = 0
-    private var screenHeight : Int = 0
+    private var screenWidth: Int = 0
+    private var screenHeight: Int = 0
 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
@@ -242,7 +242,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
             // TODO
-            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(), mOwnerDomain, mOwnerClientId)?.data
+            group = groupRepository.getGroupByID(
+                intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(),
+                mOwnerDomain,
+                mOwnerClientId
+            )?.data
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -252,10 +256,19 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID)!!.toInt()
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
 
-                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                startVideo(
+                    webRtcGroupId,
+                    webRtcUrl,
+                    stunUrl,
+                    turnUrl,
+                    turnUserName,
+                    turnPassword,
+                    token
+                )
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result =
+                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
 
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -266,7 +279,15 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
                     val webRtcGroupId = result.groupRtcId
                     val webRtcUrl = result.groupRtcUrl
-                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+                    startVideo(
+                        webRtcGroupId.toInt(),
+                        webRtcUrl,
+                        stunUrl,
+                        turnUrl,
+                        turnConfig.user,
+                        turnConfig.pwd,
+                        token
+                    )
                 } else {
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
@@ -406,10 +427,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             Builder(this)
                 .setTitle(getString(R.string.warning))
                 .setMessage(getString(R.string.dialog_leave_call_title))
-                .setPositiveButton(getString(R.string.leave)) { _,_ ->
+                .setPositiveButton(getString(R.string.leave)) { _, _ ->
                     endCall()
                 }
-                .setNegativeButton(getString(R.string.cancel)) { _,_ ->
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
 
                 }
                 .create()
@@ -476,7 +497,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         when (mCurrentCallState) {
             CallState.CALLING -> {
                 if (!isFromComingCall)
-                playRingBackTone()
+                    playRingBackTone()
             }
             CallState.RINGING -> {
             }
@@ -505,7 +526,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun dispatchCallStatus(isStarted: Boolean) {
-        AppCall.listenerCallingState.postValue(CallingStateData(isStarted, mUserNameInConversation, false, mTimeStarted))
+        AppCall.listenerCallingState.postValue(
+            CallingStateData(
+                isStarted,
+                mUserNameInConversation,
+                false,
+                mTimeStarted
+            )
+        )
     }
 
     private fun switchToVideoMode() {
@@ -550,9 +578,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 waitingCallView.gone()
                 includeToolbar.gone()
                 controlCallVideoView.visible()
-                if (isFromComingCall){
+                if (isFromComingCall) {
                     waitingCallVideoView.gone()
-                }else {
+                } else {
                     waitingCallVideoView.visible()
                 }
             } else {
@@ -569,14 +597,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun enableMute(isMuting: Boolean) {
-        Log.e("antx","enableMute isMuting $isMuting")
+        Log.e("antx", "enableMute isMuting $isMuting")
         controlCallAudioView.toggleMute.isChecked = isMuting
         controlCallVideoView.bottomToggleMute.isChecked = isMuting
         peerConnectionClient?.setAudioEnabled(!isMuting)
     }
 
     private fun enableMuteVideo(isMuteVideo: Boolean) {
-        Log.e("antx","enableMute enableMuteVideo $isMuteVideo")
+        Log.e("antx", "enableMute enableMuteVideo $isMuteVideo")
 
         controlCallAudioView.toggleFaceTime.isChecked = isMuteVideo
         controlCallVideoView.bottomToggleFaceTime.isChecked = isMuteVideo
@@ -607,7 +635,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         unRegisterSwitchVideoReceiver()
         stopRingBackTone()
         stopBusySignalSound()
-        Log.e("antx","finishAndReleaseResource ${!isFromComingCall}, mCurrentCallState : $mCurrentCallState   ${mCurrentCallState==CallState.CALLING}")
+        Log.e(
+            "antx",
+            "finishAndReleaseResource ${!isFromComingCall}, mCurrentCallState : $mCurrentCallState   ${mCurrentCallState == CallState.CALLING}"
+        )
         if (!isFromComingCall && (mCurrentCallState == CallState.CALLING || mCurrentCallState == CallState.CALL_NOT_READY)) {
             cancelCallAPI()
         }
@@ -657,7 +688,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
+        peerConnectionClient?.subscriberHandleRemoteJsep(
+            janusHandle.handleId,
+            janusHandle.display,
+            sessionDescription
+        )
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -749,10 +784,16 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val me = group?.clientList?.find { it.userId == environment.getServer().profile.userId }
         val surfaceGenerator =
-            SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1, screenWidth, screenHeight)
+            SurfacePositionFactory().createSurfaceGenerator(
+                this,
+                renders.size + 1,
+                screenWidth,
+                screenHeight
+            )
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        val cameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
+        val cameraView =
+            createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
         binding.surfaceRootContainer.addView(cameraView)
 
         // add remote streams
@@ -761,7 +802,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             val remoteInfo = renders.elementAt(index)
             val user = group?.clientList?.find { it.userId == remoteInfo.clientId }
             printlnCK("updateRenders remoteSurfacePosition() user ${user?.userName} position remoteSurfacePosition $remoteSurfacePosition")
-            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown", remoteSurfacePosition)
+            val view = createRemoteView(
+                remoteInfo.surfaceViewRenderer,
+                user?.userName ?: "unknown",
+                remoteSurfacePosition
+            )
             binding.surfaceRootContainer.addView(view)
         }
     }
@@ -782,7 +827,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         val tv = TextView(this)
         tv.text = remoteName
         tv.typeface = Typeface.DEFAULT_BOLD
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,14f)
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
         tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
         tv.setPadding(0, 0, 0, 24)
         tv.setTextColor(resources.getColor(R.color.grayscaleOffWhite))

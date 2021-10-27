@@ -19,41 +19,45 @@ class WorkSpaceRepository @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
     private val serverRepository: ServerRepository
 ) {
-    suspend fun getWorkspaceInfo(currentDomain: String? = null, domain: String): Resource<String> = withContext(Dispatchers.IO) {
-        try {
-            val request = WorkspaceOuterClass
-                .WorkspaceInfoRequest
-                .newBuilder()
-                .setWorkspaceDomain(domain)
-                .build()
+    suspend fun getWorkspaceInfo(currentDomain: String? = null, domain: String): Resource<String> =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = WorkspaceOuterClass
+                    .WorkspaceInfoRequest
+                    .newBuilder()
+                    .setWorkspaceDomain(domain)
+                    .build()
 
-            val response =
-                paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(currentDomain ?: domain))
-                    .withDeadlineAfter(
-                        REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                    ).workspaceInfo(request)
+                val response =
+                    paramAPIProvider.provideWorkspaceBlockingStub(ParamAPI(currentDomain ?: domain))
+                        .withDeadlineAfter(
+                            REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                        ).workspaceInfo(request)
 
-            return@withContext if (response.error.isEmpty()) Resource.success("") else Resource.error(response.error, null)
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-            val (message, code) = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getWorkspaceInfo token expired")
-                    serverRepository.isLogout.postValue(true)
-                    "" to 0
-                }
-                else -> {
-                    if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED) {
-                        "Wrong server URL. Please try again" to 0
-                    } else  {
-                        parsedError.message to parsedError.code
+                return@withContext if (response.error.isEmpty()) Resource.success("") else Resource.error(
+                    response.error,
+                    null
+                )
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+                val (message, code) = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("getWorkspaceInfo token expired")
+                        serverRepository.isLogout.postValue(true)
+                        "" to 0
+                    }
+                    else -> {
+                        if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED) {
+                            "Wrong server URL. Please try again" to 0
+                        } else {
+                            parsedError.message to parsedError.code
+                        }
                     }
                 }
+                printlnCK("getWorkspaceInfo response exception? $message")
+                return@withContext Resource.error(message, null, code)
+            } catch (e: Exception) {
+                return@withContext Resource.error(e.toString(), null)
             }
-            printlnCK("getWorkspaceInfo response exception? $message")
-            return@withContext Resource.error(message, null, code)
-        } catch (e: Exception) {
-            return@withContext Resource.error(e.toString(), null)
         }
-    }
 }

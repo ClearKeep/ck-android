@@ -26,12 +26,15 @@ fun InviteFacebookScreen() {
         Column(
             Modifier
                 .padding(horizontal = 16.sdp())
-                .fillMaxSize()) {
+                .fillMaxSize()
+        ) {
             HeaderInviteFacebook {}
             Spacer(modifier = Modifier.height(24.sdp()))
             CKSearchBox(
                 search,
-                modifier = Modifier.clip(RoundedCornerShape(16.sdp())).background(grayscale5)
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.sdp()))
+                    .background(grayscale5)
             )
             Spacer(modifier = Modifier.height(16.sdp()))
             LazyColumn {
@@ -42,7 +45,11 @@ fun InviteFacebookScreen() {
                 }
             }
         }
-        Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 12.sdp(), start = 16.sdp(), end = 16.sdp())) {
+        Row(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 12.sdp(), start = 16.sdp(), end = 16.sdp())
+        ) {
             CKButton("Invite Selected", {})
         }
     }

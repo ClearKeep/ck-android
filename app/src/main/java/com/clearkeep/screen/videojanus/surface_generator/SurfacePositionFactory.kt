@@ -4,7 +4,12 @@ import android.content.Context
 import com.clearkeep.screen.videojanus.surface_generator.impl.*
 
 class SurfacePositionFactory {
-    fun createSurfaceGenerator(context: Context, size: Int, width: Int, height: Int) : SurfaceGenerator {
+    fun createSurfaceGenerator(
+        context: Context,
+        size: Int,
+        width: Int,
+        height: Int
+    ): SurfaceGenerator {
         return when (size) {
             0 -> throw IllegalArgumentException("size must be not empty")
             1 -> OneSurfaceGenerator(context, width, height)

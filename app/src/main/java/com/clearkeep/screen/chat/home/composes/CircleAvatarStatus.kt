@@ -23,69 +23,75 @@ import com.clearkeep.utilities.sdp
 import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
-fun CircleAvatarStatus(url: String?, name: String, size: Dp = 24.sdp(), status: String,sizeIndicator:Dp=8.sdp()) {
+fun CircleAvatarStatus(
+    url: String?,
+    name: String,
+    size: Dp = 24.sdp(),
+    status: String,
+    sizeIndicator: Dp = 8.sdp()
+) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
-    val color= when(status){
-        UserStatus.ONLINE.value->{
+    val color = when (status) {
+        UserStatus.ONLINE.value -> {
             colorSuccessDefault
         }
-        UserStatus.OFFLINE.value,UserStatus.UNDEFINED.value ->{
+        UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
             grayscale3
         }
-        else ->{
+        else -> {
             errorDefault
         }
     }
-    Box(modifier = Modifier
-        .size(size)) {
+    Box(
+        modifier = Modifier
+            .size(size)
+    ) {
         Column(Modifier.size(size)) {
-            if (!url.isNullOrEmpty())
-            {
-                    Image(
-                        rememberCoilPainter(
-                            request = "$url", //Force reload when cache key changes
-                            previewPlaceholder = R.drawable.ic_cross,
-                            requestBuilder = {
-                                memoryCachePolicy(CachePolicy.DISABLED)
-                            }
-                        ),
-                        null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(size)
-                            .clip(CircleShape)
-                    )
-            }
-            else
-            Column(
-                modifier = Modifier
-                    .background(
-                        shape = CircleShape,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                backgroundGradientStart,
-                                backgroundGradientEnd
+            if (!url.isNullOrEmpty()) {
+                Image(
+                    rememberCoilPainter(
+                        request = "$url", //Force reload when cache key changes
+                        previewPlaceholder = R.drawable.ic_cross,
+                        requestBuilder = {
+                            memoryCachePolicy(CachePolicy.DISABLED)
+                        }
+                    ),
+                    null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(size)
+                        .clip(CircleShape)
+                )
+            } else
+                Column(
+                    modifier = Modifier
+                        .background(
+                            shape = CircleShape,
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    backgroundGradientStart,
+                                    backgroundGradientEnd
+                                )
                             )
                         )
+                        .size(size),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CKText(
+                        displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
+                            color = MaterialTheme.colors.onSurface,
+                        )
                     )
-                    .size(size),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                CKText(
-                    displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
-                        color = MaterialTheme.colors.onSurface,
-                    )
-                )
-            }
+                }
         }
-        StatusIndicator(color,sizeIndicator)
+        StatusIndicator(color, sizeIndicator)
     }
 
 }
 
 @Composable
-fun BoxScope.StatusIndicator(color: Color, size: Dp=8.sdp()) {
+fun BoxScope.StatusIndicator(color: Color, size: Dp = 8.sdp()) {
     Box(
         Modifier
             .size(size)

@@ -3,19 +3,19 @@ package com.clearkeep.screen.chat.utils
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.utilities.printlnCK
 
-fun isGroup(groupType: String) : Boolean {
+fun isGroup(groupType: String): Boolean {
     return groupType == "group"
 }
 
-fun getGroupType(isGroup: Boolean) : String {
+fun getGroupType(isGroup: Boolean): String {
     return if (isGroup) "group" else "peer"
 }
 
-fun getLinkFromPeople(people: User) : String {
+fun getLinkFromPeople(people: User): String {
     return "${people.domain}/${people.userName}/${people.userId}"
 }
 
-fun getPeopleFromLink(link: String) : User? {
+fun getPeopleFromLink(link: String): User? {
     val args = link.split("/")
     if (args.size != 3) {
         return null

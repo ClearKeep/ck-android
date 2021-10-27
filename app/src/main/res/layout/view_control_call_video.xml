@@ -55,8 +55,7 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/bottomToggleSwitchCamera"
         android:src="@drawable/ic_button_decline"
-        app:layout_constraintTop_toTopOf="@+id/bottomToggleSwitchCamera"
- />
+        app:layout_constraintTop_toTopOf="@+id/bottomToggleSwitchCamera" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

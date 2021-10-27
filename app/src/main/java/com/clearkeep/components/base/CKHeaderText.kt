@@ -34,14 +34,18 @@ fun CKHeaderText(
     )
 }
 
-
-
 @Composable
 fun getTypography(headerTextType: HeaderTextType): TextStyle {
     return when (headerTextType) {
-        HeaderTextType.Normal -> MaterialTheme.typography.h6.copy(fontSize = 16.sdp().toNonScalableTextSize())
-        HeaderTextType.Medium -> MaterialTheme.typography.h5.copy(fontSize = 20.sdp().toNonScalableTextSize())
-        HeaderTextType.Large -> MaterialTheme.typography.h4.copy(fontSize = 24.sdp().toNonScalableTextSize())
+        HeaderTextType.Normal -> MaterialTheme.typography.h6.copy(
+            fontSize = 16.sdp().toNonScalableTextSize()
+        )
+        HeaderTextType.Medium -> MaterialTheme.typography.h5.copy(
+            fontSize = 20.sdp().toNonScalableTextSize()
+        )
+        HeaderTextType.Large -> MaterialTheme.typography.h4.copy(
+            fontSize = 24.sdp().toNonScalableTextSize()
+        )
     }
 }
 

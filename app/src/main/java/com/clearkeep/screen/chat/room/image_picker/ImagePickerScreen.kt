@@ -60,14 +60,19 @@ fun ImagePickerScreen(
     onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
-    val urisSelected = remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
+    val urisSelected =
+        remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
 
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
     CKSimpleInsetTheme(insetEnabled) {
         Column(if (insetEnabled) Modifier.navigationBarsPadding() else Modifier) {
-            Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
+            Box(
+                Modifier
+                    .statusBarsHeight()
+                    .background(MaterialTheme.colors.primary)
+                    .fillMaxWidth())
             CKTopAppBar(
                 {},
                 Modifier,
@@ -165,7 +170,11 @@ fun ImageItem(
         )
     ) {
         Image(
-            rememberCoilPainter(request = uri, imageLoader = context.imageLoader, previewPlaceholder = R.drawable.ic_cross),
+            rememberCoilPainter(
+                request = uri,
+                imageLoader = context.imageLoader,
+                previewPlaceholder = R.drawable.ic_cross
+            ),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier

@@ -157,7 +157,8 @@ class AuthRepository @Inject constructor(
                     .setClientSessionKeyProof(mHex)
                     .build()
 
-                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).loginAuthenticate(authReq)
+                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+                    .loginAuthenticate(authReq)
 
                 if (authResponse.error.isNullOrBlank()) {
                     printlnCK("login successfully")
@@ -216,21 +217,25 @@ class AuthRepository @Inject constructor(
             }
         }
 
-    suspend fun loginByGoogle(token:String, domain: String):Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO){
+    suspend fun loginByGoogle(
+        token: String,
+        domain: String
+    ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
-            val request=AuthOuterClass
+            val request = AuthOuterClass
                 .GoogleLoginReq
                 .newBuilder()
                 .setIdToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response=paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).loginGoogle(request)
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).loginGoogle(request)
 
 //            if (response.error.isEmpty()) {
 //                printlnCK("login by google successfully: $response")
-                return@withContext Resource.success(response)
+            return@withContext Resource.success(response)
 //            }
 //            return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -247,21 +252,25 @@ class AuthRepository @Inject constructor(
 
     }
 
-    suspend fun loginByFacebook(token:String, domain: String):Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO){
+    suspend fun loginByFacebook(
+        token: String,
+        domain: String
+    ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
-            val request=AuthOuterClass
+            val request = AuthOuterClass
                 .FacebookLoginReq
                 .newBuilder()
                 .setAccessToken(token)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response= paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).loginFacebook(request)
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).loginFacebook(request)
 
 //            if (response.error.isEmpty()) {
 //                printlnCK("login by facebook successfully: $response")
-                return@withContext Resource.success(response)
+            return@withContext Resource.success(response)
 //            }
 //            return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -289,13 +298,14 @@ class AuthRepository @Inject constructor(
                 .setAccessToken(accessToken)
                 .setWorkspaceDomain(domain)
                 .build()
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).loginOffice(request)
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).loginOffice(request)
 
 //        if (response.error.isEmpty()) {
 //                printlnCK("login by microsoft successfully require action ${response.requireAction} pre access token ${response.preAccessToken} hashKey ${response.hashKey}")
-                return@withContext Resource.success(response)
+            return@withContext Resource.success(response)
 //            }
 //            return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -330,12 +340,12 @@ class AuthRepository @Inject constructor(
             nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawPin)
-            val key= KeyHelper.generateIdentityKeyPair()
+            val key = KeyHelper.generateIdentityKeyPair()
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId+domain).hashCode())
-            val transitionID=KeyHelper.generateRegistrationId(false)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId + domain).hashCode())
+            val transitionID = KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
                 toHex(it)
             }
@@ -366,12 +376,14 @@ class AuthRepository @Inject constructor(
                 .setIvParameter(toHex(decrypter.getIv()))
                 .build()
 
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).registerPincode(request)
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).registerPincode(request)
             if (response.error.isEmpty()) {
                 printlnCK("registerSocialPin success ${response.requireAction}")
-                val profileResponse = onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                val profileResponse =
+                    onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
                 printlnCK("registerSocialPin get profile response $profileResponse")
                 return@withContext profileResponse
             }
@@ -389,58 +401,66 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String) = withContext(Dispatchers.IO) {
-        try {
-            val nativeLib = NativeLib()
-            val a = nativeLib.getA(userId, rawPin)
-            val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String) =
+        withContext(Dispatchers.IO) {
+            try {
+                val nativeLib = NativeLib()
+                val a = nativeLib.getA(userId, rawPin)
+                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-            val challengeReq = AuthOuterClass.AuthSocialChallengeReq
-                .newBuilder()
-                .setUserName(userId)
-                .setClientPublic(aHex)
-                .build()
+                val challengeReq = AuthOuterClass.AuthSocialChallengeReq
+                    .newBuilder()
+                    .setUserName(userId)
+                    .setClientPublic(aHex)
+                    .build()
 
-            val challengeRes = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).loginSocialChallange(challengeReq)
+                val challengeRes =
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                        REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                    ).loginSocialChallange(challengeReq)
 
-            val salt = challengeRes.salt
-            val b = challengeRes.publicChallengeB
+                val salt = challengeRes.salt
+                val b = challengeRes.publicChallengeB
 
-            val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
-            val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
+                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-            nativeLib.freeMemoryAuthenticate()
+                nativeLib.freeMemoryAuthenticate()
 
-            val request = AuthOuterClass
-                .VerifyPinCodeReq
-                .newBuilder()
-                .setUserName(userId)
-                .setClientPublic(aHex)
-                .setClientSessionKeyProof(mHex)
-                .build()
+                val request = AuthOuterClass
+                    .VerifyPinCodeReq
+                    .newBuilder()
+                    .setUserName(userId)
+                    .setClientPublic(aHex)
+                    .setClientSessionKeyProof(mHex)
+                    .build()
 
-            val response = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).verifyPincode(request)
-            if (response.error.isEmpty()) {
-                printlnCK("verifySocialPin success ${response.requireAction}")
-                return@withContext onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
+                val response =
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+                        REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                    ).verifyPincode(request)
+                if (response.error.isEmpty()) {
+                    printlnCK("verifySocialPin success ${response.requireAction}")
+                    return@withContext onLoginSuccess(
+                        domain,
+                        rawPin,
+                        response,
+                        isSocialAccount = true
+                    )
+                }
+                return@withContext Resource.error(response.error, null)
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
+                val message = when (parsedError.code) {
+                    else -> parsedError.message
+                }
+                printlnCK("verifySocialPin error statusRuntime $e $message")
+                return@withContext Resource.error(message, null)
+            } catch (e: Exception) {
+                printlnCK("verifySocialPin error $e")
+                return@withContext Resource.error(e.toString(), null)
             }
-            return@withContext Resource.error(response.error, null)
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-            val message = when (parsedError.code) {
-                else -> parsedError.message
-            }
-            printlnCK("verifySocialPin error statusRuntime $e $message")
-            return@withContext Resource.error(message, null)
-        } catch (e: Exception) {
-            printlnCK("verifySocialPin error $e")
-            return@withContext Resource.error(e.toString(), null)
         }
-    }
 
     suspend fun resetSocialPin(
         domain: String,
@@ -461,12 +481,12 @@ class AuthRepository @Inject constructor(
             nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawPin)
-            val key= KeyHelper.generateIdentityKeyPair()
+            val key = KeyHelper.generateIdentityKeyPair()
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId+domain).hashCode())
-            val transitionID=KeyHelper.generateRegistrationId(false)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId + domain).hashCode())
+            val transitionID = KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
                 toHex(it)
             }
@@ -526,7 +546,12 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun resetPassword(preAccessToken: String, email: String, domain: String, rawNewPassword: String): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
+    suspend fun resetPassword(
+        preAccessToken: String,
+        email: String,
+        domain: String,
+        rawNewPassword: String
+    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val nativeLib = NativeLib()
 
@@ -540,12 +565,12 @@ class AuthRepository @Inject constructor(
             nativeLib.freeMemoryCreateAccount()
 
             val decrypter = DecryptsPBKDF2(rawNewPassword)
-            val key= KeyHelper.generateIdentityKeyPair()
+            val key = KeyHelper.generateIdentityKeyPair()
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (email+domain).hashCode())
-            val transitionID=KeyHelper.generateRegistrationId(false)
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
+            val transitionID = KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
                 toHex(it)
             }
@@ -621,45 +646,51 @@ class AuthRepository @Inject constructor(
             } else {
                 return@withContext Resource.error(response.error, null)
             }
-        }
-        catch (e: StatusRuntimeException) {
+        } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = parsedError.message
             return@withContext Resource.error(message, null, parsedError.code)
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             printlnCK("recoverPassword error: $e")
             return@withContext Resource.error(e.toString(), null)
         }
     }
 
-    suspend fun logoutFromAPI(server: Server) : Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
-        printlnCK("logoutFromAPI")
-        try {
-            val request = AuthOuterClass.LogoutReq.newBuilder()
+    suspend fun logoutFromAPI(server: Server): Resource<AuthOuterClass.BaseResponse> =
+        withContext(Dispatchers.IO) {
+            printlnCK("logoutFromAPI")
+            try {
+                val request = AuthOuterClass.LogoutReq.newBuilder()
                     .setDeviceId(userManager.getUniqueDeviceID())
                     .setRefreshToken(server.refreshToken)
                     .build()
 
-            val  authBlockingWithHeader = paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
-                    .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
-                    .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
-            val response = authBlockingWithHeader
+                val authBlockingWithHeader =
+                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
+                        .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
+                        .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
+                val response = authBlockingWithHeader
                     .logout(request)
-            if (response?.error?.isEmpty() == true) {
-                printlnCK("logoutFromAPI successed")
-                return@withContext Resource.success(response)
-            } else {
-                printlnCK("logoutFromAPI failed: ${response.error}")
-                return@withContext Resource.error(response.error, null)
+                if (response?.error?.isEmpty() == true) {
+                    printlnCK("logoutFromAPI successed")
+                    return@withContext Resource.success(response)
+                } else {
+                    printlnCK("logoutFromAPI failed: ${response.error}")
+                    return@withContext Resource.error(response.error, null)
+                }
+            } catch (e: Exception) {
+                printlnCK("logoutFromAPI error: $e")
+                return@withContext Resource.error(e.toString(), null)
             }
-        } catch (e: Exception) {
-            printlnCK("logoutFromAPI error: $e")
-            return@withContext Resource.error(e.toString(), null)
         }
-    }
 
-    suspend fun validateOtp(domain: String, otp: String, otpHash: String, userId: String, hashKey: String) : Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO)  {
+    suspend fun validateOtp(
+        domain: String,
+        otp: String,
+        otpHash: String,
+        userId: String,
+        hashKey: String
+    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
                 .setOtpCode(otp)
@@ -671,7 +702,15 @@ class AuthRepository @Inject constructor(
             val accessToken = response.accessToken
             printlnCK("validateOtp error? ${response.error}")
             printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
-            val profile = getProfile(paramAPIProvider.provideUserBlockingStub(ParamAPI(domain, accessToken, hashKey)))
+            val profile = getProfile(
+                paramAPIProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        domain,
+                        accessToken,
+                        hashKey
+                    )
+                )
+            )
                 ?: return@withContext Resource.error("Can not get profile", null)
             serverRepository.insertServer(
                 Server(
@@ -686,7 +725,11 @@ class AuthRepository @Inject constructor(
                     profile = profile,
                 )
             )
-            userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount = false)
+            userPreferenceRepository.initDefaultUserPreference(
+                domain,
+                profile.userId,
+                isSocialAccount = false
+            )
             return@withContext Resource.success(response)
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
@@ -702,7 +745,11 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun mfaResendOtp(domain: String, otpHash: String, userId: String) : Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
+    suspend fun mfaResendOtp(
+        domain: String,
+        otpHash: String,
+        userId: String
+    ): Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
         try {
             val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
                 .setPreAccessToken(otpHash)
@@ -711,7 +758,10 @@ class AuthRepository @Inject constructor(
             val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
             val response = stub.resendOtp(request)
             printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.preAccessToken} success? ${response.success}")
-            return@withContext if (response.preAccessToken.isNotBlank()) Resource.success(0 to response.preAccessToken) else Resource.error("", 0 to "")
+            return@withContext if (response.preAccessToken.isNotBlank()) Resource.success(0 to response.preAccessToken) else Resource.error(
+                "",
+                0 to ""
+            )
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
@@ -759,7 +809,14 @@ class AuthRepository @Inject constructor(
                 Curve.decodePrivatePoint(privateKeyDecrypt)
             val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
             val signalIdentityKey =
-                SignalIdentityKey(identityKeyPair, registrationID, domain, clientId,response.ivParameter,salt)
+                SignalIdentityKey(
+                    identityKeyPair,
+                    registrationID,
+                    domain,
+                    clientId,
+                    response.ivParameter,
+                    salt
+                )
             val profile = getProfile(
                 paramAPIProvider.provideUserBlockingStub(
                     ParamAPI(
@@ -775,16 +832,30 @@ class AuthRepository @Inject constructor(
             signalIdentityKeyDAO.insert(signalIdentityKey)
 
 
-            environment.setUpTempDomain(Server(null, "", domain, profile.userId, "", 0L, "", "", "", false, Profile(null, profile.userId, "", "", "", 0L, "")))
+            environment.setUpTempDomain(
+                Server(
+                    null,
+                    "",
+                    domain,
+                    profile.userId,
+                    "",
+                    0L,
+                    "",
+                    "",
+                    "",
+                    false,
+                    Profile(null, profile.userId, "", "", "", 0L, "")
+                )
+            )
             myStore.storePreKey(preKeyID, preKeyRecord)
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
 
             if (clearOldUserData) {
                 val oldServer = serverRepository.getServer(domain, profile.userId)
-                    oldServer?.id?.let {
-                        roomRepository.removeGroupByDomain(domain, profile.userId)
-                        messageRepository.clearMessageByDomain(domain, profile.userId)
-                    }
+                oldServer?.id?.let {
+                    roomRepository.removeGroupByDomain(domain, profile.userId)
+                    messageRepository.clearMessageByDomain(domain, profile.userId)
+                }
             }
 
             serverRepository.insertServer(
@@ -800,7 +871,11 @@ class AuthRepository @Inject constructor(
                     profile = profile,
                 )
             )
-            userPreferenceRepository.initDefaultUserPreference(domain, profile.userId, isSocialAccount)
+            userPreferenceRepository.initDefaultUserPreference(
+                domain,
+                profile.userId,
+                isSocialAccount
+            )
             userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv))
             printlnCK("onLoginSuccess insert server success")
 
@@ -811,22 +886,23 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    private suspend fun getProfile(userGrpc: UserGrpc.UserBlockingStub) : Profile?  = withContext(Dispatchers.IO) {
-        try {
-            val request = UserOuterClass.Empty.newBuilder().build()
-            val response = userGrpc.getProfile(request)
-            printlnCK("getProfileWithGrpc: $response")
-            return@withContext Profile(
-                userId = response.id,
-                userName = response.displayName,
-                email = response.email,
-                phoneNumber = response.phoneNumber,
-                avatar = response.avatar,
-                updatedAt = Calendar.getInstance().timeInMillis
-            )
-        } catch (e: Exception) {
-            printlnCK("getProfileWithGrpc: $e")
-            return@withContext null
+    private suspend fun getProfile(userGrpc: UserGrpc.UserBlockingStub): Profile? =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = UserOuterClass.Empty.newBuilder().build()
+                val response = userGrpc.getProfile(request)
+                printlnCK("getProfileWithGrpc: $response")
+                return@withContext Profile(
+                    userId = response.id,
+                    userName = response.displayName,
+                    email = response.email,
+                    phoneNumber = response.phoneNumber,
+                    avatar = response.avatar,
+                    updatedAt = Calendar.getInstance().timeInMillis
+                )
+            } catch (e: Exception) {
+                printlnCK("getProfileWithGrpc: $e")
+                return@withContext null
+            }
         }
-    }
 }

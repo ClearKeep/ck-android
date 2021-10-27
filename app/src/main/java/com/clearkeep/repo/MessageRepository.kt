@@ -55,28 +55,49 @@ class MessageRepository @Inject constructor(
     private val serverRepository: ServerRepository,
     private val groupRepository: GroupRepository,
 ) {
-    fun getMessagesAsState(groupId: Long, owner: Owner) = messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
+    fun getMessagesAsState(groupId: Long, owner: Owner) =
+        messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
 
     fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
 
-    suspend fun getUnreadMessage(groupId: Long, domain: String, ourClientId: String) : List<Message> {
+    suspend fun getUnreadMessage(
+        groupId: Long,
+        domain: String,
+        ourClientId: String
+    ): List<Message> {
         val group = groupDAO.getGroupById(groupId, domain, ourClientId)!!
-        return messageDAO.getMessagesAfterTime(groupId, group.lastMessageSyncTimestamp, domain, ourClientId).dropWhile { it.senderId ==  ourClientId}
+        return messageDAO.getMessagesAfterTime(
+            groupId,
+            group.lastMessageSyncTimestamp,
+            domain,
+            ourClientId
+        ).dropWhile { it.senderId == ourClientId }
     }
 
     private suspend fun insertMessage(message: Message) = messageDAO.insert(message)
 
     private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
-    suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long, offSet: Int = 0) = withContext(Dispatchers.IO) {
+    suspend fun updateMessageFromAPI(
+        groupId: Long,
+        owner: Owner,
+        lastMessageAt: Long,
+        offSet: Int = 0
+    ) = withContext(Dispatchers.IO) {
         try {
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext
-            val messageGrpc = apiProvider.provideMessageBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val messageGrpc = apiProvider.provideMessageBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
-                    .setGroupId(groupId)
-                    .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt-(365*24*60*60*1000)) //Get chat history in the last 365 days
-                    .build()
+                .setGroupId(groupId)
+                .setOffSet(offSet)
+                .setLastMessageAt(lastMessageAt - (365 * 24 * 60 * 60 * 1000)) //Get chat history in the last 365 days
+                .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val listMessage = arrayListOf<Message>()
             responses.lstMessageList
@@ -174,8 +195,11 @@ class MessageRepository @Inject constructor(
         groupDAO.updateGroup(updateGroup)
     }
 
-    private suspend fun parseMessageResponse(response: MessageOuterClass.MessageObjectResponse, owner: Owner): Message {
-        val oldMessage = messageDAO.getMessage(response.id,response.groupId)
+    private suspend fun parseMessageResponse(
+        response: MessageOuterClass.MessageObjectResponse,
+        owner: Owner
+    ): Message {
+        val oldMessage = messageDAO.getMessage(response.id, response.groupId)
         if (oldMessage != null) {
             return oldMessage
         }
@@ -197,12 +221,21 @@ class MessageRepository @Inject constructor(
         )
     }
 
-    private suspend fun parseNoteResponse(response: NoteOuterClass.UserNoteResponse, owner: Owner): Note {
+    private suspend fun parseNoteResponse(
+        response: NoteOuterClass.UserNoteResponse,
+        owner: Owner
+    ): Note {
         val oldNote = noteDAO.getNote(response.createdAt)
         if (oldNote != null) {
             return oldNote
         }
-        return Note(null, response.content.toString(Charsets.UTF_8), response.createdAt, owner.domain, owner.clientId)
+        return Note(
+            null,
+            response.content.toString(Charsets.UTF_8),
+            response.createdAt,
+            owner.domain,
+            owner.clientId
+        )
     }
 
     suspend fun decryptMessage(
@@ -223,7 +256,7 @@ class MessageRepository @Inject constructor(
                 //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
-                }else {
+                } else {
                     decryptPeerMessage(sender, encryptedMessage, signalProtocolStore)
                 }
             } else {
@@ -242,7 +275,7 @@ class MessageRepository @Inject constructor(
              * Need wait 1.5s to load old message before save unableDecryptMessage
              */
             delay(1500)
-            val oldMessage = messageDAO.getMessage(messageId,groupId)
+            val oldMessage = messageDAO.getMessage(messageId, groupId)
             if (oldMessage != null) {
                 printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
                 return oldMessage
@@ -275,8 +308,14 @@ class MessageRepository @Inject constructor(
             val groupsList = it.map { it.groupId }.distinct().map {
                 groupDAO.getGroupById(it, ownerDomain, ownerClientId)
             }
-            val clientList = groupsList.map { it?.clientList ?: emptyList() }.flatten().distinctBy { it.userId }
-            val result = it.map { message -> MessageSearchResult(message, clientList.find { message.senderId == it.userId }, groupsList.find { message.groupId == it?.groupId }) }
+            val clientList =
+                groupsList.map { it?.clientList ?: emptyList() }.flatten().distinctBy { it.userId }
+            val result = it.map { message ->
+                MessageSearchResult(
+                    message,
+                    clientList.find { message.senderId == it.userId },
+                    groupsList.find { message.groupId == it?.groupId })
+            }
             printlnCK("====================== result get message")
             result
         }.asLiveData()
@@ -337,7 +376,7 @@ class MessageRepository @Inject constructor(
         }
     }
 
-    suspend fun saveNote(note: Note) : Long {
+    suspend fun saveNote(note: Note): Long {
         return insertNote(note)
     }
 
@@ -349,11 +388,15 @@ class MessageRepository @Inject constructor(
         noteDAO.updateNotes(note)
     }
 
-    suspend fun saveMessage(message: Message) : Int {
+    suspend fun saveMessage(message: Message): Int {
         return messageDAO.insert(message).toInt()
     }
 
-    fun convertMessageResponse(value: MessageOuterClass.MessageObjectResponse, decryptedMessage: String, owner: Owner): Message {
+    fun convertMessageResponse(
+        value: MessageOuterClass.MessageObjectResponse,
+        decryptedMessage: String,
+        owner: Owner
+    ): Message {
         return Message(
             messageId = value.id,
             groupId = value.groupId,
@@ -396,7 +439,7 @@ class MessageRepository @Inject constructor(
             return@withContext ""
         }
 
-        val bobGroupCipher:GroupCipher
+        val bobGroupCipher: GroupCipher
         val groupSender: SenderKeyName
         if (sender.clientId == owner.clientId) {
             val senderAddress = CKSignalProtocolAddress(sender, 111)
@@ -432,7 +475,7 @@ class MessageRepository @Inject constructor(
     suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
         signalProtocolStore: InMemorySignalProtocolStore,
-        owner:Owner
+        owner: Owner
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
         printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
@@ -450,7 +493,13 @@ class MessageRepository @Inject constructor(
                 .setWorkspaceDomain(signalProtocolAddress.owner.domain)
                 .build()
 
-            val remoteKeyBundle = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain,server.accessKey,server.hashKey)).peerGetClientKey(requestUser)
+            val remoteKeyBundle = apiProvider.provideSignalKeyDistributionBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            ).peerGetClientKey(requestUser)
 
             val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
             val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
@@ -507,7 +556,13 @@ class MessageRepository @Inject constructor(
                     return false
                 }
                 printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
-                val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+                val signalGrpc = apiProvider.provideSignalKeyDistributionBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
                 val request = Signal.GroupGetClientKeyRequest.newBuilder()
                     .setGroupId(groupId)
                     .setClientId(fromClientId)
@@ -538,7 +593,7 @@ class MessageRepository @Inject constructor(
         return true
     }
 
-    suspend fun deleteMessageInGroup(groupId: Long,ownerDomain: String,ownerClientId: String){
+    suspend fun deleteMessageInGroup(groupId: Long, ownerDomain: String, ownerClientId: String) {
         val index = messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
         printlnCK("deleteMessageInGroup: $index")
     }

@@ -36,7 +36,8 @@ fun InviteScreen(onCloseView: () -> Unit) {
     Column(
         Modifier
             .padding(horizontal = dimensionResource(R.dimen._16sdp))
-            .fillMaxSize()) {
+            .fillMaxSize()
+    ) {
         HeaderInvite(onCloseView)
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen._16sdp)))
         CKTextInputField(

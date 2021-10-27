@@ -10,8 +10,8 @@ private const val DEVICE_ID = "device_id"
 
 @Singleton
 class AppStorage @Inject constructor(
-        private val userStorage: UserPreferencesStorage,
-        private val persistStorage: PersistPreferencesStorage,
+    private val userStorage: UserPreferencesStorage,
+    private val persistStorage: PersistPreferencesStorage,
 ) {
     fun getUniqueDeviceID(): String {
         var deviceId = persistStorage.getString(DEVICE_ID)

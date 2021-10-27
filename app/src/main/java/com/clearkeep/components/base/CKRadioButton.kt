@@ -29,12 +29,7 @@ fun CKRadioButton(
     Surface(
         shape = CircleShape,
         modifier = modifier
-            .size(RadioButtonSize)
-            /*.clickable {
-                if (onClick != null) {
-                    onClick()
-                }
-            }*/,
+            .size(RadioButtonSize),
         color = radioColor
     ) {
         if (selected) {

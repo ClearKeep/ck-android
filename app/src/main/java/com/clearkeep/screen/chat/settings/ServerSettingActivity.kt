@@ -54,7 +54,8 @@ class ServerSettingActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun copyProfileLinkToClipBoard(label: String, text: String) {
-        val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard: ClipboardManager =
+            getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(applicationContext, getString(R.string.copied), Toast.LENGTH_SHORT).show()

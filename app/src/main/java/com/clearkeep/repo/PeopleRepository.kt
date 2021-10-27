@@ -31,26 +31,31 @@ class PeopleRepository @Inject constructor(
     private val dynamicAPIProvider: DynamicAPIProvider,
     private val serverRepository: ServerRepository
 ) {
-    fun getFriends(ownerDomain: String, ownerClientId: String) : LiveData<List<User>> = peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
-        if (list.isNotEmpty()) {
-            val request = UserOuterClass.Empty.newBuilder()
-                .build()
-            val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
-            val activeUserIds = response.lstUserOrBuilderList.map { it.id }
+    fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
+        peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
+            if (list.isNotEmpty()) {
+                val request = UserOuterClass.Empty.newBuilder()
+                    .build()
+                val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
+                val activeUserIds = response.lstUserOrBuilderList.map { it.id }
 
-            list.filter { it.userId in activeUserIds }.map { userEntity -> convertEntityToUser(userEntity) }.sortedBy { it.userName.toLowerCase() }
-        } else {
-            emptyList()
+                list.filter { it.userId in activeUserIds }
+                    .map { userEntity -> convertEntityToUser(userEntity) }
+                    .sortedBy { it.userName.toLowerCase() }
+            } else {
+                emptyList()
+            }
         }
-    }
 
-    suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner) : User? = withContext(Dispatchers.IO) {
-        printlnCK("getFriend: $friendClientId + $friendDomain")
-        val ret = peopleDao.getFriend(friendClientId, friendDomain, owner.domain, owner.clientId)
-        return@withContext if (ret != null) convertEntityToUser(ret) else null
-    }
+    suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner): User? =
+        withContext(Dispatchers.IO) {
+            printlnCK("getFriend: $friendClientId + $friendDomain")
+            val ret =
+                peopleDao.getFriend(friendClientId, friendDomain, owner.domain, owner.clientId)
+            return@withContext if (ret != null) convertEntityToUser(ret) else null
+        }
 
-    suspend fun getFriendFromID(friendClientId: String) : User? = withContext(Dispatchers.IO) {
+    suspend fun getFriendFromID(friendClientId: String): User? = withContext(Dispatchers.IO) {
         val ret = peopleDao.getFriendFromUserId(friendClientId)
         printlnCK("getFriendFromID: $ret id: $friendClientId")
         return@withContext if (ret != null) convertEntityToUser(ret) else null
@@ -66,7 +71,7 @@ class PeopleRepository @Inject constructor(
                 return Resource.error(friends.message ?: "", null, friends.errorCode)
             }
             return Resource.success(null)
-        } catch(exception: Exception) {
+        } catch (exception: Exception) {
             printlnCK("updatePeople: $exception")
             return Resource.error(exception.toString(), null)
         }
@@ -95,7 +100,12 @@ class PeopleRepository @Inject constructor(
     }
 
     suspend fun insertFriend(friend: User, owner: Owner) {
-        val oldUser = peopleDao.getFriend(friend.userId, friend.domain, ownerDomain = owner.domain, ownerClientId = owner.clientId)
+        val oldUser = peopleDao.getFriend(
+            friend.userId,
+            friend.domain,
+            ownerDomain = owner.domain,
+            ownerClientId = owner.clientId
+        )
         if (oldUser == null) {
             peopleDao.insert(
                 UserEntity(
@@ -105,7 +115,7 @@ class PeopleRepository @Inject constructor(
                     ownerDomain = owner.domain,
                     ownerClientId = owner.clientId,
                     phoneNumber = friend.phoneNumber,
-                    email =  friend.email,
+                    email = friend.email,
                     avatar = friend.avatar
 
                 )
@@ -114,38 +124,50 @@ class PeopleRepository @Inject constructor(
 
     }
 
-    private suspend fun getFriendsFromAPI() : Resource<List<UserEntity>>  = withContext(Dispatchers.IO) {
-        printlnCK("getFriendsFromAPI")
-        try {
-            val request = UserOuterClass.Empty.newBuilder()
-                .build()
-            val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
-            return@withContext Resource.success(response.lstUserOrBuilderList
-                .map { userInfoResponse ->
-                    convertUserResponse(userInfoResponse, Owner(environment.getServer().serverDomain, environment.getServer().profile.userId))
-                })
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
+    private suspend fun getFriendsFromAPI(): Resource<List<UserEntity>> =
+        withContext(Dispatchers.IO) {
+            printlnCK("getFriendsFromAPI")
+            try {
+                val request = UserOuterClass.Empty.newBuilder()
+                    .build()
+                val response = dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
+                return@withContext Resource.success(response.lstUserOrBuilderList
+                    .map { userInfoResponse ->
+                        convertUserResponse(
+                            userInfoResponse,
+                            Owner(
+                                environment.getServer().serverDomain,
+                                environment.getServer().profile.userId
+                            )
+                        )
+                    })
+            } catch (e: StatusRuntimeException) {
+                val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getFriendsFromAPI token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("getFriendsFromAPI token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
+
+                return@withContext Resource.error(message, emptyList(), parsedError.code)
+            } catch (e: Exception) {
+                printlnCK("getFriendsFromAPI: $e")
+                return@withContext Resource.error(e.toString(), emptyList())
             }
-
-            return@withContext Resource.error(message, emptyList(), parsedError.code)
-        } catch (e: Exception) {
-            printlnCK("getFriendsFromAPI: $e")
-            return@withContext Resource.error(e.toString(), emptyList())
         }
-    }
 
-    private suspend fun convertUserResponse(userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder, owner: Owner) : UserEntity {
-        val oldUser = peopleDao.getFriend(userInfoResponse.id, userInfoResponse.workspaceDomain,
-            ownerDomain = owner.domain, ownerClientId = owner.clientId)
+    private suspend fun convertUserResponse(
+        userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder,
+        owner: Owner
+    ): UserEntity {
+        val oldUser = peopleDao.getFriend(
+            userInfoResponse.id, userInfoResponse.workspaceDomain,
+            ownerDomain = owner.domain, ownerClientId = owner.clientId
+        )
         return UserEntity(
             generateId = oldUser?.generateId ?: null,
             userId = userInfoResponse.id,
@@ -157,7 +179,7 @@ class PeopleRepository @Inject constructor(
         )
     }
 
-    private fun convertEntityToUser(userEntity: UserEntity) : User {
+    private fun convertEntityToUser(userEntity: UserEntity): User {
         return User(
             userId = userEntity.userId,
             userName = userEntity.userName,
@@ -190,7 +212,7 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-     suspend fun updateStatus(status:String?) : Boolean= withContext(Dispatchers.IO){
+    suspend fun updateStatus(status: String?): Boolean = withContext(Dispatchers.IO) {
         printlnCK("updateStatus")
         try {
             val request = UserOuterClass.SetUserStatusRequest.newBuilder().setStatus(status).build()
@@ -215,12 +237,13 @@ class PeopleRepository @Inject constructor(
         }
     }
 
-     suspend fun getListClientStatus(list: List<User>):List<User>? = withContext(Dispatchers.IO){
+    suspend fun getListClientStatus(list: List<User>): List<User>? = withContext(Dispatchers.IO) {
         try {
             printlnCK("getListClientStatus: ${list.size}")
 
-            val listMemberInfoRequest= list.map {
-                UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId).setWorkspaceDomain(it.domain).build()
+            val listMemberInfoRequest = list.map {
+                UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId)
+                    .setWorkspaceDomain(it.domain).build()
             }
             val request = UserOuterClass.GetClientsStatusRequest
                 .newBuilder()
@@ -254,7 +277,7 @@ class PeopleRepository @Inject constructor(
             printlnCK("updateStatus: $e")
             return@withContext null
         }
-     }
+    }
 
     suspend fun getUserInfo(userId: String, userDomain: String): Resource<User> =
         withContext(Dispatchers.IO) {
@@ -269,7 +292,13 @@ class PeopleRepository @Inject constructor(
 
                 printlnCK("getUserInfo response display name ${response.displayName} id ${response.id}")
 
-                return@withContext Resource.success(User(response.id, response.displayName, response.workspaceDomain))
+                return@withContext Resource.success(
+                    User(
+                        response.id,
+                        response.displayName,
+                        response.workspaceDomain
+                    )
+                )
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
 

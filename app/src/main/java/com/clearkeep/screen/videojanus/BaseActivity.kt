@@ -20,7 +20,8 @@ abstract class BaseActivity : AppCompatActivity() {
     private var isOpenSettingScreen = false
 
     private val startForResult = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()) { _: ActivityResult ->
+        ActivityResultContracts.StartActivityForResult()
+    ) { _: ActivityResult ->
         printlnCK("onActivityResult, open setting")
         isOpenSettingScreen = false
         requestCallPermissions()
@@ -29,17 +30,22 @@ abstract class BaseActivity : AppCompatActivity() {
     fun requestCallPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if ((ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                            != PackageManager.PERMISSION_GRANTED)
-                    || (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                            != PackageManager.PERMISSION_GRANTED)
-                    || (ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS)
-                            != PackageManager.PERMISSION_GRANTED)) {
+                        != PackageManager.PERMISSION_GRANTED)
+                || (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED)
+                || (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.MODIFY_AUDIO_SETTINGS
+                )
+                        != PackageManager.PERMISSION_GRANTED)
+            ) {
                 ActivityCompat.requestPermissions(
-                        this, arrayOf(
+                    this, arrayOf(
                         Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.CAMERA,
                         Manifest.permission.MODIFY_AUDIO_SETTINGS
-                ), REQUEST_PERMISSIONS)
+                    ), REQUEST_PERMISSIONS
+                )
                 return
             }
         }
@@ -50,7 +56,8 @@ abstract class BaseActivity : AppCompatActivity() {
         isOpenSettingScreen = true
         val intent = Intent(
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            Uri.fromParts("package", packageName, null))
+            Uri.fromParts("package", packageName, null)
+        )
         startForResult.launch(intent)
     }
 
@@ -62,9 +69,9 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<String>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_PERMISSIONS && grantResults.isNotEmpty()) {
@@ -75,7 +82,7 @@ abstract class BaseActivity : AppCompatActivity() {
                     break
                 }
             }
-            if(!allPermissionsGranted){
+            if (!allPermissionsGranted) {
                 var somePermissionsForeverDenied = false
                 var somePermissionsDenied = false
                 for (permission in permissions) {
@@ -83,7 +90,11 @@ abstract class BaseActivity : AppCompatActivity() {
                         //denied
                         somePermissionsDenied = true
                     } else {
-                        if (ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+                        if (ActivityCompat.checkSelfPermission(
+                                this,
+                                permission
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
                             //allowed
                         } else {
                             //set to never ask again
@@ -117,7 +128,7 @@ abstract class BaseActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val aspectRatio = Rational(3, 4)
                 val params =
-                        PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
+                    PictureInPictureParams.Builder().setAspectRatio(aspectRatio).build()
                 enterPictureInPictureMode(params)
             } else {
                 enterPictureInPictureMode()

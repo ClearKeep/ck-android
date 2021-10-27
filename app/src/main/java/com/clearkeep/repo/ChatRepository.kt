@@ -34,14 +34,14 @@ import kotlin.coroutines.resume
 class ChatRepository @Inject constructor(
     // network calls
     private val dynamicAPIProvider: DynamicAPIProvider,
-    private val  apiProvider: ParamAPIProvider,
+    private val apiProvider: ParamAPIProvider,
     // data
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
     private val messageRepository: MessageRepository,
     private val serverRepository: ServerRepository,
     private val userManager: AppStorage
-    ) {
+) {
     val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var roomId: Long = -1
@@ -50,7 +50,7 @@ class ChatRepository @Inject constructor(
         this.roomId = roomId
     }
 
-    fun getJoiningRoomId() : Long {
+    fun getJoiningRoomId(): Long {
         return roomId
     }
 
@@ -67,7 +67,10 @@ class ChatRepository @Inject constructor(
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             val signalProtocolAddress =
-                CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
+                CKSignalProtocolAddress(
+                    Owner(receiverWorkspaceDomain, receiverId),
+                    SENDER_DEVICE_ID
+                )
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
                 val processSuccess =
@@ -134,18 +137,25 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
-        val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
-        val signalProtocolAddress2 = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+    suspend fun processPeerKey(
+        receiverId: String,
+        receiverWorkspaceDomain: String,
+        senderId: String,
+        ownerWorkSpace: String
+    ): Boolean {
+        val signalProtocolAddress =
+            CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
+        val signalProtocolAddress2 =
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
         messageRepository.initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,
-            owner = Owner(ownerWorkSpace,senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
         return messageRepository.initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,
-            owner = Owner(ownerWorkSpace,senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
     }
 
@@ -158,7 +168,8 @@ class ChatRepository @Inject constructor(
     ): Resource<Nothing> = withContext(Dispatchers.IO) {
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId, ownerWorkSpace = $ownerWorkSpace")
         try {
-            val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            val senderAddress =
+                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(groupId.toString(), senderAddress)
             printlnCK("sendMessageToGroup: senderAddress : $senderAddress  groupSender: $groupSender")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
@@ -168,11 +179,11 @@ class ChatRepository @Inject constructor(
                 aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
             val request = MessageOuterClass.PublishRequest.newBuilder()
-                    .setGroupId(groupId)
-                    .setFromClientDeviceId(userManager.getUniqueDeviceID())
-                    .setMessage(ByteString.copyFrom(ciphertextFromAlice))
-                    .setSenderMessage(ByteString.copyFrom(ciphertextFromAlice))
-                    .build()
+                .setGroupId(groupId)
+                .setFromClientDeviceId(userManager.getUniqueDeviceID())
+                .setMessage(ByteString.copyFrom(ciphertextFromAlice))
+                .setSenderMessage(ByteString.copyFrom(ciphertextFromAlice))
+                .build()
 
             val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
             if (server == null) {
@@ -180,9 +191,13 @@ class ChatRepository @Inject constructor(
                 return@withContext Resource.error("server must be not null", null)
             }
 
-            val paramAPI= ParamAPI(server.serverDomain,server.accessKey,server.hashKey)
+            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
             val response = apiProvider.provideMessageBlockingStub(paramAPI).publish(request)
-            val message = messageRepository.convertMessageResponse(response, plainMessage, Owner(ownerWorkSpace, senderId))
+            val message = messageRepository.convertMessageResponse(
+                response,
+                plainMessage,
+                Owner(ownerWorkSpace, senderId)
+            )
 
             if (cachedMessageId == 0) {
                 messageRepository.saveNewMessage(message)
@@ -210,38 +225,44 @@ class ChatRepository @Inject constructor(
         }
     }
 
-    suspend fun sendNote(note: Note, cachedNoteId: Long = 0) : Boolean = withContext(Dispatchers.IO) {
-        try {
-            val request = NoteOuterClass.CreateNoteRequest.newBuilder()
-                .setTitle("")
-                .setContent(ByteString.copyFrom(note.content, Charsets.UTF_8))
-                .setNoteType("")
-                .build()
-            val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
-            if (cachedNoteId == 0L) {
-                messageRepository.saveNote(note.copy(createdTime = response.createdAt))
-            } else {
-                messageRepository.updateNote(note.copy(generateId = cachedNoteId, createdTime = response.createdAt))
-            }
-            return@withContext true
-        } catch (e: StatusRuntimeException) {
-
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("sendNote token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+    suspend fun sendNote(note: Note, cachedNoteId: Long = 0): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val request = NoteOuterClass.CreateNoteRequest.newBuilder()
+                    .setTitle("")
+                    .setContent(ByteString.copyFrom(note.content, Charsets.UTF_8))
+                    .setNoteType("")
+                    .build()
+                val response = dynamicAPIProvider.provideNoteBlockingStub().createNote(request)
+                if (cachedNoteId == 0L) {
+                    messageRepository.saveNote(note.copy(createdTime = response.createdAt))
+                } else {
+                    messageRepository.updateNote(
+                        note.copy(
+                            generateId = cachedNoteId,
+                            createdTime = response.createdAt
+                        )
+                    )
                 }
-                else -> parsedError.message
-            }
-        } catch (e: Exception) {
-            printlnCK("create note $e")
-        }
+                return@withContext true
+            } catch (e: StatusRuntimeException) {
 
-        return@withContext false
-    }
+                val parsedError = parseError(e)
+
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("sendNote token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
+                }
+            } catch (e: Exception) {
+                printlnCK("create note $e")
+            }
+
+            return@withContext false
+        }
 
     suspend fun uploadFile(
         mimeType: String,
@@ -265,25 +286,24 @@ class ChatRepository @Inject constructor(
 
                     return@withContext Resource.success(response.fileUrl)
                 } else {
-                    val result = suspendCancellableCoroutine <String?> {
-                        cont ->
+                    val result = suspendCancellableCoroutine<String?> { cont ->
                         val responseObserver =
-                        object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
-                            override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
-                                printlnCK("onNext response" + value?.fileUrl)
-                                if (value?.fileUrl?.isNotBlank() == true) {
-                                    cont.resume(value.fileUrl)
+                            object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
+                                override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
+                                    printlnCK("onNext response" + value?.fileUrl)
+                                    if (value?.fileUrl?.isNotBlank() == true) {
+                                        cont.resume(value.fileUrl)
+                                    }
+                                }
+
+                                override fun onError(t: Throwable?) {
+                                    cont.resume("")
+                                }
+
+                                override fun onCompleted() {
+                                    printlnCK("onCompleted")
                                 }
                             }
-
-                            override fun onError(t: Throwable?) {
-                                cont.resume("")
-                            }
-
-                            override fun onCompleted() {
-                                printlnCK("onCompleted")
-                            }
-                        }
 
                         val requestObserver = dynamicAPIProvider.provideUploadFileStub()
                             .uploadChunkedFile(responseObserver)

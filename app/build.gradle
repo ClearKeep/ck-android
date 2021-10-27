@@ -118,7 +118,7 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    packagingOptions{
+    packagingOptions {
         exclude("META-INF/jersey-module-version")
     }
 }
@@ -232,7 +232,7 @@ dependencies {
     // janus
     implementation project(':januswrapper')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation(name:'libwebrtc', ext:'aar')
+    implementation(name: 'libwebrtc', ext: 'aar')
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     implementation 'com.microsoft.identity.client:msal:2.0.8'

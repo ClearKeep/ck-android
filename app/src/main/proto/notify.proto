@@ -19,7 +19,7 @@ message NotifyObjectResponse {
 
 
 message BaseResponse {
-    string error = 1;
+  string error = 1;
 }
 
 // Request: get list notify
@@ -57,9 +57,9 @@ message ReadNotifyRequest {
 
 // Method
 service Notify {
-    rpc read_notify (ReadNotifyRequest) returns (BaseResponse);
-    rpc get_unread_notifies (Empty) returns (GetNotifiesResponse);
-    rpc subscribe (SubscribeRequest) returns (BaseResponse);
-    rpc un_subscribe (UnSubscribeRequest) returns (BaseResponse);
-    rpc listen (ListenRequest) returns (stream NotifyObjectResponse);
+  rpc read_notify (ReadNotifyRequest) returns (BaseResponse);
+  rpc get_unread_notifies (Empty) returns (GetNotifiesResponse);
+  rpc subscribe (SubscribeRequest) returns (BaseResponse);
+  rpc un_subscribe (UnSubscribeRequest) returns (BaseResponse);
+  rpc listen (ListenRequest) returns (stream NotifyObjectResponse);
 }

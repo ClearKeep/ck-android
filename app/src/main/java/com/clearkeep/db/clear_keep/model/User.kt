@@ -19,7 +19,8 @@ enum class UserStateTypeInGroup(val value: String) {
     ACTIVE("active"),
     REMOVE("remove")
 }
-enum class UserStatus(val value:String){
+
+enum class UserStatus(val value: String) {
     ONLINE("Online"),
     OFFLINE("Offline"),
     BUSY("Busy"),

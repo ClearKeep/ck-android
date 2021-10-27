@@ -19,7 +19,11 @@ data class UserPreference(
     val isSocialAccount: Boolean
 ) {
     companion object {
-        fun getDefaultUserPreference(serverDomain: String, userId: String, isSocialAccount: Boolean) = UserPreference(
+        fun getDefaultUserPreference(
+            serverDomain: String,
+            userId: String,
+            isSocialAccount: Boolean
+        ) = UserPreference(
             serverDomain,
             userId,
             showNotificationPreview = true,

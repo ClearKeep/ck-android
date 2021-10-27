@@ -71,17 +71,24 @@ class RegisterActivity : AppCompatActivity() {
         val (showDialog, setShowDialog) = remember { mutableStateOf(0 to "") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
 
-        val onRegisterPressed: (String, String, String, String) -> Unit = { email, userName, password, confirmPass ->
-            lifecycleScope.launch {
-                val res = registerViewModel.register(this@RegisterActivity, email, userName, password, confirmPass)
-                    ?: return@launch
-                if (res.status == Status.SUCCESS) {
-                    setShowReminderDialog(true)
-                } else if (res.status == Status.ERROR) {
-                    setShowDialog(res.errorCode to (res.message ?: "unknown"))
+        val onRegisterPressed: (String, String, String, String) -> Unit =
+            { email, userName, password, confirmPass ->
+                lifecycleScope.launch {
+                    val res = registerViewModel.register(
+                        this@RegisterActivity,
+                        email,
+                        userName,
+                        password,
+                        confirmPass
+                    )
+                        ?: return@launch
+                    if (res.status == Status.SUCCESS) {
+                        setShowReminderDialog(true)
+                    } else if (res.status == Status.ERROR) {
+                        setShowDialog(res.errorCode to (res.message ?: "unknown"))
+                    }
                 }
             }
-        }
         val isLoadingState = registerViewModel.isLoading.observeAsState()
         Box {
             RegisterScreen(
@@ -111,7 +118,10 @@ class RegisterActivity : AppCompatActivity() {
     @Composable
     fun ErrorDialog(showDialog: Pair<Int, String>, setShowDialog: (Pair<Int, String>) -> Unit) {
         if (showDialog.second.isNotBlank() || showDialog.first != 0) {
-            val title = if (showDialog.first == ERROR_CODE_TIMEOUT) stringResource(R.string.network_error_dialog_title) else stringResource(R.string.error)
+            val title =
+                if (showDialog.first == ERROR_CODE_TIMEOUT) stringResource(R.string.network_error_dialog_title) else stringResource(
+                    R.string.error
+                )
             CKAlertDialog(
                 title = title,
                 text = showDialog.second,

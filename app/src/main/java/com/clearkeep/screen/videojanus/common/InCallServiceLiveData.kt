@@ -20,8 +20,8 @@ class InCallServiceLiveData(private val context: Context) : LiveData<Boolean>() 
         super.onActive()
         postValue(com.clearkeep.screen.videojanus.AppCall.isCallAvailable(context))
         context.registerReceiver(
-                networkReceiver,
-                IntentFilter(ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED)
+            networkReceiver,
+            IntentFilter(ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED)
         )
     }
 

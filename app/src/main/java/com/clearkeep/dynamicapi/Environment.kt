@@ -9,6 +9,7 @@ class Environment @Inject constructor(
     private val dynamicAPIProvider: DynamicAPIProvider
 ) {
     private var server: Server? = null
+
     //Temp server info - to get key for received messages
     private var tempServer: Server? = null
 
@@ -22,7 +23,7 @@ class Environment @Inject constructor(
         this.tempServer = server
     }
 
-    fun getServer() : Server {
+    fun getServer(): Server {
         if (server == null) {
             printlnCK("getServer: server must be not NULL")
             throw IllegalArgumentException("getServer: server must be not NULL")
@@ -37,7 +38,7 @@ class Environment @Inject constructor(
         return tempServer ?: getServer()
     }
 
-    fun getServerCanNull() : Server?{
+    fun getServerCanNull(): Server? {
         return server
     }
 }

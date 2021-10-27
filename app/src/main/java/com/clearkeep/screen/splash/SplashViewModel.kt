@@ -9,9 +9,9 @@ import com.clearkeep.utilities.printlnCK
 class SplashViewModel @ViewModelInject constructor(
     private val serverRepository: ServerRepository,
     private val environment: Environment
-): ViewModel() {
+) : ViewModel() {
 
-    suspend fun isUserRegistered() : Boolean {
+    suspend fun isUserRegistered(): Boolean {
         return serverRepository.getDefaultServer() != null
     }
 

@@ -27,7 +27,12 @@ import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable
-fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit, onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit) {
+fun MessageByMe(
+    messageDisplayInfo: MessageDisplayInfo,
+    onClickFile: (uri: String) -> Unit,
+    onClickImage: (uris: List<String>, senderName: String) -> Unit,
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
@@ -93,7 +98,10 @@ fun MessageByMe(messageDisplayInfo: MessageDisplayInfo, onClickFile: (uri: Strin
                                             }
                                         )
                                     }) {
-                                ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                ClickableLinkContent(
+                                    messageContent,
+                                    messageDisplayInfo.message.hashCode()
+                                ) {
                                     onLongClick(messageDisplayInfo)
                                 }
                             }

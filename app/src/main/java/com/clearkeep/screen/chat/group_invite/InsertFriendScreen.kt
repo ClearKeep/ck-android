@@ -28,8 +28,8 @@ fun InsertFriendScreen(
     navController: NavHostController,
     onInsertFriend: (people: User) -> Unit,
 ) {
-    val link = remember {mutableStateOf("")}
-    val context=LocalContext.current
+    val link = remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Surface(
         color = MaterialTheme.colors.background
@@ -69,7 +69,11 @@ fun InsertFriendScreen(
                             if (people.userId != inviteGroupViewModel.getClientId()) {
                                 onInsertFriend(people)
                             } else {
-                                Toast.makeText(context, context.getString(R.string.insert_friend_error),Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.insert_friend_error),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     },
@@ -78,7 +82,10 @@ fun InsertFriendScreen(
                 )
             }
             Spacer(modifier = Modifier.height(25.sdp()))
-            CKHeaderText(stringResource(R.string.insert_friend_new_user), headerTextType = HeaderTextType.Medium)
+            CKHeaderText(
+                stringResource(R.string.insert_friend_new_user),
+                headerTextType = HeaderTextType.Medium
+            )
             Spacer(modifier = Modifier.height(24.sdp()))
             CKTextInputField(
                 stringResource(R.string.insert_friend_profile_url),

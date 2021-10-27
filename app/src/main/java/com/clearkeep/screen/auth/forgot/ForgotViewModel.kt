@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class ForgotViewModel @Inject constructor(
     private val loginRepository: AuthRepository
-): ViewModel() {
+) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
     private lateinit var _domain: String

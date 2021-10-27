@@ -66,7 +66,7 @@ fun CKSimpleTheme(
         shapes = Shapes,
         typography = ckTypography
     ) {
-        Surface(color= Color.White) {
+        Surface(color = Color.White) {
             children()
         }
     }

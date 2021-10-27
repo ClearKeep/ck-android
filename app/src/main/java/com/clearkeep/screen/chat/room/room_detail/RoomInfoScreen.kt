@@ -82,7 +82,11 @@ fun RoomInfoScreen(
                         val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         for (i in group.clientList.indices) {
                             if (i < maxItems) {
-                                FriendListItemInfo(listUserStatusState.value?.get(i) ?:group.clientList[i], null, 28 * i)
+                                FriendListItemInfo(
+                                    listUserStatusState.value?.get(i) ?: group.clientList[i],
+                                    null,
+                                    28 * i
+                                )
                             } else {
                                 FriendListMoreItem(group.clientList.size - maxItems, 28 * i)
                                 break
@@ -100,7 +104,7 @@ fun RoomInfoScreen(
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,
 
-                    ) {
+                        ) {
                         Image(
                             painter = painterResource(R.drawable.ic_button_call_audio),
                             contentDescription = null, modifier = Modifier
@@ -183,7 +187,10 @@ fun RoomInfoScreen(
             if (confirmLeaveGroupDialogVisible.value) {
                 CKAlertDialog(
                     title = stringResource(R.string.warning),
-                    text = stringResource(R.string.room_info_confirm_leave_dialog_text, group.groupName),
+                    text = stringResource(
+                        R.string.room_info_confirm_leave_dialog_text,
+                        group.groupName
+                    ),
                     confirmTitle = stringResource(R.string.room_info_confirm_leave_dialog_confirm),
                     dismissTitle = stringResource(R.string.cancel),
                     onConfirmButtonClick = {
@@ -211,7 +218,11 @@ fun ItemSiteSetting(
             .padding(top = 16.sdp())
             .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(24.sdp()))
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.sdp())
+        )
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)

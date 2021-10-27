@@ -97,7 +97,13 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
                     tint = Color.White
                 )
             }
-            Text(senderName.value ?: "", Modifier.align(Alignment.TopCenter).padding(top = 12.sdp()), color = Color.White)
+            Text(
+                senderName.value ?: "",
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.sdp()),
+                color = Color.White
+            )
             Image(
                 rememberCoilPainter(selectedImageUri.value, context.imageLoader),
                 null,
@@ -160,7 +166,9 @@ fun SelectableImageItem(
             Modifier
                 .clip(RectangleShape)
                 .aspectRatio(1f)
-                .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }) {
                     onSelect.invoke(uri)
                 }
                 .then(if (isSelected) Modifier.border(1.sdp(), Color.White) else Modifier)
@@ -183,7 +191,9 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
                 Modifier
                     .fillMaxSize()
                     .background(colorDialogScrim)
-                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }) {
                         onDismiss()
                     })
             Column(
@@ -201,7 +211,9 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
                         Modifier
                             .fillMaxWidth()
                             .padding(16.sdp())
-                            .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }) {
                                 onClickSave.invoke()
                             },
                         textAlign = TextAlign.Center, color = colorLightBlue
@@ -216,7 +228,9 @@ fun ShareImageDialog(isOpen: Boolean, onDismiss: () -> Unit, onClickSave: () -> 
                             .align(Alignment.Center)
                             .padding(16.sdp())
                             .fillMaxWidth()
-                            .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() }) {
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
                     )

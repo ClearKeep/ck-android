@@ -51,7 +51,8 @@ fun SendBottomCompose(
                 Row(
                     Modifier
                         .padding(horizontal = 14.sdp())
-                        .fillMaxWidth()) {
+                        .fillMaxWidth()
+                ) {
                     LazyRow {
                         itemsIndexed(values) { _, uri ->
                             ItemImage(uri) {
@@ -73,15 +74,17 @@ fun SendBottomCompose(
                 modifier = Modifier
                     .padding(8.sdp())
                     .size(24.sdp()),
-                ) {
+            ) {
 
                 Icon(
                     painterResource(R.drawable.ic_photos),
                     contentDescription = "",
                     tint = grayscale1,
-                    modifier = Modifier.fillMaxSize().clickable {
-                        onClickUploadPhoto()
-                    }
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            onClickUploadPhoto()
+                        }
                 )
             }
 
@@ -169,7 +172,11 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
                     onRemove(uri)
                 }
                 .align(Alignment.TopEnd)) {
-            Icon(painter = painterResource(R.drawable.ic_cross), null, tint = grayscaleOffWhite, modifier = Modifier.fillMaxSize()
+            Icon(
+                painter = painterResource(R.drawable.ic_cross),
+                null,
+                tint = grayscaleOffWhite,
+                modifier = Modifier.fillMaxSize()
             )
         }
     }

@@ -12,8 +12,9 @@ class PeopleViewModel @Inject constructor(
     peopleRepository: PeopleRepository,
 
     private val environment: Environment
-): ViewModel() {
+) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
-    val friends: LiveData<List<User>> = peopleRepository.getFriends(environment.getServer().serverDomain, getClientId())
+    val friends: LiveData<List<User>> =
+        peopleRepository.getFriends(environment.getServer().serverDomain, getClientId())
 }

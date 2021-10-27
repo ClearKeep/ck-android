@@ -133,7 +133,8 @@ fun ChangePasswordScreen(
                 error = confirmPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
-            val currentPasswordValid = if (isResetPassword.value == true) true else currentPassWordError.value.isNullOrBlank() && currentPassWord.value.isNotBlank()
+            val currentPasswordValid =
+                if (isResetPassword.value == true) true else currentPassWordError.value.isNullOrBlank() && currentPassWord.value.isNotBlank()
             val changePasswordButtonEnabled = currentPasswordValid
                     && newPassWordError.value.isNullOrBlank()
                     && confirmPassWordError.value.isNullOrBlank()
@@ -156,7 +157,8 @@ fun ChangePasswordScreen(
                     onDismissButtonClick = {
                         if (isResetPassword.value == true) {
                             val intent = Intent(context, SplashActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)
                             (context as AppCompatActivity).finish()
                         }
