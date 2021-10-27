@@ -224,13 +224,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         Owner(
                             clientDomain,
                             it
-                        ), 222
+                        ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
                             it
-                        ), 111
+                        ), SENDER_DEVICE_ID
                     )
                     val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)

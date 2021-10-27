@@ -67,7 +67,7 @@ class ChatRepository @Inject constructor(
         printlnCK("sendMessageInPeer: sender=$senderId + $ownerWorkSpace, receiver= $receiverId + $receiverWorkspaceDomain, groupId= $groupId")
         try {
             val signalProtocolAddress =
-                CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
+                CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
 
             if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
                 val processSuccess =
@@ -78,7 +78,7 @@ class ChatRepository @Inject constructor(
                 }
             }
             val signalProtocolAddressPublishRequest =
-                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
+                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
             val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
             val message: CiphertextMessage =
                 sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
@@ -135,8 +135,8 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun processPeerKey(receiverId: String, receiverWorkspaceDomain: String,senderId: String, ownerWorkSpace: String): Boolean {
-        val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), 111)
-        val signalProtocolAddress2 = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
+        val signalProtocolAddress = CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
+        val signalProtocolAddress2 = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
         messageRepository.initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,
@@ -158,7 +158,7 @@ class ChatRepository @Inject constructor(
     ): Resource<Nothing> = withContext(Dispatchers.IO) {
         printlnCK("sendMessageToGroup: sender $senderId to group $groupId, ownerWorkSpace = $ownerWorkSpace")
         try {
-            val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), 111)
+            val senderAddress = CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(groupId.toString(), senderAddress)
             printlnCK("sendMessageToGroup: senderAddress : $senderAddress  groupSender: $groupSender")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)

@@ -78,7 +78,7 @@ class AuthRepository @Inject constructor(
         val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
         val transitionID = KeyHelper.generateRegistrationId(false)
         val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-            .setDeviceId(111)
+            .setDeviceId(SENDER_DEVICE_ID)
             .setRegistrationId(transitionID)
             .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
             .setPreKey(ByteString.copyFrom(preKey.serialize()))
@@ -341,7 +341,7 @@ class AuthRepository @Inject constructor(
             }
 
             val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(111)
+                .setDeviceId(SENDER_DEVICE_ID)
                 .setRegistrationId(transitionID)
                 .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
                 .setPreKey(ByteString.copyFrom(preKey.serialize()))
@@ -472,7 +472,7 @@ class AuthRepository @Inject constructor(
             }
 
             val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(111)
+                .setDeviceId(SENDER_DEVICE_ID)
                 .setRegistrationId(transitionID)
                 .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
                 .setPreKey(ByteString.copyFrom(preKey.serialize()))
@@ -551,7 +551,7 @@ class AuthRepository @Inject constructor(
             }
 
             val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(111)
+                .setDeviceId(SENDER_DEVICE_ID)
                 .setRegistrationId(transitionID)
                 .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
                 .setPreKey(ByteString.copyFrom(preKey.serialize()))
