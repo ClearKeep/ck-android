@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-project("dragonsrp")
+project("srp")
 
-set(DRAGON_SRP DragonSRP)
+set(SRP srp)
 
-INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/${DRAGON_SRP})
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/${SRP})
 
 add_library(crypto STATIC IMPORTED)
 set_target_properties(crypto
@@ -14,7 +14,7 @@ add_library(ssl STATIC IMPORTED)
 set_target_properties(ssl
         PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libssl.a)
 
-add_library(dragonsrp SHARED dragonsrp.cpp)
+add_library(dragonsrp SHARED srp.cpp)
 
 find_library(log-lib log)
 

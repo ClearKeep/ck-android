@@ -1,4 +1,4 @@
-package com.clearkeep.dragonsrp
+package com.clearkeep.srp
 
 import org.junit.Test
 

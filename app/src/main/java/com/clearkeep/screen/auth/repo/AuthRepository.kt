@@ -7,7 +7,7 @@ import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserKey
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.model.SignalIdentityKey
-import com.clearkeep.dragonsrp.NativeLib
+import com.clearkeep.srp.NativeLib
 import com.clearkeep.dynamicapi.CallCredentials
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI

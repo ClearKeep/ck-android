@@ -3,7 +3,7 @@ package com.clearkeep.repo
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.dragonsrp.NativeLib
+import com.clearkeep.srp.NativeLib
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.utilities.*

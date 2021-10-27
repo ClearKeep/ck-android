@@ -64,7 +64,7 @@ jfieldID getUsrPtrFieldId(JNIEnv *env, jobject obj) {
 
 //region Create new user
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getSalt(
+Java_com_clearkeep_srp_NativeLib_getSalt(
         JNIEnv *env,
         jobject obj /* this */,
         jstring username,
@@ -102,7 +102,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getSalt(
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
+Java_com_clearkeep_srp_NativeLib_getVerificator(
         JNIEnv *env,
         jobject obj /* this */
 ) {
@@ -117,7 +117,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getVerificator(
 
 //region Authenticate
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getA(
+Java_com_clearkeep_srp_NativeLib_getA(
         JNIEnv *env,
         jobject obj /* this */,
         jstring username,
@@ -146,7 +146,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getA(
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_getM(
+Java_com_clearkeep_srp_NativeLib_getM(
         JNIEnv *env,
         jobject obj /* this */,
         jbyteArray salt,
@@ -182,7 +182,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_getM(
 //endregion
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_freeMemoryCreateAccount(
+Java_com_clearkeep_srp_NativeLib_freeMemoryCreateAccount(
         JNIEnv *env,
         jobject obj /* this */
 ) {
@@ -191,7 +191,7 @@ Java_com_clearkeep_dragonsrp_NativeLib_freeMemoryCreateAccount(
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_com_clearkeep_dragonsrp_NativeLib_freeMemoryAuthenticate(
+Java_com_clearkeep_srp_NativeLib_freeMemoryAuthenticate(
         JNIEnv *env,
         jobject obj /* this */
 ) {
