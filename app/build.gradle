@@ -250,6 +250,8 @@ dependencies {
 
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.2.0'
 
+    implementation "net.gotev:uploadservice:4.6.0"
+
     implementation project(':srp')
 }
 
