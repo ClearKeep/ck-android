@@ -4,7 +4,7 @@ project("srp")
 
 set(SRP srp)
 
-INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/${SRP})
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/${SRP})
 
 add_library(crypto STATIC IMPORTED)
 set_target_properties(crypto
