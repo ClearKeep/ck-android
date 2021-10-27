@@ -1,4 +1,4 @@
-package com.clearkeep.dragonsrp
+package com.clearkeep.srp
 
 class NativeLib {
     @JvmField
