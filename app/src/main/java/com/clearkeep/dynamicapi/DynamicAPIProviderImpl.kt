@@ -16,6 +16,7 @@ import video_call.VideoCallGrpc
 import workspace.WorkspaceGrpc
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
+
 /*
 * active server
 * */
@@ -24,12 +25,12 @@ class DynamicAPIProviderImpl @Inject constructor(
 ) : DynamicAPIProvider {
 
     private var server: Server? = null
-    
+
     override fun setUpDomain(server: Server) {
         printlnCK("setUpDomain, domain = ${server.serverDomain}")
         this.server = server
     }
-    
+
     override fun provideSignalKeyDistributionGrpc(): SignalKeyDistributionGrpc.SignalKeyDistributionStub {
         if (server == null) {
             throw IllegalArgumentException("server must be not null")
@@ -81,10 +82,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return UserGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideGroupBlockingStub(): GroupGrpc.GroupBlockingStub {
@@ -93,10 +96,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return GroupGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-            server!!.accessKey,
-            server!!.hashKey
-        ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub {
@@ -123,10 +128,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         printlnCK("provideNoteBlockingStub: ${managedChannel.authority()}")
         return NoteGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideNotifyPushBlockingStub(): NotifyPushGrpc.NotifyPushBlockingStub {
@@ -135,10 +142,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return NotifyPushGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideVideoCallBlockingStub(): VideoCallGrpc.VideoCallBlockingStub {
@@ -147,10 +156,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return VideoCallGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub {
@@ -159,10 +170,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return UploadFileGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub {
@@ -171,10 +184,12 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         return UploadFileGrpc.newStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                server!!.accessKey,
-                server!!.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    server!!.accessKey,
+                    server!!.hashKey
+                )
+            )
     }
 
     override fun provideWorkSpaceBlockingStub(): WorkspaceGrpc.WorkspaceBlockingStub {

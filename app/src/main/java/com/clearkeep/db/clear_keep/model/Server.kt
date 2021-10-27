@@ -18,6 +18,6 @@ data class Server(
     @ColumnInfo(name = "owner") val profile: Profile,
 ) {
     override fun toString(): String {
-            return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
+        return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
     }
 }

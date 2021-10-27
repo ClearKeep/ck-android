@@ -380,7 +380,10 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
             }
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText(stringResource(R.string.profile_settings), headerTextType = HeaderTextType.Medium)
+        CKHeaderText(
+            stringResource(R.string.profile_settings),
+            headerTextType = HeaderTextType.Medium
+        )
         Spacer(modifier = Modifier.size(16.sdp()))
     }
 }

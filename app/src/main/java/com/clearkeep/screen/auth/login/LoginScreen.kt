@@ -66,7 +66,8 @@ fun LoginScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(start = dimensionResource(R.dimen._8sdp))) {
+                        .padding(start = dimensionResource(R.dimen._8sdp))
+                ) {
                     IconButton(onClick = { onNavigateBack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -146,7 +147,7 @@ fun LoginScreen(
                             CKTextButton(
                                 modifier = Modifier.padding(0.sdp()),
                                 stringResource(R.string.advance_server_settings),
-                                onClick ={advanceSetting?.invoke()} ,
+                                onClick = { advanceSetting?.invoke() },
                                 enabled = !isLoading,
                                 textButtonType = TextButtonType.White
                             )
@@ -155,7 +156,10 @@ fun LoginScreen(
                 }
 
                 Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                Divider(color = colorResource(R.color.line), thickness = dimensionResource(R.dimen._1sdp))
+                Divider(
+                    color = colorResource(R.color.line),
+                    thickness = dimensionResource(R.dimen._1sdp)
+                )
                 Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,7 +168,10 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.social_sign_in),
                         color = Color.White,
-                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                        style = TextStyle(
+                            fontSize = defaultNonScalableTextSize(),
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
                 Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
@@ -218,7 +225,10 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.tv_not_account),
                         color = Color.White,
-                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                        style = TextStyle(
+                            fontSize = defaultNonScalableTextSize(),
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
 
@@ -265,7 +275,7 @@ fun LoginScreen(
 }
 
 @Composable
-fun ViewUsedCustomServer(shouldShow: Boolean){
+fun ViewUsedCustomServer(shouldShow: Boolean) {
     if (shouldShow) {
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen._8sdp)))
         Row(
@@ -288,11 +298,14 @@ fun ViewUsedCustomServer(shouldShow: Boolean){
                 Text(
                     text = "You are using custom server",
                     color = colorWarningLight,
-                    style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                    style = TextStyle(
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             }
         }
-    } else{
+    } else {
         Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
     }
 }

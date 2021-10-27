@@ -33,8 +33,14 @@ open class BaseViewModel @Inject constructor(
             if (response.data?.error.isNullOrBlank()) {
                 currentServer.value?.id?.let {
                     val removeResult = serverRepository.deleteServer(it)
-                    roomRepository.removeGroupByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
-                    messageRepository.clearMessageByDomain(currentServer.value!!.serverDomain, currentServer.value!!.ownerClientId)
+                    roomRepository.removeGroupByDomain(
+                        currentServer.value!!.serverDomain,
+                        currentServer.value!!.ownerClientId
+                    )
+                    messageRepository.clearMessageByDomain(
+                        currentServer.value!!.serverDomain,
+                        currentServer.value!!.ownerClientId
+                    )
                     if (removeResult > 0) {
                         printlnCK("serverRepository: ${serverRepository.getServers().size}")
                         if (serverRepository.getServers().isNotEmpty()) {

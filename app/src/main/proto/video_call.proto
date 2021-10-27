@@ -2,15 +2,15 @@ syntax = "proto3";
 package video_call;
 
 message BaseResponse {
-    string error = 1;
+  string error = 1;
 }
 
 message ServerResponse {
-    string group_rtc_url = 1;
-    int64 group_rtc_id = 2;
-    string group_rtc_token = 3;
-    StunServer stun_server = 4;
-    TurnServer turn_server = 5;
+  string group_rtc_url = 1;
+  int64 group_rtc_id = 2;
+  string group_rtc_token = 3;
+  StunServer stun_server = 4;
+  TurnServer turn_server = 5;
 }
 
 message StunServer {
@@ -64,9 +64,9 @@ message WorkspaceUpdateCallRequest {
 
 
 service VideoCall {
-    rpc video_call(VideoCallRequest) returns (ServerResponse) {};
-    rpc update_call(UpdateCallRequest) returns (BaseResponse) {};
-    //
-    rpc workspace_video_call (WorkspaceVideoCallRequest) returns (ServerResponse);
-    rpc workspace_update_call(WorkspaceUpdateCallRequest) returns (BaseResponse) {};
+  rpc video_call(VideoCallRequest) returns (ServerResponse) {};
+  rpc update_call(UpdateCallRequest) returns (BaseResponse) {};
+  //
+  rpc workspace_video_call (WorkspaceVideoCallRequest) returns (ServerResponse);
+  rpc workspace_update_call(WorkspaceUpdateCallRequest) returns (BaseResponse) {};
 }

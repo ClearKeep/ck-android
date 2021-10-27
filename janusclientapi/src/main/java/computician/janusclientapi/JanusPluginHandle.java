@@ -33,6 +33,7 @@ public class JanusPluginHandle {
 
     private class WebRtcObserver implements SdpObserver, PeerConnection.Observer {
         private final IPluginHandleWebRTCCallbacks webRtcCallbacks;
+
         public WebRtcObserver(IPluginHandleWebRTCCallbacks callbacks) {
             this.webRtcCallbacks = callbacks;
         }
@@ -112,7 +113,7 @@ public class JanusPluginHandle {
                 case GATHERING:
                     break;
                 case COMPLETE:
-                    if(!trickle) {
+                    if (!trickle) {
                         mySdp = pc.getLocalDescription();
                         sendSdp(webRtcCallbacks);
                     } else {
@@ -127,7 +128,7 @@ public class JanusPluginHandle {
 
         @Override
         public void onIceCandidate(IceCandidate candidate) {
-            if(trickle){
+            if (trickle) {
                 sendTrickleCandidate(candidate);
             }
         }

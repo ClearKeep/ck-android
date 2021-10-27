@@ -85,7 +85,7 @@ fun FriendListItemInfo(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
-                arrayListOf(friend.avatar ?:""),
+                arrayListOf(friend.avatar ?: ""),
                 friend.userName,
                 size = 36.sdp()
             )
@@ -109,7 +109,13 @@ fun FriendListMoreItem(count: Int, paddingX: Int) {
                     ), CircleShape
                 )
         ) {
-            Text("+$count", color = grayscaleOffWhite, fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.W700, modifier = Modifier.align(Alignment.Center))
+            Text(
+                "+$count",
+                color = grayscaleOffWhite,
+                fontSize = defaultNonScalableTextSize(),
+                fontWeight = FontWeight.W700,
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
     }
 }

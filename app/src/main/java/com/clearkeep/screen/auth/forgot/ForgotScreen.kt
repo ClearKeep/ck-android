@@ -36,7 +36,9 @@ fun ForgotScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(80.sdp()))
-        CKTopAppBarSample(title = stringResource(R.string.forgot_password), onBackPressed = { onBackPress() })
+        CKTopAppBarSample(
+            title = stringResource(R.string.forgot_password),
+            onBackPressed = { onBackPress() })
         Spacer(Modifier.height(26.sdp()))
 
         Column(
@@ -82,7 +84,9 @@ fun ForgotScreen(
             )
             if (isEmptyEmail.value || isInvalidEmailFormat.value) {
                 CKAlertDialog(
-                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else stringResource(R.string.email_invalid),
+                    title = if (isEmptyEmail.value) stringResource(R.string.email_blank_error) else stringResource(
+                        R.string.email_invalid
+                    ),
                     text = stringResource(R.string.pls_check_again),
                     dismissTitle = stringResource(R.string.close),
                     onDismissButtonClick = {

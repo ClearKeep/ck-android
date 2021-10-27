@@ -41,15 +41,18 @@ fun CKButtonSignIn(
         LoginType.Microsoft -> {
             painterResource(R.drawable.ic_icon_office)
         }
-        LoginType.Facebook->{
+        LoginType.Facebook -> {
             painterResource(R.drawable.ic_icons_facebook)
         }
     }
 
     Row(
-        modifier = Modifier.background(
-            grayscaleOffWhite, shape = RoundedCornerShape(50),
-        ).clickable { onClick() }.size(dimensionResource(R.dimen._56sdp)),
+        modifier = Modifier
+            .background(
+                grayscaleOffWhite, shape = RoundedCornerShape(50),
+            )
+            .clickable { onClick() }
+            .size(dimensionResource(R.dimen._56sdp)),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {

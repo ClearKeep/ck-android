@@ -11,7 +11,7 @@ import com.clearkeep.db.clear_keep.model.ChatGroup
 @Dao
 interface GroupDAO {
     @Insert(onConflict = REPLACE)
-    suspend fun insert(group: ChatGroup) : Long
+    suspend fun insert(group: ChatGroup): Long
 
     @Update
     suspend fun updateGroup(vararg group: ChatGroup)
@@ -32,13 +32,21 @@ interface GroupDAO {
     suspend fun disableChatOfDeactivatedUser(ids: List<Int>)
 
     @Query("DELETE  FROM chatgroup WHERE  owner_domain = :domain AND owner_client_id = :ownerId")
-    suspend fun deleteGroupByOwnerDomain( domain: String, ownerId: String): Int
+    suspend fun deleteGroupByOwnerDomain(domain: String, ownerId: String): Int
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" AND group_name LIKE :query")
-    fun getGroupsByGroupName(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<ChatGroup>>
+    fun getGroupsByGroupName(
+        ownerDomain: String,
+        ownerClientId: String,
+        query: String
+    ): LiveData<List<ChatGroup>>
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"peer\" AND group_name LIKE :query")
-    fun getPeerRoomsByPeerName(ownerDomain: String, ownerClientId: String, query: String): LiveData<List<ChatGroup>>
+    fun getPeerRoomsByPeerName(
+        ownerDomain: String,
+        ownerClientId: String,
+        query: String
+    ): LiveData<List<ChatGroup>>
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" ")
     fun getGroupsByDomain(ownerDomain: String, ownerClientId: String): LiveData<List<ChatGroup>>

@@ -17,7 +17,12 @@ interface UserDAO {
     suspend fun insertPeopleList(people: List<UserEntity>)
 
     @Query("SELECT * FROM userentity WHERE user_id =:userId AND domain = :domain AND owner_domain = :ownerDomain AND owner_client_id = :ownerClientId LIMIT 1")
-    suspend fun getFriend(userId: String, domain: String, ownerDomain: String, ownerClientId: String): UserEntity?
+    suspend fun getFriend(
+        userId: String,
+        domain: String,
+        ownerDomain: String,
+        ownerClientId: String
+    ): UserEntity?
 
     @Query("SELECT * FROM userentity WHERE user_id =:userId LIMIT 1")
     suspend fun getFriendFromUserId(userId: String): UserEntity?

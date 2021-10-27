@@ -1,11 +1,14 @@
-
 # ClearKeep Android
 
-Clearkeep is a free and open source software application for Android, iOS, that employs end-to-end encryption (E2EE) to keep communications safe.
+Clearkeep is a free and open source software application for Android, iOS, that employs end-to-end
+encryption (E2EE) to keep communications safe.
 
-Communications can be made between either individuals or a group, allowing users to send end-to-end encrypted text, picture, as well as engage in live video and audio calls.
+Communications can be made between either individuals or a group, allowing users to send end-to-end
+encrypted text, picture, as well as engage in live video and audio calls.
 
-Default end-to-end encryption scaling to thousands of users per room. We protects against accidental leaks, eavesdroppers and third party interference by ensuring that by default the server cannot see your conversations.
+Default end-to-end encryption scaling to thousands of users per room. We protects against accidental
+leaks, eavesdroppers and third party interference by ensuring that by default the server cannot see
+your conversations.
 
 ## What works
 
@@ -40,7 +43,10 @@ Default end-to-end encryption scaling to thousands of users per room. We protect
 - Android Jetpack (Compose, Hilt, Room, Architecture Components)
 - Kotlin Coroutines
 - Protobuf Java Lite
-- [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging) for push notifications
+- [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging) for push
+  notifications
 - [CSRP](https://github.com/cocagne/csrp) for SRP protocol implementation
-- [Janus Gateway Android](https://github.com/benwtrent/janus-gateway-android) for video and voice call
-- [Signal Protocol Library Java](https://github.com/signalapp/libsignal-protocol-java) for end-to-end message encryption
+- [Janus Gateway Android](https://github.com/benwtrent/janus-gateway-android) for video and voice
+  call
+- [Signal Protocol Library Java](https://github.com/signalapp/libsignal-protocol-java) for
+  end-to-end message encryption

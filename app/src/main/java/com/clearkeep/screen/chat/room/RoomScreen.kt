@@ -111,7 +111,10 @@ fun RoomScreen(
     }
 
     printlnCK("test: ${group?.clientList}")
-    val groupName = if (isNote.value == true) stringResource(R.string.note) else if (group?.isDeletedUserPeer == true) stringResource(R.string.deleted_user) else group?.groupName ?: ""
+    val groupName =
+        if (isNote.value == true) stringResource(R.string.note) else if (group?.isDeletedUserPeer == true) stringResource(
+            R.string.deleted_user
+        ) else group?.groupName ?: ""
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -132,11 +135,13 @@ fun RoomScreen(
                             if (friend != null) {
                                 roomViewModel.uploadFile(context, group.groupId, null, friend)
                             } else {
-                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                roomViewModel.sendMessageResponse.value =
+                                    Resource.error("", null, ERROR_CODE_TIMEOUT)
                             }
                         }
                     } else {
-                        roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                        roomViewModel.sendMessageResponse.value =
+                            Resource.error("", null, ERROR_CODE_TIMEOUT)
                     }
                 }
             }
@@ -190,7 +195,7 @@ fun RoomScreen(
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
-                            listAvatar= listUserStatusState.value?: emptyList(),
+                            listAvatar = listUserStatusState.value ?: emptyList(),
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,
@@ -248,7 +253,7 @@ fun RoomScreen(
                             if (isNote.value == true) {
                                 roomViewModel.sendNote(context)
                             } else if (isGroup) {
-                                val isJoined=group.isJoined
+                                val isJoined = group.isJoined
                                 roomViewModel.sendMessageToGroup(
                                     context,
                                     group.groupId,
@@ -267,7 +272,8 @@ fun RoomScreen(
                                         validMessage
                                     )
                                 } else {
-                                    roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                    roomViewModel.sendMessageResponse.value =
+                                        Resource.error("", null, ERROR_CODE_TIMEOUT)
                                 }
                             }
                         },
@@ -410,7 +416,11 @@ fun MessageClickDialog(
                             .clickable {
                                 roomViewModel.copySelectedMessage(context)
                                 Toast
-                                    .makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT)
+                                    .makeText(
+                                        context,
+                                        context.getString(R.string.copied),
+                                        Toast.LENGTH_SHORT
+                                    )
                                     .show()
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue

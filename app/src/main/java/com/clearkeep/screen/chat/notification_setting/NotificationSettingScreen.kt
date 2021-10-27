@@ -78,7 +78,8 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
                 contentDescription = null, modifier = Modifier
                     .clickable {
                         onCloseView.invoke()
-                    }.size(24.sdp()),
+                    }
+                    .size(24.sdp()),
                 contentScale = ContentScale.FillBounds,
                 alignment = Alignment.CenterStart
             )

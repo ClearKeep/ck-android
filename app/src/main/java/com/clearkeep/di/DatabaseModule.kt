@@ -75,9 +75,9 @@ class DatabaseModule {
     @Provides
     fun provideSignalKeyDatabase(app: Application): SignalKeyDatabase {
         return Room
-                .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
-                .fallbackToDestructiveMigration()
-                .build()
+            .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Singleton

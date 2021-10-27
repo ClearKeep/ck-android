@@ -35,7 +35,8 @@ fun ServerSettingScreen(
         HeaderServerSetting(onBackPressed)
         Spacer(modifier = Modifier.height(28.sdp()))
         CKText(
-            stringResource(R.string.server_setting_server_name), style = MaterialTheme.typography.body2.copy(
+            stringResource(R.string.server_setting_server_name),
+            style = MaterialTheme.typography.body2.copy(
                 color = MaterialTheme.colors.onBackground,
                 fontSize = defaultNonScalableTextSize()
             )
@@ -104,7 +105,10 @@ fun HeaderServerSetting(onCloseView: () -> Unit) {
             )
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText(stringResource(R.string.server_settings), headerTextType = HeaderTextType.Medium)
+        CKHeaderText(
+            stringResource(R.string.server_settings),
+            headerTextType = HeaderTextType.Medium
+        )
         Spacer(modifier = Modifier.size(16.sdp()))
     }
 }
@@ -128,15 +132,19 @@ fun ServerItem(
         )
         Spacer(modifier = Modifier.width(21.sdp()))
         Column {
-            CKText(title, style = MaterialTheme.typography.h6.copy(
-                color = MaterialTheme.colors.primaryVariant,
-                fontSize = defaultNonScalableTextSize()
-            ))
+            CKText(
+                title, style = MaterialTheme.typography.h6.copy(
+                    color = MaterialTheme.colors.primaryVariant,
+                    fontSize = defaultNonScalableTextSize()
+                )
+            )
             Spacer(modifier = Modifier.height(2.sdp()))
-            CKText(subTitle, style = MaterialTheme.typography.overline.copy(
-                color = MaterialTheme.colors.onSecondary,
-                fontSize = defaultNonScalableTextSize()
-            ))
+            CKText(
+                subTitle, style = MaterialTheme.typography.overline.copy(
+                    color = MaterialTheme.colors.onSecondary,
+                    fontSize = defaultNonScalableTextSize()
+                )
+            )
         }
     }
 }

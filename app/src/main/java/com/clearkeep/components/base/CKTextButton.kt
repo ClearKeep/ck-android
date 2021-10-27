@@ -33,7 +33,8 @@ fun CKTextButton(
         enabled = enabled,
         modifier = modifier,
     ) {
-        Text(title,
+        Text(
+            title,
             style = MaterialTheme.typography.body1.copy(
                 fontSize = fontSize
             )
@@ -43,7 +44,7 @@ fun CKTextButton(
 
 @Composable
 private fun getTextContentColor(textButtonType: TextButtonType): Color {
-    return when(textButtonType) {
+    return when (textButtonType) {
         TextButtonType.White -> grayscaleOffWhite
         TextButtonType.Blue -> MaterialTheme.colors.primary
     }

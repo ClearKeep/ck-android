@@ -153,7 +153,8 @@ fun CustomServerScreen(
                             Row(
                                 modifier = Modifier
                                     .weight(0.66f)
-                                    .padding(end = 16.sdp()), verticalAlignment = Alignment.CenterVertically
+                                    .padding(end = 16.sdp()),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
                                     stringResource(R.string.server_url),

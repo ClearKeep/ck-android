@@ -56,7 +56,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                     val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
                     if (isDirectChat) {
                         val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
-                        val friendDomain = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_DOMAIN)
+                        val friendDomain =
+                            intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_DOMAIN)
                         if (!friendId.isNullOrBlank() && !friendDomain.isNullOrBlank()) {
                             navigateToRoomScreenWithFriendId(friendId, friendDomain)
                         }
@@ -77,7 +78,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         homeViewModel.isLogout.observe(this) {
 //            if (false) {
             printlnCK("MainActivity signOut")
-                homeViewModel.signOut()
+            homeViewModel.signOut()
 //            }
         }
 
@@ -139,9 +140,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun LoadingComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -151,9 +153,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun ErrorComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

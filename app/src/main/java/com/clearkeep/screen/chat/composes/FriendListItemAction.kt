@@ -40,9 +40,10 @@ fun FriendListItemAction(
                 friend.userName ?: "",
                 size = 64.sdp()
             )
-            Column(Modifier
-                .padding(start = 16.sdp())
-                .weight(1.0f, true)
+            Column(
+                Modifier
+                    .padding(start = 16.sdp())
+                    .weight(1.0f, true)
             ) {
                 Text(
                     text = friend.userName ?: "",

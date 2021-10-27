@@ -89,8 +89,10 @@ fun OtpVerifyPasswordScreen(
         when (verifyPasswordResponse.value?.status) {
             Status.ERROR -> {
                 CKAlertDialog(
-                    title = verifyPasswordResponse.value!!.data?.first ?: stringResource(R.string.error),
-                    text = verifyPasswordResponse.value!!.data?.second ?: stringResource(R.string.otp_verify_password_incorrect),
+                    title = verifyPasswordResponse.value!!.data?.first
+                        ?: stringResource(R.string.error),
+                    text = verifyPasswordResponse.value!!.data?.second
+                        ?: stringResource(R.string.otp_verify_password_incorrect),
                     onDismissButtonClick = {
                         otpViewModel.verifyPasswordResponse.value = null
                     },

@@ -30,13 +30,14 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
 
     init {
         dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        factory= SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+        factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
     }
 
     @Throws(Exception::class)
     fun encrypt(data: ByteArray, saltHex: String): ByteArray? {
         saltEncrypt = fromHex(saltHex)
-        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val spec: KeySpec =
+            PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.ENCRYPT_MODE, key)
@@ -48,7 +49,8 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
     @kotlin.jvm.Throws(Exception::class)
     fun encrypt(data: ByteArray, salt: String, oldIv: String): ByteArray? {
         saltEncrypt = fromHex(salt)
-        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val spec: KeySpec =
+            PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(fromHex(oldIv)))
@@ -79,7 +81,7 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
 
     companion object {
         @Throws(NoSuchAlgorithmException::class)
-         fun toHex(array: ByteArray): String {
+        fun toHex(array: ByteArray): String {
             val bi = BigInteger(1, array)
             val hex = bi.toString(16)
             val paddingLength = array.size * 2 - hex.length
@@ -91,7 +93,7 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         }
 
         @Throws(NoSuchAlgorithmException::class)
-         fun fromHex(hex: String): ByteArray {
+        fun fromHex(hex: String): ByteArray {
             val bytes = ByteArray(hex.length / 2)
             for (i in bytes.indices) {
                 bytes[i] = hex.substring(2 * i, 2 * i + 2).toInt(16).toByte()

@@ -26,16 +26,23 @@ import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
-fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onClickNext: () -> Unit) {
+fun SetSocialLoginPhraseScreen(
+    viewModel: LoginViewModel,
+    onBackPress: () -> Unit,
+    onClickNext: () -> Unit
+) {
     val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isSecurityPhraseValid.observeAsState()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(title = stringResource(R.string.social_login_phrase_screen_title), onBackPressed = { onBackPress() })
+        CKTopAppBarSample(
+            title = stringResource(R.string.social_login_phrase_screen_title),
+            onBackPressed = { onBackPress() })
         Spacer(Modifier.height(30.sdp()))
 
         Column(

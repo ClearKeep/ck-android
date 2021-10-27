@@ -106,7 +106,11 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
                 roomViewModel.removeMember(user, groupId = groupId, onSuccess = {
                     removeMemberDialogVisible.value = true
                 }, onError = {
-                    Toast.makeText(context, context.getString(R.string.remove_member_error), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.remove_member_error),
+                        Toast.LENGTH_LONG
+                    ).show()
                 })
             },
             onDismissButtonClick = {
