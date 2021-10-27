@@ -17,9 +17,14 @@ import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
-import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.*
 import message.MessageOuterClass
+import net.gotev.uploadservice.data.UploadInfo
+import net.gotev.uploadservice.network.ServerResponse
+import net.gotev.uploadservice.observer.request.BaseRequestObserver
+import net.gotev.uploadservice.observer.request.RequestObserver
+import net.gotev.uploadservice.observer.request.RequestObserverDelegate
+import net.gotev.uploadservice.protocols.binary.BinaryUploadRequest
 import note.NoteOuterClass
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -29,6 +34,7 @@ import upload_file.UploadFileOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class ChatRepository @Inject constructor(
@@ -265,63 +271,59 @@ class ChatRepository @Inject constructor(
         }
 
     suspend fun uploadFile(
+        context: Context,
         mimeType: String,
         fileName: String,
-        byteStrings: List<ByteString>,
-        blockHash: List<String>,
-        fileHash: String
+        fileUri: String
     ): Resource<String> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Main) {
             try {
-                if (byteStrings.isNotEmpty() && byteStrings.size == 1) {
-                    val request = UploadFileOuterClass.FileUploadRequest.newBuilder()
-                        .setFileName(fileName)
-                        .setFileContentType(mimeType)
-                        .setFileData(byteStrings[0])
-                        .setFileHash(fileHash)
-                        .build()
+                val uploadFileLink = getUploadedFileUrl(fileName, mimeType)
+                printlnCK("uploadFile ${uploadFileLink.uploadedFileUrl} downloadFileUrl ${uploadFileLink.downloadFileUrl} object file path ${uploadFileLink.objectFilePath}")
 
-                    val response =
-                        dynamicAPIProvider.provideUploadFileBlockingStub().uploadFile(request)
+                val uploadId =
+                    BinaryUploadRequest(context, serverUrl = uploadFileLink.uploadedFileUrl)
+                        .setMethod("PUT")
+                        .setFileToUpload(fileUri)
+                        .startUpload()
 
-                    return@withContext Resource.success(response.fileUrl)
-                } else {
-                    val result = suspendCancellableCoroutine<String?> { cont ->
-                        val responseObserver =
-                            object : StreamObserver<UploadFileOuterClass.UploadFilesResponse> {
-                                override fun onNext(value: UploadFileOuterClass.UploadFilesResponse?) {
-                                    printlnCK("onNext response" + value?.fileUrl)
-                                    if (value?.fileUrl?.isNotBlank() == true) {
-                                        cont.resume(value.fileUrl)
-                                    }
-                                }
-
-                                override fun onError(t: Throwable?) {
-                                    cont.resume("")
-                                }
-
-                                override fun onCompleted() {
-                                    printlnCK("onCompleted")
-                                }
-                            }
-
-                        val requestObserver = dynamicAPIProvider.provideUploadFileStub()
-                            .uploadChunkedFile(responseObserver)
-
-                        byteStrings.forEachIndexed { index, byteString ->
-                            val request = UploadFileOuterClass.FileDataBlockRequest.newBuilder()
-                                .setFileName(fileName)
-                                .setFileContentType(mimeType)
-                                .setFileDataBlock(byteString)
-                                .setFileDataBlockHash(blockHash[index])
-                                .setFileHash(fileHash)
-                                .build()
-
-                            requestObserver.onNext(request)
+                val isSuccessful = suspendCoroutine<Boolean> { cont ->
+                    val requestObserverDelegate = object : RequestObserverDelegate {
+                        override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
+                            cont.resume(true)
                         }
-                        requestObserver.onCompleted()
+
+                        override fun onCompletedWhileNotObserving() {}
+
+                        override fun onError(
+                            context: Context,
+                            uploadInfo: UploadInfo,
+                            exception: Throwable
+                        ) {
+                            cont.resume(false)
+                        }
+
+                        override fun onProgress(context: Context, uploadInfo: UploadInfo) {}
+
+                        override fun onSuccess(
+                            context: Context,
+                            uploadInfo: UploadInfo,
+                            serverResponse: ServerResponse
+                        ) {
+                        }
                     }
-                    return@withContext Resource.success(result)
+
+                    val requestObserver = BaseRequestObserver(context, requestObserverDelegate) {
+                        it.uploadId == uploadId
+                    }
+
+                    requestObserver.register()
+                }
+
+                return@withContext if (isSuccessful) {
+                    Resource.success(uploadFileLink.downloadFileUrl)
+                } else {
+                    Resource.error("Error uploading files!", null, 0)
                 }
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
@@ -352,5 +354,19 @@ class ChatRepository @Inject constructor(
 
         val manager = (context.getSystemService(Context.DOWNLOAD_SERVICE)) as DownloadManager
         val ref = manager.enqueue(dmRequest)
+    }
+
+    private suspend fun getUploadedFileUrl(
+        fileName: String,
+        mimeType: String
+    ): UploadFileOuterClass.GetUploadFileLinkResponse = withContext(Dispatchers.Main) {
+        val request = UploadFileOuterClass.GetUploadFileLinkRequest.newBuilder()
+            .setFileName(fileName)
+            .setFileContentType(mimeType)
+            .setIsPublic(true)
+            .build()
+
+        return@withContext dynamicAPIProvider.provideUploadFileBlockingStub()
+            .getUploadFileLink(request)
     }
 }

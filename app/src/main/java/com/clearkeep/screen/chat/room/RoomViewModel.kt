@@ -6,10 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
@@ -284,11 +281,11 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
-    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
+    fun sendMessageToUser(context: Context, lifecycleOwner: LifecycleOwner, receiverPeople: User, groupId: Long, message: String) {
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, groupId, message, null, receiverPeople)
+                    uploadImage(context, lifecycleOwner, groupId, message, null, receiverPeople)
                 } else {
                     sendMessageToUser(receiverPeople, groupId, message)
                 }
@@ -353,6 +350,7 @@ class RoomViewModel @Inject constructor(
 
     fun sendMessageToGroup(
         context: Context,
+        lifecycleOwner: LifecycleOwner,
         groupId: Long,
         message: String,
         isRegisteredGroup: Boolean
@@ -360,7 +358,7 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, groupId, message, isRegisteredGroup)
+                    uploadImage(context, lifecycleOwner, groupId, message, isRegisteredGroup)
                 } else {
                     sendMessageToGroup(groupId, message)
                 }
@@ -404,11 +402,11 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun sendNote(context: Context) {
+    fun sendNote(context: Context, lifecycleOwner: LifecycleOwner) {
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, message = _message.value ?: "")
+                    uploadImage(context, lifecycleOwner, message = _message.value ?: "")
                 } else {
                     sendNote(_message.value ?: "")
                 }
@@ -559,6 +557,7 @@ class RoomViewModel @Inject constructor(
 
     private fun uploadImage(
         context: Context,
+        lifecycleOwner: LifecycleOwner,
         groupId: Long = 0L,
         message: String,
         isRegisteredGroup: Boolean? = null,
@@ -570,6 +569,7 @@ class RoomViewModel @Inject constructor(
             uploadFile(
                 it,
                 context,
+                lifecycleOwner,
                 groupId,
                 message,
                 isRegisteredGroup,
@@ -580,7 +580,9 @@ class RoomViewModel @Inject constructor(
     }
 
     fun uploadFile(
-        context: Context, groupId: Long,
+        context: Context,
+        lifecycleOwner: LifecycleOwner,
+        groupId: Long,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
     ) {
@@ -590,6 +592,7 @@ class RoomViewModel @Inject constructor(
             uploadFile(
                 it,
                 context,
+                lifecycleOwner,
                 groupId,
                 null,
                 isRegisteredGroup,
@@ -602,6 +605,7 @@ class RoomViewModel @Inject constructor(
     private fun uploadFile(
         urisList: List<String>,
         context: Context,
+        lifecycleOwner: LifecycleOwner,
         groupId: Long,
         message: String?,
         isRegisteredGroup: Boolean?,
@@ -662,6 +666,7 @@ class RoomViewModel @Inject constructor(
                 val filesSizeInBytes = mutableListOf<Long>()
                 urisList.forEach { uriString ->
                     val uri = Uri.parse(uriString)
+                    val fileSize = uri.getFileSize(context, persistablePermission)
                     val contentResolver = context.contentResolver
                     if (persistablePermission) {
                         contentResolver.takePersistableUriPermission(
@@ -671,39 +676,17 @@ class RoomViewModel @Inject constructor(
                     }
                     val mimeType = getFileMimeType(context, uri, persistablePermission)
                     val fileName = uri.getFileName(context, persistablePermission)
-                    val byteStrings = mutableListOf<ByteString>()
-                    val blockDigestStrings = mutableListOf<String>()
-                    val byteArray = ByteArray(FILE_UPLOAD_CHUNK_SIZE)
-                    val inputStream = contentResolver.openInputStream(uri)
-                    var fileSize = 0L
-                    var size: Int
-                    size = inputStream?.read(byteArray) ?: 0
-                    val fileDigest = MessageDigest.getInstance("MD5")
-                    while (size > 0) {
-                        val blockDigest = MessageDigest.getInstance("MD5")
-                        blockDigest.update(byteArray, 0, size)
-                        val blockDigestByteArray = blockDigest.digest()
-                        val blockDigestString = byteArrayToMd5HashString(blockDigestByteArray)
-                        blockDigestStrings.add(blockDigestString)
-                        fileDigest.update(byteArray, 0, size)
-                        byteStrings.add(ByteString.copyFrom(byteArray, 0, size))
-                        fileSize += size
-                        size = inputStream?.read(byteArray) ?: 0
-                    }
-                    val fileHashByteArray = fileDigest.digest()
-                    val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
                     val urlResponse = chatRepository.uploadFile(
+                        context,
                         mimeType,
                         fileName.replace(" ", "_"),
-                        byteStrings,
-                        blockDigestStrings,
-                        fileHashString
+                        uriString
                     )
                     if (urlResponse.status == Status.SUCCESS) {
                         fileUrls.add(urlResponse.data ?: "")
                         filesSizeInBytes.add(fileSize)
                     } else {
-                        sendMessageResponse.value = urlResponse
+                        sendMessageResponse.postValue(urlResponse)
                         return@forEach
                     }
                 }
@@ -809,7 +792,6 @@ class RoomViewModel @Inject constructor(
     }
 
     companion object {
-        private const val FILE_UPLOAD_CHUNK_SIZE = 4_000_000 //4MB
         private const val FILE_MAX_COUNT = 10
         private const val FILE_MAX_SIZE = 200_000_000 //200MB
     }
