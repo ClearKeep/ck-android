@@ -72,7 +72,8 @@ fun ImagePickerScreen(
                 Modifier
                     .statusBarsHeight()
                     .background(MaterialTheme.colors.primary)
-                    .fillMaxWidth())
+                    .fillMaxWidth()
+            )
             CKTopAppBar(
                 {},
                 Modifier,

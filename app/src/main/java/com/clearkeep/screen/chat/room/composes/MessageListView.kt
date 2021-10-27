@@ -77,8 +77,8 @@ private fun MessageListView(
     val groupedMessages: Map<String, List<MessageDisplayInfo>> =
         reversedMessage.filter { it.message.isNotBlank() }
             .groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
-            convertMessageList(entry.value, clients, listAvatar, myClientId, isGroup)
-        }
+                convertMessageList(entry.value, clients, listAvatar, myClientId, isGroup)
+            }
     Surface(
         color = grayscaleBackground
     ) {

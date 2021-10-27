@@ -229,7 +229,8 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
         Box(
             Modifier
                 .size(28.sdp())
-                .align(Alignment.Center)) {
+                .align(Alignment.Center)
+        ) {
             Row {
                 Spacer(Modifier.width(8.sdp()))
                 BasicTextField(
