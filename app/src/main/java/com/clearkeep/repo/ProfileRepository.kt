@@ -29,7 +29,7 @@ class ProfileRepository @Inject constructor(
     private val userManager: AppStorage,
     private val signalKeyRepository: SignalKeyRepository
 ) {
-    suspend fun registerToken(token: String)  = withContext(Dispatchers.IO) {
+    suspend fun registerToken(token: String) = withContext(Dispatchers.IO) {
         printlnCK("registerToken: token = $token")
         val server = serverRepository.getServers()
         server.forEach { server ->
@@ -37,43 +37,44 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    private suspend fun registerTokenByOwner(token: String, server: Server) : Boolean  = withContext(Dispatchers.IO) {
-        val deviceId = userManager.getUniqueDeviceID()
-        printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, token = $token, deviceId = $deviceId")
-        try {
-            val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
-                .setDeviceId(deviceId)
-                .setDeviceType("android")
-                .setToken(token)
-                .build()
-            val notifyPushGrpc = apiProvider.provideNotifyPushBlockingStub(
-                ParamAPI(
-                    server.serverDomain,
-                    server.accessKey,
-                    server.hashKey
+    private suspend fun registerTokenByOwner(token: String, server: Server): Boolean =
+        withContext(Dispatchers.IO) {
+            val deviceId = userManager.getUniqueDeviceID()
+            printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, token = $token, deviceId = $deviceId")
+            try {
+                val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
+                    .setDeviceId(deviceId)
+                    .setDeviceType("android")
+                    .setToken(token)
+                    .build()
+                val notifyPushGrpc = apiProvider.provideNotifyPushBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
                 )
-            )
-            val response = notifyPushGrpc.registerToken(request)
-            printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
-            return@withContext response.error.isNullOrEmpty()
-        } catch (e: StatusRuntimeException) {
+                val response = notifyPushGrpc.registerToken(request)
+                printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
+                return@withContext response.error.isNullOrEmpty()
+            } catch (e: StatusRuntimeException) {
 
-            val parsedError = parseError(e)
+                val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("registerTokenByOwner token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("registerTokenByOwner token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
+                return@withContext false
+            } catch (e: Exception) {
+                printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
+                return@withContext false
             }
-            return@withContext false
-        } catch (e: Exception) {
-            printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
-            return@withContext false
         }
-    }
 
     suspend fun updateProfile(
         owner: Owner,
@@ -129,7 +130,7 @@ class ProfileRepository @Inject constructor(
         fileName: String,
         byteStrings: List<ByteString>,
         fileHash: String
-    ) : String {
+    ): String {
         return withContext(Dispatchers.IO) {
             try {
                 val server = serverRepository.getServerByOwner(owner) ?: return@withContext ""
@@ -141,21 +142,27 @@ class ProfileRepository @Inject constructor(
                     .build()
 
                 val response =
-                    apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey)).uploadAvatar(request)
+                    apiProvider.provideUserBlockingStub(
+                        ParamAPI(
+                            server.serverDomain,
+                            server.accessKey,
+                            server.hashKey
+                        )
+                    ).uploadAvatar(request)
 
                 printlnCK("uploadAvatar response ${response.fileUrl}")
                 return@withContext response.fileUrl
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
 
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("uploadAvatar token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("uploadAvatar token expired")
+                        serverRepository.isLogout.postValue(true)
+                        parsedError.message
+                    }
+                    else -> parsedError.message
                 }
-                else -> parsedError.message
-            }
                 return@withContext ""
             } catch (e: Exception) {
                 printlnCK("uploadAvatar $e")
@@ -169,9 +176,19 @@ class ProfileRepository @Inject constructor(
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext
             val request = UserOuterClass.MfaGetStateRequest.newBuilder().build()
 
-            val response = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey)).getMfaState(request)
+            val response = apiProvider.provideUserBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            ).getMfaState(request)
             val isMfaEnabled = response.mfaEnable
-            userPreferenceRepository.updateMfa(server.serverDomain, server.profile.userId, isMfaEnabled)
+            userPreferenceRepository.updateMfa(
+                server.serverDomain,
+                server.profile.userId,
+                isMfaEnabled
+            )
             printlnCK("getMfaSettingsFromAPI MFA enabled? $isMfaEnabled")
         } catch (e: StatusRuntimeException) {
 
@@ -190,53 +207,62 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean) : Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
-        try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
-            val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
-            val stub = apiProvider.provideUserBlockingStub(
-                ParamAPI(
-                    server.serverDomain,
-                    server.accessKey,
-                    server.hashKey
+    suspend fun updateMfaSettings(owner: Owner, enabled: Boolean): Resource<Pair<String, String>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val server = serverRepository.getServerByOwner(owner)
+                    ?: return@withContext Resource.error("", null)
+                val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
+                val stub = apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
                 )
-            )
-            val response = if (enabled) {
-                stub.enableMfa(request)
-            } else {
-                stub.disableMfa(request)
-            }
-            printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
-            if (response.success && !enabled) {
-                userPreferenceRepository.updateMfa(
-                    server.serverDomain,
-                    server.profile.userId,
-                    false
-                )
-            }
-            return@withContext Resource.success("" to "")
-        } catch (e: StatusRuntimeException) {
-
-            val parsedError = parseError(e)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    serverRepository.isLogout.postValue(true)
-                    printlnCK("updateMfaSettings token expired")
-                    "" to parsedError.message
+                val response = if (enabled) {
+                    stub.enableMfa(request)
+                } else {
+                    stub.disableMfa(request)
                 }
-                1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
-                else -> "" to parsedError.message
-            }
-            return@withContext Resource.error("", message)
-        } catch (exception: Exception) {
-            printlnCK("updateMfaSettings: $exception")
-            return@withContext Resource.error("", "" to exception.toString())
-        }
-    }
+                printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
+                if (response.success && !enabled) {
+                    userPreferenceRepository.updateMfa(
+                        server.serverDomain,
+                        server.profile.userId,
+                        false
+                    )
+                }
+                return@withContext Resource.success("" to "")
+            } catch (e: StatusRuntimeException) {
 
-    suspend fun mfaValidatePassword(owner: Owner, password: String) : Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
+                val parsedError = parseError(e)
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        serverRepository.isLogout.postValue(true)
+                        printlnCK("updateMfaSettings token expired")
+                        "" to parsedError.message
+                    }
+                    1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
+                    else -> "" to parsedError.message
+                }
+                return@withContext Resource.error("", message)
+            } catch (exception: Exception) {
+                printlnCK("updateMfaSettings: $exception")
+                return@withContext Resource.error("", "" to exception.toString())
+            }
+        }
+
+    suspend fun mfaValidatePassword(
+        owner: Owner,
+        password: String
+    ): Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", "" to "")
+            val server =
+                serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error(
+                    "",
+                    "" to ""
+                )
 
             val nativeLib = NativeLib()
             val a = nativeLib.getA(server.profile.email ?: "", password)
@@ -247,7 +273,13 @@ class ProfileRepository @Inject constructor(
                 .build()
 
             val response =
-                apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+                apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
                     .mfaAuthChallenge(request)
 
             val salt = response.salt
@@ -262,9 +294,18 @@ class ProfileRepository @Inject constructor(
                 .setClientPublic(aHex)
                 .setClientSessionKeyProof(mHex)
                 .build()
-            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
+            val stub = apiProvider.provideUserBlockingStub(
+                ParamAPI(
+                    server.serverDomain,
+                    server.accessKey,
+                    server.hashKey
+                )
+            )
             val validateResponse = stub.mfaValidatePassword(validateRequest)
-            return@withContext if (validateResponse.success) Resource.success("" to "") else Resource.error("", "" to response.toString())
+            return@withContext if (validateResponse.success) Resource.success("" to "") else Resource.error(
+                "",
+                "" to response.toString()
+            )
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaValidatePassword: $exception")
 
@@ -286,73 +327,91 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    suspend fun mfaValidateOtp(owner: Owner, otp: String) : Resource<String> = withContext(Dispatchers.IO) {
-        try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", null)
-            val request = UserOuterClass.MfaValidateOtpRequest.newBuilder()
-                .setOtp(otp)
-                .build()
-            val stub = apiProvider.provideUserBlockingStub(
-                ParamAPI(
-                    server.serverDomain,
-                    server.accessKey,
-                    server.hashKey
+    suspend fun mfaValidateOtp(owner: Owner, otp: String): Resource<String> =
+        withContext(Dispatchers.IO) {
+            try {
+                val server = serverRepository.getServerByOwner(owner)
+                    ?: return@withContext Resource.error("", null)
+                val request = UserOuterClass.MfaValidateOtpRequest.newBuilder()
+                    .setOtp(otp)
+                    .build()
+                val stub = apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
                 )
-            )
-            val response = stub.mfaValidateOtp(request)
-            printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
-            return@withContext if (response.success) {
-                userPreferenceRepository.updateMfa(owner.domain, owner.clientId, true)
-                Resource.success(null)
-            } else {
-                Resource.error(response.error, null)
-            }
-        } catch (exception: StatusRuntimeException) {
-            val parsedError = parseError(exception)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("mfaValidateOtp token expired")
-                    serverRepository.isLogout.postValue(true)
-                    ""
+                val response = stub.mfaValidateOtp(request)
+                printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
+                return@withContext if (response.success) {
+                    userPreferenceRepository.updateMfa(owner.domain, owner.clientId, true)
+                    Resource.success(null)
+                } else {
+                    Resource.error(response.error, null)
                 }
-                1071 -> "Authentication failed. Please retry."
-                1068, 1072 -> "Verification code has expired. Please request a new code and retry."
-                else -> parsedError.message
-            }
-            return@withContext Resource.error(message, null)
-        } catch (exception: Exception) {
-            printlnCK("mfaValidateOtp: $exception")
-            return@withContext Resource.error(exception.toString(), null)
-        }
-    }
-
-    suspend fun mfaResendOtp(owner: Owner) : Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
-        try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error("", 0 to "")
-            val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
-            val stub = apiProvider.provideUserBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
-            val response = stub.mfaResendOtp(request)
-            printlnCK("mfaResendOtp success? ${response.success} error? ${response.error} code ${response}")
-            return@withContext if (response.success) Resource.success(null) else Resource.error("", 0 to response.error)
-        } catch (exception: StatusRuntimeException) {
-            val parsedError = parseError(exception)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("mfaResendOtp token expired")
-                    serverRepository.isLogout.postValue(true)
-                    ""
+            } catch (exception: StatusRuntimeException) {
+                val parsedError = parseError(exception)
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("mfaValidateOtp token expired")
+                        serverRepository.isLogout.postValue(true)
+                        ""
+                    }
+                    1071 -> "Authentication failed. Please retry."
+                    1068, 1072 -> "Verification code has expired. Please request a new code and retry."
+                    else -> parsedError.message
                 }
-                1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
-                else -> parsedError.message
+                return@withContext Resource.error(message, null)
+            } catch (exception: Exception) {
+                printlnCK("mfaValidateOtp: $exception")
+                return@withContext Resource.error(exception.toString(), null)
             }
-            return@withContext Resource.error("", parsedError.code to message)
-        } catch (exception: Exception) {
-            printlnCK("mfaResendOtp: $exception")
-            return@withContext Resource.error("", 0 to exception.toString())
         }
-    }
 
-    suspend fun changePassword(owner: Owner, email: String, oldPassword: String, newPassword: String): Resource<String> =
+    suspend fun mfaResendOtp(owner: Owner): Resource<Pair<Int, String>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val server = serverRepository.getServerByOwner(owner)
+                    ?: return@withContext Resource.error("", 0 to "")
+                val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
+                val stub = apiProvider.provideUserBlockingStub(
+                    ParamAPI(
+                        server.serverDomain,
+                        server.accessKey,
+                        server.hashKey
+                    )
+                )
+                val response = stub.mfaResendOtp(request)
+                printlnCK("mfaResendOtp success? ${response.success} error? ${response.error} code ${response}")
+                return@withContext if (response.success) Resource.success(null) else Resource.error(
+                    "",
+                    0 to response.error
+                )
+            } catch (exception: StatusRuntimeException) {
+                val parsedError = parseError(exception)
+                val message = when (parsedError.code) {
+                    1000, 1077 -> {
+                        printlnCK("mfaResendOtp token expired")
+                        serverRepository.isLogout.postValue(true)
+                        ""
+                    }
+                    1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
+                    else -> parsedError.message
+                }
+                return@withContext Resource.error("", parsedError.code to message)
+            } catch (exception: Exception) {
+                printlnCK("mfaResendOtp: $exception")
+                return@withContext Resource.error("", 0 to exception.toString())
+            }
+        }
+
+    suspend fun changePassword(
+        owner: Owner,
+        email: String,
+        oldPassword: String,
+        newPassword: String
+    ): Resource<String> =
         withContext(Dispatchers.IO) {
             try {
                 val server = serverRepository.getServerByOwner(owner)
@@ -384,7 +443,8 @@ class ProfileRepository @Inject constructor(
                 val newPasswordNativeLib = NativeLib()
 
                 val newSalt = newPasswordNativeLib.getSalt(email, newPassword)
-                val newSaltHex = newSalt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+                val newSaltHex =
+                    newSalt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
                 val verificator = newPasswordNativeLib.getVerificator()
                 val verificatorHex =
@@ -393,7 +453,10 @@ class ProfileRepository @Inject constructor(
                 nativeLib.freeMemoryCreateAccount()
 
                 val decrypter = DecryptsPBKDF2(newPassword)
-                val oldIdentityKey = signalKeyRepository.getIdentityKey(server.profile.userId, server.serverDomain)!!.identityKeyPair.privateKey.serialize()
+                val oldIdentityKey = signalKeyRepository.getIdentityKey(
+                    server.profile.userId,
+                    server.serverDomain
+                )!!.identityKeyPair.privateKey.serialize()
 
                 val decryptResult = decrypter.encrypt(
                     oldIdentityKey,
@@ -420,7 +483,9 @@ class ProfileRepository @Inject constructor(
                     )
                 )
                 val changePasswordResponse = stub.changePassword(changePasswordRequest)
-                return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(null) else Resource.error(
+                return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(
+                    null
+                ) else Resource.error(
                     "",
                     null
                 )

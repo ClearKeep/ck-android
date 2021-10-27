@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/appCallBackgroundColor"
     tools:background="@color/appCallBackground">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -125,6 +126,7 @@
             layout="@layout/toolbar_call_default"
             android:visibility="visible"
             tools:visibility="visible" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/viewConnecting"
             android:layout_width="match_parent"
@@ -153,6 +155,7 @@
                 app:layout_constraintVertical_bias="0.23" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
         <include
             android:id="@+id/controlCallVideoView"
             layout="@layout/view_control_call_video"
@@ -195,7 +198,7 @@
             android:id="@+id/waitingCallVideoView"
             android:layout_width="wrap_content"
             app:constraint_referenced_ids="tvUserName,tvCallStateVideo"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -207,6 +210,7 @@
         android:background="@drawable/ic_bg_gradient"
         android:visibility="gone"
         tools:visibility="gone">
+
         <TextView
             android:id="@+id/pipCallName"
             android:layout_width="wrap_content"
@@ -215,6 +219,6 @@
             android:textStyle="bold"
             android:textSize="@dimen/_24sdp"
             android:textColor="@android:color/white"
-            tools:text="Group A"/>
+            tools:text="Group A" />
     </FrameLayout>
 </RelativeLayout>

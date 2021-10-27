@@ -14,8 +14,8 @@ class NotificationSettingsViewModel @Inject constructor(
     private val userPreferenceRepository: UserPreferenceRepository
 ) : ViewModel() {
 
-    private lateinit var _userPreference : LiveData<UserPreference>
-    val userPreference : LiveData<UserPreference>
+    private lateinit var _userPreference: LiveData<UserPreference>
+    val userPreference: LiveData<UserPreference>
         get() = _userPreference
 
     init {

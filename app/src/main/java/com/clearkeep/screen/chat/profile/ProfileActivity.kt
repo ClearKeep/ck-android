@@ -47,16 +47,21 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         setContent {
             CKSimpleTheme {
                 val navController = rememberNavController()
-                NavHost(navController, startDestination = "profile"){
-                    composable("profile"){
+                NavHost(navController, startDestination = "profile") {
+                    composable("profile") {
                         MainComposable(navController)
                     }
                     composable("pick_avatar") {
-                        ImagePickerScreen (profileViewModel.imageUriSelected.map { listOf(it) }, navController, onlyPickOne = true, insetEnabled = false, onSetSelectedImages = {
-                            if (it.isNotEmpty()) {
-                                profileViewModel.setSelectedImage(it[0])
-                            }
-                        })
+                        ImagePickerScreen(
+                            profileViewModel.imageUriSelected.map { listOf(it) },
+                            navController,
+                            onlyPickOne = true,
+                            insetEnabled = false,
+                            onSetSelectedImages = {
+                                if (it.isNotEmpty()) {
+                                    profileViewModel.setSelectedImage(it[0])
+                                }
+                            })
                     }
                     composable("country_code_picker") {
                         CountryCodePicker(onPick = {
@@ -106,7 +111,8 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun copyProfileLinkToClipBoard(label: String, text: String) {
-        val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard: ClipboardManager =
+            getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(applicationContext, "You copied", Toast.LENGTH_SHORT).show()

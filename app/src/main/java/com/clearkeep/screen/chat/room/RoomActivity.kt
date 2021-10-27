@@ -207,7 +207,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private fun registerAddMemberReceiver() {
         addMemberReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_GROUP_ID,-1)
+                val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
                 if (roomId == groupId) {
                     roomViewModel.refreshRoom()
                 }
@@ -258,7 +258,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
         if (roomId > 0)
             roomViewModel.groups.observe(this, Observer {
-                val group = it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
+                val group =
+                    it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
                 if (group == null) finish()
             })
     }
@@ -270,9 +271,19 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             }?.userName ?: ""
         }
         AppCall.call(
-            this, isAudioMode, null,
-            group.groupId.toString(), group.groupType, roomName,
-            domain, clientId, roomName, "", false, currentUserName = roomViewModel.getUserName(), currentUserAvatar = roomViewModel.getUserAvatarUrl()
+            this,
+            isAudioMode,
+            null,
+            group.groupId.toString(),
+            group.groupType,
+            roomName,
+            domain,
+            clientId,
+            roomName,
+            "",
+            false,
+            currentUserName = roomViewModel.getUserName(),
+            currentUserAvatar = roomViewModel.getUserAvatarUrl()
         )
     }
 

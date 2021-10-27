@@ -18,7 +18,11 @@ class VideoCallRepository @Inject constructor(
 
     private val serverRepository: ServerRepository
 ) {
-    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: Owner) : VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
+    suspend fun requestVideoCall(
+        groupId: Int,
+        isAudioMode: Boolean,
+        owner: Owner
+    ): VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
         printlnCK("requestVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
         val server = serverRepository.getServer(owner.domain, owner.clientId)
         if (server == null) {
@@ -39,7 +43,7 @@ class VideoCallRepository @Inject constructor(
         }
     }
 
-    suspend fun cancelCall(groupId: Int, owner: Owner) : Boolean = withContext(Dispatchers.IO) {
+    suspend fun cancelCall(groupId: Int, owner: Owner): Boolean = withContext(Dispatchers.IO) {
         printlnCK("cancelCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
         val server = serverRepository.getServer(owner.domain, owner.clientId)
         if (server == null) {
@@ -61,7 +65,8 @@ class VideoCallRepository @Inject constructor(
             return@withContext false
         }
     }
-    suspend fun busyCall(groupId: Int, owner: Owner) : Boolean = withContext(Dispatchers.IO) {
+
+    suspend fun busyCall(groupId: Int, owner: Owner): Boolean = withContext(Dispatchers.IO) {
         printlnCK("cancelCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
         val server = serverRepository.getServer(owner.domain, owner.clientId)
         if (server == null) {
@@ -84,26 +89,27 @@ class VideoCallRepository @Inject constructor(
         }
     }
 
-    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner) : Boolean = withContext(Dispatchers.IO) {
-        printlnCK("switchAudioToVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
-        val server = serverRepository.getServer(owner.domain, owner.clientId)
-        if (server == null) {
-            printlnCK("switchAudioToVideoCall: Can not find server: ${owner.domain} + ${owner.clientId}")
-            return@withContext false
+    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner): Boolean =
+        withContext(Dispatchers.IO) {
+            printlnCK("switchAudioToVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
+            val server = serverRepository.getServer(owner.domain, owner.clientId)
+            if (server == null) {
+                printlnCK("switchAudioToVideoCall: Can not find server: ${owner.domain} + ${owner.clientId}")
+                return@withContext false
+            }
+            try {
+                val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
+                    .setGroupId(groupId.toLong())
+                    .setUpdateType(CALL_TYPE_VIDEO)
+                    .build()
+                val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+                val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
+                val success = videoCallGrpc.updateCall(request).error.isNullOrEmpty()
+                printlnCK("switchAudioToVideoCall, success = $success")
+                return@withContext success
+            } catch (e: Exception) {
+                printlnCK("switchAudioToVideoCall: $e")
+                return@withContext false
+            }
         }
-        try {
-            val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
-                .setGroupId(groupId.toLong())
-                .setUpdateType(CALL_TYPE_VIDEO)
-                .build()
-            val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
-            val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
-            val success = videoCallGrpc.updateCall(request).error.isNullOrEmpty()
-            printlnCK("switchAudioToVideoCall, success = $success")
-            return@withContext success
-        } catch (e: Exception) {
-            printlnCK("switchAudioToVideoCall: $e")
-            return@withContext false
-        }
-    }
 }

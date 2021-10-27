@@ -14,7 +14,7 @@ import javax.inject.Inject
 class InviteGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val environment: Environment
-): ViewModel() {
+) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
     private fun getDomain() = environment.getServer().serverDomain
@@ -28,7 +28,7 @@ class InviteGroupViewModel @Inject constructor(
     private var checkUserUrlJob: Job? = null
 
     private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading : LiveData<Boolean> get() = _isLoading
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     val filterFriends = liveData<List<User>> {
         val result = MediatorLiveData<List<User>>()

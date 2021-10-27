@@ -30,18 +30,31 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
     Column(
         Modifier
             .padding(horizontal = 16.sdp())
-            .fillMaxSize()) {
+            .fillMaxSize()
+    ) {
         HeaderBannedUser(onCloseView)
         Spacer(modifier = Modifier.height(24.sdp()))
-        CKSearchBox(text, Modifier.clip(RoundedCornerShape(16.sdp())).background(grayscale5))
+        CKSearchBox(text,
+            Modifier
+                .clip(RoundedCornerShape(16.sdp()))
+                .background(grayscale5))
         Spacer(modifier = Modifier.height(16.sdp()))
         Text(stringResource(R.string.user_in_contact), color = grayscale2)
         Spacer(modifier = Modifier.height(16.sdp()))
         LazyColumn {
             item {
-                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User( "", "Alex Mendes", "","","","","",""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User("", "Alissa Baker", "","","","","",""), {})
-                BannedUserItem(Modifier.padding(vertical = 8.sdp()), User("", "Barbara Johnson", "","","","","",""), {})
+                BannedUserItem(
+                    Modifier.padding(vertical = 8.sdp()),
+                    User("", "Alex Mendes", "", "", "", "", "", ""),
+                    {})
+                BannedUserItem(
+                    Modifier.padding(vertical = 8.sdp()),
+                    User("", "Alissa Baker", "", "", "", "", "", ""),
+                    {})
+                BannedUserItem(
+                    Modifier.padding(vertical = 8.sdp()),
+                    User("", "Barbara Johnson", "", "", "", "", "", ""),
+                    {})
             }
         }
     }
@@ -60,7 +73,8 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_chev_left),
-                contentDescription = null, modifier = Modifier
+                contentDescription = null,
+                modifier = Modifier
                     .clickable {
                         onCloseView.invoke()
                     },

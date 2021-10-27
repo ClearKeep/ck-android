@@ -1,10 +1,9 @@
-
 syntax = "proto3";
 
 package workspace;
 
 message BaseResponse {
-    string error = 2;
+  string error = 2;
 }
 
 // Request: get workspace info
@@ -13,7 +12,7 @@ message WorkspaceInfoRequest {
 }
 
 message WorkspaceInfoResponse {
-    string error = 1;
+  string error = 1;
 }
 
 // Request: leave workspace
@@ -22,6 +21,6 @@ message LeaveWorkspaceRequest {
 
 
 service Workspace {
-    rpc workspace_info(WorkspaceInfoRequest) returns (WorkspaceInfoResponse) {};
-    rpc leave_workspace(LeaveWorkspaceRequest) returns (BaseResponse) {};
+  rpc workspace_info(WorkspaceInfoRequest) returns (WorkspaceInfoResponse) {};
+  rpc leave_workspace(LeaveWorkspaceRequest) returns (BaseResponse) {};
 }

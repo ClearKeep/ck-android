@@ -8,6 +8,6 @@ import javax.inject.Inject
 
 class ServerSettingViewModel @Inject constructor(
     serverRepository: ServerRepository,
-): ViewModel() {
+) : ViewModel() {
     val server: LiveData<Server?> = serverRepository.getDefaultServerAsState()
 }

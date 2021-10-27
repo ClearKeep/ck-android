@@ -31,7 +31,12 @@ fun ToolbarMessage(
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
-    Row(modifier = Modifier.statusBarsHeight(58.sdp()).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .statusBarsHeight(58.sdp())
+            .statusBarsPadding(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),

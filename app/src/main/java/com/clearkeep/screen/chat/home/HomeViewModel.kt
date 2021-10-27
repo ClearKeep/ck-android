@@ -25,7 +25,7 @@ class HomeViewModel @Inject constructor(
     private val workSpaceRepository: WorkSpaceRepository,
     private val peopleRepository: PeopleRepository,
     private val signalKeyRepository: SignalKeyRepository,
-): BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
+) : BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     val isLogout = serverRepository.isLogout
@@ -38,12 +38,11 @@ class HomeViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
-    val isRefreshing= MutableLiveData(false)
+    val isRefreshing = MutableLiveData(false)
 
     private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
     val currentStatus: LiveData<String>
-
-    get() = _currentStatus
+        get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
     val listUserInfo: LiveData<List<User>>
         get() = _listUserStatus
@@ -51,7 +50,7 @@ class HomeViewModel @Inject constructor(
     val serverUrlValidateResponse = MutableLiveData<String>()
 
     private val _isServerUrlValidateLoading = MutableLiveData<Boolean>()
-    val isServerUrlValidateLoading : LiveData<Boolean>
+    val isServerUrlValidateLoading: LiveData<Boolean>
         get() = _isServerUrlValidateLoading
 
     private var checkValidServerJob: Job? = null
@@ -67,14 +66,13 @@ class HomeViewModel @Inject constructor(
         sendPing()
     }
 
-    fun onPullToRefresh(){
+    fun onPullToRefresh() {
         isRefreshing.postValue(true)
         viewModelScope.launch {
             roomRepository.fetchGroups()
             isRefreshing.postValue(false)
         }
     }
-
 
 
     val chatGroups = liveData<List<ChatGroup>> {
@@ -126,34 +124,34 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun getStatusUserInDirectGroup() {
         try {
-                val listUserRequest = arrayListOf<User>()
-                roomRepository.getAllPeerGroupByDomain(
-                    owner = Owner(
-                        getDomainOfActiveServer(),
-                        getClientIdOfActiveServer()
-                    )
+            val listUserRequest = arrayListOf<User>()
+            roomRepository.getAllPeerGroupByDomain(
+                owner = Owner(
+                    getDomainOfActiveServer(),
+                    getClientIdOfActiveServer()
                 )
-                    .forEach { group ->
-                        if (!group.isGroup()) {
-                            val user = group.clientList.firstOrNull { client ->
-                                client.userId != getClientIdOfActiveServer()
-                            }
-                            if (user != null) {
-                                listUserRequest.add(user)
-                            }
+            )
+                .forEach { group ->
+                    if (!group.isGroup()) {
+                        val user = group.clientList.firstOrNull { client ->
+                            client.userId != getClientIdOfActiveServer()
+                        }
+                        if (user != null) {
+                            listUserRequest.add(user)
                         }
                     }
-                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
-                _listUserStatus.postValue(listClientStatus)
-                listClientStatus?.forEach {
-                    currentServer.value?.serverDomain?.let { it1 ->
-                        currentServer.value?.ownerClientId?.let { it2 ->
-                            Owner(it1, it2)
-                        }
-                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
                 }
-                delay(60 * 1000)
-                getStatusUserInDirectGroup()
+            val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+            _listUserStatus.postValue(listClientStatus)
+            listClientStatus?.forEach {
+                currentServer.value?.serverDomain?.let { it1 ->
+                    currentServer.value?.ownerClientId?.let { it2 ->
+                        Owner(it1, it2)
+                    }
+                }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
+            }
+            delay(60 * 1000)
+            getStatusUserInDirectGroup()
 
         } catch (e: Exception) {
             printlnCK("getStatusUserInDirectGroup error: ${e.message}")
@@ -162,7 +160,7 @@ class HomeViewModel @Inject constructor(
 
     private fun sendPing() {
         viewModelScope.launch {
-            delay(60*1000)
+            delay(60 * 1000)
             peopleRepository.sendPing()
             sendPing()
         }
@@ -170,7 +168,7 @@ class HomeViewModel @Inject constructor(
 
     fun setUserStatus(status: UserStatus) {
         viewModelScope.launch {
-           val result= peopleRepository.updateStatus(status.value)
+            val result = peopleRepository.updateStatus(status.value)
             if (result) _currentStatus.postValue(status.value)
         }
     }
@@ -227,9 +225,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getProfileLink() : String {
+    fun getProfileLink(): String {
         val server = environment.getServer()
-        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain))
+        return getLinkFromPeople(
+            User(
+                userId = server.profile.userId,
+                userName = server.profile.userName ?: "",
+                domain = server.serverDomain
+            )
+        )
     }
 
     fun checkValidServerUrl(url: String) {
@@ -251,7 +255,8 @@ class HomeViewModel @Inject constructor(
             }
 
             val server = environment.getServer()
-            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
+            val workspaceInfoResponse =
+                workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
             _isServerUrlValidateLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")

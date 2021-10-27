@@ -52,7 +52,10 @@ fun Highlight(item: Server, contentSize: Dp) {
 @Composable
 fun Content(item: Server, contentSize: Dp) {
     val displayName =
-        if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
+        if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(
+            0,
+            2
+        ) else item.serverName
     Surface(
         shape = RoundedCornerShape(dimensionResource(R.dimen._4sdp)),
         modifier = Modifier.size(contentSize)

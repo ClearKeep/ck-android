@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class OtpActivity: AppCompatActivity(), LifecycleObserver {
+class OtpActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 

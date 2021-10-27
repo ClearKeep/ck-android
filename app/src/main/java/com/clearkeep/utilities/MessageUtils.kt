@@ -1,7 +1,9 @@
 package com.clearkeep.utilities
 
 fun isImageMessage(content: String): Boolean {
-    return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains("content://.+/external_files/Pictures/.+".toRegex())
+    return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains(
+        "content://.+/external_files/Pictures/.+".toRegex()
+    )
 }
 
 fun isFileMessage(content: String): Boolean {
@@ -9,7 +11,9 @@ fun isFileMessage(content: String): Boolean {
 }
 
 fun isTempMessage(content: String): Boolean {
-    return content.contains(tempFileRegex) || content.contains(tempImageRegex) || content.contains(tempImageRegex2)
+    return content.contains(tempFileRegex) || content.contains(tempImageRegex) || content.contains(
+        tempImageRegex2
+    )
 }
 
 fun getImageUriStrings(content: String): List<String> {
@@ -17,8 +21,11 @@ fun getImageUriStrings(content: String): List<String> {
         it.value.split(" ")
     }.toMutableList()
     temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
-    temp.add(tempImageRegex2.findAll(content).map { it.value.split(" ").filter{ isImageMessage(it) } }.toList().flatten())
-    return temp.flatten().map{ it.trim() }.filter { it.isNotBlank() }
+    temp.add(
+        tempImageRegex2.findAll(content).map { it.value.split(" ").filter { isImageMessage(it) } }
+            .toList().flatten()
+    )
+    return temp.flatten().map { it.trim() }.filter { it.isNotBlank() }
 }
 
 fun getFileUriStrings(content: String): List<String> {

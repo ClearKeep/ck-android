@@ -29,7 +29,13 @@ import com.google.accompanist.coil.rememberCoilPainter
 import okhttp3.Cache
 
 @Composable
-fun CircleAvatarSite(url: String?, name: String, size: Dp = dimensionResource(R.dimen._56sdp), status: String, cacheKey: String = "") {
+fun CircleAvatarSite(
+    url: String?,
+    name: String,
+    size: Dp = dimensionResource(R.dimen._56sdp),
+    status: String,
+    cacheKey: String = ""
+) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
 
     Column(Modifier.size(size)) {
@@ -70,15 +76,19 @@ fun CircleAvatarSite(url: String?, name: String, size: Dp = dimensionResource(R.
                     )
                 )
             }
-            Box(modifier = Modifier.size(dimensionResource(R.dimen._10sdp)).background(
-                shape = CircleShape,
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color.Red,
-                        Color.Red
+            Box(
+                modifier = Modifier
+                    .size(dimensionResource(R.dimen._10sdp))
+                    .background(
+                        shape = CircleShape,
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Red,
+                                Color.Red
+                            )
+                        )
                     )
-                )
-            ))
+            )
         }
     }
 }

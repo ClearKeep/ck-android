@@ -247,10 +247,12 @@ fun ItemListDirectMessage(
                 onItemClickListener?.invoke(chatGroup.groupId)
             }
     ) {
-        val partnerUser= chatGroup.clientList.firstOrNull { client ->
+        val partnerUser = chatGroup.clientList.firstOrNull { client ->
             client.userId != clintId
         }
-        val roomName = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else partnerUser?.userName ?: ""
+        val roomName =
+            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else partnerUser?.userName
+                ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -291,8 +293,10 @@ fun ChatGroupItemView(
     ) {
         Row(modifier = Modifier.padding(top = 16.sdp())) {
             Text(
-                text = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
-                maxLines = 2, overflow = TextOverflow.Ellipsis,
+                text = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else chatGroup.groupName,
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
                     fontSize = defaultNonScalableTextSize(),
@@ -323,7 +327,10 @@ fun ChatGroupView(
                     rememberItemGroup.value = !rememberItemGroup.value
                 }, verticalAlignment = Alignment.CenterVertically) {
                     CKHeaderText(
-                        text = stringResource(R.string.home_group_chat_list_title, chatGroups.value?.size ?: 0),
+                        text = stringResource(
+                            R.string.home_group_chat_list_title,
+                            chatGroups.value?.size ?: 0
+                        ),
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
 
@@ -403,7 +410,10 @@ fun DirectMessagesView(
                         }, verticalAlignment = Alignment.CenterVertically
                 ) {
                     CKHeaderText(
-                        text = stringResource(R.string.home_peer_chat_list_title, chatGroup.value?.size ?: 0),
+                        text = stringResource(
+                            R.string.home_peer_chat_list_title,
+                            chatGroup.value?.size ?: 0
+                        ),
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
                     Box(modifier = Modifier.padding(8.sdp())) {
@@ -446,7 +456,7 @@ fun DirectMessagesView(
                 )
 
             ) {
-                val listUserStatus=viewModel.listUserInfo.observeAsState()
+                val listUserStatus = viewModel.listUserInfo.observeAsState()
                 chatGroup.value?.let { item ->
                     Column {
                         item.forEach { chatGroup ->

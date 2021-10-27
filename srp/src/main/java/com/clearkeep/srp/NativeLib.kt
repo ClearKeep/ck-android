@@ -3,6 +3,7 @@ package com.clearkeep.srp
 class NativeLib {
     @JvmField
     var verificatorPtr = 0L
+
     @JvmField
     var usrPtr = 0L
 

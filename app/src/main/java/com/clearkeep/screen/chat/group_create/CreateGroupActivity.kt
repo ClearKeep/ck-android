@@ -61,7 +61,8 @@ class CreateGroupActivity : AppCompatActivity() {
                             },
                             onDirectFriendSelected = {
                                 inviteGroupViewModel.insertFriend(it)
-                                handleDirectChat(it) },
+                                handleDirectChat(it)
+                            },
                             onBackPressed = {
                                 finish()
                             },
@@ -70,8 +71,8 @@ class CreateGroupActivity : AppCompatActivity() {
                     }
                     composable("enter_group_name") {
                         EnterGroupNameScreen(
-                                navController,
-                                createGroupViewModel,
+                            navController,
+                            createGroupViewModel,
                         )
                     }
                     composable("insert_friend") {

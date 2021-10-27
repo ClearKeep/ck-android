@@ -38,7 +38,7 @@ fun EnterSocialLoginPhraseScreen(
 
     val error = if (verifyResponse.value?.status == Status.ERROR) {
         stringResource(R.string.social_pin_incorrect)
-    } else  {
+    } else {
         null
     }
 
@@ -46,13 +46,16 @@ fun EnterSocialLoginPhraseScreen(
         onVerifySuccess()
     }
 
-    Box (Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(58.sdp()))
-            CKTopAppBarSample(title = stringResource(R.string.enter_social_pin_screen_title), onBackPressed = { onBackPress() })
+            CKTopAppBarSample(
+                title = stringResource(R.string.enter_social_pin_screen_title),
+                onBackPressed = { onBackPress() })
             Spacer(Modifier.height(30.sdp()))
 
             Column(
@@ -109,7 +112,8 @@ fun EnterSocialLoginPhraseScreen(
                         confirmTitle = stringResource(R.string.reset),
                         dismissTitle = stringResource(R.string.cancel),
                         onDismissButtonClick = {
-                            isConfirmForgotPassphraseDialogVisible.value = false && isLoading.value == false
+                            isConfirmForgotPassphraseDialogVisible.value =
+                                false && isLoading.value == false
                         },
                         onConfirmButtonClick = {
                             onConfirmForgotPassphrase()

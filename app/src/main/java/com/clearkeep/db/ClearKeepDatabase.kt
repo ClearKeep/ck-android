@@ -7,16 +7,18 @@ import com.clearkeep.db.clear_keep.converter.ProfileConverter
 import com.clearkeep.db.clear_keep.dao.*
 import com.clearkeep.db.clear_keep.model.*
 
-@Database(entities = [
-    Profile::class,
-    Message::class,
-    ChatGroup::class,
-    UserEntity::class,
-    Server::class,
-    Note::class,
-    UserPreference::class,
-    UserKey::class
-], version = 15, exportSchema = false)
+@Database(
+    entities = [
+        Profile::class,
+        Message::class,
+        ChatGroup::class,
+        UserEntity::class,
+        Server::class,
+        Note::class,
+        UserPreference::class,
+        UserKey::class
+    ], version = 15, exportSchema = false
+)
 @TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun serverDao(): ServerDAO

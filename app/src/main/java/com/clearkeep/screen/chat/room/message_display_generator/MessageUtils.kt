@@ -13,7 +13,7 @@ val roundSizeSmall = 4.dp
 fun convertMessageList(
     messages: List<Message>,
     clients: List<User>,
-    listAvatar:List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
 ): List<MessageDisplayInfo> {
@@ -29,13 +29,16 @@ fun convertMessageList(
                 it.userId == message.senderId
             }?.userName ?: message.senderId
 
-            val avatar=listAvatar.firstOrNull {
+            val avatar = listAvatar.firstOrNull {
                 it.userId == message.senderId
             }?.avatar ?: ""
 
             MessageDisplayInfo(
                 message, isOwner, showAvatarAndName, showSpacerTop, userName,
-                if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(index, groupedSize),avatar
+                if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(
+                    index,
+                    groupedSize
+                ), avatar
             )
 
         }

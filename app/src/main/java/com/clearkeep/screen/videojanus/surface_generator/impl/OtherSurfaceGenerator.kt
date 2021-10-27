@@ -14,7 +14,7 @@ class OtherSurfaceGenerator(
     width: Int,
     height: Int
 ) : SurfaceGeneratorImpl(width, height) {
-    private val numberOfRow : Int = ceil(size / 2.0).roundToInt()
+    private val numberOfRow: Int = ceil(size / 2.0).roundToInt()
 
     override fun getLocalSurface(): SurfacePosition {
         val heightPx = getHeight()
@@ -48,24 +48,28 @@ class OtherSurfaceGenerator(
             for (index in 1 until size - 1) {
                 val top = ceil(index / 2.0).roundToInt() * itemHeightPx
                 val start = if (isOdd(index)) 0 else widthPx - halfWidthPx
-                result.add(SurfacePosition(
-                    halfWidthPx,
-                    itemHeightPx,
-                    start,
-                    top
-                ))
+                result.add(
+                    SurfacePosition(
+                        halfWidthPx,
+                        itemHeightPx,
+                        start,
+                        top
+                    )
+                )
             }
         } else {
             for (index in 0 until size - 1) {
                 val top = floor(index / 2.0).roundToInt() * itemHeightPx
                 printlnCK("top = $top")
                 val start = if (!isOdd(index)) 0 else widthPx - halfWidthPx
-                result.add(SurfacePosition(
-                    halfWidthPx,
-                    itemHeightPx,
-                    start,
-                    top
-                ))
+                result.add(
+                    SurfacePosition(
+                        halfWidthPx,
+                        itemHeightPx,
+                        start,
+                        top
+                    )
+                )
             }
         }
         return result

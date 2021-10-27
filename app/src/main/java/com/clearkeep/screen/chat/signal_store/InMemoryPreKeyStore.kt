@@ -16,8 +16,8 @@ import java.io.IOException
 import java.util.*
 
 class InMemoryPreKeyStore(
-        private val preKeyDAO: SignalPreKeyDAO,
-        private val environment: Environment
+    private val preKeyDAO: SignalPreKeyDAO,
+    private val environment: Environment
 ) : PreKeyStore, Closeable {
     private var store: MutableMap<Int, ByteArray> = HashMap()
 
@@ -28,7 +28,11 @@ class InMemoryPreKeyStore(
             val index = getIndex(preKeyId)
             var record = store[index]
             if (record == null) {
-                record = preKeyDAO.getUnSignedPreKey(preKeyId, server.serverDomain, server.profile.userId)?.preKeyRecord ?: null
+                record = preKeyDAO.getUnSignedPreKey(
+                    preKeyId,
+                    server.serverDomain,
+                    server.profile.userId
+                )?.preKeyRecord ?: null
                 if (record != null) {
                     store[index] = record
                 }
@@ -47,14 +51,26 @@ class InMemoryPreKeyStore(
         val server = environment.getTempServer()
         val index = getIndex(preKeyId)
         store[index] = record.serialize()
-        preKeyDAO.insert(SignalPreKey(preKeyId, record.serialize(), false, server.serverDomain, server.profile.userId))
+        preKeyDAO.insert(
+            SignalPreKey(
+                preKeyId,
+                record.serialize(),
+                false,
+                server.serverDomain,
+                server.profile.userId
+            )
+        )
     }
 
     override fun containsPreKey(preKeyId: Int): Boolean {
         val server = environment.getTempServer()
         val index = getIndex(preKeyId)
         return store.containsKey(index)
-                || (preKeyDAO.getUnSignedPreKey(preKeyId, server.serverDomain, server.profile.userId) != null)
+                || (preKeyDAO.getUnSignedPreKey(
+            preKeyId,
+            server.serverDomain,
+            server.profile.userId
+        ) != null)
     }
 
     override fun removePreKey(preKeyId: Int) {

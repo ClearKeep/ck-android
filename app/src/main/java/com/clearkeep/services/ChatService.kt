@@ -120,16 +120,40 @@ class ChatService : Service(),
             val messageSubscriber = MessageChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                messageBlockingStub = apiProvider.provideMessageBlockingStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
-                messageGrpc = apiProvider.provideMessageStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                messageBlockingStub = apiProvider.provideMessageBlockingStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                messageGrpc = apiProvider.provideMessageStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
                 onMessageSubscriberListener = this,
                 appStorage
             )
             val notificationSubscriber = NotificationChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                notifyBlockingStub = apiProvider.provideNotifyBlockingStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
-                notifyStub = apiProvider.provideNotifyStub(ParamAPI(domain,environment.getServer().accessKey,environment.getServer().hashKey)),
+                notifyBlockingStub = apiProvider.provideNotifyBlockingStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                notifyStub = apiProvider.provideNotifyStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
                 notificationChannelListener = this,
                 appStorage
             )
@@ -142,7 +166,21 @@ class ChatService : Service(),
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         scope.launch {
             printlnCK("chatService raw message ${value.message.toStringUtf8()}")
-            environment.setUpTempDomain(Server(null, "", domain, value.clientId, "", 0L, "", "", "", false, Profile(null, value.clientId, "", "", "", 0L, "")))
+            environment.setUpTempDomain(
+                Server(
+                    null,
+                    "",
+                    domain,
+                    value.clientId,
+                    "",
+                    0L,
+                    "",
+                    "",
+                    "",
+                    false,
+                    Profile(null, value.clientId, "", "", "", 0L, "")
+                )
+            )
             val res = messageRepository.decryptMessage(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
@@ -182,7 +220,12 @@ class ChatService : Service(),
                     groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain,value.clientId,value.clientWorkspaceDomain)
+                    chatRepository.processPeerKey(
+                        value.refClientId,
+                        value.refWorkspaceDomain,
+                        value.clientId,
+                        value.clientWorkspaceDomain
+                    )
                 }
                 "member-add" -> {
                     groupRepository.fetchGroups()
@@ -192,8 +235,12 @@ class ChatService : Service(),
                 }
 
                 "member-removal", "member-leave" -> {
-                    groupRepository.getGroupFromAPIById(value.refGroupId,domain,value.clientId)
-                    groupRepository.removeGroupOnWorkSpace(value.refGroupId,domain,value.refClientId)
+                    groupRepository.getGroupFromAPIById(value.refGroupId, domain, value.clientId)
+                    groupRepository.removeGroupOnWorkSpace(
+                        value.refGroupId,
+                        domain,
+                        value.refClientId
+                    )
                     val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                     updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
                     sendBroadcast(updateGroupIntent)
@@ -208,10 +255,17 @@ class ChatService : Service(),
                     sendBroadcast(switchIntent)
                 }
                 CALL_UPDATE_TYPE_CANCEL -> {
-                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId, domain, value.clientId) }
+                    val groupAsyncRes = async {
+                        groupRepository.getGroupByID(
+                            value.refGroupId,
+                            domain,
+                            value.clientId
+                        )
+                    }
                     val group = groupAsyncRes.await()
-                    if (group != null ) {
-                        NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+                    if (group != null) {
+                        NotificationManagerCompat.from(applicationContext)
+                            .cancel(null, INCOMING_NOTIFICATION_ID)
                         val endIntent = Intent(ACTION_CALL_CANCEL)
                         endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, value.refGroupId.toString())
                         sendBroadcast(endIntent)
@@ -221,14 +275,22 @@ class ChatService : Service(),
         }
     }
 
-    private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message, domain: String, ownerClientId: String) {
+    private fun handleShowNotification(
+        joiningRoomId: Long,
+        groupId: Long,
+        message: Message,
+        domain: String,
+        ownerClientId: String
+    ) {
         scope.launch {
             printlnCK("handleShowNotification $groupId")
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
             group?.data?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
-                    val userPreference = userPreferenceRepository.getUserPreference(domain, ownerClientId) ?: UserPreference.getDefaultUserPreference("", "", false)
+                    val userPreference =
+                        userPreferenceRepository.getUserPreference(domain, ownerClientId)
+                            ?: UserPreference.getDefaultUserPreference("", "", false)
                     val senderUser = peopleRepository.getFriendFromID(
                         message.senderId
                     )
@@ -254,16 +316,29 @@ class ChatService : Service(),
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)
+            val group = groupRepository.getGroupByID(
+                roomId,
+                currentServer.serverDomain,
+                currentServer.profile.userId
+            )
             group?.data?.let {
-                messageRepository.updateMessageFromAPI(it.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), it.lastMessageSyncTimestamp)
+                messageRepository.updateMessageFromAPI(
+                    it.groupId,
+                    Owner(currentServer.serverDomain, currentServer.profile.userId),
+                    it.lastMessageSyncTimestamp
+                )
 
                 if (!it.isGroup()) {
                     val receiver = it.clientList.firstOrNull { client ->
                         client.userId != currentServer.profile.userId
                     }
                     if (receiver != null) {
-                        chatRepository.processPeerKey(receiver.userId, receiver.domain,currentServer.profile.userId,currentServer.serverDomain)
+                        chatRepository.processPeerKey(
+                            receiver.userId,
+                            receiver.domain,
+                            currentServer.profile.userId,
+                            currentServer.serverDomain
+                        )
                     }
                 }
             }
@@ -271,7 +346,8 @@ class ChatService : Service(),
     }
 
     private fun registerNetworkChange() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (connectivityManager != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 connectivityManager.registerDefaultNetworkCallback(networkCallback)

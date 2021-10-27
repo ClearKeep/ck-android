@@ -24,7 +24,11 @@ import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
-fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onLoginSuccess: () -> Unit) {
+fun ConfirmSocialLoginPhraseScreen(
+    viewModel: LoginViewModel,
+    onBackPress: () -> Unit,
+    onLoginSuccess: () -> Unit
+) {
     val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isConfirmSecurityPhraseValid.observeAsState()
     val registerResponse = viewModel.registerSocialPinResponse.observeAsState()
@@ -39,12 +43,15 @@ fun ConfirmSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () ->
     }
 
     Box(Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(58.sdp()))
-            CKTopAppBarSample(title = stringResource(R.string.confirm_social_pin_screen_title), onBackPressed = { onBackPress() })
+            CKTopAppBarSample(
+                title = stringResource(R.string.confirm_social_pin_screen_title),
+                onBackPressed = { onBackPress() })
             Spacer(Modifier.height(30.sdp()))
 
             Column(

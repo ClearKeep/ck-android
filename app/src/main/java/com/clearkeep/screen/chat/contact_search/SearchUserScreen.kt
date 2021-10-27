@@ -93,16 +93,28 @@ fun SearchUserScreen(
         }
         Spacer(Modifier.height(10.sdp()))
         Row(Modifier.fillMaxWidth()) {
-            FilterItem(stringResource(R.string.search_mode_all), isSelected = searchMode.value == SearchMode.ALL) {
+            FilterItem(
+                stringResource(R.string.search_mode_all),
+                isSelected = searchMode.value == SearchMode.ALL
+            ) {
                 searchViewModel.setSearchMode(SearchMode.ALL)
             }
-            FilterItem(stringResource(R.string.search_mode_people), isSelected = searchMode.value == SearchMode.PEOPLE) {
+            FilterItem(
+                stringResource(R.string.search_mode_people),
+                isSelected = searchMode.value == SearchMode.PEOPLE
+            ) {
                 searchViewModel.setSearchMode(SearchMode.PEOPLE)
             }
-            FilterItem(stringResource(R.string.search_mode_groups), isSelected = searchMode.value == SearchMode.GROUPS) {
+            FilterItem(
+                stringResource(R.string.search_mode_groups),
+                isSelected = searchMode.value == SearchMode.GROUPS
+            ) {
                 searchViewModel.setSearchMode(SearchMode.GROUPS)
             }
-            FilterItem(stringResource(R.string.search_mode_messsages), isSelected = searchMode.value == SearchMode.MESSAGES) {
+            FilterItem(
+                stringResource(R.string.search_mode_messsages),
+                isSelected = searchMode.value == SearchMode.MESSAGES
+            ) {
                 searchViewModel.setSearchMode(SearchMode.MESSAGES)
             }
         }
@@ -123,7 +135,10 @@ fun SearchUserScreen(
                         if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
-                                    CKText(stringResource(R.string.search_result_people), color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_people),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, friend ->
@@ -139,7 +154,10 @@ fun SearchUserScreen(
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
                                     Spacer(Modifier.height(26.sdp()))
-                                    CKText(stringResource(R.string.search_result_group_chat), color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_group_chat),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, group ->
@@ -155,7 +173,10 @@ fun SearchUserScreen(
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
                                     Spacer(Modifier.height(26.sdp()))
-                                    CKText(stringResource(R.string.search_result_messages), color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_messages),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, messageWithUser ->
@@ -186,28 +207,28 @@ fun SearchUserScreen(
                                     query = searchQuery.value!!
                                 ) {
                                     val message = messageWithUser.message
-                                        navigateToChatGroup(
-                                            ChatGroup(
-                                                null,
-                                                message.groupId,
-                                                "",
-                                                "",
-                                                "",
-                                                "",
-                                                0L,
-                                                "",
-                                                0L,
-                                                "",
-                                                emptyList(),
-                                                false,
-                                                "",
-                                                "",
-                                                null,
-                                                0L,
-                                                0L,
-                                                false
-                                            )
+                                    navigateToChatGroup(
+                                        ChatGroup(
+                                            null,
+                                            message.groupId,
+                                            "",
+                                            "",
+                                            "",
+                                            "",
+                                            0L,
+                                            "",
+                                            0L,
+                                            "",
+                                            emptyList(),
+                                            false,
+                                            "",
+                                            "",
+                                            null,
+                                            0L,
+                                            0L,
+                                            false
                                         )
+                                    )
                                 }
                             }
                         }
@@ -302,7 +323,13 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun MessageResultItem(user: User, message: Message, group: ChatGroup, query: String, onClick: () -> Unit) {
+fun MessageResultItem(
+    user: User,
+    message: Message,
+    group: ChatGroup,
+    query: String,
+    onClick: () -> Unit
+) {
     Row(Modifier.clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),

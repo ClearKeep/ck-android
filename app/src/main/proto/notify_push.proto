@@ -9,7 +9,7 @@ message RegisterTokenRequest {
 
 
 message BaseResponse {
-    string error = 1;
+  string error = 1;
 }
 
 message PushTextRequest {
@@ -27,7 +27,7 @@ message PushVoipRequest {
 
 // Method
 service NotifyPush {
-    rpc register_token (RegisterTokenRequest) returns (BaseResponse);
-    rpc push_text (PushTextRequest) returns (BaseResponse);
-    rpc push_voip (PushVoipRequest) returns (BaseResponse);
+  rpc register_token (RegisterTokenRequest) returns (BaseResponse);
+  rpc push_text (PushTextRequest) returns (BaseResponse);
+  rpc push_voip (PushVoipRequest) returns (BaseResponse);
 }
