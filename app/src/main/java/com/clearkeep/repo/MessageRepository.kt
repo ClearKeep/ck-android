@@ -15,10 +15,7 @@ import com.clearkeep.screen.chat.contact_search.MessageSearchResult
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.isGroup
-import com.clearkeep.utilities.getCurrentDateTime
-import com.clearkeep.utilities.getUnableErrorMessage
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +75,7 @@ class MessageRepository @Inject constructor(
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
                     .setOffSet(offSet)
-                    .setLastMessageAt(lastMessageAt-(365*24*60*60*1000))
+                    .setLastMessageAt(lastMessageAt-(365*24*60*60*1000)) //Get chat history in the last 365 days
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
             val listMessage = arrayListOf<Message>()
@@ -352,10 +349,6 @@ class MessageRepository @Inject constructor(
         noteDAO.updateNotes(note)
     }
 
-    suspend fun deleteNote(generatedId: Long) {
-        noteDAO.deleteNote(generatedId)
-    }
-
     suspend fun saveMessage(message: Message) : Int {
         return messageDAO.insert(message).toInt()
     }
@@ -385,7 +378,7 @@ class MessageRepository @Inject constructor(
             return@withContext ""
         }
 
-        val signalProtocolAddress = CKSignalProtocolAddress(sender, 222)
+        val signalProtocolAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
         val preKeyMessage = PreKeySignalMessage(message.toByteArray())
 
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
@@ -410,7 +403,7 @@ class MessageRepository @Inject constructor(
             groupSender = SenderKeyName(groupId.toString(), senderAddress)
             bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
         } else {
-            val senderAddress = CKSignalProtocolAddress(sender, 222)
+            val senderAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
             groupSender = SenderKeyName(groupId.toString(), senderAddress)
             bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
         }
