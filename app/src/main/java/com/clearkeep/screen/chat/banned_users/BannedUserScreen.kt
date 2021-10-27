@@ -34,10 +34,12 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
     ) {
         HeaderBannedUser(onCloseView)
         Spacer(modifier = Modifier.height(24.sdp()))
-        CKSearchBox(text,
+        CKSearchBox(
+            text,
             Modifier
                 .clip(RoundedCornerShape(16.sdp()))
-                .background(grayscale5))
+                .background(grayscale5)
+        )
         Spacer(modifier = Modifier.height(16.sdp()))
         Text(stringResource(R.string.user_in_contact), color = grayscale2)
         Spacer(modifier = Modifier.height(16.sdp()))

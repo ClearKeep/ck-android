@@ -42,7 +42,8 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
     Column(
         Modifier
             .fillMaxSize()
-            .padding(start = 12.sdp(), end = 23.sdp())) {
+            .padding(start = 12.sdp(), end = 23.sdp())
+    ) {
         Spacer(Modifier.height(30.sdp()))
         Image(
             painter = painterResource(id = R.drawable.ic_cross),

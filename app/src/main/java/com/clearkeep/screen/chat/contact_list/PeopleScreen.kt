@@ -75,9 +75,11 @@ fun FriendItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(emptyList(), friend.userName)
-            Column(modifier = Modifier
-                .padding(start = 20.sdp())
-                .fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .padding(start = 20.sdp())
+                    .fillMaxWidth()
+            ) {
                 Text(
                     text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
