@@ -269,13 +269,13 @@ class GroupRepository @Inject constructor(
                         Owner(
                             owner.domain,
                             it
-                        ), 222
+                        ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
                         Owner(
                             owner.domain,
                             it
-                        ), 111
+                        ), SENDER_DEVICE_ID
                     )
                     val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
@@ -561,7 +561,7 @@ class GroupRepository @Inject constructor(
         }
 
         try {
-            val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), 111)
+            val senderAddress = CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
             if (response.clientKey.senderKeyId > 0  && response.groupType == "group" && !isRegisteredKey ) {
                 val senderKeyID = response.clientKey.senderKeyId

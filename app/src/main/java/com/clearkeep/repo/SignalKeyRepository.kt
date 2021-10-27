@@ -10,11 +10,9 @@ import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.utilities.DecryptsPBKDF2
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +43,7 @@ class SignalKeyRepository @Inject constructor(
 
         signalIdentityKeyDAO
             .deleteSignalKeyByOwnerDomain(domain, clientId)
-        val senderAddress = CKSignalProtocolAddress(Owner(server.serverDomain, server.ownerClientId), 222)
+        val senderAddress = CKSignalProtocolAddress(Owner(server.serverDomain, server.ownerClientId), RECEIVER_DEVICE_ID)
 
         signalPreKeyDAO.deleteSignalSenderKey(server.serverDomain, server.ownerClientId)
 
@@ -57,7 +55,7 @@ class SignalKeyRepository @Inject constructor(
                     Owner(
                         it.domain,
                         it.userId
-                    ), 111
+                    ), SENDER_DEVICE_ID
                 )
                 val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
                 signalKeyDAO.deleteSignalSenderKey(groupSender.groupId, groupSender.sender.name)
