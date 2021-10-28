@@ -6,7 +6,6 @@ import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
 import kotlin.collections.ArrayList
 
-
 val roundSizeLarge = 18.dp
 val roundSizeSmall = 4.dp
 

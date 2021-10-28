@@ -60,8 +60,9 @@ class MessageRepository @Inject constructor(
     private val groupRepository: GroupRepository,
 ) {
     @ExperimentalPagingApi
-    fun getMessagesAsState(groupId: Long, owner: Owner) =
-        Pager(PagingConfig(pageSize = MessageRemoteMediator.PAGE_SIZE),
+    fun getMessagesAsState(groupId: Long, owner: Owner, lastMessageAt: Long) =
+        Pager(
+            PagingConfig(pageSize = MessageRemoteMediator.PAGE_SIZE),
             remoteMediator = MessageRemoteMediator(
                 groupId,
                 owner,
@@ -71,14 +72,12 @@ class MessageRepository @Inject constructor(
                 groupDAO,
                 apiProvider,
                 signalProtocolStore,
-                senderKeyStore
+                senderKeyStore,
+                lastMessageAt
             )
         ) {
             messageDAO.getMessagesPaged(groupId, owner.domain, owner.clientId)
         }.flow
-
-    fun getNotesAsState(owner: Owner) =
-        noteDAO.getNotesAsState(owner.domain, owner.clientId)
 
     suspend fun getUnreadMessage(
         groupId: Long,
@@ -134,7 +133,6 @@ class MessageRepository @Inject constructor(
                 }
             }
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -635,27 +633,14 @@ class MessageRemoteMediator(
     private val groupDAO: GroupDAO,
     private val apiProvider: ParamAPIProvider,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val senderKeyStore: InMemorySenderKeyStore
+    private val senderKeyStore: InMemorySenderKeyStore,
+    private val lastMessageAt: Long,
 ) : RemoteMediator<Int, Message>() {
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, Message>
     ): MediatorResult {
         return try {
-            val offSet = when (loadType) {
-                LoadType.REFRESH -> {
-                    // No need to load refresh
-                    0 //TODO: Replace
-                }
-                LoadType.PREPEND -> {
-                    0 //TODO: Replace
-                }
-                LoadType.APPEND -> {
-                    // No need to load append
-                    0 //TODO: Replace
-                }
-            }
-            val lastMessageAt = 1L //TODO: Replace
             val server = serverRepository.getServerByOwner(owner) ?: return MediatorResult.Error(
                 IllegalArgumentException()
             )
@@ -666,19 +651,33 @@ class MessageRemoteMediator(
                     server.hashKey
                 )
             )
+            val lastMessageTimestamp = when (loadType) {
+                LoadType.REFRESH -> {
+                    0
+                }
+                LoadType.PREPEND -> {
+                    printlnCK("MessageRemoteMediator load prepend last item ${state.lastItemOrNull()?.createdTime} first ${state.firstItemOrNull()?.createdTime}")
+                    1 //We don't load prepend, so set it to oldest timestamp possible
+                }
+                LoadType.APPEND -> {
+                    printlnCK("MessageRemoteMediator load append last item ${state.lastItemOrNull()?.createdTime} first ${state.firstItemOrNull()?.createdTime}")
+                    state.lastItemOrNull()?.createdTime ?: 0
+                }
+            }
+
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                 .setGroupId(groupId)
-                .setOffSet(offSet)
-                .setLastMessageAt(lastMessageAt - (3 * 24 * 60 * 60 * 1000))
+                .setOffSet(PAGE_SIZE)
+                .setLastMessageAt(lastMessageTimestamp)
                 .build()
             val responses = messageGrpc.getMessagesInGroup(request)
-            val listMessage = arrayListOf<Message>()
-            responses.lstMessageList
+            val listMessage = responses.lstMessageList
                 .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
-                .forEachIndexed { _, data ->
+                .map { data ->
                     printlnCK("updateMessageFromAPI!")
-                    listMessage.add(parseMessageResponse(data, owner))
+                    parseMessageResponse(data, owner)
                 }
+            printlnCK("MessageRemoteMediator loadType $loadType groupId $groupId lastMessageAt $lastMessageTimestamp List message ${listMessage.map { it.createdTime }}")
             if (listMessage.isNotEmpty()) {
                 messageDAO.insertMessages(listMessage)
                 val lastMessage = listMessage.maxByOrNull { it.createdTime }
@@ -686,8 +685,8 @@ class MessageRemoteMediator(
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
             }
-
-            MediatorResult.Success(true) //TODO: Define endOfPaginationReached
+            printlnCK("MessageRemoteMediator load end of pagination ${listMessage.isEmpty()}")
+            MediatorResult.Success(listMessage.isEmpty())
         } catch (e: Exception) {
             MediatorResult.Error(e)
         }
@@ -824,20 +823,6 @@ class MessageRemoteMediator(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
 
-        /*val record = senderKeyStore.loadSenderKey(groupSender)
-
-        if (record.isEmpty) {
-            throw NoSessionException("No sender key for: $groupSender")
-        }
-
-        val senderKeyMessage = SenderKeyMessage(message.toByteArray())
-        val senderKeyState = record.getSenderKeyState(senderKeyMessage.keyId)
-
-        senderKeyMessage.verifySignature(senderKeyState.signingKeyPublic)
-        printlnCK("iteration : ${senderKeyMessage.iteration} senderKeyState: ${senderKeyState.senderChainKey.iteration}")
-
-
-*/
         val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {

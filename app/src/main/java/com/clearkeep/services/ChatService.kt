@@ -324,11 +324,11 @@ class ChatService : Service(),
                 currentServer.profile.userId
             )
             group?.data?.let {
-                messageRepository.updateMessageFromAPI(
-                    it.groupId,
-                    Owner(currentServer.serverDomain, currentServer.profile.userId),
-                    it.lastMessageSyncTimestamp
-                )
+//                messageRepository.updateMessageFromAPI(
+//                    it.groupId,
+//                    Owner(currentServer.serverDomain, currentServer.profile.userId),
+//                    it.lastMessageSyncTimestamp
+//                )
 
                 if (!it.isGroup()) {
                     val receiver = it.clientList.firstOrNull { client ->

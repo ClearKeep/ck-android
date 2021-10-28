@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import android.view.Surface
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
@@ -16,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.map
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
@@ -27,6 +31,8 @@ import com.clearkeep.screen.chat.room.message_display_generator.convertMessageLi
 import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 var mIsNewMessage = true
@@ -35,7 +41,7 @@ var mIsNewMessage = true
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
-    messageList: LazyPagingItems<Message>,
+    messageList: LazyPagingItems<MessageDisplayInfo>,
     clients: List<User>,
     listAvatar: List<User>,
     myClientId: String,
@@ -64,7 +70,7 @@ fun MessageListView(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MessageListView(
-    messageList: LazyPagingItems<Message>,
+    messageList: LazyPagingItems<MessageDisplayInfo>,
     clients: List<User>,
     listAvatar: List<User>,
     myClientId: String,
@@ -74,9 +80,6 @@ private fun MessageListView(
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
-    val groupedMessages: Map<String, List<MessageDisplayInfo>> = messageList.snapshot().filterNotNull().filter { it.message.isNotBlank() }.groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
-        convertMessageList(entry.value, clients,listAvatar, myClientId, isGroup)
-    }
     Surface(
         color = grayscaleBackground
     ) {
@@ -93,21 +96,29 @@ private fun MessageListView(
             verticalArrangement = Arrangement.Top,
             contentPadding = PaddingValues(start = 16.sdp(), end = 16.sdp()),
         ) {
-            groupedMessages.forEach { (date, messages) ->
-                printlnCK("messages ${messages.map { it.message.message }} date $date")
-                itemsIndexed(messages) { index, item ->
-                    Column {
-                        if (index == messages.size - 1) {
-                            DateHeader(date)
+//            groupedMessages.forEach { (date, messages) ->
+//                printlnCK("messages ${messages.map { it.message.message }} date $date")
+                items(messageList.itemCount) { index ->
+//                    Column {
+                        val message = messageList[index]
+                        printlnCK("MessageListView ${message?.isDateSeparator ?: false}")
+                        if (message?.isDateSeparator == true) {
+                            printlnCK("Showing date header")
+                            DateHeader(getTimeAsString(message.message.createdTime))
+                        } else {
+                            message?.let {
+                                val isOwner = myClientId == message.message.senderId
+                                printlnCK("Paged message display $message")
+                                if (isOwner) MessageByMe(
+                                    message,
+                                    onClickFile,
+                                    onClickImage,
+                                    onLongClick
+                                ) else MessageFromOther(message, onClickFile, onClickImage, onLongClick)
+                                if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
+                            }
                         }
-                        if (item.isOwner) MessageByMe(
-                            item,
-                            onClickFile,
-                            onClickImage,
-                            onLongClick
-                        ) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
-                        if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
-                    }
+//                    }
                 }
                 item {
                     if (isLoading) {
@@ -126,7 +137,7 @@ private fun MessageListView(
                         }
                     }
                 }
-            }
+//            }
         }
         val showButton = remember {
             derivedStateOf {

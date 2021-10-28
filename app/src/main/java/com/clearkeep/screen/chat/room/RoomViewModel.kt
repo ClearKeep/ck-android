@@ -6,12 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.paging.ExperimentalPagingApi
-import androidx.paging.PagingData
+import androidx.paging.*
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
@@ -26,6 +27,7 @@ import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.IllegalArgumentException
@@ -214,27 +216,30 @@ class RoomViewModel @Inject constructor(
     }
 
     @ExperimentalPagingApi
-    fun getMessages(groupId: Long, domain: String, clientId: String): Flow<PagingData<Message>> {
-        printlnCK("getMessages: groupId $groupId")
-        return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
-    }
-
-    fun getNotes(): LiveData<List<Message>> {
-        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes ->
-            notes.map {
-                Message(
-                    it.generateId?.toInt(),
-                    "",
-                    0L,
-                    "",
-                    it.ownerClientId,
-                    "",
-                    it.content,
-                    it.createdTime,
-                    it.createdTime,
-                    it.ownerDomain,
-                    it.ownerClientId
-                )
+    fun getMessages(group: ChatGroup): Flow<PagingData<MessageDisplayInfo>> {
+        group.run {
+            return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId), group.lastMessageSyncTimestamp).map { pagingData ->
+                pagingData
+                    .filter { it.message.isNotBlank() }
+                    .map { it.toMessageDisplayInfo(false, false, false, "", RoundedCornerShape(0.dp), "") }
+                    .insertSeparators { beforeMessage: MessageDisplayInfo?, afterMessage: MessageDisplayInfo? ->
+                        when {
+                            beforeMessage == null -> {
+                                null
+                            }
+                            afterMessage == null -> {
+                                MessageDisplayInfo(Message(null, "", 0L, "", "", "", "",
+                                    beforeMessage.message.createdTime, 0L, "", ""), false, false, false, "", RoundedCornerShape(0.dp), "", true)
+                            }
+                            getTimeAsString(beforeMessage.message.createdTime) != getTimeAsString(afterMessage.message.createdTime) -> {
+                                MessageDisplayInfo(Message(null, "", 0L, "", "", "", "",
+                                    beforeMessage.message.createdTime, 0L, "", ""), false, false, false, "", RoundedCornerShape(0.dp), "", true)
+                            }
+                            else -> {
+                                null
+                            }
+                        }
+                    }
             }
         }
     }
@@ -273,13 +278,13 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
-        val server = environment.getServer()
-        messageRepository.updateMessageFromAPI(
-            groupId,
-            Owner(server.serverDomain, server.profile.userId),
-            lastMessageAt,
-            0
-        )
+//        val server = environment.getServer()
+//        messageRepository.updateMessageFromAPI(
+//            groupId,
+//            Owner(server.serverDomain, server.profile.userId),
+//            lastMessageAt,
+//            0
+//        )
     }
 
     private suspend fun updateNotesFromRemote() {

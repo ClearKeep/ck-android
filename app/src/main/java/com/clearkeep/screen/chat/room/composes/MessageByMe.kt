@@ -33,8 +33,7 @@ fun MessageByMe(
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
-    val message = messageDisplayInfo.message.message
-    val context = LocalContext.current
+    val message = messageDisplayInfo.message!!.message
 
     if (message.isNotBlank()) {
         Column(

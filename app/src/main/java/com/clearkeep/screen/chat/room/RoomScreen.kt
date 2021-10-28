@@ -39,8 +39,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.filter
+import androidx.paging.insertSeparators
+import androidx.paging.map
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
@@ -50,6 +54,7 @@ import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import java.util.*
 
 @ExperimentalPagingApi
@@ -104,8 +109,7 @@ fun RoomScreen(
 
     val messageList = when {
         group != null -> {
-            roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
-                .collectAsLazyPagingItems()
+            roomViewModel.getMessages(group).collectAsLazyPagingItems()
         }
         else -> null
     }

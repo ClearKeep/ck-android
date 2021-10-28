@@ -1,8 +1,10 @@
 package com.clearkeep.db.clear_keep.model
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.screen.chat.utils.isGroup
 
 @Entity
@@ -23,4 +25,8 @@ data class Message(
         get() = Owner(ownerDomain, ownerClientId)
 
     fun isGroupMessage() = isGroup(groupType)
+
+    fun toMessageDisplayInfo(isOwner: Boolean, showAvatarAndName: Boolean, showSpacer: Boolean, userName: String, cornerShape: RoundedCornerShape, avatar: String): MessageDisplayInfo {
+        return MessageDisplayInfo(this, isOwner, showAvatarAndName, showSpacer, userName, cornerShape, avatar)
+    }
 }

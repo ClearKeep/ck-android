@@ -253,7 +253,7 @@ dependencies {
 
     //Paging 3
     implementation "androidx.paging:paging-runtime-ktx:3.0.1"
-    implementation "androidx.paging:paging-compose:1.0.0-alpha02"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha08"
 
     implementation project(':srp')
 }

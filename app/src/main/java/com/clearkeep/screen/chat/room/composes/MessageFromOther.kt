@@ -28,7 +28,7 @@ fun MessageFromOther(
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
-    val message = messageDisplayInfo.message.message
+    val message = messageDisplayInfo.message!!.message
     val context = LocalContext.current
 
     if (message.isNotBlank()) {

@@ -41,7 +41,7 @@ interface MessageDAO {
         ownerClientId: String
     ): LiveData<List<Message>>
 
-    @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time  ASC")
+    @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time DESC")
     fun getMessagesPaged(groupId: Long, domain: String, ownerClientId: String): PagingSource<Int, Message>
 
     @Query("DELETE FROM message WHERE message_id = ''")
