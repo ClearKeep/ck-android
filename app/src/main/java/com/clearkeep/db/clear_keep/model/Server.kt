@@ -17,7 +17,7 @@ data class Server(
     @ColumnInfo(name = "is_active") val isActive: Boolean = false,
     @ColumnInfo(name = "owner") val profile: Profile,
 ) {
-        override fun toString(): String {
-                return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
-        }
+    override fun toString(): String {
+        return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
+    }
 }

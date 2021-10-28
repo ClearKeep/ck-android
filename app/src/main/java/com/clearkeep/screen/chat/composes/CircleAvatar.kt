@@ -29,12 +29,12 @@ import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
 fun CircleAvatar(
-        url: List<String>,
-        name: String = "",
-        size: Dp = 48.sdp(),
-        isGroup: Boolean = false,
-        modifier: Modifier = Modifier,
-        cacheKey: String = ""
+    url: List<String>,
+    name: String = "",
+    size: Dp = 48.sdp(),
+    isGroup: Boolean = false,
+    modifier: Modifier = Modifier,
+    cacheKey: String = ""
 ) {
     val context = LocalContext.current
     if (isGroup) {
@@ -86,9 +86,11 @@ fun CircleAvatar(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
-                        color = MaterialTheme.colors.onSurface,
-                    ))
+                    Text(
+                        displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
+                            color = MaterialTheme.colors.onSurface,
+                        )
+                    )
                 }
             }
         }

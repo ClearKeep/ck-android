@@ -1,10 +1,12 @@
 package com.clearkeep.screen.chat.room.room_detail
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -14,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.navigate
 import com.clearkeep.R
@@ -24,7 +25,6 @@ import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.errorDefault
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
-import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
@@ -39,7 +39,7 @@ fun RoomInfoScreen(
     val groupState = roomViewModel.group.observeAsState()
     val confirmLeaveGroupDialogVisible = remember { mutableStateOf(false) }
 
-    groupState?.value?.let { group ->
+    groupState.value?.let { group ->
         Surface(
             color = MaterialTheme.colors.background
         ) {
@@ -82,7 +82,11 @@ fun RoomInfoScreen(
                         val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         for (i in group.clientList.indices) {
                             if (i < maxItems) {
-                                FriendListItemInfo(listUserStatusState.value?.get(i) ?:group.clientList[i], null, 28 * i)
+                                FriendListItemInfo(
+                                    listUserStatusState.value?.get(i) ?: group.clientList[i],
+                                    null,
+                                    28 * i
+                                )
                             } else {
                                 FriendListMoreItem(group.clientList.size - maxItems, 28 * i)
                                 break
@@ -100,13 +104,13 @@ fun RoomInfoScreen(
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,
 
-                    ) {
+                        ) {
                         Image(
                             painter = painterResource(R.drawable.ic_button_call_audio),
                             contentDescription = null, modifier = Modifier
                                 .size(36.sdp())
                         )
-                        SideBarLabel(text = "Audio", color = primaryDefault)
+                        SideBarLabel(text = stringResource(R.string.audio), color = primaryDefault)
                     }
                     Column(
                         modifier = Modifier
@@ -121,7 +125,7 @@ fun RoomInfoScreen(
                             contentDescription = null,
                             modifier = Modifier.size(36.sdp())
                         )
-                        SideBarLabel(text = "Video", color = primaryDefault)
+                        SideBarLabel(text = stringResource(R.string.video), color = primaryDefault)
                     }
                 }
                 Column(
@@ -132,7 +136,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "See Members",
+                                stringResource(R.string.see_members),
                                 R.drawable.ic_user,
                                 textColor = grayscale1,
                                 onClickAction = {
@@ -145,7 +149,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "Add Member",
+                                stringResource(R.string.add_member),
                                 R.drawable.ic_user_plus,
                                 textColor = grayscale1,
                                 onClickAction = {
@@ -157,7 +161,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "Remove Member",
+                                stringResource(R.string.remove_member),
                                 R.drawable.ic_user_off,
                                 textColor = grayscale1,
                                 onClickAction = {
@@ -169,7 +173,7 @@ fun RoomInfoScreen(
                     group.let {
                         if (it.isGroup()) {
                             ItemSiteSetting(
-                                "Leave Group",
+                                stringResource(R.string.room_info_leave),
                                 R.drawable.ic_logout,
                                 textColor = errorDefault,
                                 onClickAction = {
@@ -183,8 +187,11 @@ fun RoomInfoScreen(
             if (confirmLeaveGroupDialogVisible.value) {
                 CKAlertDialog(
                     title = stringResource(R.string.warning),
-                    text = "Are you sure you want to leave ${group.groupName}?",
-                    confirmTitle = "Leave group chat",
+                    text = stringResource(
+                        R.string.room_info_confirm_leave_dialog_text,
+                        group.groupName
+                    ),
+                    confirmTitle = stringResource(R.string.room_info_confirm_leave_dialog_confirm),
                     dismissTitle = stringResource(R.string.cancel),
                     onConfirmButtonClick = {
                         confirmLeaveGroupDialogVisible.value = false
@@ -211,7 +218,11 @@ fun ItemSiteSetting(
             .padding(top = 16.sdp())
             .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(24.sdp()))
+        Image(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.sdp())
+        )
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)

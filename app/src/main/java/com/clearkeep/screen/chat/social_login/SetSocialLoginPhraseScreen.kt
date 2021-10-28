@@ -26,16 +26,23 @@ import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
-fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Unit, onClickNext: () -> Unit) {
+fun SetSocialLoginPhraseScreen(
+    viewModel: LoginViewModel,
+    onBackPress: () -> Unit,
+    onClickNext: () -> Unit
+) {
     val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isSecurityPhraseValid.observeAsState()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(title = stringResource(R.string.social_login_phrase_screen_title), onBackPressed = { onBackPress() })
+        CKTopAppBarSample(
+            title = stringResource(R.string.social_login_phrase_screen_title),
+            onBackPressed = { onBackPress() })
         Spacer(Modifier.height(30.sdp()))
 
         Column(
@@ -44,14 +51,14 @@ fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Uni
                 .fillMaxSize(),
         ) {
             CKText(
-                text = "Security Phrase keep information stored with Clearkeep encrypted so only you can access it.",
+                text = stringResource(R.string.social_pin_description),
                 style = MaterialTheme.typography.caption,
                 color = grayscaleOffWhite,
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(32.sdp()))
             CKTextInputField(
-                "Security Phrase",
+                stringResource(R.string.security_phrase),
                 securityPhrase, singleLine = true,
                 leadingIcon = {
                     Image(
@@ -65,7 +72,7 @@ fun SetSocialLoginPhraseScreen(viewModel: LoginViewModel, onBackPress: () -> Uni
             }
             Spacer(Modifier.height(12.sdp()))
             CKText(
-                "Your passphrase should be at least 3 words and 15 characters in length",
+                stringResource(R.string.set_social_pin_hint),
                 fontSize = 12.sdp().toNonScalableTextSize(),
                 color = grayscaleOffWhite,
                 textAlign = TextAlign.Center

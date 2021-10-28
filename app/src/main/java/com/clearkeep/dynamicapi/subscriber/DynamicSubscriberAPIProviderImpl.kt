@@ -52,7 +52,7 @@ class DynamicSubscriberAPIProviderImpl @Inject constructor() : DynamicSubscriber
         mChannelMap.clear()
     }
 
-    private fun createNewChannel(domain: String) : ManagedChannel {
+    private fun createNewChannel(domain: String): ManagedChannel {
         return if (mChannelMap[domain] != null)
             mChannelMap[domain]!!
         else {

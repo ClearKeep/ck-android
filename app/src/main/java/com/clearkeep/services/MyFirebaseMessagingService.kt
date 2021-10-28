@@ -9,8 +9,7 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.*
+import com.clearkeep.repo.*
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
@@ -26,7 +25,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyStore
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
@@ -57,7 +55,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var videoCallRepository: VideoCallRepository
 
     @Inject
-    lateinit var  environment: Environment
+    lateinit var environment: Environment
 
     @Inject
     lateinit var senderKeyStore: InMemorySenderKeyStore
@@ -71,10 +69,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun handleNotification(remoteMessage: RemoteMessage) {
         val clientId = remoteMessage.data["client_id"] ?: ""
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
-        printlnCK("notification  $clientId")
+        printlnCK("notification $clientId")
         GlobalScope.launch {
             val server = serverRepository.getServer(clientDomain, clientId)
-            printlnCK("handleNotification server  clientDomain: ${clientDomain} clientId: $clientId")
+            printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
                 environment.setUpTempDomain(server)
@@ -85,14 +83,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "cancel_request_call" -> {
                         handleCancelCall(remoteMessage)
                     }
-                    "busy_request_call" ->{
+                    "busy_request_call" -> {
                         handleBusyCall(remoteMessage)
                     }
                     "new_message" -> {
                         handleNewMessage(remoteMessage)
                     }
-                    "member_leave","new_member" -> {
+                    "member_leave", "new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
+                    }
+                    "deactive_account" -> {
+                        printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
+                        handleRequestDeactiveAccount(remoteMessage)
                     }
                     CALL_TYPE_VIDEO -> {
                         val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
@@ -100,7 +102,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, groupId)
                         sendBroadcast(switchIntent)
                     }
-
                 }
             }
         }
@@ -110,11 +111,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val clientId = remoteMessage.data["client_id"] ?: ""
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val groupId = remoteMessage.data["group_id"]
-        val groupType = remoteMessage.data["group_type"]?: ""
-        val groupName = remoteMessage.data["group_name"]?: ""
+        val groupType = remoteMessage.data["group_type"] ?: ""
+        val groupName = remoteMessage.data["group_name"] ?: ""
         val groupCallType = remoteMessage.data["call_type"]
         var avatar = remoteMessage.data["from_client_avatar"] ?: ""
         val fromClientName = remoteMessage.data["from_client_name"]
+        val fromClientId = remoteMessage.data["from_client_id"] ?: ""
         val rtcToken = remoteMessage.data["group_rtc_token"] ?: ""
         val webRtcGroupId = remoteMessage.data["group_rtc_id"] ?: ""
         val webRtcUrl = remoteMessage.data["group_rtc_url"] ?: ""
@@ -129,9 +131,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnUser = turnConfigJsonObject.getString("user")
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
-        if(!isGroup(groupType)){
-            peopleRepository.getFriendFromID(clientId)?.avatar?.let {
-                avatar=it
+        if (!isGroup(groupType)) {
+            peopleRepository.getFriendFromID(fromClientId)?.avatar?.let {
+                avatar = it
             }
         }
         val currentUserName = if (isGroup(groupType)) "" else {
@@ -140,13 +142,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
         if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-            AppCall.inComingCall(this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?:"",
+            AppCall.inComingCall(
+                this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?: "",
                 clientDomain, clientId,
                 fromClientName, avatar,
                 turnUrl, turnUser, turnPass,
                 webRtcGroupId, webRtcUrl,
-                stunUrl, currentUserName)
-        }else {
+                stunUrl, currentUserName
+            )
+        } else {
             groupId?.let { videoCallRepository.busyCall(it.toInt(), Owner(clientDomain, clientId)) }
         }
     }
@@ -207,42 +211,62 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
-            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: ${groupId}")
+            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: groupId")
+            if (!serverRepository.getOwnerClientIds().contains(removedMember))
                 groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
                 peopleRepository.deleteFriend(removedMember)
                 if (serverRepository.getOwnerClientIds().contains(removedMember)) {
                     messageRepository.deleteMessageInGroup(groupId, clientDomain, removedMember)
                 }
-                printlnCK("getListClientInGroup ${groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.size}")
-                groupRepository.getListClientInGroup(groupId, clientDomain, clientId)?.forEach {
-
+                printlnCK(
+                    "getListClientInGroup ${
+                        groupRepository.getListClientInGroup(
+                            groupId,
+                            clientDomain
+                        )?.size
+                    }"
+                )
+                groupRepository.getListClientInGroup(groupId, clientDomain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
                             it
-                        ), 222
+                        ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
                             it
-                        ), 111
+                        ), SENDER_DEVICE_ID
                     )
                     val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
-                    printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
                 }
                 groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             }
-            val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
-            updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
-            sendBroadcast(updateGroupIntent)
+            if (!serverRepository.getOwnerClientIds().contains(removedMember)) {
+                val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
+                updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
+                sendBroadcast(updateGroupIntent)
+            }
         } catch (e: Exception) {
             printlnCK("handlerRequestAddRemoteMember Exception ${e.message}")
         }
+    }
+
+    private suspend fun handleRequestDeactiveAccount(remoteMessage: RemoteMessage) {
+        val data: Map<String, String> = Gson().fromJson(
+            remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
+        )
+        val clientId = data["client_id"] ?: ""
+        val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
+        val deactivatedAccountId = data["deactive_account_id"] ?: ""
+        printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
+
+        groupRepository.disableChatOfDeactivatedUser(clientId, clientDomain, deactivatedAccountId)
     }
 
     private suspend fun handleCancelCall(remoteMessage: RemoteMessage) {
@@ -254,7 +278,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
         val group = groupRepository.getGroupByID(groupId.toLong(), clientDomain, clientId)
         if (group != null) {
-            NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+            NotificationManagerCompat.from(applicationContext)
+                .cancel(null, INCOMING_NOTIFICATION_ID)
             val endIntent = Intent(ACTION_CALL_CANCEL)
             endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
             sendBroadcast(endIntent)
@@ -278,9 +303,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
 
     override fun onNewToken(token: String) {
-        Log.w(TAG, "onNewToken: $token")
-
-        printlnCK("onNewToken: $token")
         super.onNewToken(token)
     }
 

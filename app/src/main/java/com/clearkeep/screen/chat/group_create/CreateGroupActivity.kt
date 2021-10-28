@@ -53,17 +53,15 @@ class CreateGroupActivity : AppCompatActivity() {
                         InviteGroupScreen(
                             InviteMemberUIType,
                             inviteGroupViewModel,
-                            chatGroup = MutableLiveData(),
                             selectedItem = selectedItem,
+                            chatGroup = MutableLiveData(),
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)
                                 navController.navigate("enter_group_name")
                             },
                             onDirectFriendSelected = {
                                 inviteGroupViewModel.insertFriend(it)
-                                handleDirectChat(it) },
-                            onInsertFriend = {
-                                navController.navigate("insert_friend")
+                                handleDirectChat(it)
                             },
                             onBackPressed = {
                                 finish()
@@ -73,8 +71,8 @@ class CreateGroupActivity : AppCompatActivity() {
                     }
                     composable("enter_group_name") {
                         EnterGroupNameScreen(
-                                navController,
-                                createGroupViewModel,
+                            navController,
+                            createGroupViewModel,
                         )
                     }
                     composable("insert_friend") {

@@ -37,7 +37,7 @@ var mIsNewMessage = true
 fun MessageListView(
     messageList: LazyPagingItems<Message>,
     clients: List<User>,
-    listAvatar:List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -50,7 +50,7 @@ fun MessageListView(
     MessageListView(
         messageList = messageList,
         clients = clients,
-        listAvatar=listAvatar,
+        listAvatar = listAvatar,
         myClientId = myClientId,
         isGroup = isGroup,
         isLoading = isLoading,
@@ -66,7 +66,7 @@ fun MessageListView(
 private fun MessageListView(
     messageList: LazyPagingItems<Message>,
     clients: List<User>,
-    listAvatar:List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
@@ -97,17 +97,32 @@ private fun MessageListView(
                 printlnCK("messages ${messages.map { it.message.message }} date $date")
                 itemsIndexed(messages) { index, item ->
                     Column {
-                        if (index == messages.size -1) {
+                        if (index == messages.size - 1) {
                             DateHeader(date)
                         }
-                        if (item.isOwner) MessageByMe(item, onClickFile, onClickImage, onLongClick) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
+                        if (item.isOwner) MessageByMe(
+                            item,
+                            onClickFile,
+                            onClickImage,
+                            onLongClick
+                        ) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
                         if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
                     }
                 }
                 item {
                     if (isLoading) {
-                        Column(Modifier.fillMaxWidth().padding(vertical = 16.sdp()).size(16.sdp())) {
-                            CKCircularProgressIndicator(Modifier.size(28.sdp()).align(Alignment.CenterHorizontally), strokeWidth = 4.sdp())
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.sdp())
+                                .size(16.sdp())
+                        ) {
+                            CKCircularProgressIndicator(
+                                Modifier
+                                    .size(28.sdp())
+                                    .align(Alignment.CenterHorizontally),
+                                strokeWidth = 4.sdp()
+                            )
                         }
                     }
                 }
@@ -122,9 +137,10 @@ private fun MessageListView(
                 !isBottom
             }
         }
-        Row(modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 20.sdp()),
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 20.sdp()),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Center,
         ) {
@@ -151,19 +167,25 @@ fun DateHeader(date: String) {
             .fillMaxWidth()
             .padding(8.sdp())
     ) {
-        Text(date, style = MaterialTheme.typography.body2.copy(
-            color = grayscale3,
-            fontWeight = FontWeight.W600
-        ))
+        Text(
+            date, style = MaterialTheme.typography.body2.copy(
+                color = grayscale3,
+                fontWeight = FontWeight.W600
+            )
+        )
     }
 }
 
 @Composable
 fun ScrollToButtonButton(isNewMessage: Boolean, onClick: () -> Unit) {
-    Column(modifier = Modifier.clickable(onClick = onClick),
+    Column(
+        modifier = Modifier.clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (isNewMessage) Text(text = "new message", style = MaterialTheme.typography.caption.copy(color = Color.Blue))
+        if (isNewMessage) Text(
+            text = "new message",
+            style = MaterialTheme.typography.caption.copy(color = Color.Blue)
+        )
         Icon(imageVector = Icons.Rounded.ArrowDownward, contentDescription = "", tint = Color.Blue)
     }
 }

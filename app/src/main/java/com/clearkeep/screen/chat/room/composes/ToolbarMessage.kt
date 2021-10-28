@@ -25,12 +25,18 @@ fun ToolbarMessage(
     avatars: List<String>? = arrayListOf(),
     isGroup: Boolean = false,
     isNote: Boolean = false,
+    isDeletedUserChat: Boolean = false,
     onBackClick: () -> Unit,
     onUserClick: () -> Unit,
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
-    Row(modifier = Modifier.statusBarsHeight(58.sdp()).statusBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier
+            .statusBarsHeight(58.sdp())
+            .statusBarsPadding(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
@@ -42,7 +48,7 @@ fun ToolbarMessage(
         if (!isGroup && !isNote && title.isNotBlank()) {
             CircleAvatar(
                 avatars ?: arrayListOf(),
-                name = title,
+                name = if (isDeletedUserChat) "" else title,
                 size = 36.sdp(),
                 isGroup = isGroup
             )
@@ -66,7 +72,7 @@ fun ToolbarMessage(
             )
         }
 
-        if (!isNote) {
+        if (!isNote && !isDeletedUserChat) {
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically

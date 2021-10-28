@@ -6,9 +6,9 @@ import android.content.Intent
 import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.db.clear_keep.model.UserPreference
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MessageRepository
+import com.clearkeep.repo.UserPreferenceRepository
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
@@ -37,14 +37,28 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun handleShowMessageSummary(context: Context, groupId: Long, ownerClientId: String, ownerDomain: String) {
+    private fun handleShowMessageSummary(
+        context: Context,
+        groupId: Long,
+        ownerClientId: String,
+        ownerDomain: String
+    ) {
         GlobalScope.launch {
-            val unreadMessages = messageRepository.getUnreadMessage(groupId, ownerDomain, ownerClientId)
+            val unreadMessages =
+                messageRepository.getUnreadMessage(groupId, ownerDomain, ownerClientId)
             val group = groupRepository.getGroupByID(groupId, ownerDomain, ownerClientId)
             if (group?.data != null && unreadMessages.isNotEmpty()) {
-                val me = group.data.clientList.find { it.userId == ownerClientId } ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
-                val userPreference = userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
-                showMessageNotificationToSystemBar(context, me, group.data, unreadMessages, userPreference ?: UserPreference.getDefaultUserPreference("", "", false))
+                val me = group.data.clientList.find { it.userId == ownerClientId }
+                    ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
+                val userPreference =
+                    userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
+                showMessageNotificationToSystemBar(
+                    context,
+                    me,
+                    group.data,
+                    unreadMessages,
+                    userPreference ?: UserPreference.getDefaultUserPreference("", "", false)
+                )
             }
         }
     }

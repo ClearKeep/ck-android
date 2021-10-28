@@ -19,14 +19,16 @@ fun FriendListItemSelectable(
     isSelected: Boolean,
     onFriendSelected: (people: User, isAdd: Boolean) -> Unit,
 ) {
-    Column(modifier = Modifier
-        .selectable(
-            selected = isSelected,
-            onClick = { onFriendSelected(friend, !isSelected) })
+    Column(
+        modifier = Modifier
+            .selectable(
+                selected = isSelected,
+                onClick = { onFriendSelected(friend, !isSelected) })
     ) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.sdp()),
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
@@ -34,10 +36,13 @@ fun FriendListItemSelectable(
                 friend.userName,
                 size = 64.sdp()
             )
-            Column(modifier = Modifier
-                .padding(start = 16.sdp())
-                .weight(1.0f, true)) {
-                Text(text = friend.userName,
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.sdp())
+                    .weight(1.0f, true)
+            ) {
+                Text(
+                    text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colors.onBackground

@@ -60,9 +60,6 @@ fun SearchUserScreen(
         focusRequester.requestFocus()
     }
 
-    printlnCK("Groups passed to composable ${groups.value} is null or empty? ${groups.value.isNullOrEmpty()}")
-    printlnCK("Messages passed to composable ${messages.value}")
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -98,16 +95,28 @@ fun SearchUserScreen(
         }
         Spacer(Modifier.height(10.sdp()))
         Row(Modifier.fillMaxWidth()) {
-            FilterItem("All", isSelected = searchMode.value == SearchMode.ALL) {
+            FilterItem(
+                stringResource(R.string.search_mode_all),
+                isSelected = searchMode.value == SearchMode.ALL
+            ) {
                 searchViewModel.setSearchMode(SearchMode.ALL)
             }
-            FilterItem("People", isSelected = searchMode.value == SearchMode.PEOPLE) {
+            FilterItem(
+                stringResource(R.string.search_mode_people),
+                isSelected = searchMode.value == SearchMode.PEOPLE
+            ) {
                 searchViewModel.setSearchMode(SearchMode.PEOPLE)
             }
-            FilterItem("Groups", isSelected = searchMode.value == SearchMode.GROUPS) {
+            FilterItem(
+                stringResource(R.string.search_mode_groups),
+                isSelected = searchMode.value == SearchMode.GROUPS
+            ) {
                 searchViewModel.setSearchMode(SearchMode.GROUPS)
             }
-            FilterItem("Messages", isSelected = searchMode.value == SearchMode.MESSAGES) {
+            FilterItem(
+                stringResource(R.string.search_mode_messsages),
+                isSelected = searchMode.value == SearchMode.MESSAGES
+            ) {
                 searchViewModel.setSearchMode(SearchMode.MESSAGES)
             }
         }
@@ -128,7 +137,10 @@ fun SearchUserScreen(
                         if (it.isNotEmpty() && !searchQuery.value.isNullOrEmpty()) {
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
-                                    CKText("PEOPLE", color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_people),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, friend ->
@@ -144,7 +156,10 @@ fun SearchUserScreen(
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
                                     Spacer(Modifier.height(26.sdp()))
-                                    CKText("GROUP CHAT", color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_group_chat),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, group ->
@@ -160,7 +175,10 @@ fun SearchUserScreen(
                             if (searchMode.value == SearchMode.ALL) {
                                 item {
                                     Spacer(Modifier.height(26.sdp()))
-                                    CKText("MESSAGES", color = grayscale1)
+                                    CKText(
+                                        stringResource(R.string.search_result_messages),
+                                        color = grayscale1
+                                    )
                                 }
                             }
                             itemsIndexed(it) { _, messageWithUser ->
@@ -185,32 +203,34 @@ fun SearchUserScreen(
                                         "",
                                         null,
                                         0L,
-                                        0L
+                                        0L,
+                                        false
                                     ),
                                     query = searchQuery.value!!
                                 ) {
                                     val message = messageWithUser.message
-                                        navigateToChatGroup(
-                                            ChatGroup(
-                                                null,
-                                                message.groupId,
-                                                "",
-                                                "",
-                                                "",
-                                                "",
-                                                0L,
-                                                "",
-                                                0L,
-                                                "",
-                                                emptyList(),
-                                                false,
-                                                "",
-                                                "",
-                                                null,
-                                                0L,
-                                                0L
-                                            )
+                                    navigateToChatGroup(
+                                        ChatGroup(
+                                            null,
+                                            message.groupId,
+                                            "",
+                                            "",
+                                            "",
+                                            "",
+                                            0L,
+                                            "",
+                                            0L,
+                                            "",
+                                            emptyList(),
+                                            false,
+                                            "",
+                                            "",
+                                            null,
+                                            0L,
+                                            0L,
+                                            false
                                         )
+                                    )
                                 }
                             }
                         }
@@ -218,7 +238,7 @@ fun SearchUserScreen(
                 }
             } else {
                 CKText(
-                    "There is no result for your search",
+                    stringResource(R.string.search_empty),
                     Modifier.align(Alignment.Center),
                     grayscale3
                 )
@@ -305,7 +325,13 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun MessageResultItem(user: User, message: Message, group: ChatGroup, query: String, onClick: () -> Unit) {
+fun MessageResultItem(
+    user: User,
+    message: Message,
+    group: ChatGroup,
+    query: String,
+    onClick: () -> Unit
+) {
     Row(Modifier.clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
             emptyList(),
@@ -369,21 +395,15 @@ fun HighlightedSearchText(
 ) {
     val annotatedString = buildAnnotatedString {
         var matchIndex = 0
-        printlnCK("================= GroupResultItem groupName $fullString")
 
         while (matchIndex >= 0) {
-            printlnCK("GroupResultItem matchIndex $matchIndex")
             val startIndex = if (matchIndex == 0) 0 else matchIndex + 1
             val newIndex = fullString.indexOf(query, startIndex, true)
-            printlnCK("GroupResultItem newIndex $newIndex")
             if (newIndex >= 0) {
                 withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
-                    printlnCK("GroupResultItem normal string ${fullString.substring(matchIndex until newIndex)}")
                     append(fullString.substring(matchIndex until newIndex))
                 }
                 withStyle(SpanStyle(color = Color.Black)) {
-                    printlnCK("GroupResultItem keyword string $query")
-                    printlnCK("GroupResultItem added keyword string ${fullString.substring(newIndex until newIndex + query.length)}")
                     append(fullString.substring(newIndex until newIndex + query.length))
                 }
                 matchIndex = newIndex + query.length

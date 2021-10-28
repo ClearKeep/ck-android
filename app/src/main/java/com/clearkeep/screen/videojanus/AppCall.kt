@@ -24,18 +24,19 @@ import com.clearkeep.utilities.*
 object AppCall {
     var listenerCallingState = MutableLiveData<CallingStateData>()
 
-    fun call(context: Context,
-             isAudioMode: Boolean,
-             token: String?,
-             groupId: String?, groupType: String, groupName: String,
-             domain: String, ownerClientId: String,
-             userName: String?, avatar: String?,
-             isIncomingCall: Boolean,
-             turnUrl: String = "", turnUser: String = "", turnPass: String = "",
-             webRtcGroupId: String = "", webRtcUrl: String = "",
-             stunUrl: String = "",
-             currentUserName: String = "",
-             currentUserAvatar: String = ""
+    fun call(
+        context: Context,
+        isAudioMode: Boolean,
+        token: String?,
+        groupId: String?, groupType: String, groupName: String,
+        domain: String, ownerClientId: String,
+        userName: String?, avatar: String?,
+        isIncomingCall: Boolean,
+        turnUrl: String = "", turnUser: String = "", turnPass: String = "",
+        webRtcGroupId: String = "", webRtcUrl: String = "",
+        stunUrl: String = "",
+        currentUserName: String = "",
+        currentUserAvatar: String = ""
     ) {
         val intent: Intent = if (isGroup(groupType)) {
             Intent(context, InCallActivity::class.java)
@@ -69,42 +70,86 @@ object AppCall {
         context.startActivity(intent)
     }
 
-    fun inComingCall(context: Context,
-                     isAudioMode: Boolean,
-                     token: String,
-                     groupId: String, groupType: String, groupName: String,
-                     ownerDomain: String, ownerClientId: String,
-                     userName: String?, avatar: String?,
-                     turnUrl: String, turnUser: String, turnPass: String,
-                     webRtcGroupId: String, webRtcUrl: String,
-                     stunUrl: String,
-                     currentUserName: String = "",
-                     currentUserAvatar: String = ""
+    fun inComingCall(
+        context: Context,
+        isAudioMode: Boolean,
+        token: String,
+        groupId: String, groupType: String, groupName: String,
+        ownerDomain: String, ownerClientId: String,
+        userName: String?, avatar: String?,
+        turnUrl: String, turnUser: String, turnPass: String,
+        webRtcGroupId: String, webRtcUrl: String,
+        stunUrl: String,
+        currentUserName: String = "",
+        currentUserAvatar: String = ""
     ) {
         printlnCK("token = $token, groupID = $groupId, turnURL= $turnUrl, turnUser=$turnUser, turnPass= $turnPass, stunUrl = $stunUrl")
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = INCOMING_CHANNEL_ID
         val channelName = INCOMING_CHANNEL_NAME
         val notificationId = INCOMING_NOTIFICATION_ID
 
         val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
-        dismissIntent.action=ACTION_CALL_CANCEL
+        dismissIntent.action = ACTION_CALL_CANCEL
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
         dismissIntent.putExtra(EXTRA_OWNER_DOMAIN, ownerDomain)
         dismissIntent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
-        val dismissPendingIntent = PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_ONE_SHOT)
+        val dismissPendingIntent =
+            PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_ONE_SHOT)
 
-        val waitIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
-            ownerDomain, ownerClientId, userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, true, currentUserName, currentUserAvatar)
-        val pendingWaitIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, waitIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+        val waitIntent = createIncomingCallIntent(
+            context,
+            isAudioMode,
+            token,
+            groupId,
+            groupType,
+            groupName,
+            ownerDomain,
+            ownerClientId,
+            userName,
+            avatar,
+            turnUrl,
+            turnUser,
+            turnPass,
+            webRtcGroupId,
+            webRtcUrl,
+            stunUrl,
+            true,
+            currentUserName,
+            currentUserAvatar
+        )
+        val pendingWaitIntent = PendingIntent.getActivity(
+            context, groupId.toIntOrNull() ?: 0, waitIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-        val inCallIntent = createIncomingCallIntent(context, isAudioMode, token, groupId, groupType, groupName,
-            ownerDomain, ownerClientId,
-            userName, avatar, turnUrl, turnUser, turnPass, webRtcGroupId, webRtcUrl, stunUrl, false, currentUserName, currentUserAvatar)
-        val pendingInCallIntent = PendingIntent.getActivity(context, groupId.toIntOrNull() ?: 0, inCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+        val inCallIntent = createIncomingCallIntent(
+            context,
+            isAudioMode,
+            token,
+            groupId,
+            groupType,
+            groupName,
+            ownerDomain,
+            ownerClientId,
+            userName,
+            avatar,
+            turnUrl,
+            turnUser,
+            turnPass,
+            webRtcGroupId,
+            webRtcUrl,
+            stunUrl,
+            false,
+            currentUserName,
+            currentUserAvatar
+        )
+        val pendingInCallIntent = PendingIntent.getActivity(
+            context, groupId.toIntOrNull() ?: 0, inCallIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val titleCallResource = if (isGroup(groupType)) {
             if (isAudioMode) R.string.notification_incoming_group else R.string.notification_incoming_video_group
@@ -130,7 +175,8 @@ object AppCall {
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                     .build()
                 val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-                channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+                channel =
+                    NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
                 channel.setSound(notification, attributes)
                 notificationManager.createNotificationChannel(channel)
             }
@@ -142,7 +188,7 @@ object AppCall {
             .setCustomBigContentView(headsUpLayout)*/
             .setCustomHeadsUpContentView(headsUpLayout)
             .setContentTitle(context.getString(R.string.app_name))
-            .setContentText("$userName calling ${if(isAudioMode) "audio" else "video"}")
+            .setContentText("$userName calling ${if (isAudioMode) "audio" else "video"}")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setFullScreenIntent(pendingWaitIntent, true)
@@ -152,39 +198,54 @@ object AppCall {
         val notification: Notification = builder.build()
 
         if (!isGroup(groupType)) {
-            val target = NotificationTarget(
+/*            val target = NotificationTarget(
                 context,
                 R.id.imageButton,
                 headsUpLayout,
                 notification,
                 notificationId
-            )
-            Glide.with(context.applicationContext)
+            )*/
+            /*Glide.with(context.applicationContext)
                 .asBitmap()
                 .circleCrop()
                 .load(avatar)
-                .into(target)
+                .placeholder(context.applicationContext.getDrawable(R.drawable.ic_logo))
+                .into(target)*/
         }
 
         notificationManager.notify(notificationId, notification)
     }
 
-    private fun createIncomingCallIntent(context: Context, isAudioMode: Boolean, token: String,
-                                         groupId: String?, groupType: String, groupName: String,
-                                         domain: String, ownerClientId: String,
-                                         userName: String?, avatar: String?,
-                                         turnUrl: String, turnUser: String, turnPass: String,
-                                         webRtcGroupId: String, webRtcUrl: String,
-                                         stunUrl: String, isWaitingScreen: Boolean, currentUserName: String, currentUserAvatar: String): Intent {
+    private fun createIncomingCallIntent(
+        context: Context,
+        isAudioMode: Boolean,
+        token: String,
+        groupId: String?,
+        groupType: String,
+        groupName: String,
+        domain: String,
+        ownerClientId: String,
+        userName: String?,
+        avatar: String?,
+        turnUrl: String,
+        turnUser: String,
+        turnPass: String,
+        webRtcGroupId: String,
+        webRtcUrl: String,
+        stunUrl: String,
+        isWaitingScreen: Boolean,
+        currentUserName: String,
+        currentUserAvatar: String
+    ): Intent {
         val intent = if (isWaitingScreen) {
             printlnCK("createIncomingCallIntent")
             Intent(context, InComingCallActivity::class.java)
         } else {
-             if (isGroup(groupType)) {
-                 Intent(context, InCallActivity::class.java)
+            if (isGroup(groupType)) {
+                Intent(context, InCallActivity::class.java)
             } else {
-                 Intent(context, InCallPeerToPeerActivity::class.java)
-             }
+                Intent(context, InCallPeerToPeerActivity::class.java)
+            }
         }
         printlnCK("createIncomingCallIntent isAudioMode $isAudioMode")
         intent.putExtra(EXTRA_GROUP_ID, groupId)
@@ -225,7 +286,7 @@ object AppCall {
 }
 
 data class CallingStateData(
-    val isCalling: Boolean=false,
+    val isCalling: Boolean = false,
     val nameInComeCall: String? = "",
     val isCallPeer: Boolean = false,
     val timeStarted: Long

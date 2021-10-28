@@ -26,6 +26,7 @@ import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 import com.google.accompanist.coil.rememberCoilPainter
@@ -33,8 +34,12 @@ import com.google.accompanist.imageloading.ImageLoadState
 import com.google.accompanist.imageloading.rememberDrawablePainter
 
 @Composable
-fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem: (uri: String) -> Unit) {
-    println("ImageMessageContent $imageUris")
+fun ImageMessageContent(
+    modifier: Modifier,
+    imageUris: List<String>,
+    onClickItem: (uri: String) -> Unit
+) {
+    printlnCK("ImageMessageContent $imageUris")
     if (imageUris.size == 1) {
         ImageMessageItem(
             Modifier
@@ -45,23 +50,26 @@ fun ImageMessageContent(modifier: Modifier, imageUris: List<String>, onClickItem
         Column(
             Modifier
                 .wrapContentSize()
-                .padding(12.sdp())) {
-            println("multi item grid")
+                .padding(12.sdp())
+        ) {
+            printlnCK("multi item grid")
             Row(Modifier.wrapContentSize()) {
                 for (i in 0..minOf(imageUris.size, 1)) {
                     ImageMessageItem(
                         Modifier
                             .size(110.sdp())
-                            .padding(4.sdp()), imageUris[i], onClickItem)
+                            .padding(4.sdp()), imageUris[i], onClickItem
+                    )
                 }
             }
             Row(Modifier.wrapContentSize()) {
                 for (i in 2 until imageUris.size) {
                     if (i == 2 || (i == 3 && imageUris.size <= 4)) {
-                            ImageMessageItem(
-                                Modifier
-                                    .size(110.sdp())
-                                    .padding(4.sdp()), imageUris[i], onClickItem)
+                        ImageMessageItem(
+                            Modifier
+                                .size(110.sdp())
+                                .padding(4.sdp()), imageUris[i], onClickItem
+                        )
                     } else {
                         Box(
                             Modifier
@@ -103,7 +111,8 @@ fun ImageMessageItem(
     onClick: (uri: String) -> Unit
 ) {
     val context = LocalContext.current
-    val clickableModifier = if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
+    val clickableModifier =
+        if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
     val painter = rememberCoilPainter(uri, context.imageLoader)
     Box(modifier) {
         Image(
@@ -120,7 +129,8 @@ fun ImageMessageItem(
             is ImageLoadState.Loading -> {
                 Box(Modifier.fillMaxSize())
             }
-            else -> {}
+            else -> {
+            }
         }
     }
 }

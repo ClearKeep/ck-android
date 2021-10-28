@@ -4,7 +4,7 @@ import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.screen.chat.repo.PeopleRepository
+import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Job
@@ -14,7 +14,7 @@ import javax.inject.Inject
 class InviteGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val environment: Environment
-): ViewModel() {
+) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
     private fun getDomain() = environment.getServer().serverDomain
@@ -25,16 +25,14 @@ class InviteGroupViewModel @Inject constructor(
 
     val checkUserUrlResponse = MutableLiveData<Resource<User>>()
 
-    private var insertFriendJob: Job? = null
     private var checkUserUrlJob: Job? = null
 
     private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading : LiveData<Boolean> get() = _isLoading
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     val filterFriends = liveData<List<User>> {
         val result = MediatorLiveData<List<User>>()
         result.addSource(friends) { _ ->
-            //     result.value = getFilterFriends(friendList ?: emptyList(), textSearch.value ?: "")
         }
         result.addSource(textSearch) { text ->
             result.value = getFilterFriends(friends.value ?: emptyList(), text)

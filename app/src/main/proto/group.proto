@@ -29,14 +29,14 @@ message ClientInGroupResponse {
 }
 
 message GroupClientKeyObject {
-    string  workspace_domain = 1;
-    string clientId = 2;
-    int32 deviceId = 3;
-    bytes clientKeyDistribution = 4;
-    int64 senderKeyId = 5;
-    bytes senderKey = 6;
-    bytes publicKey = 7;
-    string privateKey = 8;
+  string  workspace_domain = 1;
+  string clientId = 2;
+  int32 deviceId = 3;
+  bytes clientKeyDistribution = 4;
+  int64 senderKeyId = 5;
+  bytes senderKey = 6;
+  bytes publicKey = 7;
+  string privateKey = 8;
 }
 
 message GroupObjectResponse {
@@ -58,7 +58,7 @@ message GroupObjectResponse {
 
 
 message BaseResponse {
-    string error = 1;
+  string error = 1;
 }
 
 // Request: create group
@@ -208,17 +208,17 @@ message WorkspaceLeaveGroupRequest {
 
 // Method
 service Group {
-    rpc create_group(CreateGroupRequest) returns (GroupObjectResponse) {};
-    rpc create_group_workspace(CreateGroupWorkspaceRequest) returns (CreateGroupWorkspaceResponse) {};
+  rpc create_group(CreateGroupRequest) returns (GroupObjectResponse) {};
+  rpc create_group_workspace(CreateGroupWorkspaceRequest) returns (CreateGroupWorkspaceResponse) {};
 
-    rpc get_group(GetGroupRequest) returns (GroupObjectResponse) {};
-    rpc search_groups(SearchGroupsRequest) returns (SearchGroupsResponse) {};
-    rpc get_joined_groups(GetJoinedGroupsRequest) returns (GetJoinedGroupsResponse) {};
-    rpc join_group(JoinGroupRequest) returns (BaseResponse) {};
+  rpc get_group(GetGroupRequest) returns (GroupObjectResponse) {};
+  rpc search_groups(SearchGroupsRequest) returns (SearchGroupsResponse) {};
+  rpc get_joined_groups(GetJoinedGroupsRequest) returns (GetJoinedGroupsResponse) {};
+  rpc join_group(JoinGroupRequest) returns (BaseResponse) {};
 
-    rpc add_member(AddMemberRequest) returns (BaseResponse) {};
-    rpc leave_group(LeaveGroupRequest) returns (BaseResponse) {};
-    //workspace call
-    rpc workspace_add_member(AddMemberWorkspaceRequest) returns (AddMemberWorkspaceResponse) {};
-    rpc workspace_leave_group(WorkspaceLeaveGroupRequest) returns (BaseResponse) {};
+  rpc add_member(AddMemberRequest) returns (BaseResponse) {};
+  rpc leave_group(LeaveGroupRequest) returns (BaseResponse) {};
+  //workspace call
+  rpc workspace_add_member(AddMemberWorkspaceRequest) returns (AddMemberWorkspaceResponse) {};
+  rpc workspace_leave_group(WorkspaceLeaveGroupRequest) returns (BaseResponse) {};
 }

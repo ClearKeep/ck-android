@@ -28,8 +28,8 @@ android {
         applicationId "com.clearkeep.ck"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 61
-        versionName "1.61-ui"
+        versionCode 1
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -119,7 +119,7 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    packagingOptions{
+    packagingOptions {
         exclude("META-INF/jersey-module-version")
     }
 }
@@ -161,7 +161,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 }
 
 dependencies {
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.3.0-beta01'
@@ -234,7 +233,7 @@ dependencies {
     // janus
     implementation project(':januswrapper')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation(name:'libwebrtc', ext:'aar')
+    implementation(name: 'libwebrtc', ext: 'aar')
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     implementation 'com.microsoft.identity.client:msal:2.0.8'
@@ -256,6 +255,6 @@ dependencies {
     implementation "androidx.paging:paging-runtime-ktx:3.0.1"
     implementation "androidx.paging:paging-compose:1.0.0-alpha02"
 
-    implementation project(':dragonsrp')
+    implementation project(':srp')
 }
 

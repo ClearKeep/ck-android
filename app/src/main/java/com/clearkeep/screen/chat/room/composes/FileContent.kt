@@ -33,20 +33,30 @@ fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
 @Composable
 fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
-    val fileName = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(fileUrl)
-    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
-    val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick.invoke(fileUrl) } else Modifier
+    val fileName =
+        if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(
+            fileUrl
+        )
+    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl)
+        .getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
+    val clickableModifier =
+        if (!isTempFile(fileUrl)) Modifier.clickable { onClick.invoke(fileUrl) } else Modifier
 
     Column(
         Modifier
             .padding(28.sdp(), 8.sdp(), 54.sdp(), 8.sdp())
-            .then(clickableModifier)) {
+            .then(clickableModifier)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.sdp()))
             Spacer(Modifier.width(12.sdp()))
             Text(fileName, color = grayscaleOffWhite)
         }
-        Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sdp().toNonScalableTextSize())
+        Text(
+            getFileSizeInMegabytesString(fileSize),
+            color = grayscale4,
+            fontSize = 12.sdp().toNonScalableTextSize()
+        )
     }
 }
 
@@ -68,5 +78,7 @@ private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
         fileSizeInBytes < 1024 * 1_000 -> fileSizeInBytes.toDouble() / 1_000
         else -> fileSizeInBytes.toDouble() / 1_000_000
     }
-    return if (fileSizeInBytes < 1024) "$fileSizeInBytes $unit" else "%.2f $unit".format(fileSizeInMegabytes)
+    return if (fileSizeInBytes < 1024) "$fileSizeInBytes $unit" else "%.2f $unit".format(
+        fileSizeInMegabytes
+    )
 }

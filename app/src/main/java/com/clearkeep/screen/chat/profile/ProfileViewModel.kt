@@ -6,18 +6,15 @@ import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.ProfileRepository
-import com.clearkeep.screen.chat.repo.UserPreferenceRepository
+import com.clearkeep.repo.ProfileRepository
+import com.clearkeep.repo.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
-import com.google.i18n.phonenumbers.CountryCodeToRegionCodeMap
-import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.protobuf.ByteString
-import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -38,17 +35,13 @@ class ProfileViewModel @Inject constructor(
         _username.postValue(it.userName)
         _email.postValue(it.email)
 
-        printlnCK("Profile full phone ${it.phoneNumber}")
         try {
             val numberProto: PhoneNumber = phoneUtil.parse(it.phoneNumber, "")
             val countryCode = numberProto.countryCode
-            printlnCK("Profile country code $countryCode")
             val phoneNum = it.phoneNumber?.replace("+$countryCode", "")
-            printlnCK("Profile phone num $phoneNum")
             _countryCode.postValue("+$countryCode")
             _phoneNumber.postValue(phoneNum)
         } catch (e: Exception) {
-            printlnCK("Profile phone number parse failed $e")
             _phoneNumber.postValue(it.phoneNumber)
             _countryCode.postValue("")
         }
@@ -191,7 +184,6 @@ class ProfileViewModel @Inject constructor(
         if (!avatarToUpload.isNullOrEmpty()) {
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
-                printlnCK("uploadAvatar exceed file size limit")
                 uploadAvatarResponse.value =
                     Resource.error("Your Profile Picture cannot be larger than 5MB", null)
                 undoAvatarChange()

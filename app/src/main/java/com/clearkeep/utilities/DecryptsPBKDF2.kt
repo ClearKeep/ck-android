@@ -30,34 +30,32 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
 
     init {
         dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        factory= SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-    }
-
-    @Throws(Exception::class)
-    fun encrypt(data: ByteArray): ByteArray? {
-        saltEncrypt = getSalt()
-        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
-        val tmp = factory.generateSecret(spec)
-        key = SecretKeySpec(tmp.encoded, "AES")
-        dcipher?.init(Cipher.ENCRYPT_MODE, key)
-        val params: AlgorithmParameters? = dcipher?.parameters
-        iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
-        printlnCK("encrypt: iv ${iv}")
-        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
-        return dcipher?.doFinal(data)
+        factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
     }
 
     @Throws(Exception::class)
     fun encrypt(data: ByteArray, saltHex: String): ByteArray? {
         saltEncrypt = fromHex(saltHex)
-        val spec: KeySpec = PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val spec: KeySpec =
+            PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
         val tmp = factory.generateSecret(spec)
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.ENCRYPT_MODE, key)
         val params: AlgorithmParameters? = dcipher?.parameters
         iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
-        printlnCK("encrypt: iv ${iv}")
-        printlnCK("encrypt data: iv ${dcipher?.doFinal(data)}")
+        return dcipher?.doFinal(data)
+    }
+
+    @kotlin.jvm.Throws(Exception::class)
+    fun encrypt(data: ByteArray, salt: String, oldIv: String): ByteArray? {
+        saltEncrypt = fromHex(salt)
+        val spec: KeySpec =
+            PBEKeySpec(passPhrase.toCharArray(), saltEncrypt, iterationCount, keyStrength)
+        val tmp = factory.generateSecret(spec)
+        key = SecretKeySpec(tmp.encoded, "AES")
+        dcipher?.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(fromHex(oldIv)))
+        val params: AlgorithmParameters? = dcipher?.parameters
+        iv = params?.getParameterSpec(IvParameterSpec::class.java)?.iv!!
         return dcipher?.doFinal(data)
     }
 
@@ -71,39 +69,19 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         printlnCK("decrypt spec success")
         val tmp = factory.generateSecret(spec)
         printlnCK("decrypt gen secret success")
-        printlnCK("decrypt: iv $ivParameterSpec")
         key = SecretKeySpec(tmp.encoded, "AES")
         dcipher?.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(ivParameterSpec))
         printlnCK("decrypt dcipher init success")
         return dcipher?.doFinal(base64EncryptedData) ?: return null
     }
 
-    @JvmName("getSalt1")
-    @Throws(NoSuchAlgorithmException::class)
-    private fun getSalt(): ByteArray {
-        val sr = SecureRandom.getInstance("SHA1PRNG")
-        val salt = ByteArray(16)
-        sr.nextBytes(salt)
-        return salt
-    }
-
-    fun getSaltEncryptValue(): String {
-        return toHex(saltEncrypt)
-    }
     fun getIv(): ByteArray {
-        printlnCK("encrypt: iv ${iv}")
         return iv
     }
 
-
     companion object {
-        fun md5(input: String): String {
-            val md = MessageDigest.getInstance("MD5")
-            return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
-        }
-
         @Throws(NoSuchAlgorithmException::class)
-         fun toHex(array: ByteArray): String {
+        fun toHex(array: ByteArray): String {
             val bi = BigInteger(1, array)
             val hex = bi.toString(16)
             val paddingLength = array.size * 2 - hex.length
@@ -115,7 +93,7 @@ class DecryptsPBKDF2 @Throws(Exception::class) constructor(private val passPhras
         }
 
         @Throws(NoSuchAlgorithmException::class)
-         fun fromHex(hex: String): ByteArray {
+        fun fromHex(hex: String): ByteArray {
             val bytes = ByteArray(hex.length / 2)
             for (i in bytes.indices) {
                 bytes[i] = hex.substring(2 * i, 2 * i + 2).toInt(16).toByte()

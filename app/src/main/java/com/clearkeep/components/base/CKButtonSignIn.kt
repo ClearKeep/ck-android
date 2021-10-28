@@ -34,27 +34,25 @@ fun CKButtonSignIn(
     enabled: Boolean = true,
     buttonType: LoginType = LoginType.Google
 ) {
-    val icon: Painter
-    val textColor: Color
-    when (buttonType) {
+    val icon = when (buttonType) {
         LoginType.Google -> {
-            icon = painterResource(R.drawable.ic_icon_google)
-            textColor = colorBlue1
+            painterResource(R.drawable.ic_icon_google)
         }
         LoginType.Microsoft -> {
-            icon = painterResource(R.drawable.ic_icon_office)
-            textColor = colorTiaMaria
+            painterResource(R.drawable.ic_icon_office)
         }
-        LoginType.Facebook->{
-            icon = painterResource(R.drawable.ic_icons_facebook)
-            textColor = colorLightBlueFace
+        LoginType.Facebook -> {
+            painterResource(R.drawable.ic_icons_facebook)
         }
-
     }
+
     Row(
-        modifier = Modifier.background(
-            grayscaleOffWhite, shape = RoundedCornerShape(50),
-        ).clickable { onClick() }.size(dimensionResource(R.dimen._56sdp)),
+        modifier = Modifier
+            .background(
+                grayscaleOffWhite, shape = RoundedCornerShape(50),
+            )
+            .clickable { onClick() }
+            .size(dimensionResource(R.dimen._56sdp)),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {

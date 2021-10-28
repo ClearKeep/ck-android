@@ -51,7 +51,7 @@ fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
     profile: Profile,
     closeSiteMenu: (() -> Unit),
-    onLeaveServer: (()->Unit),
+    onLeaveServer: (() -> Unit),
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
     onNavigateNotificationSetting: () -> Unit,
@@ -104,7 +104,12 @@ fun SiteMenuScreen(
                         Column(
                             Modifier
                                 .fillMaxSize()
-                                .padding(start = 16.sdp(), top = 24.sdp(), end = 16.sdp(), bottom = 20.sdp())
+                                .padding(
+                                    start = 16.sdp(),
+                                    top = 24.sdp(),
+                                    end = 16.sdp(),
+                                    bottom = 20.sdp()
+                                )
                                 .verticalScroll(rememberScrollState())
                         ) {
                             Row(
@@ -178,31 +183,48 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val statusUse = homeViewModel.currentStatus.observeAsState()
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarSite(url = profile.avatar, name = profile.userName ?: "", status = "", cacheKey = profile.updatedAt.toString())
+        CircleAvatarSite(
+            url = profile.avatar,
+            name = profile.userName ?: "",
+            status = "",
+            cacheKey = profile.updatedAt.toString()
+        )
         Column(modifier = Modifier.padding(horizontal = 16.sdp())) {
             CKHeaderText(
                 text = profile.userName ?: "",
                 headerTextType = HeaderTextType.Normal,
                 color = primaryDefault
             )
-            Row(modifier = Modifier.clickable { expanded = true }, verticalAlignment = Alignment.CenterVertically) {
-                when(statusUse.value){
-                    UserStatus.ONLINE.value->{
+            Row(
+                modifier = Modifier.clickable { expanded = true },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (statusUse.value) {
+                    UserStatus.ONLINE.value -> {
                         Text(
                             text = UserStatus.ONLINE.value,
-                            style = TextStyle(color = colorSuccessDefault, fontSize = defaultNonScalableTextSize())
+                            style = TextStyle(
+                                color = colorSuccessDefault,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
                     UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
                             text = UserStatus.OFFLINE.value,
-                            style = TextStyle(color = grayscale3, fontSize = defaultNonScalableTextSize())
+                            style = TextStyle(
+                                color = grayscale3,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
-                    else ->{
+                    else -> {
                         Text(
                             text = UserStatus.BUSY.value,
-                            style = TextStyle(color = errorDefault, fontSize = defaultNonScalableTextSize())
+                            style = TextStyle(
+                                color = errorDefault,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
                 }
@@ -218,7 +240,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 }
             }
 
-            StatusDropdown(expanded, onDismiss = { expanded = false },{
+            StatusDropdown(expanded, onDismiss = { expanded = false }, {
                 expanded = false
                 homeViewModel.setUserStatus(it)
             })
@@ -226,12 +248,23 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
                 val image = createRef()
-                Text(homeViewModel.getProfileLink(), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sdp().toNonScalableTextSize(), modifier = Modifier.constrainAs(text){
-                    linkTo(parent.start, image.start, endMargin = 4.dp)
-                    width = Dimension.fillToConstraints
-                })
+                Text(
+                    homeViewModel.getProfileLink(),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    fontSize = 12.sdp().toNonScalableTextSize(),
+                    modifier = Modifier.constrainAs(text) {
+                        linkTo(parent.start, image.start, endMargin = 4.dp)
+                        width = Dimension.fillToConstraints
+                    })
                 IconButton(
-                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) },
+                    onClick = {
+                        copyProfileLinkToClipBoard(
+                            context,
+                            "profile link",
+                            homeViewModel.getProfileLink()
+                        )
+                    },
                     Modifier
                         .size(18.sdp())
                         .constrainAs(image) {
@@ -269,7 +302,11 @@ fun SettingGeneral(
     onNavigateAccountSetting: () -> Unit,
 ) {
     Column {
-        ItemSiteSetting("Profile", R.drawable.ic_user, onNavigateAccountSetting)
+        ItemSiteSetting(
+            stringResource(R.string.profile),
+            R.drawable.ic_user,
+            onNavigateAccountSetting
+        )
     }
 }
 
@@ -280,11 +317,16 @@ fun ItemSiteSetting(
     onClickAction: (() -> Unit)? = null,
     textColor: Color? = null
 ) {
-    Row(modifier = Modifier
-        .padding(top = 16.sdp(), bottom = 18.sdp())
-        .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
+    Row(
+        modifier = Modifier
+            .padding(top = 16.sdp(), bottom = 18.sdp())
+            .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painter = painterResource(icon), contentDescription = null, modifier = Modifier.size(24.sdp()))
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.sdp())
+        )
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
                 .weight(0.66f)
@@ -294,7 +336,7 @@ fun ItemSiteSetting(
 }
 
 @Composable
-fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit,statusChoose: (UserStatus)->Unit) {
+fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (UserStatus) -> Unit) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
@@ -323,7 +365,8 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
                 Modifier
                     .size(12.sdp())
                     .clip(CircleShape)
-                    .background(color))
+                    .background(color)
+            )
             Spacer(Modifier.width(7.sdp()))
             Text(text, color = Color.Black)
         }
@@ -354,9 +397,10 @@ fun LeaveServerConfirmDialog(
 }
 
 private fun copyProfileLinkToClipBoard(context: Context, label: String, text: String) {
-    val clipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipboard: ClipboardManager =
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
 }
 

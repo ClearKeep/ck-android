@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -15,7 +14,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
 import com.clearkeep.components.CKInsetTheme
-import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
@@ -34,7 +32,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.*
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.view.View
@@ -87,7 +84,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         roomViewModel.isLogOutCompleted.observe(this) {
-            println("RoomActivity isLogoutCompleted $it")
+            printlnCK("RoomActivity isLogoutCompleted $it")
             if (it) {
                 restartToRoot(this)
             }
@@ -155,18 +152,15 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                         InviteGroupScreen(
                             AddMemberUIType,
                             inviteGroupViewModel,
+                            selectedItem = selectedItem,
                             chatGroup = roomViewModel.group,
                             onFriendSelected = { friends ->
                                 roomViewModel.inviteToGroup(friends, groupId = roomId)
                                 navController.navigate("room_screen")
                             },
+                            onDirectFriendSelected = { },
                             onBackPressed = {
                                 navController.popBackStack()
-                            },
-                            selectedItem = selectedItem,
-                            onDirectFriendSelected = { },
-                            onInsertFriend = {
-                                navController.navigate("insert_friend")
                             },
                             isCreateDirectGroup = false
                         )
@@ -215,7 +209,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private fun registerAddMemberReceiver() {
         addMemberReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_GROUP_ID,-1)
+                val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
                 if (roomId == groupId) {
                     roomViewModel.refreshRoom()
                 }
@@ -266,7 +260,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
         if (roomId > 0)
             roomViewModel.groups.observe(this, Observer {
-                val group = it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
+                val group =
+                    it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
                 if (group == null) finish()
             })
     }
@@ -278,9 +273,19 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             }?.userName ?: ""
         }
         AppCall.call(
-            this, isAudioMode, null,
-            group.groupId.toString(), group.groupType, roomName,
-            domain, clientId, roomName, "", false, currentUserName = roomViewModel.getUserName(), currentUserAvatar = roomViewModel.getUserAvatarUrl()
+            this,
+            isAudioMode,
+            null,
+            group.groupId.toString(),
+            group.groupType,
+            roomName,
+            domain,
+            clientId,
+            roomName,
+            "",
+            false,
+            currentUserName = roomViewModel.getUserName(),
+            currentUserAvatar = roomViewModel.getUserAvatarUrl()
         )
     }
 

@@ -31,12 +31,6 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun provideUserDao(db: ClearKeepDatabase): ProfileDao {
-        return db.profileDao()
-    }
-
-    @Singleton
-    @Provides
     fun provideMessageDAO(db: ClearKeepDatabase): MessageDAO {
         return db.messageDao()
     }
@@ -55,7 +49,7 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun providePeopleDAO(db: ClearKeepDatabase): UserDao {
+    fun providePeopleDAO(db: ClearKeepDatabase): UserDAO {
         return db.userDao()
     }
 
@@ -81,9 +75,9 @@ class DatabaseModule {
     @Provides
     fun provideSignalKeyDatabase(app: Application): SignalKeyDatabase {
         return Room
-                .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
-                .fallbackToDestructiveMigration()
-                .build()
+            .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Singleton

@@ -12,6 +12,7 @@ import user.UserGrpc
 import video_call.VideoCallGrpc
 import workspace.WorkspaceGrpc
 import javax.inject.Inject
+
 /*
 * runtime server
 * */
@@ -30,7 +31,8 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return SignalKeyDistributionGrpc.newBlockingStub(managedChannel).withCallCredentials(
-            CallCredentials(paramAPI.accessKey,paramAPI.hashKey))
+            CallCredentials(paramAPI.accessKey, paramAPI.hashKey)
+        )
     }
 
     override fun provideNotifyStub(paramAPI: ParamAPI): NotifyGrpc.NotifyStub {
@@ -39,10 +41,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return NotifyGrpc.newStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideNotifyBlockingStub(paramAPI: ParamAPI): NotifyGrpc.NotifyBlockingStub {
@@ -70,10 +74,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return UserGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideGroupBlockingStub(paramAPI: ParamAPI): GroupGrpc.GroupBlockingStub {
@@ -110,10 +116,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return NoteGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideMessageStub(paramAPI: ParamAPI): MessageGrpc.MessageStub {
@@ -122,10 +130,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return MessageGrpc.newStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideNotifyPushBlockingStub(paramAPI: ParamAPI): NotifyPushGrpc.NotifyPushBlockingStub {
@@ -134,10 +144,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return NotifyPushGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideVideoCallBlockingStub(paramAPI: ParamAPI): VideoCallGrpc.VideoCallBlockingStub {
@@ -146,10 +158,12 @@ class ParamAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return VideoCallGrpc.newBlockingStub(managedChannel)
-            .withCallCredentials(CallCredentials(
-                paramAPI.accessKey,
-                paramAPI.hashKey
-            ))
+            .withCallCredentials(
+                CallCredentials(
+                    paramAPI.accessKey,
+                    paramAPI.hashKey
+                )
+            )
     }
 
     override fun provideWorkspaceBlockingStub(paramAPI: ParamAPI): WorkspaceGrpc.WorkspaceBlockingStub {

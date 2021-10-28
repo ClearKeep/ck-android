@@ -82,7 +82,7 @@ fun ChangePasswordScreen(
             Spacer(Modifier.height(16.sdp()))
             if (isResetPassword.value != true) {
                 CKTextInputField(
-                    placeholder = "Current Password",
+                    placeholder = stringResource(R.string.current_password),
                     textValue = currentPassWord,
                     onValueChange = { viewModel.setOldPassword(it) },
                     keyboardType = KeyboardType.Password,
@@ -100,7 +100,7 @@ fun ChangePasswordScreen(
                 Spacer(Modifier.height(24.sdp()))
             }
             CKTextInputField(
-                placeholder = "New Password",
+                placeholder = stringResource(R.string.new_password),
                 textValue = newPassWord,
                 keyboardType = KeyboardType.Password,
                 onValueChange = { viewModel.setNewPassword(it) },
@@ -133,7 +133,8 @@ fun ChangePasswordScreen(
                 error = confirmPassWordError.value
             )
             Spacer(Modifier.height(24.sdp()))
-            val currentPasswordValid = if (isResetPassword.value == true) true else currentPassWordError.value.isNullOrBlank() && currentPassWord.value.isNotBlank()
+            val currentPasswordValid =
+                if (isResetPassword.value == true) true else currentPassWordError.value.isNullOrBlank() && currentPassWord.value.isNotBlank()
             val changePasswordButtonEnabled = currentPasswordValid
                     && newPassWordError.value.isNullOrBlank()
                     && confirmPassWordError.value.isNullOrBlank()
@@ -151,12 +152,13 @@ fun ChangePasswordScreen(
 
             if (changePasswordResponse.value?.status == Status.SUCCESS) {
                 CKAlertDialog(
-                    title = "Password changed successfully",
-                    text = "Please login again with new password!",
+                    title = stringResource(R.string.password_change_success_title),
+                    text = stringResource(R.string.password_change_success_text),
                     onDismissButtonClick = {
                         if (isResetPassword.value == true) {
                             val intent = Intent(context, SplashActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                            intent.flags =
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)
                             (context as AppCompatActivity).finish()
                         }

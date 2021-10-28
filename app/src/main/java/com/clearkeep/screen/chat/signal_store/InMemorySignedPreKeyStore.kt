@@ -16,19 +16,16 @@ import java.io.IOException
 import java.util.*
 
 class InMemorySignedPreKeyStore(
-        private val preKeyDAO: SignalPreKeyDAO,
-        private val environment: Environment
+    private val preKeyDAO: SignalPreKeyDAO,
+    private val environment: Environment
 ) : SignedPreKeyStore, Closeable {
     private var store: MutableMap<Int, ByteArray> = HashMap()
 
     @Throws(InvalidKeyIdException::class)
     override fun loadSignedPreKey(signedPreKeyId: Int): SignedPreKeyRecord {
         return try {
-            printlnCK("loadSignedPreKey: signedPreKeyId: $signedPreKeyId server: ${environment.getTempServer()}")
             var record = store[signedPreKeyId]
             if (record == null) {
-                val allKeys = preKeyDAO.getAllSignedPreKey()
-                printlnCK("loadSignedPreKey allKeys $allKeys")
                 record = preKeyDAO.getSignedPreKey(signedPreKeyId)?.preKeyRecord ?: null
 
                 if (record != null) {
@@ -56,19 +53,24 @@ class InMemorySignedPreKeyStore(
     override fun storeSignedPreKey(signedPreKeyId: Int, record: SignedPreKeyRecord) {
         store[signedPreKeyId] = record.serialize()
         val server = environment.getTempServer()
-        printlnCK("insert preKeyDAO 2 ")
-        preKeyDAO.insert(SignalPreKey(signedPreKeyId, record.serialize(), true, server.serverDomain, server.profile.userId))
+        preKeyDAO.insert(
+            SignalPreKey(
+                signedPreKeyId,
+                record.serialize(),
+                true,
+                server.serverDomain,
+                server.profile.userId
+            )
+        )
     }
 
     override fun containsSignedPreKey(signedPreKeyId: Int): Boolean {
-        val server = environment.getTempServer()
+        environment.getTempServer()
         return store.containsKey(signedPreKeyId)
                 || (preKeyDAO.getSignedPreKey(signedPreKeyId) != null)
     }
 
-    override fun removeSignedPreKey(signedPreKeyId: Int) {
-        /*store.remove(signedPreKeyId);*/
-    }
+    override fun removeSignedPreKey(signedPreKeyId: Int) {}
 
     override fun clear() {
         store.clear()

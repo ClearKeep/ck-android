@@ -10,13 +10,13 @@ import androidx.compose.ui.unit.Dp
 
 @Composable
 fun CKCircularProgressIndicator(
-        modifier: Modifier = Modifier,
-        color: Color = MaterialTheme.colors.primary,
-        strokeWidth: Dp = ProgressIndicatorDefaults.StrokeWidth
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary,
+    strokeWidth: Dp = ProgressIndicatorDefaults.StrokeWidth
 ) {
     CircularProgressIndicator(
-            modifier = modifier,
-            color = color,
-            strokeWidth = strokeWidth
+        modifier = modifier,
+        color = color,
+        strokeWidth = strokeWidth
     )
 }

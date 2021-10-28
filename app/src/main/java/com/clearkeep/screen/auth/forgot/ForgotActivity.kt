@@ -74,29 +74,29 @@ class ForgotActivity : AppCompatActivity() {
 
         Box {
             Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Row(/*modifier = Modifier.weight(1.0f, true)*/) {
+                Row {
                     ForgotScreen(
-                            onForgotPressed = onForgotPressed,
-                            onBackPress = {
-                                finish()
-                            },
-                            isLoading = isLoadingState.value ?: false
+                        onForgotPressed = onForgotPressed,
+                        onBackPress = {
+                            finish()
+                        },
+                        isLoading = isLoadingState.value ?: false
                     )
                 }
             }
             isLoadingState.value?.let {
                 if (it) {
                     Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CKCircularProgressIndicator(
-                                color = Color.Blue
+                            color = Color.Blue
                         )
                     }
                 }
@@ -110,9 +110,17 @@ class ForgotActivity : AppCompatActivity() {
     fun ErrorDialog(showDialog: Pair<Int, String>, setShowDialog: (Pair<Int, String>) -> Unit) {
         if (showDialog.second.isNotBlank() || showDialog.first != 0) {
             val (title, text, dismissText) = if (showDialog.first == ERROR_CODE_TIMEOUT) {
-                Triple(stringResource(R.string.network_error_dialog_title), stringResource(R.string.network_error_dialog_text), stringResource(R.string.ok))
+                Triple(
+                    stringResource(R.string.network_error_dialog_title),
+                    stringResource(R.string.network_error_dialog_text),
+                    stringResource(R.string.ok)
+                )
             } else {
-                Triple(stringResource(R.string.error), stringResource(R.string.reset_password_error_title), stringResource(R.string.close))
+                Triple(
+                    stringResource(R.string.error),
+                    stringResource(R.string.reset_password_error_title),
+                    stringResource(R.string.close)
+                )
             }
             CKAlertDialog(
                 title = title,

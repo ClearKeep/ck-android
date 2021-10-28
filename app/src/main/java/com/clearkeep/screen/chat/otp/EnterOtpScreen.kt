@@ -51,7 +51,14 @@ fun EnterOtpScreen(
     onClickSave: () -> Unit,
 ) {
     val input = remember { mutableStateListOf(" ", " ", " ", " ") }
-    val focusRequesters = remember { mutableStateListOf(FocusRequester(), FocusRequester(), FocusRequester(), FocusRequester()) }
+    val focusRequesters = remember {
+        mutableStateListOf(
+            FocusRequester(),
+            FocusRequester(),
+            FocusRequester(),
+            FocusRequester()
+        )
+    }
 
     val verifyOtpResponse = otpResponse.observeAsState()
 
@@ -74,7 +81,7 @@ fun EnterOtpScreen(
     ) {
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
-            title = "Enter Your Code", onBackPressed = {
+            title = stringResource(R.string.enter_otp_screen_title), onBackPressed = {
                 onBackPress.invoke()
             })
         Spacer(Modifier.height(30.sdp()))
@@ -88,8 +95,21 @@ fun EnterOtpScreen(
             Spacer(Modifier.height(16.sdp()))
             OtpInput(input, focusRequesters)
             Spacer(Modifier.height(32.sdp()))
-            Text("Don't get the code?", Modifier.align(Alignment.CenterHorizontally), Color.White, 16.sdp().toNonScalableTextSize(), fontWeight = FontWeight.W400)
-            Text("Resend code", Modifier.align(Alignment.CenterHorizontally).clickable { onClickResend.invoke() }, Color.White, 16.sdp().toNonScalableTextSize())
+            Text(
+                stringResource(R.string.enter_otp_no_code),
+                Modifier.align(Alignment.CenterHorizontally),
+                Color.White,
+                16.sdp().toNonScalableTextSize(),
+                fontWeight = FontWeight.W400
+            )
+            Text(
+                stringResource(R.string.enter_otp_resend),
+                Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clickable { onClickResend.invoke() },
+                Color.White,
+                16.sdp().toNonScalableTextSize()
+            )
             Spacer(Modifier.height(24.sdp()))
             CKButton(
                 stringResource(R.string.verify),
@@ -152,7 +172,7 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
                 focusRequesters[1].requestFocus()
             } else if (isValidOtp(it)) {
                 //Handle pasted OTP
-                it.forEachIndexed { index: Int, c : Char ->
+                it.forEachIndexed { index: Int, c: Char ->
                     input[index] = it[index].toString()
                 }
             }
@@ -165,7 +185,7 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
                 } else {
                     input[1] = " "
                     focusRequesters[0].requestFocus()
-               }
+                }
             } else if (it.length == 2) {
                 //Handle delete and type case
                 input[2] = it[1].toString()
@@ -206,13 +226,20 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
             .size(56.sdp())
             .background(Color.White, RoundedCornerShape(8.sdp()))
     ) {
-        Box(Modifier.size(28.sdp()).align(Alignment.Center)) {
+        Box(
+            Modifier
+                .size(28.sdp())
+                .align(Alignment.Center)
+        ) {
             Row {
                 Spacer(Modifier.width(8.sdp()))
                 BasicTextField(
                     value,
                     onValueChange = { onValueChange(it.trim()) },
-                    modifier = Modifier.align(Alignment.CenterVertically).fillMaxWidth().focusRequester(focusRequester),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
                     singleLine = true,
                     textStyle = TextStyle(fontSize = 20.sdp().toNonScalableTextSize()),
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
@@ -222,7 +249,7 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
     }
 }
 
-private fun isValidOtp(otp: String) : Boolean {
+private fun isValidOtp(otp: String): Boolean {
     if (!(otp.isNotBlank() && otp.length <= 4))
         return false
     otp.forEach {

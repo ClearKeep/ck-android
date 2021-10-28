@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -59,14 +60,20 @@ fun ImagePickerScreen(
     onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
-    val urisSelected = remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
+    val urisSelected =
+        remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
 
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
     CKSimpleInsetTheme(insetEnabled) {
         Column(if (insetEnabled) Modifier.navigationBarsPadding() else Modifier) {
-            Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
+            Box(
+                Modifier
+                    .statusBarsHeight()
+                    .background(MaterialTheme.colors.primary)
+                    .fillMaxWidth()
+            )
             CKTopAppBar(
                 {},
                 Modifier,
@@ -80,7 +87,7 @@ fun ImagePickerScreen(
                 actions = {
                     if (!onlyPickOne) {
                         CKText(
-                            "Upload (${urisSelected?.size})",
+                            stringResource(R.string.image_picker_file_count, urisSelected.size),
                             modifier = Modifier
                                 .padding(end = 16.sdp())
                                 .clickable {
@@ -164,7 +171,11 @@ fun ImageItem(
         )
     ) {
         Image(
-            rememberCoilPainter(request = uri, imageLoader = context.imageLoader, previewPlaceholder = R.drawable.ic_cross),
+            rememberCoilPainter(
+                request = uri,
+                imageLoader = context.imageLoader,
+                previewPlaceholder = R.drawable.ic_cross
+            ),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier

@@ -130,7 +130,7 @@ fun HomeScreen(
                 .focusable(true)
 
         ) {
-            profile?.value?.let {
+            profile.value?.let {
                 printlnCK("profile = ${it.userName}")
                 SiteMenuScreen(
                     homeViewModel,
@@ -172,7 +172,7 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     val selectingJoinServer = mainViewModel.selectingJoinServer.observeAsState()
 
-    workSpaces?.value?.let { serverList ->
+    workSpaces.value?.let { serverList ->
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
@@ -250,10 +250,12 @@ fun ItemListDirectMessage(
                 onItemClickListener?.invoke(chatGroup.groupId)
             }
     ) {
-        val partnerUser= chatGroup.clientList.firstOrNull { client ->
+        val partnerUser = chatGroup.clientList.firstOrNull { client ->
             client.userId != clintId
         }
-        val roomName = partnerUser?.userName ?: ""
+        val roomName =
+            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else partnerUser?.userName
+                ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -295,8 +297,10 @@ fun ChatGroupItemView(
     ) {
         Row(modifier = Modifier.padding(top = 16.sdp())) {
             Text(
-                text = chatGroup.groupName, modifier = Modifier.fillMaxWidth(),
-                maxLines = 2, overflow = TextOverflow.Ellipsis,
+                text = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else chatGroup.groupName,
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
                     color = MaterialTheme.colors.onBackground,
                     fontSize = defaultNonScalableTextSize(),
@@ -328,7 +332,10 @@ fun ChatGroupView(
                     rememberItemGroup.value = !rememberItemGroup.value
                 }, verticalAlignment = Alignment.CenterVertically) {
                     CKHeaderText(
-                        text = "Group Chat (${chatGroups.value?.size})",
+                        text = stringResource(
+                            R.string.home_group_chat_list_title,
+                            chatGroups.value?.size ?: 0
+                        ),
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
 
@@ -355,7 +362,7 @@ fun ChatGroupView(
                 )
             }
         }
-        Column() {
+        Column {
             AnimatedVisibility(
                 visible = rememberItemGroup.value,
                 modifier = Modifier.padding(top = 4.sdp()),
@@ -409,7 +416,10 @@ fun DirectMessagesView(
                         }, verticalAlignment = Alignment.CenterVertically
                 ) {
                     CKHeaderText(
-                        text = "Direct Messages (${chatGroup.value?.size})",
+                        text = stringResource(
+                            R.string.home_peer_chat_list_title,
+                            chatGroup.value?.size ?: 0
+                        ),
                         headerTextType = HeaderTextType.Normal, color = grayscale2
                     )
                     Box(modifier = Modifier.padding(8.sdp())) {
@@ -437,7 +447,7 @@ fun DirectMessagesView(
                 )
             }
         }
-        Column() {
+        Column {
             AnimatedVisibility(
                 visible = rememberItemGroup.value,
                 modifier = Modifier.padding(bottom = 20.sdp()),
@@ -452,7 +462,7 @@ fun DirectMessagesView(
                 )
 
             ) {
-                val listUserStatus=viewModel.listUserInfo.observeAsState()
+                val listUserStatus = viewModel.listUserInfo.observeAsState()
                 chatGroup.value?.let { item ->
                     Column {
                         item.forEach { chatGroup ->
@@ -517,7 +527,7 @@ fun JoinServerComposable(
             )
             Spacer(modifier = Modifier.size(21.sdp()))
             CKTextInputField(
-                "Server URL",
+                stringResource(R.string.server_url),
                 rememberServerUrl,
                 keyboardType = KeyboardType.Text,
                 singleLine = true,
@@ -552,7 +562,6 @@ fun WorkSpaceView(
     gotoProfile: () -> Unit,
     onNavigateNotes: () -> Unit
 ) {
-    val searchKey = remember { mutableStateOf("") }
     val activeServer = homeViewModel.currentServer.observeAsState()
 
     Column(

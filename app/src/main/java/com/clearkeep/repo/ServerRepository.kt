@@ -48,7 +48,7 @@ class ServerRepository @Inject constructor(
 
     fun getDefaultServerAsState() = serverDAO.getDefaultServerAsState()
 
-    suspend fun deleteServer(serverId: Int) : Int{
+    suspend fun deleteServer(serverId: Int): Int {
         return serverDAO.deleteServer(serverId)
     }
 

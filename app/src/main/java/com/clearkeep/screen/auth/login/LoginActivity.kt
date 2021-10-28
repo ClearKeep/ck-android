@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import auth.AuthOuterClass
+import com.clearkeep.R
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
@@ -63,13 +64,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
-    val callbackManager = CallbackManager.Factory.create()
+    private val callbackManager = CallbackManager.Factory.create()
 
     private var isJoinServer: Boolean = false
 
     private var navController: NavController? = null
 
-    val startForResultSignInGoogle =
+    private val startForResultSignInGoogle =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             navController?.let {
@@ -93,25 +94,26 @@ class LoginActivity : AppCompatActivity() {
         }
 
         setContent {
-            MyApp(isJoinServer)
+            MyApp()
         }
 
         subscriberError()
     }
 
     @Composable
-    fun MyApp(isJoinServer: Boolean) {
+    fun MyApp() {
         CKTheme {
-            MainComposable(isJoinServer)
+            MainComposable()
         }
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         callbackManager.onActivityResult(requestCode, resultCode, data)
         super.onActivityResult(requestCode, resultCode, data)
     }
 
     @Composable
-    fun AppContent(navController: NavController, isjoinServer: Boolean) {
+    fun AppContent(navController: NavController) {
         val (messageError, setShowDialog) = remember { mutableStateOf<ErrorMessage?>(null) }
 
         loginViewModel.initGoogleSingIn(this)
@@ -125,25 +127,35 @@ class LoginActivity : AppCompatActivity() {
                 if (res.status == Status.SUCCESS) {
                     val shouldRequireOtp = res.data?.accessToken.isNullOrBlank()
                     if (shouldRequireOtp) {
-                        loginViewModel.setOtpLoginInfo(res.data?.otpHash ?: "", res.data?.sub ?: "", res.data?.hashKey ?: "")
+                        loginViewModel.setOtpLoginInfo(
+                            res.data?.otpHash ?: "",
+                            res.data?.sub ?: "",
+                            res.data?.hashKey ?: ""
+                        )
                         navController.navigate("otp_confirm")
                     } else {
                         onLoginSuccess()
                     }
                 } else if (res.status == Status.ERROR) {
                     val title = when (res.data?.errorCode) {
-                        1001, 1079 -> "Email or Password is incorrect"
-                        1026 -> "Error"
-                        1069 -> "Account is Locked"
-                        ERROR_CODE_TIMEOUT -> "Network error"
-                        else -> "Error"
+                        1001, 1079 -> getString(R.string.login_info_incorrect)
+                        1026 -> getString(R.string.error)
+                        1069 -> getString(R.string.mfa_account_locked)
+                        ERROR_CODE_TIMEOUT -> getString(R.string.network_error_dialog_title)
+                        else -> getString(R.string.error)
                     }
                     val dismissButtonTitle = when (res.data?.errorCode) {
-                        1001, 1026 -> "OK"
-                        1069 -> "Close"
-                        else -> "OK"
+                        1001, 1026 -> getString(R.string.ok)
+                        1069 -> getString(R.string.close)
+                        else -> getString(R.string.ok)
                     }
-                    setShowDialog(ErrorMessage(title = title, message = res.message ?: "", dismissButtonText = dismissButtonTitle))
+                    setShowDialog(
+                        ErrorMessage(
+                            title = title,
+                            message = res.message ?: "",
+                            dismissButtonText = dismissButtonTitle
+                        )
+                    )
                 }
             }
         }
@@ -151,9 +163,9 @@ class LoginActivity : AppCompatActivity() {
         val isLoadingState = loginViewModel.isLoading.observeAsState()
         Box {
             Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 Row {
                     LoginScreen(
@@ -166,7 +178,6 @@ class LoginActivity : AppCompatActivity() {
                             navigateToForgotActivity()
                         },
                         onLoginGoogle = {
-                            printlnCK("onLoginGoogle navController $navController")
                             this@LoginActivity.navController = navController
                             signInGoogle()
                         },
@@ -202,15 +213,18 @@ class LoginActivity : AppCompatActivity() {
         }
 
     }
+
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
-    fun MainComposable(isJoinServer: Boolean){
+    fun MainComposable() {
         val navController = rememberNavController()
-        Box(Modifier
-            .fillMaxSize()) {
-            NavHost(navController, startDestination = "login"){
-                composable("login"){
-                    AppContent(navController, isJoinServer)
+        Box(
+            Modifier
+                .fillMaxSize()
+        ) {
+            NavHost(navController, startDestination = "login") {
+                composable("login") {
+                    AppContent(navController)
                 }
                 composable("advance_setting") {
                     CustomServerScreen(
@@ -274,7 +288,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun subscriberError(){
+    private fun subscriberError() {
         loginViewModel.loginErrorMess.observe(this, {
             showErrorDiaLog?.invoke(it)
         })
@@ -337,7 +351,7 @@ class LoginActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun navigateToAdvanceSetting(navController: NavController){
+    private fun navigateToAdvanceSetting(navController: NavController) {
         navController.navigate("advance_setting")
     }
 
@@ -352,14 +366,13 @@ class LoginActivity : AppCompatActivity() {
         loginViewModel.initMicrosoftSignIn(this,
             onSuccess = {
                 loginViewModel.mSingleAccountApp?.signIn(
-                    this, null, loginViewModel.SCOPES_MICROSOFT,
+                    this, null, LoginViewModel.SCOPES_MICROSOFT,
                     getAuthInteractiveCallback(navController)
                 )
             }, onError = {
-                showErrorDiaLog?.invoke(ErrorMessage("Error", it.toString()))
+                showErrorDiaLog?.invoke(ErrorMessage(getString(R.string.error), it.toString()))
             })
     }
-
 
     private fun onSignInGoogleResult(
         navController: NavController,
@@ -380,9 +393,9 @@ class LoginActivity : AppCompatActivity() {
             //unknown error
             if (e.statusCode == 12501) return
             val (title, text) = if (e.statusCode == NETWORK_ERROR) {
-                "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                getString(R.string.network_error_dialog_title) to getString(R.string.network_error_dialog_text)
             } else {
-                "Error" to (e.message ?: "unknown")
+                getString(R.string.error) to (e.message ?: "unknown")
             }
             showErrorDiaLog?.invoke(ErrorMessage(title, text))
         }
@@ -400,12 +413,13 @@ class LoginActivity : AppCompatActivity() {
             }
 
             override fun onError(exception: MsalException) {
-                val isLoginCancelled = exception is MsalServiceException && exception.httpStatusCode == MsalServiceException.DEFAULT_STATUS_CODE
+                val isLoginCancelled =
+                    exception is MsalServiceException && exception.httpStatusCode == MsalServiceException.DEFAULT_STATUS_CODE
                 if (!isLoginCancelled) {
                     val (title, text) = if (exception.errorCode == "device_network_not_available") {
-                        "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                        getString(R.string.network_error_dialog_title) to getString(R.string.network_error_dialog_text)
                     } else {
-                        "Error" to (exception.message ?: "unknown")
+                        getString(R.string.error) to (exception.message ?: "unknown")
                     }
                     showErrorDiaLog?.invoke(ErrorMessage(title, text))
                 }
@@ -416,17 +430,25 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun onSignInResult(navController: NavController, res: Resource<AuthOuterClass.SocialLoginRes>?) {
+    fun onSignInResult(
+        navController: NavController,
+        res: Resource<AuthOuterClass.SocialLoginRes>?
+    ) {
         //Third party result
         when (res?.status) {
             Status.SUCCESS -> {
                 onSocialLoginSuccess(navController, res.data?.requireAction ?: "")
             }
             Status.ERROR -> {
-                showErrorDiaLog?.invoke(ErrorMessage("Error", res.message ?: "unknown"))
+                showErrorDiaLog?.invoke(
+                    ErrorMessage(
+                        getString(R.string.error),
+                        res.message ?: "unknown"
+                    )
+                )
             }
             else -> {
-                showErrorDiaLog?.invoke(ErrorMessage("Error", "unknown"))
+                showErrorDiaLog?.invoke(ErrorMessage(getString(R.string.error), "unknown"))
             }
         }
     }
@@ -452,10 +474,13 @@ class LoginActivity : AppCompatActivity() {
 
                 override fun onError(exception: FacebookException) {
                     printlnCK("login with FB error $exception")
-                    val (title, text) = if (exception.message != null && exception.message!!.contains("CONNECTION_FAILURE")) {
-                        "Network error" to "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+                    val (title, text) = if (exception.message != null && exception.message!!.contains(
+                            "CONNECTION_FAILURE"
+                        )
+                    ) {
+                        getString(R.string.network_error_dialog_title) to getString(R.string.network_error_dialog_text)
                     } else {
-                        "Error" to (exception.message ?: "unknown")
+                        getString(R.string.error) to (exception.message ?: "unknown")
                     }
                     showErrorDiaLog?.invoke(ErrorMessage(title, text))
                 }
@@ -473,8 +498,3 @@ class LoginActivity : AppCompatActivity() {
         const val SERVER_DOMAIN = "server_url_join"
     }
 }
-
-
-
-
-

@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class Note (
+data class Note(
     @PrimaryKey(autoGenerate = true) val generateId: Long? = null,
     @ColumnInfo(name = "content") val content: String,
     @ColumnInfo(name = "created_time") val createdTime: Long,

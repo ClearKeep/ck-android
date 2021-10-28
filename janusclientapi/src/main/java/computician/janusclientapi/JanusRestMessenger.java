@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.math.BigInteger;
+
 import com.koushikdutta.async.*;
 import com.koushikdutta.async.callback.CompletedCallback;
 import com.koushikdutta.async.future.Future;
@@ -29,18 +30,17 @@ public class JanusRestMessenger implements IJanusMessenger {
     private String resturi;
     private final JanusMessengerType type = JanusMessengerType.restful;
 
-    public void longPoll()
-    {
-        if(resturi.isEmpty())
+    public void longPoll() {
+        if (resturi.isEmpty())
             resturi = uri;
 
 
-        AsyncHttpGet get = new AsyncHttpGet(uri+"/"+session_id.toString()+"&maxev=1");
+        AsyncHttpGet get = new AsyncHttpGet(uri + "/" + session_id.toString() + "&maxev=1");
 
         AsyncHttpClient.getDefaultInstance().executeJSONObject(get, new AsyncHttpClient.JSONObjectCallback() {
             @Override
             public void onCompleted(Exception e, AsyncHttpResponse source, JSONObject result) {
-                if(e==null)
+                if (e == null)
                     receivedMessage(result.toString());
                 else
                     handler.onError(e);
@@ -61,15 +61,15 @@ public class JanusRestMessenger implements IJanusMessenger {
 
     @Override
     public void connect() {
-         AsyncHttpClient.getDefaultInstance().execute(uri, new HttpConnectCallback() {
-             @Override
-             public void onConnectCompleted(Exception ex, AsyncHttpResponse response) {
-                 if(ex==null)
+        AsyncHttpClient.getDefaultInstance().execute(uri, new HttpConnectCallback() {
+            @Override
+            public void onConnectCompleted(Exception ex, AsyncHttpResponse response) {
+                if (ex == null)
                     handler.onOpen();
-                 else
-                     handler.onError(new Exception("Failed to connect"));
-             }
-         });
+                else
+                    handler.onError(new Exception("Failed to connect"));
+            }
+        });
 
         //todo
     }
@@ -84,17 +84,15 @@ public class JanusRestMessenger implements IJanusMessenger {
     public void sendMessage(String message) {
         //todo
         Log.d("message", "Sent: \n\t" + message);
-        if(resturi.isEmpty())
+        if (resturi.isEmpty())
             resturi = uri;
-        AsyncHttpRequest request = new AsyncHttpRequest(Uri.parse(resturi),"post");
-       AsyncHttpPost post = new AsyncHttpPost(resturi);
+        AsyncHttpRequest request = new AsyncHttpRequest(Uri.parse(resturi), "post");
+        AsyncHttpPost post = new AsyncHttpPost(resturi);
 
         JSONObject obj = null;
         try {
             obj = new JSONObject(message);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
 
         }
 
@@ -103,10 +101,10 @@ public class JanusRestMessenger implements IJanusMessenger {
         AsyncHttpClient.getDefaultInstance().executeJSONObject(post, new AsyncHttpClient.JSONObjectCallback() {
             @Override
             public void onCompleted(Exception e, AsyncHttpResponse source, JSONObject result) {
-               if(e==null)
-                receivedMessage(result.toString());
+                if (e == null)
+                    receivedMessage(result.toString());
                 else
-                   handler.onError(e);
+                    handler.onError(e);
             }
         });
 
@@ -118,7 +116,7 @@ public class JanusRestMessenger implements IJanusMessenger {
         //todo
         this.session_id = session_id;
         resturi = "";
-        resturi = uri +"/"+ session_id.toString();
+        resturi = uri + "/" + session_id.toString();
         sendMessage(message);
     }
 
@@ -128,7 +126,7 @@ public class JanusRestMessenger implements IJanusMessenger {
         this.session_id = session_id;
         this.handle_id = handle_id;
         resturi = "";
-        resturi = uri +"/"+ session_id.toString()+"/"+ handle_id.toString();
+        resturi = uri + "/" + session_id.toString() + "/" + handle_id.toString();
         sendMessage(message);
     }
 

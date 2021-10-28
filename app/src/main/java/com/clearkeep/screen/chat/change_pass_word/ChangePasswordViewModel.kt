@@ -5,11 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.ProfileRepository
+import com.clearkeep.repo.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
@@ -20,7 +19,7 @@ class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
     private val profileRepository: ProfileRepository,
     private val authRepository: AuthRepository,
-): ViewModel() {
+) : ViewModel() {
     private val _oldPassword = MutableLiveData<String>()
     private val _oldPasswordError = MutableLiveData<String>()
     val oldPasswordError: LiveData<String> get() = _oldPasswordError
@@ -36,7 +35,7 @@ class ChangePasswordViewModel @Inject constructor(
     val changePasswordResponse = MutableLiveData<Resource<Any>>()
 
     private val _isResetPassword = MutableLiveData<Boolean>()
-    val isResetPassword : LiveData<Boolean> get() = _isResetPassword
+    val isResetPassword: LiveData<Boolean> get() = _isResetPassword
 
     private var preAccessToken = ""
     private var userId = ""
@@ -116,8 +115,8 @@ class ChangePasswordViewModel @Inject constructor(
         val newPassword = _newPassword.value ?: ""
 
         viewModelScope.launch {
-            printlnCK("ChangePasswordViewModel preAccess $preAccessToken userId $userId domain $serverDomain")
-            changePasswordResponse.value = authRepository.resetPassword(preAccessToken, userId, serverDomain, newPassword)
+            changePasswordResponse.value =
+                authRepository.resetPassword(preAccessToken, userId, serverDomain, newPassword)
         }
     }
 

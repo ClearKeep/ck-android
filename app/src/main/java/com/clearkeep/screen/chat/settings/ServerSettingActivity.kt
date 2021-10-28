@@ -14,6 +14,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.livedata.observeAsState
+import com.clearkeep.R
 
 
 @AndroidEntryPoint
@@ -53,9 +54,10 @@ class ServerSettingActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun copyProfileLinkToClipBoard(label: String, text: String) {
-        val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard: ClipboardManager =
+            getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        Toast.makeText(applicationContext, "You copied", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, getString(R.string.copied), Toast.LENGTH_SHORT).show()
     }
 }

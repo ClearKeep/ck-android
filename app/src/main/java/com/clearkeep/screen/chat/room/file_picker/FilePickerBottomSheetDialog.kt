@@ -74,7 +74,8 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
                         .align(Alignment.CenterEnd)
                         .clickable {
                             addFileLauncher.launch(mimeTypes)
-                        }, verticalAlignment = Alignment.CenterVertically) {
+                        }, verticalAlignment = Alignment.CenterVertically
+                ) {
                     Image(painterResource(R.drawable.ic_plus), null)
                     CKText("Add File")
                 }

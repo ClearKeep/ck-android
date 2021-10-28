@@ -24,7 +24,7 @@ message ClientReadObject {
 
 
 message BaseResponse {
-    string error = 1;
+  string error = 1;
 }
 // Request: get list message group
 message GetMessagesInGroupRequest {
@@ -108,16 +108,16 @@ message EditMessageRequest {
 
 // Method
 service Message {
-    rpc get_messages_in_group(GetMessagesInGroupRequest) returns (GetMessagesInGroupResponse) {};
-    rpc workspace_get_messages_in_group(WorkspaceGetMessagesInGroupRequest) returns (GetMessagesInGroupResponse) {};
-    //action
-    rpc Subscribe (SubscribeRequest) returns (BaseResponse);
-    rpc UnSubscribe (UnSubscribeRequest) returns (BaseResponse);
-    rpc Listen (ListenRequest) returns (stream MessageObjectResponse);
-    rpc Publish (PublishRequest) returns (MessageObjectResponse);
-    rpc read_messages (ReadMessagesRequest) returns (BaseResponse);
-    //
-    //
-    rpc workspace_publish (WorkspacePublishRequest) returns (MessageObjectResponse);
-    //rpc edit_message (EditMessageRequest) returns (MessageObjectResponse);
+  rpc get_messages_in_group(GetMessagesInGroupRequest) returns (GetMessagesInGroupResponse) {};
+  rpc workspace_get_messages_in_group(WorkspaceGetMessagesInGroupRequest) returns (GetMessagesInGroupResponse) {};
+  //action
+  rpc Subscribe (SubscribeRequest) returns (BaseResponse);
+  rpc UnSubscribe (UnSubscribeRequest) returns (BaseResponse);
+  rpc Listen (ListenRequest) returns (stream MessageObjectResponse);
+  rpc Publish (PublishRequest) returns (MessageObjectResponse);
+  rpc read_messages (ReadMessagesRequest) returns (BaseResponse);
+  //
+  //
+  rpc workspace_publish (WorkspacePublishRequest) returns (MessageObjectResponse);
+  //rpc edit_message (EditMessageRequest) returns (MessageObjectResponse);
 }

@@ -14,6 +14,7 @@
         tools:layout_height="50dp"
         android:background="@android:color/transparent"
         android:orientation="horizontal">
+
         <ImageView
             android:id="@+id/imgBack"
             android:layout_width="wrap_content"
@@ -21,7 +22,7 @@
             android:layout_centerVertical="true"
             android:paddingStart="14dp"
             android:paddingEnd="30dp"
-            android:src="@drawable/ic_string_ee_back"/>
+            android:src="@drawable/ic_string_ee_back" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -52,6 +53,7 @@
         android:layout_below="@id/tvUserName"
         android:layout_marginTop="14dp"
         android:layout_marginBottom="30dp">
+
         <TextView
             android:id="@+id/tvCallState"
             android:layout_width="wrap_content"
@@ -69,7 +71,7 @@
             android:textColor="?attr/appCallTextColor"
             tools:textColor="@android:color/white"
             android:visibility="gone"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true" />
     </RelativeLayout>
 
     <LinearLayout
@@ -79,13 +81,14 @@
         android:layout_above="@id/bottomButtonContainer"
         android:background="@android:color/transparent"
         android:gravity="center_horizontal">
+
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgThumb"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:src="@drawable/ic_thumb_test"
             app:civ_border_color="@android:color/transparent"
-            app:civ_border_width="0.5dp"/>
+            app:civ_border_width="0.5dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -95,6 +98,7 @@
         android:layout_marginTop="50dp"
         android:orientation="vertical"
         android:layout_alignParentBottom="true">
+
         <LinearLayout
             android:id="@+id/llMainButtonContainer"
             android:layout_width="match_parent"
@@ -102,18 +106,21 @@
             android:layout_marginTop="40dp"
             android:layout_marginBottom="87dp"
             android:orientation="horizontal">
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical">
+
                 <ImageView
                     android:id="@+id/imgEnd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="?attr/buttonEndCall"
                     tools:src="@drawable/ic_string_ee_call" />
+
                 <TextView
                     android:id="@+id/tvEndButtonDescription"
                     android:layout_width="wrap_content"
@@ -133,12 +140,14 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical">
+
                 <ImageView
                     android:id="@+id/imgAnswer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="?attr/buttonAnswer"
                     tools:src="@drawable/ic_string_ee_answer" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

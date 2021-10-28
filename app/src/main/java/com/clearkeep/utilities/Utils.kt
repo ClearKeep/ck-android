@@ -55,18 +55,23 @@ fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val inputTime = Calendar.getInstance()
     inputTime.timeInMillis = timeMs
 
-    val time = if (includeTime) " at ${SimpleDateFormat("hh:mm aa", Locale.US).format(inputTime.time)}" else ""
+    val time = if (includeTime) " at ${
+        SimpleDateFormat(
+            "hh:mm aa",
+            Locale.US
+        ).format(inputTime.time)
+    }" else ""
 
     return if (
-        inputTime[Calendar.YEAR] === nowTime[Calendar.YEAR]
-        && inputTime[Calendar.MONTH] === nowTime[Calendar.MONTH]
-        && inputTime[Calendar.WEEK_OF_MONTH] === nowTime[Calendar.WEEK_OF_MONTH]
+        inputTime[Calendar.YEAR] == nowTime[Calendar.YEAR]
+        && inputTime[Calendar.MONTH] == nowTime[Calendar.MONTH]
+        && inputTime[Calendar.WEEK_OF_MONTH] == nowTime[Calendar.WEEK_OF_MONTH]
     ) {
         when {
-            nowTime[Calendar.DATE] === inputTime[Calendar.DATE] -> {
+            nowTime[Calendar.DATE] == inputTime[Calendar.DATE] -> {
                 "Today$time"
             }
-            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] === 1 -> {
+            nowTime[Calendar.DATE] - inputTime[Calendar.DATE] == 1 -> {
                 "Yesterday$time"
             }
             else -> {
@@ -78,14 +83,16 @@ fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     }
 }
 
-fun getHourTimeAsString(timeMs: Long) : String {
+fun getHourTimeAsString(timeMs: Long): String {
     val formatter = SimpleDateFormat("HH:mm")
 
     return formatter.format(Date(timeMs))
 }
 
 fun printlnCK(str: String) {
-    println("CKLog_$str")
+    if (BuildConfig.DEBUG) {
+        println("CKLog_$str")
+    }
 }
 
 fun getUnableErrorMessage(message: String?): String {
@@ -96,7 +103,8 @@ fun getUnableErrorMessage(message: String?): String {
     }
 }
 
-fun CharSequence?.isValidEmail() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
+fun CharSequence?.isValidEmail() =
+    !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
 fun isServiceRunning(context: Context, serviceName: String): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -115,27 +123,28 @@ fun isOnline(context: Context): Boolean {
     val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     if (connectivityManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-                if (capabilities != null) {
-                    when {
-                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                            return true
-                        }
-                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                            return true
-                        }
-                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                            return true
-                        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                when {
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                        return true
                     }
                 }
-            } else {
-                val activeNetworkInfo = connectivityManager.activeNetworkInfo
-                if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
-                    return true
-                }
             }
+        } else {
+            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+            if (activeNetworkInfo != null && activeNetworkInfo.isConnected) {
+                return true
+            }
+        }
     }
     return false
 }
@@ -152,6 +161,7 @@ fun dp2px(dpValue: Float): Int {
     val scale = Resources.getSystem().displayMetrics.density
     return (dpValue * scale + 0.5f).toInt()
 }
+
 fun View.gone() {
     if (visibility != View.GONE)
         visibility = View.GONE
@@ -168,31 +178,33 @@ fun View.invisible() {
 }
 
 
-
 fun convertSecondsToHMmSs(seconds: Long): String {
     val s = seconds % 60
     val m = seconds / 60 % 60
     val h = seconds / (60 * 60) % 24
-    if (h<1){
-        return String.format("%02d:%02d",m, s)
+    if (h < 1) {
+        return String.format("%02d:%02d", m, s)
     }
     return String.format("%02d:%02d:%02d", h, m, s)
 }
 
-fun isOdd(num: Int) : Boolean {
+fun isOdd(num: Int): Boolean {
     return num % 2 != 0
 }
 
-fun parseError(e: StatusRuntimeException) : ProtoResponse {
+fun parseError(e: StatusRuntimeException): ProtoResponse {
     if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED || e.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-        return ProtoResponse(ERROR_CODE_TIMEOUT, "We are unable to detect an internet connection. Please try again when you have a stronger connection.")
+        return ProtoResponse(
+            ERROR_CODE_TIMEOUT,
+            "We are unable to detect an internet connection. Please try again when you have a stronger connection."
+        )
     }
 
     val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
     return try {
         Gson().fromJson(rawError, ProtoResponse::class.java)
     } catch (e: Exception) {
-        println("parseError exception rawError $rawError, exception ${e.message}")
+        printlnCK("parseError exception rawError $rawError, exception ${e.message}")
         ProtoResponse(0, rawError)
     }
 }
@@ -250,7 +262,7 @@ fun defaultNonScalableTextSize(): TextUnit {
 }
 
 @Composable
-fun Int.sdp() : Dp {
+fun Int.sdp(): Dp {
     return when (this) {
         0 -> 0.dp
         1 -> dimensionResource(R.dimen._1sdp)

@@ -5,29 +5,16 @@ import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.db.ClearKeepDatabase
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.model.*
-import com.clearkeep.db.signal_key.CKSignalProtocolAddress
-import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.*
-import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import org.whispersystems.libsignal.groups.SenderKeyName
 import javax.inject.Inject
-import java.security.SecureRandom
-import java.security.spec.KeySpec
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 
 
 class HomeViewModel @Inject constructor(
@@ -37,17 +24,11 @@ class HomeViewModel @Inject constructor(
     messageRepository: MessageRepository,
     private val environment: Environment,
     authRepository: AuthRepository,
-    private val signalProtocolStore: InMemorySignalProtocolStore,
     private val storage: UserPreferencesStorage,
-    private val clearKeepDatabase: ClearKeepDatabase,
-    private val signalKeyDatabase: SignalKeyDatabase,
     private val workSpaceRepository: WorkSpaceRepository,
     private val peopleRepository: PeopleRepository,
-    private val senderKeyStore: InMemorySenderKeyStore,
-    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val signalKeyDAO : SignalKeyDAO,
-    private val signalPreKeyDAO: SignalPreKeyDAO
-    ): BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
+    private val signalKeyRepository: SignalKeyRepository,
+) : BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     val isLogout = serverRepository.isLogout
@@ -60,12 +41,11 @@ class HomeViewModel @Inject constructor(
 
     val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
 
-    val isRefreshing= MutableLiveData(false)
+    val isRefreshing = MutableLiveData(false)
 
     private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
     val currentStatus: LiveData<String>
-
-    get() = _currentStatus
+        get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
     val listUserInfo: LiveData<List<User>>
         get() = _listUserStatus
@@ -73,13 +53,12 @@ class HomeViewModel @Inject constructor(
     val serverUrlValidateResponse = MutableLiveData<String>()
 
     private val _isServerUrlValidateLoading = MutableLiveData<Boolean>()
-    val isServerUrlValidateLoading : LiveData<Boolean>
+    val isServerUrlValidateLoading: LiveData<Boolean>
         get() = _isServerUrlValidateLoading
 
     private var checkValidServerJob: Job? = null
 
     init {
-        printlnCK("Share file cancel HomeViewModel init")
         viewModelScope.launch {
             messageRepository.clearTempNotes()
             messageRepository.clearTempMessage()
@@ -90,15 +69,13 @@ class HomeViewModel @Inject constructor(
         sendPing()
     }
 
-    fun onPullToRefresh(){
+    fun onPullToRefresh() {
         isRefreshing.postValue(true)
         viewModelScope.launch {
             roomRepository.fetchGroups()
             isRefreshing.postValue(false)
         }
     }
-
-
 
     val chatGroups = liveData<List<ChatGroup>> {
         val result = MediatorLiveData<List<ChatGroup>>()
@@ -149,34 +126,34 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun getStatusUserInDirectGroup() {
         try {
-                val listUserRequest = arrayListOf<User>()
-                roomRepository.getAllPeerGroupByDomain(
-                    owner = Owner(
-                        getDomainOfActiveServer(),
-                        getClientIdOfActiveServer()
-                    )
+            val listUserRequest = arrayListOf<User>()
+            roomRepository.getAllPeerGroupByDomain(
+                owner = Owner(
+                    getDomainOfActiveServer(),
+                    getClientIdOfActiveServer()
                 )
-                    .forEach { group ->
-                        if (!group.isGroup()) {
-                            val user = group.clientList.firstOrNull { client ->
-                                client.userId != getClientIdOfActiveServer()
-                            }
-                            if (user != null) {
-                                listUserRequest.add(user)
-                            }
+            )
+                .forEach { group ->
+                    if (!group.isGroup()) {
+                        val user = group.clientList.firstOrNull { client ->
+                            client.userId != getClientIdOfActiveServer()
+                        }
+                        if (user != null) {
+                            listUserRequest.add(user)
                         }
                     }
-                val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
-                _listUserStatus.postValue(listClientStatus)
-                listClientStatus?.forEach {
-                    currentServer.value?.serverDomain?.let { it1 ->
-                        currentServer.value?.ownerClientId?.let { it2 ->
-                            Owner(it1, it2)
-                        }
-                    }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
                 }
-                delay(60 * 1000)
-                getStatusUserInDirectGroup()
+            val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+            _listUserStatus.postValue(listClientStatus)
+            listClientStatus?.forEach {
+                currentServer.value?.serverDomain?.let { it1 ->
+                    currentServer.value?.ownerClientId?.let { it2 ->
+                        Owner(it1, it2)
+                    }
+                }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
+            }
+            delay(60 * 1000)
+            getStatusUserInDirectGroup()
 
         } catch (e: Exception) {
             printlnCK("getStatusUserInDirectGroup error: ${e.message}")
@@ -185,7 +162,7 @@ class HomeViewModel @Inject constructor(
 
     private fun sendPing() {
         viewModelScope.launch {
-            delay(60*1000)
+            delay(60 * 1000)
             peopleRepository.sendPing()
             sendPing()
         }
@@ -193,7 +170,7 @@ class HomeViewModel @Inject constructor(
 
     fun setUserStatus(status: UserStatus) {
         viewModelScope.launch {
-           val result= peopleRepository.updateStatus(status.value)
+            val result = peopleRepository.updateStatus(status.value)
             if (result) _currentStatus.postValue(status.value)
         }
     }
@@ -205,8 +182,6 @@ class HomeViewModel @Inject constructor(
             _prepareState.value = PrepareSuccess
         }
     }
-
-    fun searchGroup(text: String) {}
 
     override fun selectChannel(server: Server) {
         viewModelScope.launch {
@@ -228,8 +203,6 @@ class HomeViewModel @Inject constructor(
     val isLogOutProcessing: LiveData<Boolean>
         get() = _isLogOutProcessing
 
-    private val _isLogOutCompleted = MutableLiveData(false)
-
     private fun updateFirebaseToken() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -247,13 +220,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun clearDatabase() = withContext(Dispatchers.IO) {
-        storage.clear()
-        signalProtocolStore.clear()
-        clearKeepDatabase.clearAllTables()
-        signalKeyDatabase.clearAllTables()
-    }
-
     private suspend fun pushFireBaseTokenToServer() = withContext(Dispatchers.IO) {
         val token = storage.getString(FIREBASE_TOKEN)
         if (!token.isNullOrEmpty()) {
@@ -261,9 +227,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getProfileLink() : String {
+    fun getProfileLink(): String {
         val server = environment.getServer()
-        return getLinkFromPeople(User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain))
+        return getLinkFromPeople(
+            User(
+                userId = server.profile.userId,
+                userName = server.profile.userName ?: "",
+                domain = server.serverDomain
+            )
+        )
     }
 
     fun checkValidServerUrl(url: String) {
@@ -285,7 +257,8 @@ class HomeViewModel @Inject constructor(
             }
 
             val server = environment.getServer()
-            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
+            val workspaceInfoResponse =
+                workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
             _isServerUrlValidateLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
@@ -303,44 +276,10 @@ class HomeViewModel @Inject constructor(
     }
 
     fun deleteKey() {
-         viewModelScope.launch {
-            val index= signalIdentityKeyDAO
-                 .deleteSignalKeyByOwnerDomain(
-                     clientId = environment.getServer().ownerClientId,
-                     environment.getServer().serverDomain
-                 )
-             printlnCK("delete signalIdentityKeyDAO $index")
-            val senderAddress = CKSignalProtocolAddress(
-                Owner(
-                    currentServer.value!!.serverDomain,
-                    currentServer.value!!.ownerClientId
-                ), 222
-            )
-
-             val test4 = signalPreKeyDAO.deleteSignalSenderKey(
-                 currentServer.value!!.serverDomain,
-                 currentServer.value!!.ownerClientId
-             )
-
-            printlnCK("deleteKey 2 ${currentServer.value!!.serverDomain}   ${test4}")
-
-            chatGroups.value?.forEach { group->
-                val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)
-                senderKeyStore.deleteSenderKey(groupSender2)
-                printlnCK("deleteSignalSenderKey2: ${groupSender2.groupId}  ${groupSender2.sender.name}")
-                group.clientList.forEach {
-                    val senderAddress = CKSignalProtocolAddress(
-                        Owner(
-                            it.domain,
-                            it.userId
-                        ), 111
-                    )
-                    val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
-                    val test2 =
-                        signalKeyDAO.deleteSignalSenderKey(groupSender.groupId, groupSender.sender.name)
-                    printlnCK("chatGroups signalKey ${groupSender.sender.name} ${test2}")
-                }
-            }
+        viewModelScope.launch {
+            val server = environment.getServer()
+            val owner = Owner(server.serverDomain, server.ownerClientId)
+            signalKeyRepository.deleteKey(owner, currentServer.value!!, chatGroups.value)
         }
     }
 }

@@ -12,16 +12,13 @@ interface ServerDAO {
     suspend fun insert(server: Server)
 
     @Query("DELETE FROM server WHERE id =:serverId")
-    suspend fun deleteServer(serverId: Int) : Int
+    suspend fun deleteServer(serverId: Int): Int
 
     @Query("SELECT * FROM server WHERE server_domain = :domain AND owner_client_id = :clientId")
     suspend fun getServer(domain: String, clientId: String): Server?
 
     @Query("SELECT * FROM server WHERE is_active = 1 LIMIT 1")
     suspend fun getDefaultServer(): Server
-
-    @Query("UPDATE server SET is_active = CASE id WHEN :serverId THEN 1 ELSE 0 END")
-    suspend fun setDefaultServer(serverId: Int)
 
     @Query("UPDATE server SET is_active = CASE server_domain WHEN :domain THEN 1 ELSE 0 END")
     suspend fun setDefaultServerByDomain(domain: String)

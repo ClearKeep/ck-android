@@ -111,7 +111,14 @@ fun RoomScreen(
     }
 
     printlnCK("test: ${group?.clientList}")
-    val groupName = if (isNote.value == true) "Note" else group?.groupName ?: ""
+    val groupName =
+        when {
+            isNote.value == true -> stringResource(R.string.note)
+            group?.isDeletedUserPeer == true -> stringResource(
+                R.string.deleted_user
+            )
+            else -> group?.groupName ?: ""
+        }
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -132,11 +139,13 @@ fun RoomScreen(
                             if (friend != null) {
                                 roomViewModel.uploadFile(context, group.groupId, null, friend)
                             } else {
-                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                roomViewModel.sendMessageResponse.value =
+                                    Resource.error("", null, ERROR_CODE_TIMEOUT)
                             }
                         }
                     } else {
-                        roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                        roomViewModel.sendMessageResponse.value =
+                            Resource.error("", null, ERROR_CODE_TIMEOUT)
                     }
                 }
             }
@@ -156,6 +165,7 @@ fun RoomScreen(
                     avatars = listPeerAvatars.value,
                     isGroup = group?.isGroup() ?: false,
                     isNote = isNote.value ?: false,
+                    isDeletedUserChat = group?.isDeletedUserPeer ?: false,
                     onBackClick = {
                         onFinishActivity()
                     },
@@ -189,7 +199,7 @@ fun RoomScreen(
                         MessageListView(
                             messageList = messageList,
                             clients = group?.clientList ?: emptyList(),
-                            listAvatar= listUserStatusState.value?: emptyList(),
+                            listAvatar = listUserStatusState.value ?: emptyList(),
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,
@@ -228,66 +238,71 @@ fun RoomScreen(
                     Column(Modifier.weight(0.66f)) {
                         Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
                             Box(Modifier.fillMaxSize()) {
-                                CKCircularProgressIndicator(Modifier.align(Alignment.Center))
+                                //CKCircularProgressIndicator(Modifier.align(Alignment.Center))
                             }
                         }
                     }
                 }
-                SendBottomCompose(
-                    roomViewModel,
-                    navHostController,
-                    onSendMessage = { message ->
-                        val validMessage =
-                            message.trim()
-                                .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
-                        if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
-                            return@SendBottomCompose
-                        }
-                        val isGroup = group?.isGroup()
-                        if (isNote.value == true) {
-                            roomViewModel.sendNote(context)
-                        } else if (isGroup == true) {
-                            val isJoined=group.isJoined
-                            roomViewModel.sendMessageToGroup(
-                                context,
-                                group.groupId,
-                                validMessage,
-                                isJoined
-                            )
-                        } else {
-                            val friend = group?.clientList?.firstOrNull { client ->
-                                client.userId != roomViewModel.clientId
+                if (group != null && !group.isDeletedUserPeer) {
+                    SendBottomCompose(
+                        roomViewModel,
+                        onSendMessage = { message ->
+                            val validMessage =
+                                message.trim()
+                                    .dropLastWhile { it.equals("\\n") || it.equals("\\r") }
+                            if (validMessage.isEmpty() && roomViewModel.imageUriSelected.value.isNullOrEmpty()) {
+                                return@SendBottomCompose
                             }
-                            if (friend != null) {
-                                roomViewModel.sendMessageToUser(
+                            val isGroup = group.isGroup()
+                            if (isNote.value == true) {
+                                roomViewModel.sendNote(context)
+                            } else if (isGroup) {
+                                val isJoined = group.isJoined
+                                roomViewModel.sendMessageToGroup(
                                     context,
-                                    friend,
                                     group.groupId,
-                                    validMessage
+                                    validMessage,
+                                    isJoined
                                 )
                             } else {
-                                roomViewModel.sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                val friend = group.clientList.firstOrNull { client ->
+                                    client.userId != roomViewModel.clientId
+                                }
+                                if (friend != null) {
+                                    roomViewModel.sendMessageToUser(
+                                        context,
+                                        friend,
+                                        group.groupId,
+                                        validMessage
+                                    )
+                                } else {
+                                    roomViewModel.sendMessageResponse.value =
+                                        Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                }
+                            }
+                        },
+                        onClickUploadPhoto = {
+                            focusManager.clearFocus()
+                            Handler(Looper.getMainLooper()).postDelayed(
+                                KEYBOARD_HIDE_DELAY_MILLIS
+                            ) {
+                                isUploadPhotoDialogVisible.value = true
                             }
                         }
-                    },
-                    onClickUploadPhoto = {
-                        focusManager.clearFocus()
-                        Handler(Looper.getMainLooper()).postDelayed(
-                            KEYBOARD_HIDE_DELAY_MILLIS
-                        ) {
-                            isUploadPhotoDialogVisible.value = true
-                        }
-                    },
-                    onClickUploadFile = {
+                    ) {
                         keyboardController?.hide()
                         coroutineScope.launch {
                             delay(KEYBOARD_HIDE_DELAY_MILLIS)
                             bottomSheetState.show()
                         }
                     }
-                )
+                }
             }
+            val isLoading = roomViewModel.isLoading.observeAsState()
+            if (isLoading.value == true)
+                CKCircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
+
     }
     requestCallViewState.value?.let {
         printlnCK("status = ${it.status}")
@@ -399,14 +414,18 @@ fun MessageClickDialog(
                         .background(Color.White)
                 ) {
                     Text(
-                        "Copy",
+                        stringResource(R.string.copy),
                         Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
                             .clickable {
                                 roomViewModel.copySelectedMessage(context)
                                 Toast
-                                    .makeText(context, "You copied", Toast.LENGTH_SHORT)
+                                    .makeText(
+                                        context,
+                                        context.getString(R.string.copied),
+                                        Toast.LENGTH_SHORT
+                                    )
                                     .show()
                                 onDismiss()
                             }, textAlign = TextAlign.Center, color = colorLightBlue
@@ -415,7 +434,7 @@ fun MessageClickDialog(
                 Spacer(Modifier.height(8.dp))
                 Box {
                     Text(
-                        "Cancel", modifier = Modifier
+                        stringResource(R.string.cancel), modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
                             .background(Color.White)
                             .align(Alignment.Center)

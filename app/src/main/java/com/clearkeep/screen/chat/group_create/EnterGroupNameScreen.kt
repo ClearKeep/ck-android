@@ -27,90 +27,100 @@ fun EnterGroupNameScreen(
     navController: NavHostController,
     createGroupViewModel: CreateGroupViewModel,
 ) {
-    val groupName = remember {mutableStateOf("")}
+    val groupName = remember { mutableStateOf("") }
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     val friends = createGroupViewModel.invitedFriends
     val isLoadingState = remember { mutableStateOf(false) }
     Box {
-    Surface(
-        color = MaterialTheme.colors.background
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.sdp())
-                    .weight(0.66f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
-                    verticalAlignment = Alignment.CenterVertically
+        Surface(
+            color = MaterialTheme.colors.background
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 16.sdp())
+                        .weight(0.66f)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .weight(1.0f, true),
-                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.padding(end = 8.sdp(), top = 24.sdp()),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = {
-                                navController.popBackStack(
-                                    navController.graph.startDestination,
-                                    false
+                        Row(
+                            modifier = Modifier
+                                .weight(1.0f, true),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    navController.popBackStack(
+                                        navController.graph.startDestination,
+                                        false
+                                    )
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_chev_left),
+                                    contentDescription = "",
+                                    tint = grayscale1
                                 )
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_chev_left),
-                                contentDescription = "",
-                                tint = grayscale1
+                            CKHeaderText(
+                                stringResource(R.string.create_group),
+                                headerTextType = HeaderTextType.Medium
                             )
                         }
-                        CKHeaderText("Create group", headerTextType = HeaderTextType.Medium)
                     }
-                }
-                Spacer(modifier = Modifier.height(24.sdp()))
-                CKHeaderText("Group Name", headerTextType = HeaderTextType.Normal)
-                Spacer(modifier = Modifier.height(16.sdp()))
-                CKTextInputField(
-                    "Name this group",
-                    groupName
-                )
-                Spacer(modifier = Modifier.height(16.sdp()))
-                CKHeaderText("Users in this group", headerTextType = HeaderTextType.Normal, color = grayscale3)
-                Spacer(modifier = Modifier.height(16.sdp()))
-                friends.let { values ->
-                    LazyColumn(
-                        contentPadding = PaddingValues(end = 16.sdp()),
-                    ) {
-                        itemsIndexed(values) { _, friend ->
-                            FriendListItem(friend)
+                    Spacer(modifier = Modifier.height(24.sdp()))
+                    CKHeaderText(
+                        stringResource(R.string.create_group_group_name),
+                        headerTextType = HeaderTextType.Normal
+                    )
+                    Spacer(modifier = Modifier.height(16.sdp()))
+                    CKTextInputField(
+                        stringResource(R.string.create_group_group_name_placeholder),
+                        groupName
+                    )
+                    Spacer(modifier = Modifier.height(16.sdp()))
+                    CKHeaderText(
+                        stringResource(R.string.create_group_users),
+                        headerTextType = HeaderTextType.Normal,
+                        color = grayscale3
+                    )
+                    Spacer(modifier = Modifier.height(16.sdp()))
+                    friends.let { values ->
+                        LazyColumn(
+                            contentPadding = PaddingValues(end = 16.sdp()),
+                        ) {
+                            itemsIndexed(values) { _, friend ->
+                                FriendListItem(friend)
+                            }
                         }
                     }
                 }
-            }
-            Column(
-                modifier = Modifier
-                    .padding(16.sdp())
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CKButton(
-                    stringResource(R.string.create),
-                    onClick = {
-                        if (groupName.value.trim().isNotEmpty()) {
-                            createGroupViewModel.createGroup(groupName.value.trim(),onError = {
-                                isLoadingState.value = false
-                            })
-                            isLoadingState.value = true
-                        }
-                    },
+                Column(
                     modifier = Modifier
-                        .width(200.sdp()),
-                    enabled = groupName.value.isNotBlank() && !isLoadingState.value
-                )
+                        .padding(16.sdp())
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CKButton(
+                        stringResource(R.string.create),
+                        onClick = {
+                            if (groupName.value.trim().isNotEmpty()) {
+                                createGroupViewModel.createGroup(groupName.value.trim(), onError = {
+                                    isLoadingState.value = false
+                                })
+                                isLoadingState.value = true
+                            }
+                        },
+                        modifier = Modifier
+                            .width(200.sdp()),
+                        enabled = groupName.value.isNotBlank() && !isLoadingState.value
+                    )
+                }
             }
         }
-    }
         isLoadingState.value.let {
             if (it) {
                 Column(
@@ -120,7 +130,7 @@ fun EnterGroupNameScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
 
-                ) {
+                    ) {
                     CKCircularProgressIndicator(
                         color = Color.Blue
                     )

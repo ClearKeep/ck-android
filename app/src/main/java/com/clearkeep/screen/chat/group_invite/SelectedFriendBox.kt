@@ -33,9 +33,11 @@ fun SelectedFriendBox(
             modifier = Modifier.padding(vertical = 5.sdp(), horizontal = 8.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(people.userName, style = MaterialTheme.typography.caption.copy(
-                color = grayscaleBlack
-            ))
+            Text(
+                people.userName, style = MaterialTheme.typography.caption.copy(
+                    color = grayscaleBlack
+                )
+            )
             Spacer(modifier = Modifier.width(13.sdp()))
             Icon(
                 Icons.Filled.Close,

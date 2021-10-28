@@ -39,7 +39,11 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
     val searchQuery = remember { mutableStateOf("") }
     val searchResult = remember { mutableStateOf(countryCodesToNames) }
 
-    Column(Modifier.fillMaxSize().padding(start = 12.sdp(), end = 23.sdp())) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(start = 12.sdp(), end = 23.sdp())
+    ) {
         Spacer(Modifier.height(30.sdp()))
         Image(
             painter = painterResource(id = R.drawable.ic_cross),
@@ -62,7 +66,6 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
                     item.second,
                     countryCode
                 ) {
-                    printlnCK("Pick country code $countryCode")
                     onPick.invoke(countryCode)
                 }
                 Divider(Modifier.height(1.sdp()), separatorDarkNonOpaque)

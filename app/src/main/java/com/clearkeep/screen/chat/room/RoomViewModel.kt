@@ -6,14 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
+import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
+import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
@@ -30,9 +33,7 @@ import java.security.MessageDigest
 import javax.inject.Inject
 import java.util.*
 
-
-class RoomViewModel
-@Inject constructor(
+class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val groupRepository: GroupRepository,
     private val signalKeyRepository: SignalKeyRepository,
@@ -41,7 +42,7 @@ class RoomViewModel
     messageRepository: MessageRepository,
     private val peopleRepository: PeopleRepository,
     private val environment: Environment,
-): BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
+) : BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
     val isLogout = serverRepository.isLogout
 
     private var roomId: Long? = null
@@ -59,7 +60,6 @@ class RoomViewModel
         get() = _group
 
     var clientId: String = ""
-
     var domain: String = ""
 
     val groups: LiveData<List<ChatGroup>> = groupRepository.getAllRooms()
@@ -75,21 +75,21 @@ class RoomViewModel
     val uploadFileResponse = MutableLiveData<Resource<String>>()
 
     private val _message = MutableLiveData<String>()
-    val message : LiveData<String>
+    val message: LiveData<String>
         get() = _message
 
     private val _isNote = MutableLiveData<Boolean>()
-    val isNote : LiveData<Boolean>
+    val isNote: LiveData<Boolean>
         get() = _isNote
 
-    private var _currentPhotoUri : Uri? = null
+    private var _currentPhotoUri: Uri? = null
 
     private val _imageDetailList = MutableLiveData<List<String>>()
-    val imageDetailList : LiveData<List<String>>
+    val imageDetailList: LiveData<List<String>>
         get() = _imageDetailList
 
     private val _imageDetailSenderName = MutableLiveData<String>()
-    val imageDetailSenderName : LiveData<String>
+    val imageDetailSenderName: LiveData<String>
         get() = _imageDetailSenderName
 
     private val _listUserStatus = MutableLiveData<List<User>>()
@@ -98,8 +98,8 @@ class RoomViewModel
 
     val listPeerAvatars = MutableLiveData<List<String>>()
 
-    private var _selectedMessage : MessageDisplayInfo? = null
-    val selectedMessage : MessageDisplayInfo?
+    private var _selectedMessage: MessageDisplayInfo? = null
+    val selectedMessage: MessageDisplayInfo?
         get() = _selectedMessage
 
     val getGroupResponse = MutableLiveData<Resource<ChatGroup>>()
@@ -107,14 +107,11 @@ class RoomViewModel
     val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val sendMessageResponse = MutableLiveData<Resource<Any>>()
 
-    init {
-        //getStatusUserInGroup()
-    }
+    val isLoading = MutableLiveData(false)
 
     fun setMessage(message: String) {
         _message.value = message
     }
-
 
     fun clearTempMessage() {
         viewModelScope.launch {
@@ -122,7 +119,6 @@ class RoomViewModel
             messageRepository.clearTempNotes()
         }
     }
-
 
     fun joinRoom(
         ownerDomain: String,
@@ -144,7 +140,8 @@ class RoomViewModel
         this.friendDomain = friendDomain
 
         viewModelScope.launch {
-            val selectedServer = serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
+            val selectedServer =
+                serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
                 return@launch
@@ -153,7 +150,9 @@ class RoomViewModel
             serverRepository.setActiveServer(selectedServer)
 
             if (roomId != null && roomId != 0L) {
+                isLoading.postValue(true)
                 updateGroupWithId(roomId)
+                isLoading.postValue(false)
                 getStatusUserInGroup()
             } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
                 updateGroupWithFriendId(friendId, friendDomain)
@@ -184,7 +183,6 @@ class RoomViewModel
         }
     }
 
-
     fun initNotes(
         ownerDomain: String,
         ownerClientId: String,
@@ -204,8 +202,7 @@ class RoomViewModel
         setJoiningRoomId(-1)
     }
 
-
-    fun refreshRoom(){
+    fun refreshRoom() {
         printlnCK("refreshRoom")
         viewModelScope.launch {
             roomId?.let { updateGroupWithId(it) }
@@ -222,11 +219,25 @@ class RoomViewModel
         return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
     }
 
-
-    fun getNotes() : LiveData<List<Message>> {
-        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes -> notes.map { Message(it.generateId?.toInt(), "", 0L, "", it.ownerClientId, "", it.content, it.createdTime, it.createdTime, it.ownerDomain, it.ownerClientId) } }
+    fun getNotes(): LiveData<List<Message>> {
+        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes ->
+            notes.map {
+                Message(
+                    it.generateId?.toInt(),
+                    "",
+                    0L,
+                    "",
+                    it.ownerClientId,
+                    "",
+                    it.content,
+                    it.createdTime,
+                    it.createdTime,
+                    it.ownerDomain,
+                    it.ownerClientId
+                )
+            }
+        }
     }
-
 
     private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
@@ -237,15 +248,18 @@ class RoomViewModel
         }
     }
 
-
     private suspend fun updateGroupWithFriendId(friendId: String, friendDomain: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
-        val friend = peopleRepository.getFriend(friendId, friendDomain, getOwner()) ?: User(userId = friendId, userName = "", domain = friendDomain)
+        val friend = peopleRepository.getFriend(friendId, friendDomain, getOwner())
+            ?: User(userId = friendId, userName = "", domain = friendDomain)
         if (friend == null) {
             printlnCK("updateGroupWithFriendId: can not find friend with id $friendId")
             return
         }
-        var existingGroup = groupRepository.getGroupPeerByClientId(friend, Owner(domain = domain, clientId = clientId))
+        var existingGroup = groupRepository.getGroupPeerByClientId(
+            friend,
+            Owner(domain = domain, clientId = clientId)
+        )
         if (existingGroup == null) {
             existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
         } else {
@@ -258,18 +272,21 @@ class RoomViewModel
         return Owner(domain, clientId)
     }
 
-
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
-        messageRepository.updateMessageFromAPI(groupId, Owner(server.serverDomain, server.profile.userId), lastMessageAt, 0)
+        messageRepository.updateMessageFromAPI(
+            groupId,
+            Owner(server.serverDomain, server.profile.userId),
+            lastMessageAt,
+            0
+        )
     }
 
-
     private suspend fun updateNotesFromRemote() {
+
         val server = environment.getServer()
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
-
 
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
         viewModelScope.launch {
@@ -285,7 +302,12 @@ class RoomViewModel
         }
     }
 
-    private fun sendMessageToUser(receiverPeople: User, groupId: Long, message: String, tempMessageId: Int = 0) {
+    private fun sendMessageToUser(
+        receiverPeople: User,
+        groupId: Long,
+        message: String,
+        tempMessageId: Int = 0
+    ) {
         viewModelScope.launch {
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
@@ -306,7 +328,16 @@ class RoomViewModel
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val response = chatRepository.sendMessageInPeer(clientId, domain, receiverPeople.userId, receiverPeople.domain, lastGroupId, message, isForceProcessKey = true, cachedMessageId = tempMessageId)
+                    val response = chatRepository.sendMessageInPeer(
+                        clientId,
+                        domain,
+                        receiverPeople.userId,
+                        receiverPeople.domain,
+                        lastGroupId,
+                        message,
+                        isForceProcessKey = true,
+                        cachedMessageId = tempMessageId
+                    )
                     isLatestPeerSignalKeyProcessed = response.status == Status.SUCCESS
                     sendMessageResponse.value = response
                 } else {
@@ -324,7 +355,6 @@ class RoomViewModel
         }
     }
 
-
     fun sendMessageToGroup(
         context: Context,
         groupId: Long,
@@ -336,7 +366,7 @@ class RoomViewModel
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
                     uploadImage(context, groupId, message, isRegisteredGroup)
                 } else {
-                    sendMessageToGroup(groupId, message, isRegisteredGroup)
+                    sendMessageToGroup(groupId, message)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -347,10 +377,9 @@ class RoomViewModel
     private suspend fun sendMessageToGroup(
         groupId: Long,
         message: String,
-        isRegisteredGroup: Boolean,
         cachedMessageId: Int = 0
     ) {
-         val group = groupRepository.getGroupByGroupId(groupId)
+        val group = groupRepository.getGroupByGroupId(groupId)
         group?.let {
             if (!group.isJoined) {
                 val result =
@@ -379,7 +408,6 @@ class RoomViewModel
         }
     }
 
-
     fun sendNote(context: Context) {
         viewModelScope.launch {
             try {
@@ -396,7 +424,15 @@ class RoomViewModel
 
     private fun sendNote(message: String, cachedNoteId: Long = 0) {
         viewModelScope.launch {
-            chatRepository.sendNote(Note(null, message, Calendar.getInstance().timeInMillis, domain, clientId), cachedNoteId)
+            chatRepository.sendNote(
+                Note(
+                    null,
+                    message,
+                    Calendar.getInstance().timeInMillis,
+                    domain,
+                    clientId
+                ), cachedNoteId
+            )
         }
     }
 
@@ -409,7 +445,6 @@ class RoomViewModel
             }
         }
     }
-
 
     fun removeMember(
         user: User,
@@ -436,8 +471,12 @@ class RoomViewModel
         roomId?.let {
             viewModelScope.launch {
                 val result = groupRepository.leaveGroup(it, getOwner())
-
                 if (result) {
+                    messageRepository.deleteMessageInGroup(
+                        it,
+                        getOwner().domain,
+                        getOwner().clientId
+                    )
                     onSuccess?.invoke()
                 } else {
                     onError?.invoke()
@@ -454,12 +493,12 @@ class RoomViewModel
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
                 printlnCK("requestCall $domain")
-                val friend = peopleRepository.getFriend(friendId!!, friendDomain!! , getOwner())!!
+                val friend = peopleRepository.getFriend(friendId!!, friendDomain!!, getOwner())!!
                 createGroupResponse.value = groupRepository.createGroupFromAPI(
                     user.userId,
                     "",
                     mutableListOf(user, friend),
-                        false
+                    false
                 )
                 createGroupResponse.value?.data?.let {
                     setJoiningGroup(it)
@@ -468,19 +507,11 @@ class RoomViewModel
             }
 
             if (lastGroupId != GROUP_ID_TEMPO && lastGroupId != 0L) {
-                requestCallState.value = Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
+                requestCallState.value =
+                    Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
             } else {
                 requestCallState.value = Resource.error("error",
                     _group.value?.let { RequestInfo(it, isAudioMode) })
-            }
-        }
-    }
-
-
-    fun deleteSelectedMessage() {
-        viewModelScope.launch {
-            if (isNote.value == true) {
-                messageRepository.deleteNote((selectedMessage?.message?.generateId ?: 0).toLong())
             }
         }
     }
@@ -500,7 +531,11 @@ class RoomViewModel
 
     private fun getUser(): User {
         val server = environment.getServer()
-        return User(userId = server.profile.userId, userName = server.profile.userName ?: "", domain = server.serverDomain)
+        return User(
+            userId = server.profile.userId,
+            userName = server.profile.userName ?: "",
+            domain = server.serverDomain
+        )
     }
 
     fun getCurrentUser(): User {
@@ -526,7 +561,6 @@ class RoomViewModel
         _imageUriSelected.value = list
     }
 
-
     private fun uploadImage(
         context: Context,
         groupId: Long = 0L,
@@ -537,10 +571,17 @@ class RoomViewModel
         val imageUris = _imageUriSelected.value
         _imageUriSelected.value = emptyList()
         imageUris?.let {
-            uploadFile(it, context, groupId, message, isRegisteredGroup, receiverPeople, persistablePermission = false)
+            uploadFile(
+                it,
+                context,
+                groupId,
+                message,
+                isRegisteredGroup,
+                receiverPeople,
+                persistablePermission = false
+            )
         }
     }
-
 
     fun uploadFile(
         context: Context, groupId: Long,
@@ -562,7 +603,6 @@ class RoomViewModel
         }
     }
 
-
     private fun uploadFile(
         urisList: List<String>,
         context: Context,
@@ -573,12 +613,11 @@ class RoomViewModel
         appendFileSize: Boolean = false,
         persistablePermission: Boolean = true
     ) {
-        printlnCK("upload files uri list $urisList")
         if (!urisList.isNullOrEmpty()) {
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
                     Resource.error(
-                        "Maximum number of attachments in a message reached (10)",
+                        context.getString(R.string.upload_file_error_too_many),
                         null
                     )
                 )
@@ -587,7 +626,7 @@ class RoomViewModel
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    Resource.error("Your file cannot be larger than 200MB.", null)
+                    Resource.error(context.getString(R.string.upload_file_error_too_large), null)
                 return
             }
 
@@ -595,7 +634,6 @@ class RoomViewModel
                 val tempMessageUris = urisList.joinToString(" ")
                 val tempMessageContent =
                     if (message != null) "$tempMessageUris $message" else tempMessageUris
-                println("take photo tempMessageContent $tempMessageContent")
                 val tempMessageId = if (isNote.value == true) {
                     messageRepository.saveNote(
                         Note(
@@ -630,7 +668,10 @@ class RoomViewModel
                     val uri = Uri.parse(uriString)
                     val contentResolver = context.contentResolver
                     if (persistablePermission) {
-                        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        contentResolver.takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
                     }
                     val mimeType = getFileMimeType(context, uri, persistablePermission)
                     val fileName = uri.getFileName(context, persistablePermission)
@@ -671,7 +712,8 @@ class RoomViewModel
                     }
                 }
                 val fileUrlsString = if (appendFileSize) {
-                    fileUrls.filter{ it.isNotBlank() }.mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
+                    fileUrls.filter { it.isNotBlank() }
+                        .mapIndexed { index, url -> "$url|${filesSizeInBytes[index]}" }
                         .joinToString(" ")
                 } else {
                     fileUrls.joinToString(" ")
@@ -682,12 +724,10 @@ class RoomViewModel
                     if (isNote.value == true) {
                         sendNote(messageContent, tempMessageId.toLong())
                     } else {
-                        println("take photo upload success messageContent $messageContent")
                         if (isRegisteredGroup != null) {
                             sendMessageToGroup(
                                 groupId,
                                 messageContent,
-                                isRegisteredGroup,
                                 tempMessageId.toInt()
                             )
                         } else {
@@ -707,7 +747,11 @@ class RoomViewModel
     private fun isValidFilesCount(fileUriList: List<String>?) =
         fileUriList != null && fileUriList.size <= FILE_MAX_COUNT
 
-    private fun isValidFileSizes(context: Context, fileUriList: List<String>, persistablePermission: Boolean): Boolean {
+    private fun isValidFileSizes(
+        context: Context,
+        fileUriList: List<String>,
+        persistablePermission: Boolean
+    ): Boolean {
         var totalFileSize = 0L
         fileUriList.forEach {
             val uri = Uri.parse(it)
@@ -740,7 +784,7 @@ class RoomViewModel
         chatRepository.downloadFile(context, getFileNameFromUrl(url), getFileUrl(url))
     }
 
-    fun getPhotoUri(context: Context) : Uri {
+    fun getPhotoUri(context: Context): Uri {
         if (_currentPhotoUri == null) {
             _currentPhotoUri = generatePhotoUri(context)
         }
@@ -755,21 +799,17 @@ class RoomViewModel
         _imageDetailSenderName.value = senderName
     }
 
-    fun getUserName() : String {
+    fun getUserName(): String {
         return environment.getServer().profile.userName ?: ""
     }
 
-    fun getUserAvatarUrl() : String {
-        return ""
+    fun getUserAvatarUrl(): String {
+        printlnCK("getUserAvatarUrl: ${listPeerAvatars.value?.get(0)}")
+        return listPeerAvatars.value?.get(0) ?: ""
     }
 
     fun setSelectedMessage(selectedMessage: MessageDisplayInfo) {
         _selectedMessage = selectedMessage
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        printlnCK("Share file cancel onCleared")
     }
 
     companion object {

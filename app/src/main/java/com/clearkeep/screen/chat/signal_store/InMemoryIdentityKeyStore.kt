@@ -19,8 +19,8 @@ import org.whispersystems.libsignal.util.KeyHelper
 import java.util.HashMap
 
 class InMemoryIdentityKeyStore(
-        private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-        private val environment: Environment
+    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    private val environment: Environment
 ) : IdentityKeyStore, Closeable {
     private val trustedKeys: MutableMap<SignalProtocolAddress, IdentityKey> = HashMap()
 
@@ -46,7 +46,6 @@ class InMemoryIdentityKeyStore(
             identityKey = getOrGenerateIdentityKey(clientId, domain)
         }
 
-        printlnCK("InMemoryIdentityKeyStore getLocalRegistrationId regId ${identityKey!!.registrationId}")
         return identityKey!!.registrationId
     }
 
@@ -60,7 +59,11 @@ class InMemoryIdentityKeyStore(
         }
     }
 
-    override fun isTrustedIdentity(address: SignalProtocolAddress, identityKey: IdentityKey, direction: IdentityKeyStore.Direction): Boolean {
+    override fun isTrustedIdentity(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+        direction: IdentityKeyStore.Direction
+    ): Boolean {
         /*val trusted = trustedKeys[address]
         return trusted == null || trusted == identityKey*/
         return true
@@ -70,7 +73,7 @@ class InMemoryIdentityKeyStore(
         return trustedKeys[address]
     }
 
-    fun generateIdentityKeyPair(clientId: String, domain: String) : SignalIdentityKey {
+    fun generateIdentityKeyPair(clientId: String, domain: String): SignalIdentityKey {
         val identityKeyPair = KeyHelper.generateIdentityKeyPair()
         val registrationID = KeyHelper.generateRegistrationId(false)
         return SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
@@ -78,13 +81,10 @@ class InMemoryIdentityKeyStore(
 
 
     @WorkerThread
-    private fun getOrGenerateIdentityKey(clientId: String, domain: String) : SignalIdentityKey {
+    private fun getOrGenerateIdentityKey(clientId: String, domain: String): SignalIdentityKey {
         var signalIdentityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
 
-        printlnCK("InMemoryIdentityKeyStore getOrGenerateIdentityKey all identity keys ${signalIdentityKeyDAO.getAllIdentityKey()}")
-
         if (signalIdentityKey == null) {
-            printlnCK("InMemoryIdentityKeyStore getOrGenerateIdentityKey generating identity key ${signalIdentityKeyDAO.getAllIdentityKey()} for clientId $clientId domain $domain")
             signalIdentityKey = generateIdentityKeyPair(clientId, domain)
 
             signalIdentityKeyDAO.insert(signalIdentityKey)

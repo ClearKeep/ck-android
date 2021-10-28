@@ -49,9 +49,9 @@ fun CKTextInputField(
     val focusManager = LocalFocusManager.current
 
     val isPasswordType = keyboardType == KeyboardType.Password
-    var passwordVisibility = remember { mutableStateOf(false) }
+    val passwordVisibility = remember { mutableStateOf(false) }
 
-    var rememberBorderShow = remember { mutableStateOf(false)}
+    val rememberBorderShow = remember { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,
@@ -65,7 +65,6 @@ fun CKTextInputField(
             } else null,
             color = Color.Transparent,
             elevation = 0.sdp()
-            
         ) {
             TextField(
                 value = textValue?.value ?: "",
@@ -142,7 +141,11 @@ fun CKTextInputField(
                     trailingIcon
                     if (isPasswordType) {
                         Icon(
-                            painter = if (!passwordVisibility.value) painterResource(R.drawable.ic_eye) else painterResource(R.drawable.ic_eye_cross),
+                            painter = if (!passwordVisibility.value) {
+                                painterResource(R.drawable.ic_eye)
+                            } else {
+                                painterResource(R.drawable.ic_eye_cross)
+                            },
                             contentDescription = "",
                             tint = pickledBlueWood,
                             modifier = Modifier
@@ -158,7 +161,10 @@ fun CKTextInputField(
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = imeAction,
+                    keyboardType = keyboardType
+                ),
                 readOnly = readOnly
             )
         }

@@ -31,22 +31,27 @@ fun PeopleScreen(
     val friends = peopleViewModel.friends.observeAsState()
     Column {
         CKTopAppBar(
-                title = {
-                    Text(text = stringResource(id = R.string.bottom_nav_group))
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToSearch) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = ""
-                        )
-                    }
+            title = {
+                Text(text = stringResource(id = R.string.bottom_nav_group))
+            },
+            actions = {
+                IconButton(onClick = onNavigateToSearch) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = ""
+                    )
                 }
+            }
         )
         friends.value?.let { people ->
             LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 30.sdp(), end = 20.sdp(), start = 20.sdp(), bottom = 30.sdp()),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = 30.sdp(),
+                    end = 20.sdp(),
+                    start = 20.sdp(),
+                    bottom = 30.sdp()
+                ),
             ) {
                 itemsIndexed(people) { _, friend ->
                     FriendItem(friend, onFriendSelected)
@@ -61,15 +66,22 @@ fun FriendItem(
     friend: User,
     onFriendSelected: (User) -> Unit,
 ) {
-    Column(modifier = Modifier
-        .clickable(onClick = { onFriendSelected(friend) }, enabled = true)
+    Column(
+        modifier = Modifier
+            .clickable(onClick = { onFriendSelected(friend) }, enabled = true)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(emptyList(), friend.userName)
-            Column(modifier = Modifier.padding(start = 20.sdp()).fillMaxWidth()) {
-                Text(text = friend.userName,
+            Column(
+                modifier = Modifier
+                    .padding(start = 20.sdp())
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold),
                 )
             }

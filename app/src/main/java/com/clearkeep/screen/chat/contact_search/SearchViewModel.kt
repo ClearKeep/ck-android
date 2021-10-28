@@ -5,9 +5,9 @@ import androidx.paging.ExperimentalPagingApi
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
-import com.clearkeep.screen.chat.repo.MessageRepository
-import com.clearkeep.screen.chat.repo.PeopleRepository
+import com.clearkeep.repo.GroupRepository
+import com.clearkeep.repo.MessageRepository
+import com.clearkeep.repo.PeopleRepository
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.network.Resource
@@ -28,25 +28,25 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
     private var searchJob: Job? = null
 
-    val isShowLoading:MutableLiveData<Boolean> = MutableLiveData()
+    val isShowLoading: MutableLiveData<Boolean> = MutableLiveData()
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     private val _friends: MutableLiveData<List<User>> = MutableLiveData()
     val friends: LiveData<List<User>> get() = _friends
 
     private val _groups = MediatorLiveData<List<ChatGroup>>()
-    val groups : LiveData<List<ChatGroup>> get() = _groups
+    val groups: LiveData<List<ChatGroup>> get() = _groups
     private var groupSource: LiveData<List<ChatGroup>> = MutableLiveData()
 
     private val _messages = MediatorLiveData<List<MessageSearchResult>>()
-    val messages : LiveData<List<MessageSearchResult>> get() = _messages
+    val messages: LiveData<List<MessageSearchResult>> get() = _messages
     private var messagesSource: LiveData<List<MessageSearchResult>> = MutableLiveData()
 
     private val _searchMode = MutableLiveData<SearchMode>()
-    val searchMode : LiveData<SearchMode> get() = _searchMode
+    val searchMode: LiveData<SearchMode> get() = _searchMode
 
     private val _searchQuery = MutableLiveData<String>()
-    val searchQuery : LiveData<String> get() = _searchQuery
+    val searchQuery: LiveData<String> get() = _searchQuery
 
     val getPeopleResponse = MutableLiveData<Resource<Nothing>>()
 
@@ -87,7 +87,7 @@ class SearchViewModel @Inject constructor(
         _searchQuery.value = text
         val server = environment.getServer()
         searchJob = viewModelScope.launch {
-            when(searchMode.value) {
+            when (searchMode.value) {
                 SearchMode.ALL -> {
                     searchGroups(server, text)
                     searchMessages(server, text)
@@ -111,13 +111,17 @@ class SearchViewModel @Inject constructor(
         withContext(Dispatchers.Main) {
             _groups.removeSource(groupSource)
             withContext(Dispatchers.IO) {
-                groupSource = roomRepository.getGroupsByGroupName(server.serverDomain, server.profile.userId, query)
+                groupSource = roomRepository.getGroupsByGroupName(
+                    server.serverDomain,
+                    server.profile.userId,
+                    query
+                )
             }
             try {
                 _groups.addSource(groupSource) {
-                    _groups.value = it.filter { it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value }.sortedByDescending { it.lastMessageAt }
-                    printlnCK("group raw $it current profile id ${profile.value?.userId}")
-                    printlnCK("group result ${_groups.value}")
+                    _groups.value =
+                        it.filter { it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value }
+                            .sortedByDescending { it.lastMessageAt }
                 }
             } catch (e: Exception) {
                 printlnCK("searchGroups exception $e")
@@ -136,20 +140,32 @@ class SearchViewModel @Inject constructor(
             query
         )
 
-        val allUnchattedPeople = allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
-            val usersFromGroupChatFiltered =
-                a.map { it.clientList }.flatten().filter { it.userId != server.profile.userId && it.userName.contains(query, true) }
-            val usersInServerFiltered =
-                b.filter { it.userName.contains(query, true) && it.userId != server.profile.userId }
+        val allUnchattedPeople =
+            allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
+                val usersFromGroupChatFiltered =
+                    a.map { it.clientList }.flatten().filter {
+                        it.userId != server.profile.userId && it.userName.contains(
+                            query,
+                            true
+                        )
+                    }
+                val usersInServerFiltered =
+                    b.filter {
+                        it.userName.contains(
+                            query,
+                            true
+                        ) && it.userId != server.profile.userId
+                    }
 
-            printlnCK("usersInServerFiltered $usersInServerFiltered")
-
-            (usersFromGroupChatFiltered + usersInServerFiltered).sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.userName }))
-        }
+                (usersFromGroupChatFiltered + usersInServerFiltered).sortedWith(
+                    compareBy(
+                        String.CASE_INSENSITIVE_ORDER,
+                        { it.userName })
+                )
+            }
 
         allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
             val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
-                printlnCK("searchUsers private chat group $it")
                 val user = it.clientList.find { it.userId != server.profile.userId }
                 User(
                     user?.userId ?: it.ownerClientId,
@@ -164,7 +180,6 @@ class SearchViewModel @Inject constructor(
             }
             (usersInPeerChat + b).distinctBy { it.userId }
         }.collect {
-            printlnCK("searchUsers result ${it.distinctBy { it.userId }}")
             _friends.value = it.distinctBy { it.userId }
         }
     }
@@ -173,15 +188,18 @@ class SearchViewModel @Inject constructor(
         withContext(Dispatchers.Main) {
             _messages.removeSource(messagesSource)
             withContext(Dispatchers.IO) {
-                messagesSource = messageRepository.getMessageByText(server.serverDomain, server.profile.userId, query)
-                printlnCK("message result ${messagesSource.value}")
+                messagesSource = messageRepository.getMessageByText(
+                    server.serverDomain,
+                    server.profile.userId,
+                    query
+                )
             }
             try {
                 _messages.addSource(messagesSource) {
                     _messages.value =
-                        it.distinctBy { it.message.messageId }.filterNot { isFileMessage(it.message.message) || isImageMessage(it.message.message) }
+                        it.distinctBy { it.message.messageId }
+                            .filterNot { isFileMessage(it.message.message) || isImageMessage(it.message.message) }
                             .sortedByDescending { it.message.createdTime }
-                    printlnCK("message result ${_messages.value}")
                 }
             } catch (e: Exception) {
                 printlnCK("searchGroups exception $e")
@@ -191,7 +209,10 @@ class SearchViewModel @Inject constructor(
 
     fun insertFriend(people: User) {
         viewModelScope.launch {
-            peopleRepository.insertFriend(people, owner = Owner(getDomainOfActiveServer(), getClientIdOfActiveServer()))
+            peopleRepository.insertFriend(
+                people,
+                owner = Owner(getDomainOfActiveServer(), getClientIdOfActiveServer())
+            )
         }
     }
 }
@@ -205,7 +226,7 @@ enum class SearchMode {
 
 data class MessageSearchResult(val message: Message, val user: User?, val group: ChatGroup?)
 
-enum class StatusRequest(){
+enum class StatusRequest() {
     REQUESTING,
     DONE
 }

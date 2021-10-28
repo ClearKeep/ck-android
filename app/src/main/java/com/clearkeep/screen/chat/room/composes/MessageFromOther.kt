@@ -22,21 +22,31 @@ import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.*
 
 @Composable
-fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: String) -> Unit, onClickImage: (uris: List<String>, senderName: String) -> Unit, onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit) {
+fun MessageFromOther(
+    messageDisplayInfo: MessageDisplayInfo,
+    onClickFile: (url: String) -> Unit,
+    onClickImage: (uris: List<String>, senderName: String) -> Unit,
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+) {
     val message = messageDisplayInfo.message.message
     val context = LocalContext.current
 
     if (message.isNotBlank()) {
         Column {
-            Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp() ))
+            Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
             Row(
                 verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.width(26.sdp()),
+                Column(
+                    modifier = Modifier.width(26.sdp()),
                     horizontalAlignment = Alignment.Start
                 ) {
                     if (messageDisplayInfo.showAvatarAndName) {
-                        CircleAvatar(arrayListOf(messageDisplayInfo.avatar), messageDisplayInfo.userName, size = 18.sdp())
+                        CircleAvatar(
+                            arrayListOf(messageDisplayInfo.avatar),
+                            messageDisplayInfo.userName,
+                            size = 18.sdp()
+                        )
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -103,7 +113,10 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                                 Modifier.padding(24.sdp(), 16.sdp()),
                                                 getImageUriStrings(message)
                                             ) {
-                                                onClickImage.invoke(getImageUriStrings(message), messageDisplayInfo.userName)
+                                                onClickImage.invoke(
+                                                    getImageUriStrings(message),
+                                                    messageDisplayInfo.userName
+                                                )
                                             }
                                         } else if (isFileMessage(message)) {
                                             FileMessageContent(getFileUriStrings(message)) {
@@ -112,8 +125,15 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                         }
                                         val messageContent = getMessageContent(message)
                                         if (messageContent.isNotBlank()) {
-                                            Row(Modifier.align(Alignment.Start).wrapContentHeight()) {
-                                                ClickableLinkContent(messageContent, messageDisplayInfo.message.hashCode()) {
+                                            Row(
+                                                Modifier
+                                                    .align(Alignment.Start)
+                                                    .wrapContentHeight()
+                                            ) {
+                                                ClickableLinkContent(
+                                                    messageContent,
+                                                    messageDisplayInfo.message.hashCode()
+                                                ) {
                                                     onLongClick(messageDisplayInfo)
                                                 }
                                             }
@@ -122,7 +142,11 @@ fun MessageFromOther(messageDisplayInfo: MessageDisplayInfo, onClickFile: (url: 
                                 }
                                 Spacer(Modifier.width(18.sdp()))
                                 if (isTempMessage(message))
-                                    CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
+                                    CircularProgressIndicator(
+                                        Modifier.size(20.sdp()),
+                                        grayscale1,
+                                        2.sdp()
+                                    )
                             }
                         }
                     }

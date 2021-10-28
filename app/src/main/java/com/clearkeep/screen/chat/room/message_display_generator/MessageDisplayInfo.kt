@@ -10,5 +10,5 @@ data class MessageDisplayInfo(
     val showSpacer: Boolean,
     val userName: String,
     val cornerShape: RoundedCornerShape,
-    val avatar:String
+    val avatar: String
 )

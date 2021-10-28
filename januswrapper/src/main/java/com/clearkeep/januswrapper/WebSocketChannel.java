@@ -4,15 +4,18 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.IceCandidate;
 import org.webrtc.SessionDescription;
+
 import java.math.BigInteger;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -61,9 +64,9 @@ public class WebSocketChannel {
                     builder.addHeader("Sec-WebSocket-Protocol", "janus-protocol");
                     return chain.proceed(builder.build());
                 })
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .build();
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build();
         Request request = new Request.Builder().url(uri).build();
         mWebSocket = httpClient.newWebSocket(request, new WebSocketListener() {
             @Override
@@ -184,7 +187,7 @@ public class WebSocketChannel {
         try {
             String transaction = randomString(12);
             JanusTransaction jt = new JanusTransaction();
-            jt.tid =  transaction;
+            jt.tid = transaction;
             jt.success = jo -> {
                 mSessionId = new BigInteger(jo.optJSONObject("data").optString("id"));
                 mHandler.postDelayed(fireKeepAlive, 30000);
@@ -198,7 +201,7 @@ public class WebSocketChannel {
                 msg.putOpt("janus", "create");
                 msg.putOpt("transaction", transaction);
                 msg.putOpt("token", token);
-                Log.e(TAG, "-------------"  + msg.toString());
+                Log.e(TAG, "-------------" + msg.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -231,7 +234,7 @@ public class WebSocketChannel {
             msg.putOpt("transaction", transaction);
             msg.putOpt("session_id", mSessionId);
             msg.putOpt("token", token);
-            Log.e(TAG, "-------------"  + msg.toString());
+            Log.e(TAG, "-------------" + msg.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -253,7 +256,7 @@ public class WebSocketChannel {
             msg.putOpt("session_id", mSessionId);
             msg.putOpt("handle_id", handle.handleId);
             msg.putOpt("token", token);
-            Log.e(TAG, "-------------"  + msg.toString());
+            Log.e(TAG, "-------------" + msg.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -280,7 +283,7 @@ public class WebSocketChannel {
             message.putOpt("session_id", mSessionId);
             message.putOpt("handle_id", handleId);
             message.putOpt("token", token);
-            Log.e(TAG, "-------------"  + message.toString());
+            Log.e(TAG, "-------------" + message.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -305,7 +308,7 @@ public class WebSocketChannel {
             message.putOpt("session_id", mSessionId);
             message.putOpt("handle_id", handleId);
             message.putOpt("token", token);
-            Log.e(TAG, "-------------"  + message.toString());
+            Log.e(TAG, "-------------" + message.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -327,7 +330,7 @@ public class WebSocketChannel {
             message.putOpt("session_id", mSessionId);
             message.putOpt("handle_id", handleId);
             message.putOpt("token", token);
-            Log.e(TAG, "-------------"  + message.toString());
+            Log.e(TAG, "-------------" + message.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -346,7 +349,7 @@ public class WebSocketChannel {
             message.putOpt("session_id", mSessionId);
             message.putOpt("handle_id", handleId);
             message.putOpt("token", token);
-            Log.e(TAG, "-------------"  + message.toString());
+            Log.e(TAG, "-------------" + message.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -367,7 +370,7 @@ public class WebSocketChannel {
             feeds.put(janusHandle.feedId, janusHandle);
             subscriberJoinRoom(janusHandle);
         };
-        jt.error = jo -> Log.e(TAG, "-------------"  + jo.toString());
+        jt.error = jo -> Log.e(TAG, "-------------" + jo.toString());
 
         transactions.put(transaction, jt);
         JSONObject msg = new JSONObject();
@@ -377,7 +380,7 @@ public class WebSocketChannel {
             msg.putOpt("transaction", transaction);
             msg.putOpt("session_id", mSessionId);
             msg.putOpt("token", token);
-            Log.e(TAG, "-------------"  + msg.toString());
+            Log.e(TAG, "-------------" + msg.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -401,7 +404,7 @@ public class WebSocketChannel {
             msg.putOpt("session_id", mSessionId);
             msg.putOpt("handle_id", handle.handleId);
             msg.putOpt("token", token);
-            Log.e(TAG, "-------------"  + msg.toString());
+            Log.e(TAG, "-------------" + msg.toString());
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -431,7 +434,7 @@ public class WebSocketChannel {
             jo.putOpt("handle_id", handle.handleId);
             jo.putOpt("token", token);
 
-            Log.e(TAG, "-------------"  + jo.toString());
+            Log.e(TAG, "-------------" + jo.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -447,7 +450,7 @@ public class WebSocketChannel {
             msg.putOpt("transaction", transaction);
             msg.putOpt("token", token);
 
-            Log.e(TAG, "-------------"  + msg.toString());
+            Log.e(TAG, "-------------" + msg.toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }

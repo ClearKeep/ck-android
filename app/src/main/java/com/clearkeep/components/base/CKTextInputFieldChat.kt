@@ -48,9 +48,9 @@ fun CKTextInputFieldChat(
     val focusManager = LocalFocusManager.current
 
     val isPasswordType = keyboardType == KeyboardType.Password
-    var passwordVisibility = remember { mutableStateOf(false) }
+    val passwordVisibility = remember { mutableStateOf(false) }
 
-    var rememberBorderShow = remember { mutableStateOf(false)}
+    val rememberBorderShow = remember { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,
@@ -125,7 +125,10 @@ fun CKTextInputFieldChat(
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = imeAction,
+                    keyboardType = keyboardType
+                ),
             )
         }
         if (isError) {

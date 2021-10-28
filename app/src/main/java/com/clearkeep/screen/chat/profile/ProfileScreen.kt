@@ -60,7 +60,7 @@ fun ProfileScreen(
         onCloseView()
     }
 
-    profile?.value?.let { user ->
+    profile.value?.let { _ ->
         val userName = profileViewModel.username.observeAsState()
         val userNameErrorVisible = profileViewModel.usernameError.observeAsState()
         val email = profileViewModel.email.observeAsState()
@@ -76,8 +76,6 @@ fun ProfileScreen(
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
 
-        printlnCK("ProfileScreen userPreference ${userPreference.value?.mfa ?: "null"}")
-
         Column(
             Modifier
                 .fillMaxSize()
@@ -92,7 +90,7 @@ fun ProfileScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    profile?.value?.let { user ->
+                    profile.value?.let { user ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -154,7 +152,7 @@ fun ProfileScreen(
                             }
                             Spacer(Modifier.height(20.sdp()))
                             ItemInformationView(
-                                "Username",
+                                stringResource(R.string.username),
                                 errorText = stringResource(R.string.profile_username_error),
                                 errorVisible = userNameErrorVisible.value ?: false
                             ) {
@@ -166,7 +164,7 @@ fun ProfileScreen(
                                 }
                             }
                             Spacer(Modifier.height(16.sdp()))
-                            ItemInformationView("Email") {
+                            ItemInformationView(stringResource(R.string.tv_email)) {
                                 ItemInformationInput(
                                     textValue = email.value ?: "",
                                     enable = false
@@ -176,7 +174,7 @@ fun ProfileScreen(
                             }
                             Spacer(Modifier.height(16.sdp()))
                             ItemInformationView(
-                                "Phone Number",
+                                stringResource(R.string.profile_phone_number),
                                 errorText = stringResource(R.string.profile_phone_number_error),
                                 errorVisible = phoneNumberErrorVisible.value ?: false
                             ) {
@@ -231,7 +229,7 @@ fun ProfileScreen(
                                     hasError = phoneNumberErrorVisible.value ?: false,
                                     textValue = phoneNumber.value ?: "",
                                     keyboardType = KeyboardType.Number,
-                                    placeholder = "Phone number",
+                                    placeholder = stringResource(R.string.profile_phone_number),
                                 ) {
                                     profileViewModel.setPhoneNumber(it)
                                 }
@@ -371,7 +369,7 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CKTextButton(
-                    title = "Save",
+                    title = stringResource(R.string.save),
                     onClick = {
                         focusManager.clearFocus()
                         onClickSave.invoke()
@@ -382,7 +380,10 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
             }
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText("Profile Settings", headerTextType = HeaderTextType.Medium)
+        CKHeaderText(
+            stringResource(R.string.profile_settings),
+            headerTextType = HeaderTextType.Medium
+        )
         Spacer(modifier = Modifier.size(16.sdp()))
     }
 }
@@ -474,8 +475,11 @@ private fun ItemInformationInput(
 fun CopyLink(onCopied: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         SideBarLabel(
-            text = "Copy profile link", modifier = Modifier
-                .weight(0.66f), fontSize = defaultNonScalableTextSize(), color = MaterialTheme.colors.primary
+            text = stringResource(R.string.copy_profile_link),
+            modifier = Modifier
+                .weight(0.66f),
+            fontSize = defaultNonScalableTextSize(),
+            color = MaterialTheme.colors.primary
         )
         Column(
             modifier = Modifier.clickable { },
@@ -499,8 +503,11 @@ fun CopyLink(onCopied: () -> Unit) {
 fun ChangePassword(onChangePassword: () -> Unit) {
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
         SideBarLabel(
-            text = "Change Password", modifier = Modifier
-                .weight(0.66f), fontSize = defaultNonScalableTextSize(), color = MaterialTheme.colors.primary
+            text = stringResource(R.string.change_password),
+            modifier = Modifier
+                .weight(0.66f),
+            fontSize = defaultNonScalableTextSize(),
+            color = MaterialTheme.colors.primary
         )
         Column(
             modifier = Modifier.clickable { },
@@ -537,7 +544,13 @@ fun TwoFaceAuthView(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 TextButton(onClick = { onCheckChange.invoke(!enabled) }) {
-                    CKText(text = if (enabled) "Disable" else "Enable")
+                    CKText(
+                        text = if (enabled) {
+                            stringResource(R.string.disable)
+                        } else stringResource(
+                            R.string.enable
+                        )
+                    )
                 }
             }
         }
@@ -553,7 +566,7 @@ fun TwoFaceAuthView(
     }
 }
 
-class PrefixTransformation(val prefix: String) : VisualTransformation {
+class PrefixTransformation(private val prefix: String) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val out = prefix + text.text
         val prefixOffset = prefix.length

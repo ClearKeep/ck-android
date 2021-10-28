@@ -7,10 +7,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.clearkeep.R
 import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.colorSuccessDefault
@@ -38,9 +40,10 @@ fun FriendListItemAction(
                 friend.userName ?: "",
                 size = 64.sdp()
             )
-            Column(Modifier
-                .padding(start = 16.sdp())
-                .weight(1.0f, true)
+            Column(
+                Modifier
+                    .padding(start = 16.sdp())
+                    .weight(1.0f, true)
             ) {
                 Text(
                     text = friend.userName ?: "",
@@ -49,7 +52,7 @@ fun FriendListItemAction(
                         color = MaterialTheme.colors.onBackground
                     ), overflow = TextOverflow.Ellipsis, maxLines = 1
                 )
-                Text("Online", color = colorSuccessDefault)
+                Text(stringResource(R.string.online), color = colorSuccessDefault)
             }
             Spacer(Modifier.width(16.sdp()))
             CKButton(

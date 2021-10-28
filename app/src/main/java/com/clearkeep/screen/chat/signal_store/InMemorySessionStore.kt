@@ -14,14 +14,13 @@ import java.util.*
 
 class InMemorySessionStore : SessionStore, Closeable {
     private val sessions: MutableMap<SignalProtocolAddress, ByteArray> = HashMap()
+
     @Synchronized
     override fun loadSession(remoteAddress: SignalProtocolAddress): SessionRecord {
         return try {
             if (containsSession(remoteAddress)) {
-                printlnCK("InMemorySessionStore loadSession already contain address $remoteAddress}")
                 SessionRecord(sessions[remoteAddress])
             } else {
-                printlnCK("InMemorySessionStore loadSession new address $remoteAddress}")
                 SessionRecord()
             }
         } catch (e: IOException) {
@@ -34,7 +33,8 @@ class InMemorySessionStore : SessionStore, Closeable {
         val deviceIds: MutableList<Int> = LinkedList()
         for (key in sessions.keys) {
             if (key.name == name &&
-                    key.deviceId != 1) {
+                key.deviceId != 1
+            ) {
                 deviceIds.add(key.deviceId)
             }
         }
@@ -43,7 +43,6 @@ class InMemorySessionStore : SessionStore, Closeable {
 
     @Synchronized
     override fun storeSession(address: SignalProtocolAddress, record: SessionRecord) {
-        printlnCK("InMemorySessionStore storeSession address $address record ${Arrays.toString(record.serialize())}")
         sessions[address] = record.serialize()
     }
 

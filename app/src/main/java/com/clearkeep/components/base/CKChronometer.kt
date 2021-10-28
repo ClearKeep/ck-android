@@ -19,8 +19,8 @@ fun CKChronometer(
     modifier: Modifier,
     base: Long
 ) {
-    var value by remember { mutableStateOf(SystemClock.elapsedRealtime() - base) }
-    val timer = remember {createTimer()}
+    val value by remember { mutableStateOf(SystemClock.elapsedRealtime() - base) }
+    val timer = remember { createTimer() }
     val tickSecond = timer.collectAsState(initial = 0)
 
     DisposableEffect(Unit) {

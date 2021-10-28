@@ -73,3 +73,6 @@ const val CALL_UPDATE_TYPE_BUSY = "busy_request_call"
 
 const val ERROR_CODE_TIMEOUT = 504
 const val REQUEST_DEADLINE_SECONDS = 30L
+
+const val SENDER_DEVICE_ID = 111
+const val RECEIVER_DEVICE_ID = 222

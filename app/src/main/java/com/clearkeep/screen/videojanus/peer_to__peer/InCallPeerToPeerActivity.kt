@@ -30,7 +30,8 @@ import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.VideoCallRepository
+import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.*
 import com.clearkeep.screen.videojanus.common.CallState
@@ -91,6 +92,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
     @Inject
     lateinit var serverRepository: ServerRepository
 
+    @Inject
+    lateinit var peopleRepository: PeopleRepository
+
     // surface and render
     private var endCallReceiver: BroadcastReceiver? = null
     private var busyCallReceiver: BroadcastReceiver? = null
@@ -101,7 +105,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private var ringBackPlayer: MediaPlayer? = null
     private var busySignalPlayer: MediaPlayer? = null
     var isFromComingCall: Boolean = false
-    var avatarInConversation = ""
     var groupName = ""
 
     private var mTimeStarted: Long = 0
@@ -114,7 +117,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_call_peer_to_peer)
-    //    allowOnLockScreen()
+        //    allowOnLockScreen()
         isInPeerCall = true
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -130,7 +133,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
         mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
         //TODO: Remove test hardcode
-        mCurrentUserAvatar = "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.mIsAudioMode.value = mIsAudioMode
         isShowedDialogCamera = !mIsAudioMode
 
@@ -184,10 +186,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
 
         pipCallNamePeer.text = mCurrentUsername
-        avatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
+        printlnCK("avatarInConversation: $mCurrentUserAvatar")
         //todo avatarInConversation hardcode test
-        avatarInConversation =
-            "https://toquoc.mediacdn.vn/2019/8/7/photo-1-1565165824290120736900.jpg"
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()
@@ -208,11 +208,20 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
 
                 val token = intent.getStringExtra(EXTRA_GROUP_TOKEN) ?: ""
-                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                startVideo(
+                    webRtcGroupId,
+                    webRtcUrl,
+                    stunUrl,
+                    turnUrl,
+                    turnUserName,
+                    turnPassword,
+                    token
+                )
                 callViewModel.onSpeakChange(mIsSpeaker)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result =
+                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
@@ -222,7 +231,15 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
                     val webRtcGroupId = result.groupRtcId
                     val webRtcUrl = result.groupRtcUrl
-                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+                    startVideo(
+                        webRtcGroupId.toInt(),
+                        webRtcUrl,
+                        stunUrl,
+                        turnUrl,
+                        turnConfig.user,
+                        turnConfig.pwd,
+                        token
+                    )
                     callViewModel.onSpeakChange(mIsSpeaker)
                 } else {
                     runOnUiThread {
@@ -377,8 +394,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
         } else {
             this.window.addFlags(
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+            )
         }
     }
 
@@ -387,12 +405,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
             enterPIPMode()
         } else {
             androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Warning")
-                .setMessage("Are you sure you would like to leave call?")
-                .setPositiveButton("Leave") { _,_ ->
+                .setTitle(getString(R.string.warning))
+                .setMessage(getString(R.string.dialog_leave_call_title))
+                .setPositiveButton(getString(R.string.leave)) { _, _ ->
                     endCall()
                 }
-                .setNegativeButton("Cancel") { _,_ ->
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
 
                 }
                 .create()
@@ -413,14 +431,14 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         if (!mIsGroupCall) {
             Glide.with(this)
-                .load(avatarInConversation)
+                .load(mCurrentUserAvatar)
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
                 .into(imageBackground)
 
             Glide.with(this)
-                .load(avatarInConversation)
+                .load(mCurrentUserAvatar)
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .listener(object : RequestListener<Drawable> {
@@ -454,7 +472,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 .into(pipCallAvatar)
 
         } else {
-            tvStateCall.text = "Calling Group"
+            tvStateCall.text = getString(R.string.calling_group)
             imgThumb2.visibility = View.GONE
             tvNickName.visibility = View.GONE
         }
@@ -465,7 +483,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvConnecting.visible()
         else tvConnecting.gone()
         Glide.with(this)
-            .load(avatarInConversation)
+            .load(mCurrentUserAvatar)
             .placeholder(R.drawable.ic_bg_gradient)
             .error(R.drawable.ic_bg_gradient)
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
@@ -626,15 +644,14 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private fun showAskPermissionDialog() {
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Permissions Required")
+        alertDialogBuilder.setTitle(getString(R.string.dialog_call_permission_denied_title))
             .setMessage(
-                "You have forcefully denied some of the required permissions " +
-                        "for this action. Please open settings, go to permissions and allow them."
+                getString(R.string.dialog_call_permission_denied_text)
             )
-            .setPositiveButton("Settings") { _, _ ->
+            .setPositiveButton(getString(R.string.settings)) { _, _ ->
                 openSettingScreen()
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                 finishAndReleaseResource()
             }
             .setCancelable(false)
@@ -645,11 +662,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun showOpenCameraDialog() {
         isShowedDialogCamera = true
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Requesting to video call ?")
-            .setPositiveButton("Ok") { _, _ ->
+        alertDialogBuilder.setTitle(getString(R.string.call_request_video_dialog_title))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 configMedia(isSpeaker = true, isMuteVideo = false)
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
             }
             .setCancelable(false)
             .create()
@@ -720,8 +737,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
                     if (!isShowedDialogCamera) {
                         showOpenCameraDialog()
                     }
+                }
             }
-        }}
+        }
         registerReceiver(switchVideoReceiver, IntentFilter(ACTION_CALL_SWITCH_VIDEO))
     }
 
@@ -782,8 +800,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         localRender.layoutParams =
             fullView(localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
-    private fun setLocalFixScreen(){
-        localRender.layoutParams = fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
+
+    private fun setLocalFixScreen() {
+        localRender.layoutParams =
+            fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
 
     private fun fullView(localView: ConstraintLayout.LayoutParams): ConstraintLayout.LayoutParams {

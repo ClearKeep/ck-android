@@ -13,35 +13,37 @@ import javax.inject.Inject
 
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
-): ViewModel() {
+) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
     private val _emailError = MutableLiveData<String>()
-
     val emailError: LiveData<String>
         get() = _emailError
 
     private val _passError = MutableLiveData<String>()
-
     val passError: LiveData<String>
         get() = _passError
 
     private val _confirmPassError = MutableLiveData<String>()
-
     val confirmPassError: LiveData<String>
         get() = _confirmPassError
 
     private val _displayNameError = MutableLiveData<String>()
-
     val displayNameError: LiveData<String>
         get() = _displayNameError
 
     var domain: String = ""
 
-    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String): Resource<AuthOuterClass.RegisterSRPRes>? {
+    suspend fun register(
+        context: Context,
+        email: String,
+        displayName: String,
+        password: String,
+        confirmPassword: String
+    ): Resource<AuthOuterClass.RegisterSRPRes>? {
         _isLoading.value = true
 
         _emailError.value = ""

@@ -24,15 +24,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.dragonsrp.NativeLib
 import com.clearkeep.utilities.*
-import java.util.*
 
 @Composable
 fun LoginScreen(
@@ -69,7 +66,8 @@ fun LoginScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(start = dimensionResource(R.dimen._8sdp))) {
+                        .padding(start = dimensionResource(R.dimen._8sdp))
+                ) {
                     IconButton(onClick = { onNavigateBack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
@@ -149,7 +147,7 @@ fun LoginScreen(
                             CKTextButton(
                                 modifier = Modifier.padding(0.sdp()),
                                 stringResource(R.string.advance_server_settings),
-                                onClick ={advanceSetting?.invoke()} ,
+                                onClick = { advanceSetting?.invoke() },
                                 enabled = !isLoading,
                                 textButtonType = TextButtonType.White
                             )
@@ -158,7 +156,10 @@ fun LoginScreen(
                 }
 
                 Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                Divider(color = colorResource(R.color.line), thickness = dimensionResource(R.dimen._1sdp))
+                Divider(
+                    color = colorResource(R.color.line),
+                    thickness = dimensionResource(R.dimen._1sdp)
+                )
                 Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -167,7 +168,10 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.social_sign_in),
                         color = Color.White,
-                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                        style = TextStyle(
+                            fontSize = defaultNonScalableTextSize(),
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
                 Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
@@ -221,7 +225,10 @@ fun LoginScreen(
                     Text(
                         text = stringResource(R.string.tv_not_account),
                         color = Color.White,
-                        style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                        style = TextStyle(
+                            fontSize = defaultNonScalableTextSize(),
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 }
 
@@ -253,8 +260,8 @@ fun LoginScreen(
     if (confirmForgotPasswordVisible.value) {
         CKAlertDialog(
             title = stringResource(R.string.warning),
-            text = "Forgetting your Password will reset all your data",
-            confirmTitle = "Forgot",
+            text = stringResource(R.string.reset_password_dialog_text),
+            confirmTitle = stringResource(R.string.forgot),
             dismissTitle = stringResource(R.string.cancel),
             onConfirmButtonClick = {
                 confirmForgotPasswordVisible.value = false
@@ -268,7 +275,7 @@ fun LoginScreen(
 }
 
 @Composable
-fun ViewUsedCustomServer(shouldShow: Boolean){
+fun ViewUsedCustomServer(shouldShow: Boolean) {
     if (shouldShow) {
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen._8sdp)))
         Row(
@@ -291,11 +298,14 @@ fun ViewUsedCustomServer(shouldShow: Boolean){
                 Text(
                     text = "You are using custom server",
                     color = colorWarningLight,
-                    style = TextStyle(fontSize = defaultNonScalableTextSize(), fontWeight = FontWeight.Bold)
+                    style = TextStyle(
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
                 )
             }
         }
-    } else{
+    } else {
         Spacer(Modifier.height(dimensionResource(R.dimen._48sdp)))
     }
 }

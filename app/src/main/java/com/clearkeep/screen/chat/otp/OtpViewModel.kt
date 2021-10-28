@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.screen.chat.repo.ProfileRepository
+import com.clearkeep.repo.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import kotlinx.coroutines.launch
@@ -21,14 +21,16 @@ class OtpViewModel @Inject constructor(
     val verifyOtpResponse = MutableLiveData<Resource<String>>()
 
     private val _isAccountLocked = MutableLiveData<Boolean>()
-    val isAccountLocked : LiveData<Boolean> get() = _isAccountLocked
+    val isAccountLocked: LiveData<Boolean> get() = _isAccountLocked
 
     fun verifyPassword(password: String) {
         if (password.isBlank()) {
-            verifyPasswordResponse.value = Resource.error("Current Password must not be blank", null)
+            verifyPasswordResponse.value =
+                Resource.error("Current Password must not be blank", null)
             return
         } else if (password.length !in 6..12) {
-            verifyPasswordResponse.value = Resource.error("Password must be between 6-12 characters", null)
+            verifyPasswordResponse.value =
+                Resource.error("Password must be between 6-12 characters", null)
             return
         }
 
@@ -47,7 +49,10 @@ class OtpViewModel @Inject constructor(
         viewModelScope.launch {
             val response = profileRepository.mfaValidateOtp(getOwner(), otp)
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.message ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(
+                    response.message ?: "The code you’ve entered is incorrect. Please try again",
+                    null
+                )
             } else {
                 verifyOtpResponse.value = response
             }
@@ -59,7 +64,10 @@ class OtpViewModel @Inject constructor(
             val response = profileRepository.mfaResendOtp(getOwner())
             val errorCode = response.data?.first
             if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(response.data?.second ?: "The code you’ve entered is incorrect. Please try again", null)
+                verifyOtpResponse.value = Resource.error(
+                    response.data?.second
+                        ?: "The code you’ve entered is incorrect. Please try again", null
+                )
 
                 if (errorCode == 1069) {
                     _isAccountLocked.value = true
@@ -72,7 +80,7 @@ class OtpViewModel @Inject constructor(
         _isAccountLocked.value = false
     }
 
-    private fun getOwner() : Owner {
+    private fun getOwner(): Owner {
         val server = environment.getServer()
         return Owner(server.serverDomain, server.profile.userId)
     }
