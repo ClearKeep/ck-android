@@ -105,7 +105,6 @@ private fun MessageListView(
             contentPadding = PaddingValues(start = 16.sdp(), end = 16.sdp()),
         ) {
             groupedMessages.forEach { (date, messages) ->
-                printlnCK("messages ${messages.map { it.message.message }} date $date")
                 itemsIndexed(messages) { index, item ->
                     Column {
                         if (index == messages.size - 1) {
