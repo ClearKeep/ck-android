@@ -103,6 +103,8 @@ class RoomViewModel @Inject constructor(
 
     val isLoading = MutableLiveData(false)
 
+    private var endOfPaginationReached = false
+
     fun setMessage(message: String) {
         _message.value = message
     }
@@ -267,12 +269,13 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
         val server = environment.getServer()
+        isLoading.value = true
         messageRepository.updateMessageFromAPI(
             groupId,
             Owner(server.serverDomain, server.profile.userId),
-            lastMessageAt,
-            0
+            lastMessageAt
         )
+        isLoading.value = false
     }
 
     private suspend fun updateNotesFromRemote() {
@@ -521,6 +524,7 @@ class RoomViewModel @Inject constructor(
     private fun setJoiningGroup(group: ChatGroup) {
         _group.value = group
         chatRepository.setJoiningRoomId(group.groupId)
+        endOfPaginationReached = false
     }
 
     private fun getUser(): User {
@@ -789,6 +793,22 @@ class RoomViewModel @Inject constructor(
 
     fun setSelectedMessage(selectedMessage: MessageDisplayInfo) {
         _selectedMessage = selectedMessage
+    }
+
+    fun onScrollChange(lastMessageAt: Long) {
+        if (isLoading.value == false && !endOfPaginationReached) {
+            viewModelScope.launch {
+                isLoading.value = true
+                val server = environment.getServer()
+                val endOfPagination = messageRepository.updateMessageFromAPI(
+                    group.value?.groupId ?: 0,
+                    Owner(server.serverDomain, server.profile.userId),
+                    lastMessageAt
+                )
+                endOfPaginationReached = endOfPagination
+                isLoading.value = false
+            }
+        }
     }
 
     companion object {

@@ -4,9 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
@@ -15,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleBackground
@@ -27,6 +24,7 @@ import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 var mIsNewMessage = true
 
@@ -41,6 +39,7 @@ fun MessageListView(
     isGroup: Boolean,
     isNewMessage: Boolean = true,
     isLoading: Boolean = false,
+    onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
@@ -53,6 +52,7 @@ fun MessageListView(
         myClientId = myClientId,
         isGroup = isGroup,
         isLoading = isLoading,
+        onScrollChange,
         onClickFile,
         onClickImage,
         onLongClick
@@ -69,6 +69,7 @@ private fun MessageListView(
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
+    onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
@@ -84,6 +85,14 @@ private fun MessageListView(
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
+
+        val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
+        LaunchedEffect(key1 = oldestVisibleItemIndex) {
+            if (oldestVisibleItemIndex == messageList.size - 1) {
+                val oldestItem = messageList[0]
+                onScrollChange(oldestVisibleItemIndex, oldestItem.createdTime)
+            }
+        }
         if (listState.firstVisibleItemIndex == 0) {
             mIsNewMessage = false
         }
@@ -190,4 +199,18 @@ fun ScrollToButtonButton(isNewMessage: Boolean, onClick: () -> Unit) {
         )
         Icon(imageVector = Icons.Rounded.ArrowDownward, contentDescription = "", tint = Color.Blue)
     }
+}
+
+fun LazyListState.visibleItems(itemVisiblePercentThreshold: Float) =
+    layoutInfo
+        .visibleItemsInfo
+        .filter {
+            visibilityPercent(it) >= itemVisiblePercentThreshold
+        }
+
+fun LazyListState.visibilityPercent(info: LazyListItemInfo): Float {
+    val cutTop = max(0f, (layoutInfo.viewportStartOffset - info.offset).toFloat())
+    val cutBottom = max(0f, (info.offset + info.size - layoutInfo.viewportEndOffset).toFloat())
+
+    return max(0f, (100f - (cutTop + cutBottom) * 100f / info.size))
 }
