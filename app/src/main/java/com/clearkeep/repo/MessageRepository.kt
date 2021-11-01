@@ -78,32 +78,23 @@ class MessageRepository @Inject constructor(
 
     private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
-    suspend fun updateMessageFromAPI(
-        groupId: Long,
-        owner: Owner,
-        lastMessageAt: Long,
-        offSet: Int = 0
-    ) = withContext(Dispatchers.IO) {
+    //Return true if there's no more message
+    suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long = 0, loadSize: Int = 20): Boolean = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext
-            val messageGrpc = apiProvider.provideMessageBlockingStub(
-                ParamAPI(
-                    server.serverDomain,
-                    server.accessKey,
-                    server.hashKey
-                )
-            )
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext true
+            val messageGrpc = apiProvider.provideMessageBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
-                .setGroupId(groupId)
-                .setOffSet(offSet)
-                .setLastMessageAt(lastMessageAt - (365 * 24 * 60 * 60 * 1000)) //Get chat history in the last 365 days
-                .build()
+                    .setGroupId(groupId)
+                    .setOffSet(loadSize)
+                    .setLastMessageAt(lastMessageAt)
+                    .build()
             val responses = messageGrpc.getMessagesInGroup(request)
+            printlnCK("updateMessageFromAPI! lastMessageAt $lastMessageAt loadSize $loadSize")
             val listMessage = arrayListOf<Message>()
             responses.lstMessageList
                 .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
                 .forEachIndexed { _, data ->
-                    printlnCK("updateMessageFromAPI!")
+                    printlnCK("updateMessageFromAPI! timestamp ${data.createdAt}")
                     listMessage.add(parseMessageResponse(data, owner))
                 }
             if (listMessage.isNotEmpty()) {
@@ -113,6 +104,7 @@ class MessageRepository @Inject constructor(
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
             }
+            return@withContext true
         } catch (e: StatusRuntimeException) {
 
             val parsedError = parseError(e)
@@ -125,8 +117,10 @@ class MessageRepository @Inject constructor(
                 }
                 else -> parsedError.message
             }
+            return@withContext true
         } catch (exception: Exception) {
             printlnCK("fetchMessageFromAPI: $exception")
+            return@withContext true
         }
     }
 
