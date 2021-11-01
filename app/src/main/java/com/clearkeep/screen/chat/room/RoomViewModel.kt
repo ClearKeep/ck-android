@@ -103,7 +103,10 @@ class RoomViewModel @Inject constructor(
 
     val isLoading = MutableLiveData(false)
 
+    @Volatile
     private var endOfPaginationReached = false
+    @Volatile
+    private var lastLoadRequestTimestamp = 0L
 
     fun setMessage(message: String) {
         _message.value = message
@@ -239,7 +242,7 @@ class RoomViewModel @Inject constructor(
         getGroupResponse.value = groupRepository.getGroupByID(groupId, domain, clientId)
         getGroupResponse.value?.data?.let {
             setJoiningGroup(it)
-            updateMessagesFromRemote(groupId, it.lastMessageSyncTimestamp)
+            updateMessagesFromRemote(it.lastMessageSyncTimestamp)
         }
     }
 
@@ -258,7 +261,7 @@ class RoomViewModel @Inject constructor(
         if (existingGroup == null) {
             existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
         } else {
-            updateMessagesFromRemote(existingGroup.groupId, existingGroup.lastMessageSyncTimestamp)
+            updateMessagesFromRemote(existingGroup.lastMessageSyncTimestamp)
         }
         setJoiningGroup(existingGroup)
     }
@@ -267,15 +270,8 @@ class RoomViewModel @Inject constructor(
         return Owner(domain, clientId)
     }
 
-    private suspend fun updateMessagesFromRemote(groupId: Long, lastMessageAt: Long) {
-        val server = environment.getServer()
-        isLoading.value = true
-        messageRepository.updateMessageFromAPI(
-            groupId,
-            Owner(server.serverDomain, server.profile.userId),
-            lastMessageAt
-        )
-        isLoading.value = false
+    private fun updateMessagesFromRemote(lastMessageAt: Long) {
+        onScrollChange(lastMessageAt, true)
     }
 
     private suspend fun updateNotesFromRemote() {
@@ -455,7 +451,7 @@ class RoomViewModel @Inject constructor(
                 val ret = groupRepository.getGroupFromAPIById(groupId, domain, clientId)
                 ret?.data?.let {
                     setJoiningGroup(it)
-                    updateMessagesFromRemote(groupId, it.lastMessageSyncTimestamp)
+                    updateMessagesFromRemote(it.lastMessageSyncTimestamp)
                     onSuccess?.invoke()
                 }
             } else {
@@ -525,6 +521,7 @@ class RoomViewModel @Inject constructor(
         _group.value = group
         chatRepository.setJoiningRoomId(group.groupId)
         endOfPaginationReached = false
+        lastLoadRequestTimestamp = 0L
     }
 
     private fun getUser(): User {
@@ -795,8 +792,8 @@ class RoomViewModel @Inject constructor(
         _selectedMessage = selectedMessage
     }
 
-    fun onScrollChange(lastMessageAt: Long) {
-        if (isLoading.value == false && !endOfPaginationReached) {
+    fun onScrollChange(lastMessageAt: Long, isRefresh: Boolean = false) {
+        if (isRefresh || (isLoading.value == false && !endOfPaginationReached)) {
             viewModelScope.launch {
                 isLoading.value = true
                 val server = environment.getServer()
@@ -806,8 +803,21 @@ class RoomViewModel @Inject constructor(
                     lastMessageAt
                 )
                 endOfPaginationReached = endOfPagination
+                while (!endOfPagination && lastLoadRequestTimestamp != 0L) {
+                    //Execute queued load request
+                    val temp = lastLoadRequestTimestamp
+                    lastLoadRequestTimestamp = 0L
+                    endOfPaginationReached = messageRepository.updateMessageFromAPI(
+                        group.value?.groupId ?: 0,
+                        Owner(server.serverDomain, server.profile.userId),
+                        temp
+                    )
+                }
                 isLoading.value = false
             }
+        } else if (!endOfPaginationReached || (lastMessageAt < lastLoadRequestTimestamp || lastLoadRequestTimestamp == 0L)) {
+            //Queue up load request
+            lastLoadRequestTimestamp = lastMessageAt
         }
     }
 

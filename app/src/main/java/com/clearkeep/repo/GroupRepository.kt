@@ -149,6 +149,7 @@ class GroupRepository @Inject constructor(
         if (server == null) {
             printlnCK("fetchNewGroup: can not find server")
         }
+        printlnCK("inviteToGroupFromAPIs")
         val group = getGroupFromAPI(groupId, owner)
         group.data?.let { insertGroup(it) }
         return@withContext group
@@ -334,7 +335,7 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupFromAPI: ${group.clientList}")
             return@withContext Resource.success(group)
         } catch (e: StatusRuntimeException) {
-            printlnCK(e.message.toString())
+            printlnCK("getGroupFromAPI: ${e.message.toString()}")
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -432,6 +433,7 @@ class GroupRepository @Inject constructor(
             printlnCK("getGroupByID: null server")
             return null
         }
+        printlnCK("getGroupByID")
         room = getGroupFromAPI(groupId, Owner(domain, ownerId))
         if (room.data != null) {
             insertGroup(room.data!!)
@@ -459,6 +461,7 @@ class GroupRepository @Inject constructor(
                 it
             )
         }
+        printlnCK("getGroupFromAPIById")
         val room = groupGrpc?.let { getGroupFromAPI(groupId, Owner(domain, ownerId)) }
         if (room?.data != null) {
             insertGroup(room.data)
