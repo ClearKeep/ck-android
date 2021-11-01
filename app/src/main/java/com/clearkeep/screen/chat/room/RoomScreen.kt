@@ -200,6 +200,9 @@ fun RoomScreen(
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,
+                            onScrollChange = { index, lastTimestamp ->
+                              roomViewModel.onScrollChange(lastTimestamp)
+                            },
                             onClickFile = {
                                 if (isWriteFilePermissionGranted(context)) {
                                     roomViewModel.downloadFile(context, it)
