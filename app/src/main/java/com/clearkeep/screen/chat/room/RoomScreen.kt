@@ -111,7 +111,6 @@ fun RoomScreen(
         else -> null
     }
 
-    printlnCK("test: ${group?.clientList}")
     val groupName =
         if (isNote.value == true) stringResource(R.string.note) else if (group?.isDeletedUserPeer == true) stringResource(
             R.string.deleted_user

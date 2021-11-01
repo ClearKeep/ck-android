@@ -103,6 +103,7 @@ class MessageRepository @Inject constructor(
                 if (lastMessage != null) {
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
+                return@withContext false
             }
             return@withContext true
         } catch (e: StatusRuntimeException) {

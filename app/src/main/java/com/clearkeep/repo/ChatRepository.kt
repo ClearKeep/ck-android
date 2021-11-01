@@ -328,6 +328,8 @@ class ChatRepository @Inject constructor(
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
 
+                printlnCK("uploadFile statusRuntime $e")
+
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("uploadFile token expired")
@@ -339,7 +341,7 @@ class ChatRepository @Inject constructor(
 
                 return@withContext Resource.error(message, null, parsedError.code)
             } catch (e: Exception) {
-                printlnCK("uploadFileToGroup $e")
+                printlnCK("uploadFile exception $e")
                 return@withContext Resource.error(e.toString(), null)
             }
         }
