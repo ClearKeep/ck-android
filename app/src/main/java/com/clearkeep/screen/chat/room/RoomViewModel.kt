@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
+import com.clearkeep.MyApplication
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
@@ -17,13 +18,8 @@ import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
-import com.google.protobuf.ByteString
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.lang.IllegalArgumentException
-import java.security.MessageDigest
 import javax.inject.Inject
 import java.util.*
 
@@ -280,11 +276,11 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
-    fun sendMessageToUser(context: Context, lifecycleOwner: LifecycleOwner, receiverPeople: User, groupId: Long, message: String) {
+    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, lifecycleOwner, groupId, message, null, receiverPeople)
+                    uploadImage(context, groupId, message, null, receiverPeople)
                 } else {
                     sendMessageToUser(receiverPeople, groupId, message)
                 }
@@ -349,7 +345,6 @@ class RoomViewModel @Inject constructor(
 
     fun sendMessageToGroup(
         context: Context,
-        lifecycleOwner: LifecycleOwner,
         groupId: Long,
         message: String,
         isRegisteredGroup: Boolean
@@ -357,7 +352,7 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, lifecycleOwner, groupId, message, isRegisteredGroup)
+                    uploadImage(context, groupId, message, isRegisteredGroup)
                 } else {
                     sendMessageToGroup(groupId, message)
                 }
@@ -401,11 +396,11 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun sendNote(context: Context, lifecycleOwner: LifecycleOwner) {
+    fun sendNote(context: Context) {
         viewModelScope.launch {
             try {
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, lifecycleOwner, message = _message.value ?: "")
+                    uploadImage(context, message = _message.value ?: "")
                 } else {
                     sendNote(_message.value ?: "")
                 }
@@ -558,7 +553,6 @@ class RoomViewModel @Inject constructor(
 
     private fun uploadImage(
         context: Context,
-        lifecycleOwner: LifecycleOwner,
         groupId: Long = 0L,
         message: String,
         isRegisteredGroup: Boolean? = null,
@@ -570,7 +564,6 @@ class RoomViewModel @Inject constructor(
             uploadFile(
                 it,
                 context,
-                lifecycleOwner,
                 groupId,
                 message,
                 isRegisteredGroup,
@@ -582,7 +575,6 @@ class RoomViewModel @Inject constructor(
 
     fun uploadFile(
         context: Context,
-        lifecycleOwner: LifecycleOwner,
         groupId: Long,
         isRegisteredGroup: Boolean? = null,
         receiverPeople: User? = null
@@ -593,7 +585,6 @@ class RoomViewModel @Inject constructor(
             uploadFile(
                 it,
                 context,
-                lifecycleOwner,
                 groupId,
                 null,
                 isRegisteredGroup,
@@ -606,7 +597,6 @@ class RoomViewModel @Inject constructor(
     private fun uploadFile(
         urisList: List<String>,
         context: Context,
-        lifecycleOwner: LifecycleOwner,
         groupId: Long,
         message: String?,
         isRegisteredGroup: Boolean?,

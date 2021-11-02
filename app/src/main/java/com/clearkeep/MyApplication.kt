@@ -5,11 +5,21 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.clearkeep.utilities.FILE_UPLOAD_CHANNEL_ID
+import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import net.gotev.uploadservice.UploadService
 import net.gotev.uploadservice.UploadServiceConfig
 
 @HiltAndroidApp
-open class MyApplication : Application() {
+open class MyApplication : Application(), LifecycleObserver {
     override fun onCreate() {
         super.onCreate()
 
@@ -17,16 +27,18 @@ open class MyApplication : Application() {
 
         UploadServiceConfig.initialize(
             context = this,
-            defaultNotificationChannel = notificationChannelID,
+            defaultNotificationChannel = FILE_UPLOAD_CHANNEL_ID,
             debug = BuildConfig.DEBUG
         )
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= 26) {
             val channel = NotificationChannel(
-                notificationChannelID,
-                "TestApp Channel",
+                FILE_UPLOAD_CHANNEL_ID,
+                getString(R.string.app_name),
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -34,10 +46,8 @@ open class MyApplication : Application() {
         }
     }
 
-    companion object {
-        // ID of the notification channel used by upload service. This is needed by Android API 26+
-        // but you have to always specify it even if targeting lower versions, because it's handled
-        // by AndroidX AppCompat library automatically
-        const val notificationChannelID = "TestChannel"
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onApplicationClosed() {
+        UploadService.stopAllUploads()
     }
 }
