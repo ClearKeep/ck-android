@@ -19,6 +19,7 @@ import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.*
 import message.MessageOuterClass
+import net.gotev.uploadservice.UploadService
 import net.gotev.uploadservice.data.UploadInfo
 import net.gotev.uploadservice.network.ServerResponse
 import net.gotev.uploadservice.observer.request.BaseRequestObserver
@@ -290,16 +291,24 @@ class ChatRepository @Inject constructor(
                 val isSuccessful = suspendCoroutine<Boolean> { cont ->
                     val requestObserverDelegate = object : RequestObserverDelegate {
                         override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
-                            cont.resume(true)
+                            printlnCK("uploadFile onCompleted")
+                            try {
+                                cont.resume(true)
+                            } catch (e: IllegalStateException) {
+                                printlnCK("uploadFile already resumed!")
+                            }
                         }
 
-                        override fun onCompletedWhileNotObserving() {}
+                        override fun onCompletedWhileNotObserving() {
+                            printlnCK("uploadFile onCompletedWhileNotObserving")
+                        }
 
                         override fun onError(
                             context: Context,
                             uploadInfo: UploadInfo,
                             exception: Throwable
                         ) {
+                            printlnCK("uploadFile onError")
                             cont.resume(false)
                         }
 
@@ -310,6 +319,7 @@ class ChatRepository @Inject constructor(
                             uploadInfo: UploadInfo,
                             serverResponse: ServerResponse
                         ) {
+                            printlnCK("uploadFile onSuccess")
                         }
                     }
 

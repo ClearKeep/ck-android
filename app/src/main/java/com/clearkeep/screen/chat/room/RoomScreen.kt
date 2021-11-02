@@ -37,7 +37,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
-import androidx.lifecycle.LifecycleOwner
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
@@ -123,17 +122,17 @@ fun RoomScreen(
                 coroutineScope.launch {
                     bottomSheetState.hide()
                     if (isNote.value == true) {
-                        roomViewModel.uploadFile(context, context as LifecycleOwner, group?.groupId ?: 0L, null, null)
+                        roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
                     } else if (group != null) {
                         val isGroup = group.isGroup()
                         if (isGroup) {
-                            roomViewModel.uploadFile(context, context as LifecycleOwner, group.groupId, group.isJoined)
+                            roomViewModel.uploadFile(context, group.groupId, group.isJoined)
                         } else {
                             val friend = group.clientList.firstOrNull { client ->
                                 client.userId != roomViewModel.clientId
                             }
                             if (friend != null) {
-                                roomViewModel.uploadFile(context, context as LifecycleOwner, group.groupId, null, friend)
+                                roomViewModel.uploadFile(context, group.groupId, null, friend)
                             } else {
                                 roomViewModel.sendMessageResponse.value =
                                     Resource.error("", null, ERROR_CODE_TIMEOUT)
@@ -254,12 +253,11 @@ fun RoomScreen(
                             }
                             val isGroup = group.isGroup()
                             if (isNote.value == true) {
-                                roomViewModel.sendNote(context, context as LifecycleOwner, )
+                                roomViewModel.sendNote(context, )
                             } else if (isGroup) {
                                 val isJoined = group.isJoined
                                 roomViewModel.sendMessageToGroup(
                                     context,
-                                    context as LifecycleOwner,
                                     group.groupId,
                                     validMessage,
                                     isJoined
@@ -271,7 +269,6 @@ fun RoomScreen(
                                 if (friend != null) {
                                     roomViewModel.sendMessageToUser(
                                         context,
-                                        context as LifecycleOwner,
                                         friend,
                                         group.groupId,
                                         validMessage
