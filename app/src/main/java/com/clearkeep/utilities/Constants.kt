@@ -63,6 +63,9 @@ const val CALL_CHANNEL_ID = "channel_call"
 const val CALL_CHANNEL_NAME = "Calls"
 const val CALL_NOTIFICATION_ID = 1
 
+const val FILE_UPLOAD_CHANNEL_ID = "channel_file_upload"
+const val FILE_UPLOAD_CHANNEL_NAME = "Upload files"
+
 const val ACTION_MESSAGE_CANCEL = "ck.action_message_cancel"
 const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 
