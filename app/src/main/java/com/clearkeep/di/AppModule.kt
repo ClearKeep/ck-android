@@ -7,10 +7,10 @@ import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProviderImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])
 class AppModule {
     @Singleton

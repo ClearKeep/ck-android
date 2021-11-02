@@ -22,11 +22,11 @@ import com.clearkeep.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
 
 @Suppress("unused")
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 abstract class ViewModelModule {
     @Binds

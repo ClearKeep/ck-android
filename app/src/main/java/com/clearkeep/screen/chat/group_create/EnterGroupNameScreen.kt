@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.clearkeep.utilities.sdp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
@@ -54,7 +55,7 @@ fun EnterGroupNameScreen(
                             IconButton(
                                 onClick = {
                                     navController.popBackStack(
-                                        navController.graph.startDestination,
+                                        navController.graph.findStartDestination().id,
                                         false
                                     )
                                 }

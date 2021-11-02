@@ -16,8 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.navigate
 import com.clearkeep.R
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
@@ -55,7 +55,7 @@ fun RoomInfoScreen(
                     IconButton(
                         onClick = {
                             navHostController.popBackStack(
-                                navHostController.graph.startDestination,
+                                navHostController.graph.findStartDestination().id,
                                 false
                             )
                         }

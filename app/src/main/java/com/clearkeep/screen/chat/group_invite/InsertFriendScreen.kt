@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
 import com.clearkeep.components.base.*
@@ -50,7 +51,7 @@ fun InsertFriendScreen(
                 ) {
                     IconButton(
                         onClick = {
-                            navController.popBackStack(navController.graph.startDestination, false)
+                            navController.popBackStack(navController.graph.findStartDestination().id, false)
                         }
                     ) {
                         Icon(
