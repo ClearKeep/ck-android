@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import coil.memory.MemoryCache
 import coil.request.CachePolicy
@@ -24,9 +25,6 @@ import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.base.CKText
-import com.clearkeep.utilities.printlnCK
-import com.google.accompanist.coil.rememberCoilPainter
-import okhttp3.Cache
 
 @Composable
 fun CircleAvatarSite(
@@ -41,10 +39,9 @@ fun CircleAvatarSite(
     Column(Modifier.size(size)) {
         if (!url.isNullOrEmpty()) {
             Image(
-                rememberCoilPainter(
-                    request = "$url?cache=$cacheKey", //Force reload when cache key changes
-                    previewPlaceholder = R.drawable.ic_cross,
-                    requestBuilder = {
+                rememberImagePainter(
+                    "$url?cache=$cacheKey", //Force reload when cache key changes
+                    builder = {
                         memoryCachePolicy(CachePolicy.DISABLED)
                     }
                 ),

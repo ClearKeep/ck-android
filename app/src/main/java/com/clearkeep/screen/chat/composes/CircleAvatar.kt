@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import coil.request.CachePolicy
 import com.clearkeep.R
@@ -25,7 +26,6 @@ import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.colorTest
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
-import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
 fun CircleAvatar(
@@ -54,10 +54,9 @@ fun CircleAvatar(
         val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
         if (url.isNotEmpty() && url[0].isNotBlank()) {
             Image(
-                rememberCoilPainter(
-                    request = "${url[0]}?cache=$cacheKey", // Force recomposition when cache key changes
+                rememberImagePainter(
+                    "${url[0]}?cache=$cacheKey", // Force recomposition when cache key changes
                     imageLoader = context.imageLoader,
-                    previewPlaceholder = R.drawable.ic_cross,
                 ),
                 null,
                 contentScale = ContentScale.Crop,

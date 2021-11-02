@@ -1,7 +1,5 @@
 package com.clearkeep.screen.splash
 
-import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -16,10 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
-
     private val splashViewModel: SplashViewModel by viewModels()
 
     @Inject

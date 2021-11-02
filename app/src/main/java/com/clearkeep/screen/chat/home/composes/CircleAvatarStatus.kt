@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import coil.compose.rememberImagePainter
 import com.clearkeep.R
 import coil.request.CachePolicy
 import com.clearkeep.components.*
@@ -20,7 +21,6 @@ import com.clearkeep.components.base.CKText
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
-import com.google.accompanist.coil.rememberCoilPainter
 
 @Composable
 fun CircleAvatarStatus(
@@ -49,10 +49,9 @@ fun CircleAvatarStatus(
         Column(Modifier.size(size)) {
             if (!url.isNullOrEmpty()) {
                 Image(
-                    rememberCoilPainter(
-                        request = "$url", //Force reload when cache key changes
-                        previewPlaceholder = R.drawable.ic_cross,
-                        requestBuilder = {
+                    rememberImagePainter(
+                        "$url", //Force reload when cache key changes
+                        builder = {
                             memoryCachePolicy(CachePolicy.DISABLED)
                         }
                     ),

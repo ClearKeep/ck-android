@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.base.CKTextInputFieldChat
@@ -31,7 +32,6 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.sdp
-import com.google.accompanist.coil.rememberCoilPainter
 
 @ExperimentalComposeUiApi
 @Composable
@@ -155,10 +155,9 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
             .size(56.sdp())
     ) {
         Image(
-            painter = rememberCoilPainter(
+            painter = rememberImagePainter(
                 uri,
                 imageLoader = context.imageLoader,
-                previewPlaceholder = R.drawable.ic_cross
             ), contentDescription = "", contentScale = ContentScale.Crop,
             modifier = Modifier.clip(RoundedCornerShape(16.sdp()))
 

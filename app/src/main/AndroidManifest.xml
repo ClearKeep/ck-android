@@ -41,7 +41,8 @@
 
         <activity
             android:name="com.microsoft.identity.client.BrowserTabActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -70,7 +71,8 @@
         <activity
             android:name=".screen.splash.SplashActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -200,7 +202,8 @@
         <activity
             android:name=".screen.chat.change_pass_word.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter android:label="@string/change_password">
                 <action android:name="android.intent.action.VIEW" />
 

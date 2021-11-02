@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.CKSimpleInsetTheme
@@ -44,7 +45,6 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
-import com.google.accompanist.coil.rememberCoilPainter
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
@@ -171,10 +171,9 @@ fun ImageItem(
         )
     ) {
         Image(
-            rememberCoilPainter(
-                request = uri,
+            rememberImagePainter(
+                uri,
                 imageLoader = context.imageLoader,
-                previewPlaceholder = R.drawable.ic_cross
             ),
             null,
             contentScale = ContentScale.Crop,
