@@ -193,7 +193,7 @@
     <string name="room_info_confirm_leave_dialog_confirm">Leave group chat</string>
     <string name="copy">Copy</string>
     <string name="upload_file_error_too_many">Maximum number of attachments in a message reached (10)</string>
-    <string name="upload_file_error_too_large">Your file cannot be larger than 200MB.</string>
+    <string name="upload_file_error_too_large">Your file cannot be larger than 1GB.</string>
     <string name="server_setting_server_name">Server Name</string>
     <string name="server_settings">Server Settings</string>
     <string name="confirm_social_pin_screen_title">Confirm Your Security Phrase</string>
