@@ -813,7 +813,7 @@ class RoomViewModel @Inject constructor(
 
     companion object {
         private const val FILE_MAX_COUNT = 10
-        private const val FILE_MAX_SIZE = 200_000_000 //200MB
+        private const val FILE_MAX_SIZE = 1_000_000_000 //1GB
     }
 }
 
