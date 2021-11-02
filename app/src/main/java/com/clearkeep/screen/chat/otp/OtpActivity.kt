@@ -9,7 +9,6 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint

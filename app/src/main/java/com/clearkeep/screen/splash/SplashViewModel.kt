@@ -1,12 +1,14 @@
 package com.clearkeep.screen.splash
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.printlnCK
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SplashViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SplashViewModel @Inject constructor(
     private val serverRepository: ServerRepository,
     private val environment: Environment
 ) : ViewModel() {

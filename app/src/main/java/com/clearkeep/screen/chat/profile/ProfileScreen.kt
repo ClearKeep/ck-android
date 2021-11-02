@@ -24,7 +24,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.*

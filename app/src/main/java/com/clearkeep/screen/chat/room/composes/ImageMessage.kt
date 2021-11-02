@@ -22,6 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
@@ -29,9 +32,6 @@ import com.clearkeep.utilities.isTempMessage
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
-import com.google.accompanist.coil.rememberCoilPainter
-import com.google.accompanist.imageloading.ImageLoadState
-import com.google.accompanist.imageloading.rememberDrawablePainter
 
 @Composable
 fun ImageMessageContent(
@@ -104,6 +104,7 @@ fun ImageMessageContent(
     }
 }
 
+@ExperimentalCoilApi
 @Composable
 fun ImageMessageItem(
     modifier: Modifier = Modifier,
@@ -113,7 +114,7 @@ fun ImageMessageItem(
     val context = LocalContext.current
     val clickableModifier =
         if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
-    val painter = rememberCoilPainter(uri, context.imageLoader)
+    val painter = rememberImagePainter(uri, context.imageLoader)
     Box(modifier) {
         Image(
             painter = painter,
@@ -125,8 +126,8 @@ fun ImageMessageItem(
                 .aspectRatio(1f)
                 .then(clickableModifier)
         )
-        when (painter.loadState) {
-            is ImageLoadState.Loading -> {
+        when (painter.state) {
+            is ImagePainter.State.Loading -> {
                 Box(Modifier.fillMaxSize())
             }
             else -> {
