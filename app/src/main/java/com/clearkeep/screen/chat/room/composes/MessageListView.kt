@@ -74,9 +74,8 @@ private fun MessageListView(
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
-    val reversedMessage = messageList.reversed()
     val groupedMessages: Map<String, List<MessageDisplayInfo>> =
-        reversedMessage.filter { it.message.isNotBlank() }
+        messageList.filter { it.message.isNotBlank() }
             .groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
                 convertMessageList(entry.value, clients, listAvatar, myClientId, isGroup)
             }
@@ -88,8 +87,10 @@ private fun MessageListView(
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
         LaunchedEffect(key1 = oldestVisibleItemIndex) {
-            if (oldestVisibleItemIndex == messageList.size - 1) {
-                val oldestItem = messageList[0]
+            printlnCK("MessageListView oldestVisibleItemIndex $oldestVisibleItemIndex list size ${messageList.size}")
+            if (oldestVisibleItemIndex != null && oldestVisibleItemIndex >= messageList.size - 1) {
+                val oldestItem = messageList[messageList.size - 1]
+                printlnCK("MessageListView oldest item $oldestItem")
                 onScrollChange(oldestVisibleItemIndex, oldestItem.createdTime)
             }
         }
@@ -105,7 +106,11 @@ private fun MessageListView(
             contentPadding = PaddingValues(start = 16.sdp(), end = 16.sdp()),
         ) {
             groupedMessages.forEach { (date, messages) ->
-                itemsIndexed(messages) { index, item ->
+                itemsIndexed(messages,
+                    key = { _: Int, item: MessageDisplayInfo ->
+                        item.message.generateId ?: item.message.createdTime
+                    }
+                ) { index, item ->
                     Column {
                         if (index == messages.size - 1) {
                             DateHeader(date)
