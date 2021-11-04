@@ -33,7 +33,7 @@ interface MessageDAO {
         ownerClientId: String
     ): List<Message>
 
-    @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time  ASC")
+    @Query("SELECT * FROM message WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId GROUP BY message_id ORDER BY created_time DESC")
     fun getMessagesAsState(
         groupId: Long,
         domain: String,
