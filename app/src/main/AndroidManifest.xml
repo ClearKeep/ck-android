@@ -41,7 +41,6 @@
 
         <activity
             android:name="com.microsoft.identity.client.BrowserTabActivity"
-            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -94,8 +93,7 @@
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
             android:name="com.clearkeep.screen.chat.home.MainActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
@@ -103,13 +101,11 @@
 
         <activity
             android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
             android:name="com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
             android:name="com.clearkeep.screen.chat.invite.InviteActivity"
@@ -118,8 +114,7 @@
 
         <activity
             android:name="com.clearkeep.screen.chat.banned_users.BannedUserActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
             android:name=".services.MyFirebaseMessagingService"
