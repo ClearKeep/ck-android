@@ -1,8 +1,6 @@
 package com.clearkeep.screen.chat.otp
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -23,6 +21,7 @@ import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -33,6 +32,8 @@ fun OtpVerifyPasswordScreen(
     onClickNext: () -> Unit
 ) {
     val verifyPasswordResponse = otpViewModel.verifyPasswordResponse.observeAsState()
+
+    printlnCK("OtpVerifyPasswordScreen recompose verifyPasswordResponse $verifyPasswordResponse")
 
     Column(
         Modifier
@@ -46,6 +47,7 @@ fun OtpVerifyPasswordScreen(
                     )
                 )
             )
+            .verticalScroll(rememberScrollState())
     ) {
         val currentPassWord = remember { mutableStateOf("") }
 
@@ -100,11 +102,13 @@ fun OtpVerifyPasswordScreen(
                 )
             }
             Status.SUCCESS -> {
+                otpViewModel.verifyPasswordResponse.value = null
                 onClickNext()
             }
             else -> {
 
             }
         }
+        Spacer(Modifier.height(58.sdp()))
     }
 }

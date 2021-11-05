@@ -24,6 +24,7 @@ import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.screen.chat.profile.ProfileViewModel
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 
 @Composable
@@ -36,6 +37,7 @@ fun CKTextInputField(
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     imeAction: ImeAction = ImeAction.Done,
+    onNext: () -> Unit = {},
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
@@ -159,8 +161,10 @@ fun CKTextInputField(
                 },
                 singleLine = singleLine,
                 maxLines = maxLines,
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardActions = KeyboardActions(onDone = {
+                    if (imeAction == ImeAction.Done) focusManager.clearFocus()
+                }, onNext = { if (imeAction == ImeAction.Next) onNext() }),
+                keyboardOptions = KeyboardOptions(
                     imeAction = imeAction,
                     keyboardType = keyboardType
                 ),

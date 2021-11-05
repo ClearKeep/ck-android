@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +36,10 @@ fun ForgotScreen(
     val isEmptyEmail = remember { mutableStateOf(false) }
     val isInvalidEmailFormat = remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+    ) {
         Spacer(Modifier.height(80.sdp()))
         CKTopAppBarSample(
             title = stringResource(R.string.forgot_password),
@@ -96,5 +101,6 @@ fun ForgotScreen(
                 )
             }
         }
+        Spacer(Modifier.height(80.sdp()))
     }
 }

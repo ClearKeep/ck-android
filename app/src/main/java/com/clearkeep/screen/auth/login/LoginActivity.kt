@@ -16,6 +16,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -23,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import auth.AuthOuterClass
 import com.clearkeep.R
+import com.clearkeep.components.CKInsetTheme
 import com.clearkeep.components.CKTheme
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKCircularProgressIndicator
@@ -53,6 +55,7 @@ import com.facebook.login.LoginResult
 import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
 
+@ExperimentalComposeUiApi
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
@@ -214,6 +217,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
+    @ExperimentalComposeUiApi
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
     fun MainComposable() {

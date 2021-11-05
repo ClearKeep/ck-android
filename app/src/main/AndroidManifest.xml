@@ -71,7 +71,6 @@
         <activity
             android:name=".screen.splash.SplashActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -84,18 +83,15 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/btn_login"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
             android:name=".screen.auth.register.RegisterActivity"
             android:label="@string/btn_register"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.auth.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
             android:name="com.clearkeep.screen.chat.home.MainActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
@@ -103,8 +99,7 @@
         <activity
             android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="portrait" />
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"

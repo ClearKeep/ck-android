@@ -15,11 +15,14 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
@@ -42,6 +45,8 @@ fun RegisterScreen(
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
+    val localFocusManager = LocalFocusManager.current
+
     val email = remember { mutableStateOf("") }
     val displayName = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -92,6 +97,10 @@ fun RegisterScreen(
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds
                         )
+                    },
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
                     }
                 )
                 Spacer(Modifier.height(10.sdp()))
@@ -107,6 +116,10 @@ fun RegisterScreen(
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds
                         )
+                    },
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
                     },
                     maxChars = 30
                 )
@@ -125,6 +138,10 @@ fun RegisterScreen(
                             contentScale = ContentScale.FillBounds
                         )
                     },
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    }
                 )
                 Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(

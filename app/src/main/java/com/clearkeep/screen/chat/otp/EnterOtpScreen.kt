@@ -1,32 +1,34 @@
 package com.clearkeep.screen.chat.otp
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
 import com.clearkeep.components.backgroundGradientEnd
@@ -38,9 +40,11 @@ import com.clearkeep.components.base.CKTopAppBarSample
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
+@ExperimentalComposeUiApi
 @Composable
 fun EnterOtpScreen(
     otpResponse: MutableLiveData<Resource<String>>,
@@ -50,16 +54,8 @@ fun EnterOtpScreen(
     onBackPress: () -> Unit,
     onClickSave: () -> Unit,
 ) {
+    printlnCK("EnterOtpScreen recompose")
     val input = remember { mutableStateListOf(" ", " ", " ", " ") }
-    val focusRequesters = remember {
-        mutableStateListOf(
-            FocusRequester(),
-            FocusRequester(),
-            FocusRequester(),
-            FocusRequester()
-        )
-    }
-
     val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {
@@ -78,6 +74,7 @@ fun EnterOtpScreen(
                     )
                 )
             )
+            .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
@@ -93,7 +90,7 @@ fun EnterOtpScreen(
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
-            OtpInput(input, focusRequesters)
+            OtpInput(input)
             Spacer(Modifier.height(32.sdp()))
             Text(
                 stringResource(R.string.enter_otp_no_code),
@@ -129,8 +126,6 @@ fun EnterOtpScreen(
                 input[2] = " "
                 input[3] = " "
 
-                focusRequesters[0].requestFocus()
-
                 CKAlertDialog(
                     title = stringResource(R.string.warning),
                     text = verifyOtpResponse.value!!.message ?: "",
@@ -147,29 +142,37 @@ fun EnterOtpScreen(
 
             }
         }
+        Spacer(Modifier.height(58.sdp()))
     }
 }
 
+@ExperimentalComposeUiApi
 @Composable
-fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateList<FocusRequester>) {
+fun OtpInput(input: SnapshotStateList<String>) {
+    val (otpInput0, otpInput1, otpInput2, otpInput3) = FocusRequester.createRefs()
+
+    LaunchedEffect(true) {
+        otpInput0.requestFocus()
+    }
+
     Row(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.sdp()),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        OtpInputSquare(input[0], focusRequesters[0]) {
+        OtpInputSquare(input[0], otpInput0) {
             if (it.length <= 1) {
                 input[0] = it
                 if (it.isNotEmpty()) {
-                    focusRequesters[1].requestFocus()
+                    otpInput1.requestFocus()
                 } else {
                     input[0] = " "
                 }
             } else if (it.length == 2) {
                 //Handle delete and type case
                 input[1] = it[1].toString()
-                focusRequesters[1].requestFocus()
+                otpInput1.requestFocus()
             } else if (isValidOtp(it)) {
                 //Handle pasted OTP
                 it.forEachIndexed { index: Int, c: Char ->
@@ -177,42 +180,42 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
                 }
             }
         }
-        OtpInputSquare(input[1], focusRequesters[1]) {
+        OtpInputSquare(input[1], otpInput1) {
             if (it.length <= 1) {
                 input[1] = it
                 if (it.isNotEmpty()) {
-                    focusRequesters[2].requestFocus()
+                    otpInput2.requestFocus()
                 } else {
                     input[1] = " "
-                    focusRequesters[0].requestFocus()
+                    otpInput0.requestFocus()
                 }
             } else if (it.length == 2) {
                 //Handle delete and type case
                 input[2] = it[1].toString()
-                focusRequesters[2].requestFocus()
+                otpInput2.requestFocus()
             }
         }
-        OtpInputSquare(input[2], focusRequesters[2]) {
+        OtpInputSquare(input[2], otpInput2) {
             if (it.length <= 1) {
                 input[2] = it
                 if (it.isNotEmpty()) {
-                    focusRequesters[3].requestFocus()
+                    otpInput3.requestFocus()
                 } else {
                     input[2] = " "
-                    focusRequesters[1].requestFocus()
+                    otpInput1.requestFocus()
                 }
             } else if (it.length == 2) {
                 //Handle delete and type case
                 input[3] = it[1].toString()
-                focusRequesters[3].requestFocus()
+                otpInput3.requestFocus()
             }
         }
-        OtpInputSquare(input[3], focusRequesters[3]) {
+        OtpInputSquare(input[3], otpInput3, imeAction = ImeAction.Done) {
             if (it.length <= 1) {
                 input[3] = it
                 if (it.isEmpty()) {
                     input[3] = " "
-                    focusRequesters[2].requestFocus()
+                    otpInput2.requestFocus()
                 }
             }
         }
@@ -220,7 +223,14 @@ fun OtpInput(input: SnapshotStateList<String>, focusRequesters: SnapshotStateLis
 }
 
 @Composable
-fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange: (String) -> Unit) {
+fun OtpInputSquare(
+    value: String,
+    focusRequester: FocusRequester,
+    imeAction: ImeAction = ImeAction.Next,
+    onValueChange: (String) -> Unit
+) {
+    val localFocusManager = LocalFocusManager.current
+
     Box(
         Modifier
             .size(56.sdp())
@@ -242,7 +252,18 @@ fun OtpInputSquare(value: String, focusRequester: FocusRequester, onValueChange:
                         .focusRequester(focusRequester),
                     singleLine = true,
                     textStyle = TextStyle(fontSize = 20.sdp().toNonScalableTextSize()),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = imeAction
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            localFocusManager.moveFocus(FocusDirection.Right)
+                        },
+                        onDone = {
+                            localFocusManager.clearFocus()
+                        }
+                    )
                 )
             }
         }

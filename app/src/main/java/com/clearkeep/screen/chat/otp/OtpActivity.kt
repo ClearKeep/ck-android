@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -11,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -23,21 +25,25 @@ class OtpActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        printlnCK("OtpActivity onCreate")
 
         setContent {
             CKSimpleTheme {
                 val navController = rememberNavController()
-                NavHost(navController, startDestination = "otp_verify") {
-                    composable("otp_verify") {
+
+                NavHost(navController, startDestination = "password_verify") {
+                    composable("password_verify") {
                         OtpVerifyPasswordScreen(
                             otpViewModel,
                             onBackPress = {
                                 finish()
                             },
                             onClickNext = {
+                                printlnCK("password_verify navigate enter OTP")
                                 navController.navigate("enter_otp")
                             }
                         )
