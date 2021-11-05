@@ -84,6 +84,7 @@ private fun MessageListView(
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
+        val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
         LaunchedEffect(key1 = oldestVisibleItemIndex) {
@@ -96,6 +97,14 @@ private fun MessageListView(
         }
         if (listState.firstVisibleItemIndex == 0) {
             mIsNewMessage = false
+        }
+
+        if (messageList.isNotEmpty() && lastNewestItem.value != messageList[0] && messageList[0].senderId == myClientId) {
+            mIsNewMessage = false
+            coroutineScope.launch {
+                listState.scrollToItem(0)
+            }
+            lastNewestItem.value = messageList[0]
         }
 
         LazyColumn(
@@ -161,7 +170,7 @@ private fun MessageListView(
         ) {
             if (showButton.value) {
                 ScrollToButtonButton(
-                    isNewMessage = mIsNewMessage,
+                    isNewMessage = mIsNewMessage && lastNewestItem.value != messageList[0] && messageList[0].senderId != myClientId,
                     onClick = {
                         mIsNewMessage = false
                         coroutineScope.launch {
