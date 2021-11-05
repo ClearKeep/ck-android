@@ -33,7 +33,7 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
-@ExperimentalComposeUiApi
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ChangePasswordScreen(
     viewModel: ChangePasswordViewModel,

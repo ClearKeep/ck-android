@@ -19,7 +19,10 @@ import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog.*
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.isVisible
 import androidx.core.view.iterator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -357,6 +360,29 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         handleBackPressed()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            controlCallAudioView.imgEndWaiting.visible()
+            controlCallAudioView.tvEndButtonDescription.visible()
+            tvEndButtonDescription.gone()
+            imgEndWaiting.gone()
+
+            val mConstraintSet = ConstraintSet()
+            mConstraintSet.clone(audioControl as ConstraintLayout)
+            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.END, R.id.parent, ConstraintSet.END)
+            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.START, R.id.parent, ConstraintSet.START)
+            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.BOTTOM, R.id.parent, ConstraintSet.BOTTOM)
+            mConstraintSet.applyTo(audioControl as ConstraintLayout)
+        } else {
+            controlCallAudioView.imgEndWaiting.gone()
+            controlCallAudioView.tvEndButtonDescription.gone()
+            tvEndButtonDescription.visible()
+            imgEndWaiting.visible()
+        }
+    }
+
     fun onAction() {
         imgEndWaiting.setOnClickListener {
             endCall()
@@ -381,6 +407,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             switchToVideoMode()
         }
 
+        controlCallAudioView.imgEndWaiting.setOnClickListener {
+            endCall()
+        }
+
         controlCallVideoView.bottomToggleMute.setOnClickListener {
             mIsMute = !mIsMute
             enableMute(mIsMute)
@@ -392,7 +422,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             mIsMuteVideo = !mIsMuteVideo
             enableMuteVideo(mIsMuteVideo)
             runDelayToHideBottomButton()
-
         }
 
         controlCallVideoView.bottomToggleSwitchCamera.setOnClickListener {

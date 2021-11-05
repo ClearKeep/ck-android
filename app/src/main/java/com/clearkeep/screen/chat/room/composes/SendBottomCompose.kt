@@ -33,7 +33,6 @@ import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.sdp
 
-@ExperimentalComposeUiApi
 @Composable
 fun SendBottomCompose(
     roomViewModel: RoomViewModel,

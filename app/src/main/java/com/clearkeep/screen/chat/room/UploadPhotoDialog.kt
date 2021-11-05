@@ -32,7 +32,6 @@ import com.clearkeep.components.tintsRedLight
 import com.clearkeep.utilities.isPermissionGranted
 import com.clearkeep.utilities.sdp
 
-@ExperimentalComposeUiApi
 @Composable
 fun UploadPhotoDialog(
     isOpen: Boolean,

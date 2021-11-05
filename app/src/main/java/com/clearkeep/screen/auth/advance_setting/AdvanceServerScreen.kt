@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -43,9 +44,9 @@ fun CustomServerScreen(
     isCustom: Boolean,
     url: String,
 ) {
-    val useCustomServerChecked = remember { mutableStateOf(isCustom) }
-    val rememberServerUrl = remember { mutableStateOf(url) }
-    val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+    val useCustomServerChecked = rememberSaveable { mutableStateOf(isCustom) }
+    val rememberServerUrl = rememberSaveable { mutableStateOf(url) }
+    val (showDialog, setShowDialog) = rememberSaveable { mutableStateOf("") }
     val serverUrlValidateResponse = loginViewModel.serverUrlValidateResponse.observeAsState()
     val isLoading = loginViewModel.isLoading.observeAsState()
 
@@ -71,7 +72,9 @@ fun CustomServerScreen(
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
                 modifier = Modifier.padding(start = 6.sdp()),
