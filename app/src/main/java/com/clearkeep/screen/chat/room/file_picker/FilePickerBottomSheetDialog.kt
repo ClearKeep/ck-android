@@ -34,7 +34,6 @@ import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.sdp
 
-@ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @Composable
 fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () -> Unit) {

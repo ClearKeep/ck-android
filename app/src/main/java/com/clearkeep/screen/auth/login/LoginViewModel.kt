@@ -1,6 +1,7 @@
 package com.clearkeep.screen.auth.login
 
 import android.content.Context
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
@@ -23,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-
+@ExperimentalComposeUiApi
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository,
     private val workSpaceRepository: WorkSpaceRepository

@@ -217,7 +217,6 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    @ExperimentalComposeUiApi
     @OptIn(ExperimentalAnimationApi::class)
     @Composable
     fun MainComposable() {

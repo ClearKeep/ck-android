@@ -25,8 +25,7 @@ class OtpActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
-    @ExperimentalComposeUiApi
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         printlnCK("OtpActivity onCreate")

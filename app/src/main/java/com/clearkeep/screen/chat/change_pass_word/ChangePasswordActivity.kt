@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.utilities.printlnCK
@@ -35,7 +36,7 @@ class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    @Composable
+        @Composable
     private fun MainComposable() {
         ChangePasswordScreen(
             changePasswordViewModel,

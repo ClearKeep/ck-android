@@ -41,6 +41,7 @@ import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.utilities.sdp
 import org.whispersystems.libsignal.groups.SenderKeyName
 
+@ExperimentalComposeUiApi
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
@@ -72,8 +73,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-    @ExperimentalComposeUiApi
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 

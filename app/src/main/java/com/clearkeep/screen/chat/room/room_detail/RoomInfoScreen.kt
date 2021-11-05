@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,7 +38,7 @@ fun RoomInfoScreen(
     navHostController: NavHostController,
 ) {
     val groupState = roomViewModel.group.observeAsState()
-    val confirmLeaveGroupDialogVisible = remember { mutableStateOf(false) }
+    val confirmLeaveGroupDialogVisible = rememberSaveable {mutableStateOf(false) }
 
     groupState.value?.let { group ->
         Surface(

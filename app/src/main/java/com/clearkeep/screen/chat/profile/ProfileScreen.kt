@@ -37,8 +37,8 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
-@ExperimentalMaterialApi
 @ExperimentalComposeUiApi
+@ExperimentalMaterialApi
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -388,7 +388,6 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
 }
 
 
-@ExperimentalComposeUiApi
 @Composable
 fun ItemInformationView(
     header: String, errorText: String = "",
@@ -411,7 +410,7 @@ fun ItemInformationView(
     }
 }
 
-@ExperimentalComposeUiApi
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ItemInformationInput(
     modifier: Modifier = Modifier.fillMaxWidth(),
