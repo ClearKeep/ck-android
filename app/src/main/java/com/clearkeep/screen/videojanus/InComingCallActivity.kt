@@ -83,7 +83,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_in_coming_call)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
 

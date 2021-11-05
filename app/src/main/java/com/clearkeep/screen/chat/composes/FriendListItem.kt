@@ -25,6 +25,7 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun FriendListItem(
+    modifier: Modifier = Modifier,
     friend: User,
     onFriendSelected: ((people: User) -> Unit)? = null,
 ) {
@@ -34,6 +35,7 @@ fun FriendListItem(
                 onFriendSelected(friend)
             }
         }
+        .then(modifier)
     ) {
         Row(
             modifier = Modifier
