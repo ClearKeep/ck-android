@@ -88,5 +88,6 @@ fun SetSocialLoginPhraseScreen(
                 buttonType = ButtonType.White
             )
         }
+        Spacer(Modifier.height(30.sdp()))
     }
 }

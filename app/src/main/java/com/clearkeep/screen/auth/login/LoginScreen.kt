@@ -15,13 +15,20 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.BuildConfig
@@ -30,7 +37,9 @@ import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
+import com.google.accompanist.insets.imePadding
 
+@ExperimentalComposeUiApi
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel,
@@ -46,6 +55,9 @@ fun LoginScreen(
     isJoinServer: Boolean = false,
     onNavigateBack: (() -> Unit) = {}
 ) {
+    val (emailField, passwordField) = remember { FocusRequester.createRefs() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val confirmForgotPasswordVisible = remember { mutableStateOf(false) }
@@ -54,206 +66,210 @@ fun LoginScreen(
 
     val image = painterResource(R.drawable.ic_logo)
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (isJoinServer) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isJoinServer) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = dimensionResource(R.dimen._8sdp))
+            ) {
+                IconButton(onClick = { onNavigateBack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "",
+                        tint = grayscaleOffWhite,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(dimensionResource(R.dimen._32sdp)))
+
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Image(image, contentDescription = "")
+        }
+
+        ViewUsedCustomServer(loginViewModel.customDomain.isNotEmpty() && loginViewModel.isCustomServer)
+        Column(modifier = Modifier.padding(horizontal = dimensionResource(R.dimen._20sdp))) {
+            CKTextInputField(
+                stringResource(R.string.tv_email),
+                email,
+                keyboardType = KeyboardType.Email,
+                singleLine = true,
+                leadingIcon = {
+                    Image(
+                        painterResource(R.drawable.ic_icon_mail),
+                        contentDescription = null
+                    )
+                },
+                modifier = Modifier.focusRequester(emailField),
+                imeAction = ImeAction.Next,
+                onNext = {
+                    passwordField.requestFocus()
+                }
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
+            CKTextInputField(
+                stringResource(R.string.tv_password),
+                password,
+                keyboardType = KeyboardType.Password,
+                singleLine = true,
+                modifier = Modifier.focusRequester(passwordField),
+                leadingIcon = {
+                    Image(
+                        painterResource(R.drawable.ic_icon_lock),
+                        contentDescription = null
+                    )
+                },
+            )
+
+            Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
+            CKButton(
+                stringResource(R.string.btn_login),
+                onClick = {
+                    onLoginPressed(email.value, password.value)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = dimensionResource(R.dimen._5sdp)),
+                enabled = !isLoading,
+                buttonType = ButtonType.White
+            )
+
+            Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(start = dimensionResource(R.dimen._8sdp))
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    IconButton(onClick = { onNavigateBack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "",
-                            tint = grayscaleOffWhite,
+                    CKTextButton(
+                        modifier = Modifier.padding(0.sdp()),
+                        stringResource(R.string.btn_forgot_password),
+                        onClick = { confirmForgotPasswordVisible.value = true },
+                        enabled = !isLoading,
+                        textButtonType = TextButtonType.White
+                    )
+                }
+                if (isShowAdvanceSetting) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        CKTextButton(
+                            modifier = Modifier.padding(0.sdp()),
+                            stringResource(R.string.advance_server_settings),
+                            onClick = { advanceSetting?.invoke() },
+                            enabled = !isLoading,
+                            textButtonType = TextButtonType.White
                         )
                     }
                 }
             }
-            Spacer(Modifier.height(dimensionResource(R.dimen._32sdp)))
 
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                Image(image, contentDescription = "")
+            Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
+            Divider(
+                color = colorResource(R.color.line),
+                thickness = dimensionResource(R.dimen._1sdp)
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.social_sign_in),
+                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
+                )
             }
+            Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
 
-            ViewUsedCustomServer(loginViewModel.customDomain.isNotEmpty() && loginViewModel.isCustomServer)
-            Column(modifier = Modifier.padding(horizontal = dimensionResource(R.dimen._20sdp))) {
-                CKTextInputField(
-                    stringResource(R.string.tv_email),
-                    email,
-                    keyboardType = KeyboardType.Email,
-                    singleLine = true,
-                    leadingIcon = {
-                        Image(
-                            painterResource(R.drawable.ic_icon_mail),
-                            contentDescription = null
-                        )
-                    }
-                )
-                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                CKTextInputField(
-                    stringResource(R.string.tv_password),
-                    password,
-                    keyboardType = KeyboardType.Password,
-                    singleLine = true,
-                    leadingIcon = {
-                        Image(
-                            painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
-                        )
-                    },
-                )
-
-                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                CKButton(
-                    stringResource(R.string.btn_login),
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CKButtonSignIn(
+                    stringResource(R.string.btn_login_google),
                     onClick = {
-                        onLoginPressed(email.value, password.value)
+                        onLoginGoogle?.invoke()
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = dimensionResource(R.dimen._5sdp)),
                     enabled = !isLoading,
-                    buttonType = ButtonType.White
+                    buttonType = LoginType.Google
                 )
-
-                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
-
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        CKTextButton(
-                            modifier = Modifier.padding(0.sdp()),
-                            stringResource(R.string.btn_forgot_password),
-                            onClick = { confirmForgotPasswordVisible.value = true },
-                            enabled = !isLoading,
-                            textButtonType = TextButtonType.White
-                        )
-                    }
-                    if (isShowAdvanceSetting) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            CKTextButton(
-                                modifier = Modifier.padding(0.sdp()),
-                                stringResource(R.string.advance_server_settings),
-                                onClick = { advanceSetting?.invoke() },
-                                enabled = !isLoading,
-                                textButtonType = TextButtonType.White
-                            )
-                        }
-                    }
-                }
-
-                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                Divider(
-                    color = colorResource(R.color.line),
-                    thickness = dimensionResource(R.dimen._1sdp)
-                )
-                Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.social_sign_in),
-                        color = Color.White,
-                        style = TextStyle(
-                            fontSize = defaultNonScalableTextSize(),
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
-
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CKButtonSignIn(
-                        stringResource(R.string.btn_login_google),
-                        onClick = {
-                            onLoginGoogle?.invoke()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
-                        enabled = !isLoading,
-                        buttonType = LoginType.Google
-                    )
-                    Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
-                    CKButtonSignIn(
-                        stringResource(R.string.btn_login_microsoft),
-                        onClick = {
-                            onLoginMicrosoft?.invoke()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
-                        enabled = !isLoading,
-                        buttonType = LoginType.Microsoft
-                    )
-                    Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
-                    CKButtonSignIn(
-                        stringResource(R.string.btn_login_facebook),
-                        onClick = {
-                            onLoginFacebook?.invoke()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = dimensionResource(R.dimen._5sdp)),
-                        enabled = !isLoading,
-                        buttonType = LoginType.Facebook
-                    )
-                }
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen._80sdp)))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(R.string.tv_not_account),
-                        color = Color.White,
-                        style = TextStyle(
-                            fontSize = defaultNonScalableTextSize(),
-                            fontWeight = FontWeight.Bold
-                        )
-                    )
-                }
-
-                Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
-                CKButton(
-                    stringResource(R.string.sign_up),
-                    onClick = onRegisterPress,
-                    enabled = !isLoading,
+                Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
+                CKButtonSignIn(
+                    stringResource(R.string.btn_login_microsoft),
+                    onClick = {
+                        onLoginMicrosoft?.invoke()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = dimensionResource(R.dimen._32sdp)),
-                    buttonType = ButtonType.BorderWhite
-
+                        .padding(vertical = dimensionResource(R.dimen._5sdp)),
+                    enabled = !isLoading,
+                    buttonType = LoginType.Microsoft
                 )
-                Spacer(Modifier.height(dimensionResource(R.dimen._30sdp)))
-                Text(
-                    "App version: ${BuildConfig.VERSION_NAME}",
-                    Modifier.align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.caption.copy(
-                        fontSize = 10.dp.toNonScalableTextSize()
-                    ),
-                    color = Color.White
+                Spacer(Modifier.width(dimensionResource(R.dimen._40sdp)))
+                CKButtonSignIn(
+                    stringResource(R.string.btn_login_facebook),
+                    onClick = {
+                        onLoginFacebook?.invoke()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = dimensionResource(R.dimen._5sdp)),
+                    enabled = !isLoading,
+                    buttonType = LoginType.Facebook
                 )
-                Spacer(Modifier.height(dimensionResource(R.dimen._14sdp)))
             }
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen._80sdp)))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.tv_not_account),
+                    color = Color.White,
+                    style = TextStyle(
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            Spacer(Modifier.height(dimensionResource(R.dimen._16sdp)))
+            CKButton(
+                stringResource(R.string.sign_up),
+                onClick = onRegisterPress,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(R.dimen._32sdp)),
+                buttonType = ButtonType.BorderWhite
+
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen._30sdp)))
+            Text(
+                "App version: ${BuildConfig.VERSION_NAME}",
+                Modifier.align(Alignment.CenterHorizontally),
+                style = MaterialTheme.typography.caption.copy(
+                    fontSize = 10.dp.toNonScalableTextSize()
+                ),
+                color = Color.White
+            )
+            Spacer(Modifier.height(dimensionResource(R.dimen._14sdp)))
         }
     }
 

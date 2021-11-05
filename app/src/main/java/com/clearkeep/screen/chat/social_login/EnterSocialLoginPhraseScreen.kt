@@ -121,6 +121,7 @@ fun EnterSocialLoginPhraseScreen(
                     )
                 }
             }
+            Spacer(Modifier.height(58.sdp()))
         }
 
         if (isLoading.value == true) {
