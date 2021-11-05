@@ -79,6 +79,7 @@ fun ServerSettingScreen(
                     )
             )
         }
+        Spacer(Modifier.size(32.sdp()))
     }
 }
 

@@ -12,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
+    @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -277,6 +279,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
+    @ExperimentalComposeUiApi
     private fun navigateToJoinServer(domain: String) {
         val intent = Intent(this, LoginActivity::class.java)
         intent.putExtra(LoginActivity.IS_JOIN_SERVER, true)

@@ -490,6 +490,7 @@ fun JoinServerComposable(
             Modifier
                 .fillMaxWidth()
                 .padding(start = 24.sdp(), end = 16.sdp(), top = 20.sdp())
+                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.size(24.sdp()))
             Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -541,6 +542,7 @@ fun JoinServerComposable(
                     fontSize = defaultNonScalableTextSize()
                 )
             )
+            Spacer(modifier = Modifier.size(24.sdp()))
         }
     }
 }
