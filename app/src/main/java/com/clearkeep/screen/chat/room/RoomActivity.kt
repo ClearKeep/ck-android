@@ -34,7 +34,10 @@ import android.app.ActivityManager
 import androidx.compose.material.ExperimentalMaterialApi
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.view.Display
+import android.view.Surface
 import android.view.View
+import android.view.WindowManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -92,8 +95,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
             val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             val navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val navigationWidthLeft = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).left
+            val navigationWidthRight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).right
+
             val bottomPadding = if (imeHeight == 0) navigation else imeHeight
-            rootView.setPadding(0, 0, 0, bottomPadding)
+            rootView.setPadding(navigationWidthLeft, 0, navigationWidthRight, bottomPadding)
             insets
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
