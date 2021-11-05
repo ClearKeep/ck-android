@@ -2,9 +2,7 @@ package com.clearkeep.screen.chat.change_pass_word
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -13,13 +11,17 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
 import com.clearkeep.components.*
@@ -31,6 +33,7 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
+@ExperimentalComposeUiApi
 @Composable
 fun ChangePasswordScreen(
     viewModel: ChangePasswordViewModel,
@@ -48,8 +51,13 @@ fun ChangePasswordScreen(
                     )
                 )
             )
+            .verticalScroll(rememberScrollState())
     ) {
         val context = LocalContext.current
+
+        val (currentPasswordField, newPasswordField, confirmPasswordField) = remember {
+            FocusRequester.createRefs()
+        }
 
         val currentPassWord = remember { mutableStateOf("") }
         val newPassWord = remember { mutableStateOf("") }
@@ -95,7 +103,12 @@ fun ChangePasswordScreen(
                             contentScale = ContentScale.FillBounds
                         )
                     },
-                    error = currentPassWordError.value
+                    error = currentPassWordError.value,
+                    modifier = Modifier.focusRequester(currentPasswordField),
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        newPasswordField.requestFocus()
+                    }
                 )
                 Spacer(Modifier.height(24.sdp()))
             }
@@ -113,7 +126,12 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                error = newPassWordError.value
+                error = newPassWordError.value,
+                modifier = Modifier.focusRequester(newPasswordField),
+                imeAction = ImeAction.Next,
+                onNext = {
+                    confirmPasswordField.requestFocus()
+                }
             )
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
@@ -130,7 +148,8 @@ fun ChangePasswordScreen(
                         contentScale = ContentScale.FillBounds
                     )
                 },
-                error = confirmPassWordError.value
+                error = confirmPassWordError.value,
+                modifier = Modifier.focusRequester(confirmPasswordField),
             )
             Spacer(Modifier.height(24.sdp()))
             val currentPasswordValid =
@@ -175,6 +194,7 @@ fun ChangePasswordScreen(
                     }
                 )
             }
+            Spacer(Modifier.height(58.sdp()))
         }
     }
 }

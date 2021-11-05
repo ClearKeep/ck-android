@@ -8,10 +8,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -74,7 +71,7 @@ fun CustomServerScreen(
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
                 modifier = Modifier.padding(start = 6.sdp()),
@@ -178,6 +175,7 @@ fun CustomServerScreen(
                     }
                 }
             }
+            Spacer(Modifier.height(58.sdp()))
         }
         if (isLoading.value == true) {
             CKCircularProgressIndicator(Modifier.align(Alignment.Center))

@@ -91,6 +91,7 @@ fun ConfirmSocialLoginPhraseScreen(
                     buttonType = ButtonType.White
                 )
             }
+            Spacer(Modifier.height(58.sdp()))
         }
 
         if (isLoading.value == true) {
