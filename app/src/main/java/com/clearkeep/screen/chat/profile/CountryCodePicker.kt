@@ -57,7 +57,7 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
         CKText(stringResource(R.string.country_codes), fontSize = 20.sdp().toNonScalableTextSize())
         Spacer(Modifier.height(25.sdp()))
         CKSearchBox(searchQuery)
-        Spacer(Modifier.height(60.sdp()))
+        Spacer(Modifier.height(25.sdp()))
         LazyColumn {
             itemsIndexed(searchResult.value.sortedBy { it.second }) { _: Int, item: Pair<Int?, String> ->
                 val countryCode = if (item.first == null) "" else "+${item.first}"

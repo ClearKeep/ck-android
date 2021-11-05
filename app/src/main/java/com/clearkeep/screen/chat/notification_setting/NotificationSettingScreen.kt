@@ -3,6 +3,8 @@ package com.clearkeep.screen.chat.notification_setting
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
@@ -40,6 +42,7 @@ fun NotificationSettingScreen(
         Modifier
             .padding(horizontal = 16.sdp())
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         HeaderNotificationSetting(onCloseView)
         Spacer(modifier = Modifier.height(26.sdp()))
@@ -59,6 +62,7 @@ fun NotificationSettingScreen(
         ) {
             notificationSettingsViewModel.toggleDoNotDisturb(it)
         }
+        Spacer(Modifier.size(32.sdp()))
     }
 }
 
