@@ -56,12 +56,10 @@
         </activity>
         <activity
             android:name=".screen.chat.contact_search.SearchUserActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name=".screen.chat.group_create.CreateGroupActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name="com.clearkeep.screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
@@ -109,8 +107,7 @@
 
         <activity
             android:name="com.clearkeep.screen.chat.invite.InviteActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
             android:name="com.clearkeep.screen.chat.banned_users.BannedUserActivity"
@@ -150,7 +147,6 @@
 
         <activity
             android:name=".screen.videojanus.InComingCallActivity"
-            android:screenOrientation="portrait"
             android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
