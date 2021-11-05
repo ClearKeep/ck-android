@@ -44,7 +44,6 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
-@ExperimentalComposeUiApi
 @Composable
 fun EnterOtpScreen(
     otpResponse: MutableLiveData<Resource<String>>,
@@ -146,7 +145,7 @@ fun EnterOtpScreen(
     }
 }
 
-@ExperimentalComposeUiApi
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun OtpInput(input: SnapshotStateList<String>) {
     val (otpInput0, otpInput1, otpInput2, otpInput3) = FocusRequester.createRefs()

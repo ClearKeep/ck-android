@@ -50,9 +50,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import java.util.*
 
+@OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalMaterialApi
 @ExperimentalFoundationApi
-@ExperimentalComposeUiApi
 @Composable
 fun RoomScreen(
     roomViewModel: RoomViewModel,
@@ -382,7 +382,6 @@ fun RoomScreen(
     }
 }
 
-@ExperimentalComposeUiApi
 @Composable
 fun MessageClickDialog(
     roomViewModel: RoomViewModel,

@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +32,7 @@ fun SetSocialLoginPhraseScreen(
     onBackPress: () -> Unit,
     onClickNext: () -> Unit
 ) {
-    val securityPhrase = remember { mutableStateOf("") }
+    val securityPhrase = rememberSaveable {mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isSecurityPhraseValid.observeAsState()
 
     Column(

@@ -127,7 +127,6 @@
         <activity
             android:name=".screen.videojanus.InCallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:exported="true"
             android:launchMode="singleInstance"
             android:supportsPictureInPicture="true"
@@ -137,7 +136,6 @@
         <activity
             android:name=".screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:exported="true"
             android:launchMode="singleInstance"
             android:supportsPictureInPicture="true"

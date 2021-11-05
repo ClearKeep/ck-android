@@ -31,7 +31,6 @@ import com.clearkeep.utilities.toNonScalableTextSize
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 
-@ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @Composable
 fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> Unit) {

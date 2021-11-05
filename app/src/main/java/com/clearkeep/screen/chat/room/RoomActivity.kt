@@ -72,8 +72,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
-    @ExperimentalComposeUiApi
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

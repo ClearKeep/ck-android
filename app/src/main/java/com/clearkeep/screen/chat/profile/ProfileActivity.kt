@@ -35,9 +35,9 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
-    @ExperimentalMaterialApi
     @ExperimentalComposeUiApi
-    @ExperimentalFoundationApi
+    @ExperimentalMaterialApi
+        @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
