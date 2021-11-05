@@ -7,9 +7,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -121,97 +119,98 @@ fun InviteGroupScreen(
                             }
                         )
                     }
-                    Row(
-                        modifier = Modifier
-                            .padding(all = 16.sdp())
-                    ) {
-                        if (selectedItem.isNotEmpty()) {
-                            SelectedHorizontalBox(selectedItem,
-                                unSelectItem = { people ->
-                                    selectedItem.remove(people)
-                                }
-                            )
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 16.sdp())
-                            .clickable {
-                                useCustomServerChecked.value = !useCustomServerChecked.value
-                            }, verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
-                            ""
-                        )
-                        Spacer(modifier = Modifier.width(16.sdp()))
-                        Text(
-                            text = stringResource(R.string.add_user_other_server),
-                            modifier = Modifier.padding(vertical = 16.sdp()),
-                            style = MaterialTheme.typography.body1.copy(
-                                color = grayscaleBlack,
-                                fontSize = defaultNonScalableTextSize(),
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                    }
 
-                    Column(Modifier.padding(horizontal = 16.sdp())) {
-                        AnimatedVisibility(
-                            visible = useCustomServerChecked.value,
-                            enter = expandIn(
-                                expandFrom = Alignment.BottomStart,
-                                animationSpec = tween(300, easing = LinearOutSlowInEasing)
-                            ),
-                            exit = shrinkOut(
-                                shrinkTowards = Alignment.CenterStart,
-                                targetSize = { fullSize ->
-                                    IntSize(
-                                        fullSize.width / 10,
-                                        fullSize.height / 10
-                                    )
-                                },
-                                animationSpec = tween(300, easing = FastOutSlowInEasing)
-                            )
-
-                        ) {
-                            Column {
-                                Row(
-                                    modifier = Modifier,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        CKTextInputField(
-                                            stringResource(R.string.invite_url_placeholder),
-                                            textValue = urlOtherServer,
-                                            keyboardType = KeyboardType.Text,
-                                            singleLine = true,
-                                        )
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.sdp()))
                     friends.value?.let { values ->
                         val membersId =
                             group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }
                                 ?.map { it.userId } ?: emptyList()
                         val listShow = values.filterNot { membersId.contains(it.userId) }
-                        LazyColumn(
-                            contentPadding = PaddingValues(end = 16.sdp(), start = 16.sdp()),
-                        ) {
+                        LazyColumn {
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(all = 16.sdp())
+                                ) {
+                                    if (selectedItem.isNotEmpty()) {
+                                        SelectedHorizontalBox(selectedItem,
+                                            unSelectItem = { people ->
+                                                selectedItem.remove(people)
+                                            }
+                                        )
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.sdp())
+                                        .clickable {
+                                            useCustomServerChecked.value = !useCustomServerChecked.value
+                                        }, verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
+                                        ""
+                                    )
+                                    Spacer(modifier = Modifier.width(16.sdp()))
+                                    Text(
+                                        text = stringResource(R.string.add_user_other_server),
+                                        modifier = Modifier.padding(vertical = 16.sdp()),
+                                        style = MaterialTheme.typography.body1.copy(
+                                            color = grayscaleBlack,
+                                            fontSize = defaultNonScalableTextSize(),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+
+                                Column(Modifier.padding(horizontal = 16.sdp())) {
+                                    AnimatedVisibility(
+                                        visible = useCustomServerChecked.value,
+                                        enter = expandIn(
+                                            expandFrom = Alignment.BottomStart,
+                                            animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                                        ),
+                                        exit = shrinkOut(
+                                            shrinkTowards = Alignment.CenterStart,
+                                            targetSize = { fullSize ->
+                                                IntSize(
+                                                    fullSize.width / 10,
+                                                    fullSize.height / 10
+                                                )
+                                            },
+                                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                                        )
+
+                                    ) {
+                                        Column {
+                                            Row(
+                                                modifier = Modifier,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    CKTextInputField(
+                                                        stringResource(R.string.invite_url_placeholder),
+                                                        textValue = urlOtherServer,
+                                                        keyboardType = KeyboardType.Text,
+                                                        singleLine = true,
+                                                    )
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.sdp()))
+                            }
                             itemsIndexed(listShow) { _, friend ->
                                 if (isCreateDirectGroup) {
-                                    FriendListItem(friend, onFriendSelected = {
+                                    FriendListItem(Modifier.padding(horizontal = 16.sdp()), friend, onFriendSelected = {
                                         if (isLoading.value != true) {
                                             onDirectFriendSelected(it)
                                         }
                                     })
                                 } else {
-                                    FriendListItemSelectable(friend,
+                                    FriendListItemSelectable(Modifier.padding(horizontal = 16.sdp()), friend,
                                         selectedItem.contains(friend),
                                         onFriendSelected = { people, isAdd ->
                                             if (isAdd) selectedItem.add(people) else

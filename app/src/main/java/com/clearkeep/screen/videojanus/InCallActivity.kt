@@ -135,7 +135,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         screenWidth = resources.displayMetrics.widthPixels
         screenHeight = resources.displayMetrics.heightPixels
 
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         if (environment.getServerCanNull() == null) {
             GlobalScope.launch(context = Dispatchers.Main) {

@@ -119,7 +119,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         setContentView(R.layout.activity_in_call_peer_to_peer)
         //    allowOnLockScreen()
         isInPeerCall = true
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
         mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!

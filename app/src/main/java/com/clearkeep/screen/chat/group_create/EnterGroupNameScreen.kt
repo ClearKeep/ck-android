@@ -83,18 +83,21 @@ fun EnterGroupNameScreen(
                         groupName
                     )
                     Spacer(modifier = Modifier.height(16.sdp()))
-                    CKHeaderText(
-                        stringResource(R.string.create_group_users),
-                        headerTextType = HeaderTextType.Normal,
-                        color = grayscale3
-                    )
-                    Spacer(modifier = Modifier.height(16.sdp()))
                     friends.let { values ->
                         LazyColumn(
                             contentPadding = PaddingValues(end = 16.sdp()),
                         ) {
+                            item {
+                                CKHeaderText(
+                                    stringResource(R.string.create_group_users),
+                                    headerTextType = HeaderTextType.Normal,
+                                    color = grayscale3
+                                )
+                                Spacer(modifier = Modifier.height(16.sdp()))
+                            }
+
                             itemsIndexed(values) { _, friend ->
-                                FriendListItem(friend)
+                                FriendListItem(friend = friend)
                             }
                         }
                     }

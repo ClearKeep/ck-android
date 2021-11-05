@@ -15,6 +15,7 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun FriendListItemSelectable(
+    modifier: Modifier = Modifier,
     friend: User,
     isSelected: Boolean,
     onFriendSelected: (people: User, isAdd: Boolean) -> Unit,
@@ -24,6 +25,7 @@ fun FriendListItemSelectable(
             .selectable(
                 selected = isSelected,
                 onClick = { onFriendSelected(friend, !isSelected) })
+            .then(modifier)
     ) {
         Row(
             modifier = Modifier
