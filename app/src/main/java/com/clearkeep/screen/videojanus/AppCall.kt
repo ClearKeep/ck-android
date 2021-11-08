@@ -41,6 +41,7 @@ object AppCall {
         val intent: Intent = if (isGroup(groupType)) {
             Intent(context, InCallActivity::class.java)
         } else {
+            println("AppCall call  inCallPeerToPeer opened")
             Intent(context, InCallPeerToPeerActivity::class.java)
         }
         intent.putExtra(EXTRA_GROUP_ID, groupId)
@@ -244,6 +245,7 @@ object AppCall {
             if (isGroup(groupType)) {
                 Intent(context, InCallActivity::class.java)
             } else {
+                println("AppCall createIncomingCallIntent inCallPeerToPeer opened")
                 Intent(context, InCallPeerToPeerActivity::class.java)
             }
         }
@@ -276,6 +278,7 @@ object AppCall {
 
     fun openCallAvailable(context: Context, isPeer: Boolean) {
         val intent = if (isPeer) {
+            println("AppCall openCallAvailable inCallPeerToPeer opened")
             Intent(context, InCallPeerToPeerActivity::class.java)
         } else {
             Intent(context, InCallActivity::class.java)
