@@ -259,6 +259,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                         requestInfo.isAudioMode
                     )
                 }
+                roomViewModel.requestCallState.value = null
             }
         })
 
