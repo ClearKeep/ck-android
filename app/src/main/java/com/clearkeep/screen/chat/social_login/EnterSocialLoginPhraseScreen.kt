@@ -9,15 +9,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.auth.login.LoginViewModel
@@ -57,8 +56,8 @@ fun EnterSocialLoginPhraseScreen(
         ) {
             Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
-                title = stringResource(R.string.enter_social_pin_screen_title),
-                onBackPressed = { onBackPress() })
+                title = stringResource(R.string.enter_social_pin_screen_title)
+            ) { onBackPress() }
             Spacer(Modifier.height(30.sdp()))
 
             Column(
@@ -69,7 +68,7 @@ fun EnterSocialLoginPhraseScreen(
                 CKText(
                     text = stringResource(R.string.enter_social_pin),
                     style = MaterialTheme.typography.caption,
-                    color = grayscaleOffWhite,
+                    color = LocalColorMapping.current.topAppBarContent,
                     fontSize = 16.sdp().toNonScalableTextSize()
                 )
                 Spacer(Modifier.height(32.sdp()))
@@ -79,7 +78,8 @@ fun EnterSocialLoginPhraseScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
+                            contentDescription = null,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                     keyboardType = KeyboardType.Password,
@@ -94,7 +94,7 @@ fun EnterSocialLoginPhraseScreen(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .clickable { isConfirmForgotPassphraseDialogVisible.value = true },
-                    color = grayscaleOffWhite,
+                    color = LocalColorMapping.current.clickableBodyText,
                     fontSize = 16.sdp().toNonScalableTextSize()
                 )
                 Spacer(Modifier.height(22.sdp()))

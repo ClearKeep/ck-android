@@ -7,22 +7,20 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import com.google.accompanist.insets.ProvideWindowInsets
-import com.google.accompanist.insets.systemBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 val lightThemeColors = lightColors(
     primary = primaryDefault,
     primaryVariant = grayscaleOffWhite,
     onPrimary = grayscaleOffWhite,
-
-    /*secondary = Color.LightGray,
-    secondaryVariant = Color.Black,
-    onSecondary = Color.LightGray,*/
 
     background = grayscaleBackground,
     onBackground = grayscaleBlack,
@@ -39,11 +37,7 @@ val darkThemeColors = darkColors(
     primaryVariant = Color.White,
     onPrimary = Color.White,
 
-    /*secondary = Color.DarkGray,
-    secondaryVariant = Color.White,
-    onSecondary = Color.DarkGray,*/
-
-    background = Color.Black,
+    background = colorBackgroundDark,
     onBackground = Color.White,
 
     surface = colorLightBlue,
@@ -59,23 +53,21 @@ fun CKTheme(
     children: @Composable () -> Unit
 ) {
     MaterialTheme(
-        //todo disable dark mode
-        colors = if (darkTheme) lightThemeColors else lightThemeColors,
+        colors = if (darkTheme) darkThemeColors else lightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
-        Box(
-            modifier = Modifier
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            if (darkTheme) backgroundGradientStart else backgroundGradientStart,
-                            if (darkTheme) backgroundGradientEnd else backgroundGradientEnd,
+        CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = LocalColorMapping.current.backgroundBrush
                         )
                     )
-                )
-        ) {
-            children()
+            ) {
+                children()
+            }
         }
     }
 }
@@ -91,25 +83,54 @@ fun CKInsetTheme(
     }
 
     MaterialTheme(
-        //todo disable dark mode
-        colors = if (darkTheme) lightThemeColors else lightThemeColors,
+        colors = if (darkTheme) darkThemeColors else lightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
-        ProvideWindowInsets {
-            Box(
-                modifier = Modifier
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                if (darkTheme) backgroundGradientStart else backgroundGradientStart,
-                                if (darkTheme) backgroundGradientEnd else backgroundGradientEnd,
+        CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
+            ProvideWindowInsets {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = LocalColorMapping.current.backgroundBrush
                             )
                         )
-                    )
-            ) {
-                children()
+                ) {
+                    children()
+                }
             }
         }
     }
+}
+
+data class ColorMapping(
+    val warning: Color = colorWarningLight,
+    val error: Color = errorDefault,
+    val backgroundBrush: List<Color> = listOf(
+        backgroundGradientStart,
+        backgroundGradientEnd,
+    ),
+    val iconColorFilter: ColorFilter? = null,
+    val topAppBarTitle: Color = grayscaleOffWhite,
+    val topAppBarContent: Color = grayscaleBackground,
+    val bodyText: Color = Color.White,
+    val clickableBodyText: Color = Color.White
+)
+
+val LocalColorMapping = compositionLocalOf { ColorMapping() }
+
+fun provideColor(darkTheme: Boolean) = if (darkTheme) {
+    ColorMapping(
+        primaryDefault,
+        primaryDefault,
+        listOf(colorBackgroundDark, colorBackgroundDark),
+        ColorFilter.tint(colorTextDark),
+        grayscaleDarkModeGreyLight,
+        grayscaleDarkModeGreyLight,
+        grayscaleDarkModeGreyLight,
+        clickableBodyText = primaryDefault,
+    )
+} else {
+    ColorMapping()
 }

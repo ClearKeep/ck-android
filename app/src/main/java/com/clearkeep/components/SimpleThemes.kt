@@ -8,6 +8,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,18 +63,20 @@ fun CKSimpleTheme(
 ) {
     //todo disable dark mode
     MaterialTheme(
-        colors = if (darkTheme) simpleLightThemeColors else simpleLightThemeColors,
+        colors = if (darkTheme) simpleDarkThemeColors else simpleLightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
-        Surface(color = Color.White) {
-            children()
+        CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
+            Surface(color = Color.White) {
+                children()
+            }
         }
     }
 }
 
 @Composable
-fun CKSimpleInsetTheme(enabled: Boolean = true, children: @Composable () -> Unit) {
+fun CKSimpleInsetTheme(darkTheme: Boolean = isSystemInDarkTheme(), enabled: Boolean = true, children: @Composable () -> Unit) {
     val systemUiController = rememberSystemUiController()
     if (enabled) {
         SideEffect {
@@ -84,7 +87,9 @@ fun CKSimpleInsetTheme(enabled: Boolean = true, children: @Composable () -> Unit
     CKSimpleTheme {
         if (enabled) {
             ProvideWindowInsets {
-                children()
+                CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
+                    children()
+                }
             }
         } else {
             children()
