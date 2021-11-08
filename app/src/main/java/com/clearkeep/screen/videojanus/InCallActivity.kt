@@ -128,6 +128,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
+        printlnCK("InCallActivity onCreate()")
         System.setProperty("java.net.preferIPv6Addresses", "false")
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
