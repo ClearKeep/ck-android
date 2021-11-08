@@ -180,6 +180,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         dispatchCallStatus(true)
 
         createInCallNotification(this, InCallActivity::class.java)
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        }
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -364,22 +368,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         super.onConfigurationChanged(newConfig)
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            controlCallAudioView.imgEndWaiting.visible()
-            controlCallAudioView.tvEndButtonDescription.visible()
-            tvEndButtonDescription.gone()
-            imgEndWaiting.gone()
-
-            val mConstraintSet = ConstraintSet()
-            mConstraintSet.clone(audioControl as ConstraintLayout)
-            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.END, R.id.parent, ConstraintSet.END)
-            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.START, R.id.parent, ConstraintSet.START)
-            mConstraintSet.connect(R.id.controlCallAudioView, ConstraintSet.BOTTOM, R.id.parent, ConstraintSet.BOTTOM)
-            mConstraintSet.applyTo(audioControl as ConstraintLayout)
+            configLandscapeLayout()
         } else {
-            controlCallAudioView.imgEndWaiting.gone()
-            controlCallAudioView.tvEndButtonDescription.gone()
-            tvEndButtonDescription.visible()
-            imgEndWaiting.visible()
+            configPortraitLayout()
         }
     }
 
@@ -975,6 +966,66 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         busySignalPlayer?.stop()
         busySignalPlayer?.release()
         busySignalPlayer = null
+    }
+
+    private fun configPortraitLayout() {
+        controlCallAudioView.imgEndWaiting.gone()
+        controlCallAudioView.tvEndButtonDescription.gone()
+        tvEndButtonDescription.visible()
+        imgEndWaiting.visible()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.TOP,
+            R.id.parent,
+            ConstraintSet.TOP
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 0.532f
+        controlCallAudioView.layoutParams = layoutParams
+    }
+
+    private fun configLandscapeLayout() {
+        controlCallAudioView.imgEndWaiting.visible()
+        controlCallAudioView.tvEndButtonDescription.visible()
+        tvEndButtonDescription.gone()
+        imgEndWaiting.gone()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.END,
+            R.id.parent,
+            ConstraintSet.END
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.START,
+            R.id.parent,
+            ConstraintSet.START
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 1f
+        controlCallAudioView.layoutParams = layoutParams
     }
 
     data class RemoteInfo(

@@ -24,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-@ExperimentalComposeUiApi
+
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepository,
     private val workSpaceRepository: WorkSpaceRepository

@@ -39,7 +39,7 @@ import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
 import com.google.accompanist.insets.imePadding
 
-@ExperimentalComposeUiApi
+
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel,
@@ -55,8 +55,8 @@ fun LoginScreen(
     isJoinServer: Boolean = false,
     onNavigateBack: (() -> Unit) = {}
 ) {
-    val (emailField, passwordField) = remember { FocusRequester.createRefs() }
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val emailField = remember { FocusRequester() }
+    val passwordField = remember { FocusRequester() }
 
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }

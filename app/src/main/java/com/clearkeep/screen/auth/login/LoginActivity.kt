@@ -55,7 +55,7 @@ import com.facebook.login.LoginResult
 import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
 
-@ExperimentalComposeUiApi
+
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 

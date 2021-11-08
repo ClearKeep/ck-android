@@ -35,7 +35,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
-    @ExperimentalComposeUiApi
+
     @ExperimentalMaterialApi
         @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,7 +77,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     @ExperimentalMaterialApi
-    @ExperimentalComposeUiApi
+
     @Composable
     private fun MainComposable(navController: NavController) {
         ProfileScreen(
