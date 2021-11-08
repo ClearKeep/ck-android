@@ -2,6 +2,7 @@ package com.clearkeep.components.base
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,7 +47,7 @@ fun CKButton(
             ButtonType.BorderWhite -> {
                 BorderStroke(
                     2.sdp(),
-                    grayscaleOffWhite
+                    if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
                 )
             }
             ButtonType.BorderGradient -> {
@@ -73,29 +74,32 @@ fun CKButton(
             disabledContentColor = getDisabledButtonTextColor(buttonType)
         ),
     ) {
-        Box(
-            modifier = if (buttonType == ButtonType.Blue) Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = if (enabled) {
-                            listOf(
-                                backgroundGradientStart,
-                                backgroundGradientEnd
-                            )
-                        } else {
-                            listOf(
-                                backgroundGradientStartHalfTransparent,
-                                backgroundGradientEndHalfTransparent
-                            )
-                        }
-                    )
+        val darkTheme = isSystemInDarkTheme()
+        val backgroundModifier = if (buttonType == ButtonType.Blue || (darkTheme && buttonType == ButtonType.White)) Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = if (enabled) {
+                        listOf(
+                            backgroundGradientStart,
+                            backgroundGradientEnd
+                        )
+                    } else {
+                        listOf(
+                            backgroundGradientStartHalfTransparent,
+                            backgroundGradientEndHalfTransparent
+                        )
+                    }
                 )
-                .then(modifier)
-                .height(height) else Modifier
-                .fillMaxWidth()
-                .then(modifier)
-                .height(height),
+            )
+            .then(modifier)
+            .height(height) else Modifier
+            .fillMaxWidth()
+            .then(modifier)
+            .height(height)
+
+        Box(
+            modifier = backgroundModifier,
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -108,22 +112,24 @@ fun CKButton(
     }
 }
 
+@Composable
 private fun getButtonTextColor(buttonType: ButtonType): Color {
     return when (buttonType) {
-        ButtonType.White -> primaryDefault
+        ButtonType.White -> if (isSystemInDarkTheme()) grayscaleBackground else primaryDefault
         ButtonType.Blue -> grayscaleBackground
         ButtonType.Red -> primaryDefault
-        ButtonType.BorderWhite -> grayscaleOffWhite
+        ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
     }
 }
 
+@Composable
 private fun getDisabledButtonTextColor(buttonType: ButtonType): Color {
     return when (buttonType) {
-        ButtonType.White -> primaryDefault
+        ButtonType.White -> if (isSystemInDarkTheme()) grayscaleBackground else primaryDefault
         ButtonType.Blue -> grayscaleBackground
         ButtonType.Red -> primaryDefault
-        ButtonType.BorderWhite -> grayscaleOffWhite
+        ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
     }
 }

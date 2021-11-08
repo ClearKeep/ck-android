@@ -31,8 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
-import com.clearkeep.components.backgroundGradientEnd
-import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.ButtonType
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKButton
@@ -66,26 +65,24 @@ fun EnterOtpScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 )
             )
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
-            title = stringResource(R.string.enter_otp_screen_title), onBackPressed = {
-                onBackPress.invoke()
-            })
+        CKTopAppBarSample(
+            modifier = Modifier.padding(start = 6.sdp()),
+            title = stringResource(R.string.enter_otp_screen_title)
+        ) {
+            onBackPress.invoke()
+        }
         Spacer(Modifier.height(30.sdp()))
         Column(Modifier.padding(horizontal = 16.sdp())) {
             Text(
                 text = stringResource(R.string.otp_hint),
                 style = MaterialTheme.typography.caption,
-                color = grayscaleOffWhite,
+                color = LocalColorMapping.current.topAppBarContent,
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
@@ -94,7 +91,7 @@ fun EnterOtpScreen(
             Text(
                 stringResource(R.string.enter_otp_no_code),
                 Modifier.align(Alignment.CenterHorizontally),
-                Color.White,
+                LocalColorMapping.current.bodyText,
                 16.sdp().toNonScalableTextSize(),
                 fontWeight = FontWeight.W400
             )
@@ -103,7 +100,7 @@ fun EnterOtpScreen(
                 Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable { onClickResend.invoke() },
-                Color.White,
+                LocalColorMapping.current.clickableBodyText,
                 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(24.sdp()))
@@ -174,7 +171,7 @@ fun OtpInput(input: SnapshotStateList<String>) {
                 otpInput1.requestFocus()
             } else if (isValidOtp(it)) {
                 //Handle pasted OTP
-                it.forEachIndexed { index: Int, c: Char ->
+                it.forEachIndexed { index: Int, _: Char ->
                     input[index] = it[index].toString()
                 }
             }

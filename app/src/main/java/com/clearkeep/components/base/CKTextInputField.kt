@@ -1,7 +1,9 @@
 package com.clearkeep.components.base
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
@@ -45,6 +47,7 @@ fun CKTextInputField(
     maxChars: Int? = null,
     onValueChange: (String) -> Unit = {}
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
     val shape = MaterialTheme.shapes.large
     val isError = !error.isNullOrBlank()
     val focusManager = LocalFocusManager.current
@@ -58,11 +61,11 @@ fun CKTextInputField(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value && !readOnly) {
-                if (isError) {
-                    BorderStroke(1.sdp(), errorDefault)
-                } else {
-                    BorderStroke(1.sdp(), grayscaleBlack)
+                val borderColor = when {
+                    isError -> LocalColorMapping.current.error
+                    else -> if (isDarkTheme) colorTextDark else grayscaleBlack
                 }
+                BorderStroke(1.sdp(), borderColor)
             } else null,
             color = Color.Transparent,
             elevation = 0.sdp()
@@ -87,20 +90,11 @@ fun CKTextInputField(
                         textValue?.value = trimmedInput.replace(" ", "")
                     }
                 },
-                /*label = {
-                    if (label.isNotBlank()) {
-                        Text(
-                            label, style = MaterialTheme.typography.body2.copy(
-                                color = MaterialTheme.colors.secondaryVariant
-                            )
-                        )
-                    }
-                },*/
                 placeholder = {
                     if (placeholder.isNotBlank()) {
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = grayscale3,
+                                color = if (isDarkTheme) colorTextDark else grayscale3,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = defaultNonScalableTextSize()
                             )
@@ -108,22 +102,26 @@ fun CKTextInputField(
                     }
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = grayscaleBlack,
-                    cursorColor = grayscaleBlack,
+                    textColor = if (isDarkTheme) colorTextDark else grayscaleBlack,
+                    cursorColor = if (isDarkTheme) colorTextDark else grayscaleBlack,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = if (!isError) {
-                        if (rememberBorderShow.value) {
-                            grayscaleOffWhite
-                        } else {
-                            grayscale5
-                        }
-                    } else errorLight,
-                    leadingIconColor = pickledBlueWood,
-                    errorCursorColor = errorLight,
+                    backgroundColor = if (isDarkTheme) {
+                        colorBackgroundTextFieldDark
+                    } else {
+                        if (!isError) {
+                            if (rememberBorderShow.value) {
+                                grayscaleOffWhite
+                            } else {
+                                grayscale5
+                            }
+                        } else LocalColorMapping.current.error
+                    },
+                    leadingIconColor = if (isDarkTheme) colorTextDark else pickledBlueWood,
+                    errorCursorColor = LocalColorMapping.current.error,
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = grayscaleBlack,
+                    color =  if (isDarkTheme) colorTextDark else grayscaleBlack,
                     fontWeight = FontWeight.Normal,
                     fontSize = defaultNonScalableTextSize()
                 ),
@@ -139,7 +137,6 @@ fun CKTextInputField(
                     },
                 leadingIcon = leadingIcon,
                 trailingIcon = {
-                    trailingIcon
                     if (isPasswordType) {
                         Icon(
                             painter = if (!passwordVisibility.value) {
@@ -148,7 +145,7 @@ fun CKTextInputField(
                                 painterResource(R.drawable.ic_eye_cross)
                             },
                             contentDescription = "",
-                            tint = pickledBlueWood,
+                            tint = if (isDarkTheme) colorTextDark else pickledBlueWood,
                             modifier = Modifier
                                 .clickable(
                                     onClick = {
@@ -177,7 +174,7 @@ fun CKTextInputField(
         if (isError) error?.let {
             Text(
                 it,
-                style = MaterialTheme.typography.body2.copy(color = errorDefault),
+                style = MaterialTheme.typography.body2.copy(color = if (isDarkTheme) primaryDefault else errorDefault),
                 modifier = Modifier.padding(start = 8.sdp())
             )
         }

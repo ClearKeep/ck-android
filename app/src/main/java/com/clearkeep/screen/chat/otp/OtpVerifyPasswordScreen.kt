@@ -13,11 +13,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.components.backgroundGradientEnd
-import com.clearkeep.components.backgroundGradientStart
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.network.Status
@@ -40,11 +37,7 @@ fun OtpVerifyPasswordScreen(
             .fillMaxSize()
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 )
             )
             .verticalScroll(rememberScrollState())
@@ -52,16 +45,18 @@ fun OtpVerifyPasswordScreen(
         val currentPassWord = remember { mutableStateOf("") }
 
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(modifier = Modifier.padding(end = 8.sdp()),
-            title = stringResource(R.string.otp_verify_password_title), onBackPressed = {
-                onBackPress.invoke()
-            })
+        CKTopAppBarSample(
+            modifier = Modifier.padding(end = 8.sdp()),
+            title = stringResource(R.string.otp_verify_password_title)
+        ) {
+            onBackPress.invoke()
+        }
         Spacer(Modifier.height(30.sdp()))
         Column(Modifier.padding(horizontal = 16.sdp())) {
             Text(
                 text = stringResource(R.string.otp_verify_password_description),
                 style = MaterialTheme.typography.caption,
-                color = grayscaleOffWhite,
+                color = LocalColorMapping.current.topAppBarContent,
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
@@ -73,7 +68,8 @@ fun OtpVerifyPasswordScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
             )

@@ -5,22 +5,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.lifecycle.lifecycleScope
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.auth.login.LoginViewModel
@@ -44,8 +39,8 @@ fun SetSocialLoginPhraseScreen(
     ) {
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(
-            title = stringResource(R.string.social_login_phrase_screen_title),
-            onBackPressed = { onBackPress() })
+            title = stringResource(R.string.social_login_phrase_screen_title)
+        ) { onBackPress() }
         Spacer(Modifier.height(30.sdp()))
 
         Column(
@@ -56,7 +51,7 @@ fun SetSocialLoginPhraseScreen(
             CKText(
                 text = stringResource(R.string.social_pin_description),
                 style = MaterialTheme.typography.caption,
-                color = grayscaleOffWhite,
+                color = LocalColorMapping.current.topAppBarContent,
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(32.sdp()))
@@ -66,7 +61,8 @@ fun SetSocialLoginPhraseScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
                 keyboardType = KeyboardType.Password
@@ -77,7 +73,7 @@ fun SetSocialLoginPhraseScreen(
             CKText(
                 stringResource(R.string.set_social_pin_hint),
                 fontSize = 12.sdp().toNonScalableTextSize(),
-                color = grayscaleOffWhite,
+                color = LocalColorMapping.current.clickableBodyText,
                 textAlign = TextAlign.Center
             )
             Spacer(Modifier.height(50.sdp()))

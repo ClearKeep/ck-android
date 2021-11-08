@@ -72,3 +72,11 @@ val colorStatusBar = Color(0xFF090979)
 
 val colorDialogScrim = Color(0x66000000)
 val bottomSheetColor = Color(0xF3FFFFFF)
+
+val colorBackgroundDark = Color (0xFF121212)
+val colorBackgroundTextFieldDark = Color (0xFF424242)
+val colorTextDark = Color (0xFFC4C4C4)
+val colorTextFieldHighlightedDark = Color(0xFFC4C4C4)
+val colorSurfaceDark = Color(0xFF222222)
+val grayscaleDarkModeGreyLight = Color(0xFFC4C4C4)
+val grayscaleDarkModeGreyLight2 = Color(0xFFE0E0E0)

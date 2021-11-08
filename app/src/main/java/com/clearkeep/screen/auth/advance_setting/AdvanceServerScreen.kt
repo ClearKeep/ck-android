@@ -12,24 +12,18 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
@@ -66,11 +60,7 @@ fun CustomServerScreen(
         modifier = Modifier
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd,
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 )
             )
     ) {
@@ -80,20 +70,19 @@ fun CustomServerScreen(
             Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
                 modifier = Modifier.padding(start = 6.sdp()),
-                title = stringResource(R.string.advance_server_settings),
-                onBackPressed = {
-                    if (!useCustomServerChecked.value) {
-                        loginViewModel.isCustomServer = false
-                        loginViewModel.customDomain = ""
-                    } else {
-                        loginViewModel.isCustomServer = isCustom
-                        loginViewModel.customDomain = url
-                    }
-                    loginViewModel.clearLoading()
-                    loginViewModel.cancelCheckValidServer()
-                    onBackPress()
+                title = stringResource(R.string.advance_server_settings)
+            ) {
+                if (!useCustomServerChecked.value) {
+                    loginViewModel.isCustomServer = false
+                    loginViewModel.customDomain = ""
+                } else {
+                    loginViewModel.isCustomServer = isCustom
+                    loginViewModel.customDomain = url
                 }
-            )
+                loginViewModel.clearLoading()
+                loginViewModel.cancelCheckValidServer()
+                onBackPress()
+            }
             Spacer(Modifier.height(26.sdp()))
             Row(
                 modifier = Modifier

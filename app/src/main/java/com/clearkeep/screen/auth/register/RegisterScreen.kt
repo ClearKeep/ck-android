@@ -1,14 +1,11 @@
 package com.clearkeep.screen.auth.register
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
@@ -75,12 +72,12 @@ fun RegisterScreen(
         Card(shape = RoundedCornerShape(16.sdp())) {
             Column(
                 modifier = Modifier
-                    .background(Color.White)
+                    .background(if (isSystemInDarkTheme()) colorSurfaceDark else Color.White)
                     .padding(horizontal = 16.sdp(), vertical = 24.sdp())
             ) {
                 CKText(
                     text = stringResource(R.string.sign_up_fill_information),
-                    color = grayscaleBlack,
+                    color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
                     fontSize = defaultNonScalableTextSize()
                 )
                 Spacer(Modifier.height(24.sdp()))
@@ -95,7 +92,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_icon_mail),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                     imeAction = ImeAction.Next,
@@ -114,7 +112,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_user_check),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                     imeAction = ImeAction.Next,
@@ -135,7 +134,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                     imeAction = ImeAction.Next,
@@ -155,7 +155,8 @@ fun RegisterScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                 )

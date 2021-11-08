@@ -15,13 +15,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -33,11 +29,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
-import com.google.accompanist.insets.imePadding
 
 
 @Composable
@@ -104,7 +100,8 @@ fun LoginScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_mail),
-                        contentDescription = null
+                        contentDescription = null,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
                 modifier = Modifier.focusRequester(emailField),
@@ -123,7 +120,8 @@ fun LoginScreen(
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
-                        contentDescription = null
+                        contentDescription = null,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
             )
@@ -308,12 +306,12 @@ fun ViewUsedCustomServer(shouldShow: Boolean) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_alert),
                     contentDescription = "",
-                    tint = colorWarningLight,
+                    tint = LocalColorMapping.current.warning,
                     modifier = Modifier.padding(dimensionResource(R.dimen._10sdp))
                 )
                 Text(
-                    text = "You are using custom server",
-                    color = colorWarningLight,
+                    text = stringResource(R.string.login_custom_server),
+                    color = LocalColorMapping.current.warning,
                     style = TextStyle(
                         fontSize = defaultNonScalableTextSize(),
                         fontWeight = FontWeight.Bold
