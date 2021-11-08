@@ -37,7 +37,7 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
-@ExperimentalComposeUiApi
+
 @ExperimentalMaterialApi
 @Composable
 fun ProfileScreen(
@@ -52,7 +52,6 @@ fun ProfileScreen(
     val env = BuildConfig.FLAVOR
     val profile = profileViewModel.profile.observeAsState()
     val context = LocalContext.current
-    val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
     BackHandler {
@@ -188,7 +187,7 @@ fun ProfileScreen(
                                         )
                                         .clip(MaterialTheme.shapes.large)
                                         .clickable {
-                                            keyboardController?.hide()
+                                            focusManager.clearFocus()
                                             navController.navigate("country_code_picker")
                                         }
                                         .then(

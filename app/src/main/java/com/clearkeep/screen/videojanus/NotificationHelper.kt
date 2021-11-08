@@ -12,6 +12,7 @@ import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import androidx.core.app.NotificationManagerCompat
@@ -190,6 +191,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         notificationManager.notify(notificationId, notification)
     }
 }
+
 
 fun showMessageNotificationToSystemBar(
     context: Context,

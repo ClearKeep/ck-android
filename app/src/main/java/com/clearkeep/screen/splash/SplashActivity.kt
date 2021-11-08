@@ -15,7 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-@ExperimentalComposeUiApi
+
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
     private val splashViewModel: SplashViewModel by viewModels()

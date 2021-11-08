@@ -70,6 +70,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
 
+
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
         override fun onCreate(savedInstanceState: Bundle?) {
