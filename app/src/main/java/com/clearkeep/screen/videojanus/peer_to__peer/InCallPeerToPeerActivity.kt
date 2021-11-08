@@ -18,7 +18,9 @@ import android.view.WindowManager
 import android.widget.ToggleButton
 import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -153,6 +155,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
         onClickControlCall()
         dispatchCallStatus(true)
         createInCallNotification(this, InCallPeerToPeerActivity::class.java)
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -315,6 +321,16 @@ class InCallPeerToPeerActivity : BaseActivity() {
             } else {
                 controlCallAudioView.visibility = View.VISIBLE
             }
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        } else {
+            configPortraitLayout()
         }
     }
 
@@ -847,6 +863,86 @@ class InCallPeerToPeerActivity : BaseActivity() {
         } else {
             action()
         }
+    }
+
+    private fun configPortraitLayout() {
+        controlCallAudioView.imgEndWaiting.gone()
+        controlCallAudioView.tvEndButtonDescription.gone()
+        tvEndButtonDescription.visible()
+        imgEndWaiting.visible()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.TOP,
+            R.id.parent,
+            ConstraintSet.TOP
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 0.7f
+        controlCallAudioView.layoutParams = layoutParams
+
+        val parentConstraintSet = ConstraintSet()
+        parentConstraintSet.clone(waitingCallView as ConstraintLayout)
+        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._100sdp).toInt())
+        parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
+
+        val avatarLayoutParams = imgThumb2.layoutParams
+        avatarLayoutParams.width = resources.getDimension(R.dimen._159sdp).toInt()
+        avatarLayoutParams.height = resources.getDimension(R.dimen._159sdp).toInt()
+        imgThumb2.layoutParams = avatarLayoutParams
+    }
+
+    private fun configLandscapeLayout() {
+        controlCallAudioView.imgEndWaiting.visible()
+        controlCallAudioView.tvEndButtonDescription.visible()
+        tvEndButtonDescription.gone()
+        imgEndWaiting.gone()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.END,
+            R.id.parent,
+            ConstraintSet.END
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.START,
+            R.id.parent,
+            ConstraintSet.START
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 1f
+        controlCallAudioView.layoutParams = layoutParams
+
+        val parentConstraintSet = ConstraintSet()
+        parentConstraintSet.clone(waitingCallView as ConstraintLayout)
+        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._20sdp).toInt())
+        parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
+
+        val avatarLayoutParams = imgThumb2.layoutParams
+        avatarLayoutParams.width = resources.getDimension(R.dimen._100sdp).toInt()
+        avatarLayoutParams.height = resources.getDimension(R.dimen._100sdp).toInt()
+        imgThumb2.layoutParams = avatarLayoutParams
     }
 
     private fun dispatchCallStatus(isStarted: Boolean) {
