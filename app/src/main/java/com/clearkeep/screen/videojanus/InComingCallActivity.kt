@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -19,6 +20,8 @@ import android.widget.ImageView
 import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -40,6 +43,10 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.ServerRepository
 import com.clearkeep.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
 import jp.wasabeef.glide.transformations.BlurTransformation
+import kotlinx.android.synthetic.main.activity_in_call.*
+import kotlinx.android.synthetic.main.activity_in_coming_call.imageBackground
+import kotlinx.android.synthetic.main.activity_in_coming_call.tvEndButtonDescription
+import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
@@ -114,6 +121,20 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 finishAndRemoveFromTask()
             }
+        }
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        } else {
+            configPortraitLayout()
         }
     }
 
@@ -516,6 +537,48 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         GlobalScope.launch {
             videoCallRepository.cancelCall(groupId, Owner(mDomain, mOwnerId))
         }
+    }
+
+    private fun configPortraitLayout() {
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.setMargin(
+            R.id.txtAudioMode,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._100sdp).toInt()
+        )
+        mConstraintSet.setMargin(
+            R.id.tvEndButtonDescription,
+            ConstraintSet.BOTTOM,
+            resources.getDimension(R.dimen._60sdp).toInt()
+        )
+        mConstraintSet.setMargin(
+            R.id.textView,
+            ConstraintSet.BOTTOM,
+            resources.getDimension(R.dimen._60sdp).toInt()
+        )
+        mConstraintSet.applyTo(rootViewCallIn as ConstraintLayout)
+    }
+
+    private fun configLandscapeLayout() {
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.setMargin(
+            R.id.txtAudioMode,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._20sdp).toInt()
+        )
+        mConstraintSet.setMargin(
+            R.id.tvEndButtonDescription,
+            ConstraintSet.BOTTOM,
+            resources.getDimension(R.dimen._30sdp).toInt()
+        )
+        mConstraintSet.setMargin(
+            R.id.textView,
+            ConstraintSet.BOTTOM,
+            resources.getDimension(R.dimen._30sdp).toInt()
+        )
+        mConstraintSet.applyTo(rootViewCallIn as ConstraintLayout)
     }
 
     companion object {
