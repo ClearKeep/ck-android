@@ -20,6 +20,7 @@
 
 
     <TextView
+        android:id="@+id/txtCamera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_16sdp"
@@ -31,6 +32,7 @@
         app:layout_constraintTop_toBottomOf="@+id/toggleFaceTime" />
 
     <TextView
+        android:id="@+id/txtSpeaker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_16sdp"

@@ -41,7 +41,7 @@ import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.utilities.sdp
 import org.whispersystems.libsignal.groups.SenderKeyName
 
-@ExperimentalComposeUiApi
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
     @Inject
@@ -279,7 +279,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
-    @ExperimentalComposeUiApi
+
     private fun navigateToJoinServer(domain: String) {
         val intent = Intent(this, LoginActivity::class.java)
         intent.putExtra(LoginActivity.IS_JOIN_SERVER, true)
