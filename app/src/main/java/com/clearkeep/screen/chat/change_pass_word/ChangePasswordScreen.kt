@@ -26,8 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
-import com.clearkeep.screen.chat.home.MainActivity
-import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.screen.splash.SplashActivity
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
@@ -37,18 +35,14 @@ import com.clearkeep.utilities.toNonScalableTextSize
 @Composable
 fun ChangePasswordScreen(
     viewModel: ChangePasswordViewModel,
-    onBackPress: (() -> Unit)
+    onBackPress: () -> Unit
 ) {
     Column(
         Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 )
             )
             .verticalScroll(rememberScrollState())
@@ -70,10 +64,12 @@ fun ChangePasswordScreen(
         val isResetPassword = viewModel.isResetPassword.observeAsState()
 
         Spacer(Modifier.height(58.sdp()))
-        CKTopAppBarSample(modifier = Modifier.padding(start = 6.sdp()),
-            title = stringResource(R.string.enter_new_password), onBackPressed = {
-                onBackPress.invoke()
-            })
+        CKTopAppBarSample(
+            modifier = Modifier.padding(start = 6.sdp()),
+            title = stringResource(R.string.enter_new_password)
+        ) {
+            onBackPress.invoke()
+        }
         Spacer(Modifier.height(26.sdp()))
         Column(
             modifier = Modifier
@@ -100,7 +96,8 @@ fun ChangePasswordScreen(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
                             Modifier.size(dimensionResource(R.dimen._24sdp)),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.iconColorFilter
                         )
                     },
                     error = currentPassWordError.value,
@@ -123,7 +120,8 @@ fun ChangePasswordScreen(
                         painterResource(R.drawable.ic_icon_lock),
                         contentDescription = null,
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
-                        contentScale = ContentScale.FillBounds
+                        contentScale = ContentScale.FillBounds,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
                 error = newPassWordError.value,
@@ -145,7 +143,8 @@ fun ChangePasswordScreen(
                         painterResource(R.drawable.ic_icon_lock),
                         contentDescription = null,
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
-                        contentScale = ContentScale.FillBounds
+                        contentScale = ContentScale.FillBounds,
+                        colorFilter = LocalColorMapping.current.iconColorFilter
                     )
                 },
                 error = confirmPassWordError.value,

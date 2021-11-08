@@ -1,5 +1,6 @@
 package com.clearkeep.components.base
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -12,6 +13,7 @@ import androidx.compose.ui.unit.TextUnit
 import com.clearkeep.R
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.components.primaryDefault
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -45,8 +47,8 @@ fun CKTextButton(
 @Composable
 private fun getTextContentColor(textButtonType: TextButtonType): Color {
     return when (textButtonType) {
-        TextButtonType.White -> grayscaleOffWhite
-        TextButtonType.Blue -> MaterialTheme.colors.primary
+        TextButtonType.White -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
+        TextButtonType.Blue -> if (isSystemInDarkTheme()) primaryDefault else MaterialTheme.colors.primary
     }
 }
 

@@ -5,13 +5,9 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -19,8 +15,7 @@ import com.clearkeep.utilities.toNonScalableTextSize
 fun CKTopAppBarSample(
     modifier: Modifier = Modifier,
     title: String = "",
-    onBackPressed: () -> Unit,
-    type: TopAppBarSampleType = TopAppBarSampleType.White
+    onBackPressed: () -> Unit
 ) {
     Row(
         modifier = modifier.padding(vertical = 8.sdp(), horizontal = 6.sdp()),
@@ -30,7 +25,7 @@ fun CKTopAppBarSample(
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
                 contentDescription = null,
-                tint = if (type == TopAppBarSampleType.White) Color.White else Color.Black,
+                tint = LocalColorMapping.current.topAppBarTitle,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -39,15 +34,10 @@ fun CKTopAppBarSample(
             Text(
                 text = title,
                 style = MaterialTheme.typography.h5.copy(
-                    color = if (type == TopAppBarSampleType.White) Color.White else Color.Black,
+                    color = LocalColorMapping.current.topAppBarContent,
                 ),
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
         }
     }
-}
-
-enum class TopAppBarSampleType {
-    White,
-    Black,
 }

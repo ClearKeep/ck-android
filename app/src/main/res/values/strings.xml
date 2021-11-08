@@ -217,4 +217,5 @@
     <string name="notification_new_messages_content">new messages</string>
     <string name="notification_new_message_image_content">%1$s sent %2$d image %3$s %4$s</string>
     <string name="notification_new_message_file_content">%1$s sent %2$d file %3$s</string>
+    <string name="login_custom_server">You are using custom server</string>
 </resources>
