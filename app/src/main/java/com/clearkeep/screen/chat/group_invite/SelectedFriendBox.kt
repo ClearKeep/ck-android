@@ -12,9 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale5
-import com.clearkeep.components.grayscaleBlack
+import com.clearkeep.components.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.utilities.sdp
 
@@ -25,7 +23,7 @@ fun SelectedFriendBox(
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,
-        color = grayscale5,
+        color = if (LocalColorMapping.current.isDarkTheme) primaryDefault else grayscale5,
         elevation = 0.sdp(),
         modifier = Modifier.clickable { onRemove(people) }
     ) {
@@ -35,7 +33,7 @@ fun SelectedFriendBox(
         ) {
             Text(
                 people.userName, style = MaterialTheme.typography.caption.copy(
-                    color = grayscaleBlack
+                    color = LocalColorMapping.current.bodyTextAlt
                 )
             )
             Spacer(modifier = Modifier.width(13.sdp()))
@@ -43,7 +41,7 @@ fun SelectedFriendBox(
                 Icons.Filled.Close,
                 contentDescription = "",
                 modifier = Modifier.size(12.sdp()),
-                tint = grayscale1
+                tint = LocalColorMapping.current.iconColorAlt
             )
         }
     }

@@ -18,6 +18,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.clearkeep.utilities.sdp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale3
@@ -63,7 +64,7 @@ fun EnterGroupNameScreen(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_chev_left),
                                     contentDescription = "",
-                                    tint = grayscale1
+                                    tint = LocalColorMapping.current.iconColorAlt
                                 )
                             }
                             CKHeaderText(
@@ -91,7 +92,7 @@ fun EnterGroupNameScreen(
                                 CKHeaderText(
                                     stringResource(R.string.create_group_users),
                                     headerTextType = HeaderTextType.Normal,
-                                    color = grayscale3
+                                    color = LocalColorMapping.current.bodyTextDisabled
                                 )
                                 Spacer(modifier = Modifier.height(16.sdp()))
                             }

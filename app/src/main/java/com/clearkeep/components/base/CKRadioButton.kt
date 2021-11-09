@@ -13,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.grayscale4
+import com.clearkeep.components.primaryDefault
 
 @Composable
 fun CKRadioButton(
@@ -22,7 +23,7 @@ fun CKRadioButton(
     enabled: Boolean = true,
 ) {
     val colors = RadioButtonDefaults.colors(
-        selectedColor = MaterialTheme.colors.primary,
+        selectedColor = primaryDefault,
         unselectedColor = grayscale4,
     )
     val radioColor by colors.radioColor(enabled, selected)
