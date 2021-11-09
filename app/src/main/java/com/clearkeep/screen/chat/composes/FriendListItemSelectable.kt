@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKRadioButton
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.utilities.sdp
@@ -47,7 +48,7 @@ fun FriendListItemSelectable(
                     text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.onBackground
+                        color = LocalColorMapping.current.descriptionText
                     ),
                 )
             }

@@ -18,7 +18,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,7 +67,7 @@ fun InviteGroupScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(MaterialTheme.colors.background)
             ) {
                 Column(
                     modifier = Modifier
@@ -90,7 +89,7 @@ fun InviteGroupScreen(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_chev_left),
                                     contentDescription = "",
-                                    tint = grayscale1
+                                    tint = LocalColorMapping.current.iconColorAlt
                                 )
                             }
                             CKHeaderText(
@@ -155,7 +154,7 @@ fun InviteGroupScreen(
                                         text = stringResource(R.string.add_user_other_server),
                                         modifier = Modifier.padding(vertical = 16.sdp()),
                                         style = MaterialTheme.typography.body1.copy(
-                                            color = grayscaleBlack,
+                                            color = LocalColorMapping.current.bodyTextAlt,
                                             fontSize = defaultNonScalableTextSize(),
                                             fontWeight = FontWeight.Bold
                                         )
