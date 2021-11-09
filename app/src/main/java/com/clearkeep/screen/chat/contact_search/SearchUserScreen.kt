@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -61,7 +62,7 @@ fun SearchUserScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(grayscaleBackground)
+            .background(MaterialTheme.colors.background)
             .padding(horizontal = 16.sdp())
     ) {
         val query = remember { mutableStateOf("") }
@@ -78,7 +79,9 @@ fun SearchUserScreen(
                 null,
                 Modifier
                     .clickable { onClose.invoke() }
-                    .align(Alignment.CenterEnd))
+                    .align(Alignment.CenterEnd),
+                colorFilter = LocalColorMapping.current.closeIconFilter
+            )
         }
         Spacer(Modifier.height(18.sdp()))
         CKSearchBox(
@@ -137,7 +140,7 @@ fun SearchUserScreen(
                                 item {
                                     CKText(
                                         stringResource(R.string.search_result_people),
-                                        color = grayscale1
+                                        color = LocalColorMapping.current.headerTextAlt
                                     )
                                 }
                             }
@@ -156,7 +159,7 @@ fun SearchUserScreen(
                                     Spacer(Modifier.height(26.sdp()))
                                     CKText(
                                         stringResource(R.string.search_result_group_chat),
-                                        color = grayscale1
+                                        color = LocalColorMapping.current.headerTextAlt
                                     )
                                 }
                             }
@@ -175,7 +178,7 @@ fun SearchUserScreen(
                                     Spacer(Modifier.height(26.sdp()))
                                     CKText(
                                         stringResource(R.string.search_result_messages),
-                                        color = grayscale1
+                                        color = LocalColorMapping.current.headerTextAlt
                                     )
                                 }
                             }
@@ -238,7 +241,7 @@ fun SearchUserScreen(
                 CKText(
                     stringResource(R.string.search_empty),
                     Modifier.align(Alignment.Center),
-                    grayscale3
+                    LocalColorMapping.current.bodyTextDisabled
                 )
             }
         }
@@ -257,12 +260,23 @@ fun SearchUserScreen(
 
 @Composable
 private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    val isDarkTheme = LocalColorMapping.current.isDarkTheme
+
+    val backgroundModifier = if (LocalColorMapping.current.isDarkTheme) {
+        val borderModifier = if (isSelected) Modifier.border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp())) else Modifier
+        Modifier.background(Brush.horizontalGradient(listOf(
+            backgroundGradientStart,
+            backgroundGradientEnd,
+        )), RoundedCornerShape(8.sdp())).then(borderModifier)
+    } else {
+        Modifier.background(Color.White, RoundedCornerShape(8.sdp())).border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
+
+    }
     Box(
         Modifier
             .weight(1f)
             .clip(RoundedCornerShape(8.sdp()))
-            .background(Color.White, RoundedCornerShape(8.sdp()))
-            .border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
+            .then(backgroundModifier)
             .clickable { onClick() }
             .padding(vertical = 4.sdp()),
         contentAlignment = Alignment.Center
@@ -270,7 +284,7 @@ private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () 
         Text(
             label,
             fontSize = 12.sdp().toNonScalableTextSize(),
-            color = if (isSelected) primaryLight else grayscale2
+            color = if (isDarkTheme) Color(0xFFE0E0E0) else if (isSelected) primaryLight else grayscale2
         )
     }
 }
@@ -303,7 +317,7 @@ fun PeopleResultItem(
                 query,
                 style = MaterialTheme.typography.body2.copy(
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.onBackground
+                    color = LocalColorMapping.current.descriptionText
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
         }
@@ -318,7 +332,7 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
             .clickable { onClick() }
             .fillMaxWidth(), groupName, query,
         style = MaterialTheme.typography.body2.copy(
-            color = grayscale2
+            color = LocalColorMapping.current.descriptionText
         ))
 }
 
@@ -346,7 +360,7 @@ fun MessageResultItem(
                 text = user.userName,
                 style = MaterialTheme.typography.body2.copy(
                     fontWeight = FontWeight.Bold,
-                    color = grayscale2
+                    color = LocalColorMapping.current.descriptionText
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
             HighlightedSearchText(
@@ -354,7 +368,7 @@ fun MessageResultItem(
                 message.message,
                 query,
                 style = MaterialTheme.typography.body2.copy(
-                    color = grayscale2
+                    color = LocalColorMapping.current.descriptionText
                 ), overflow = TextOverflow.Ellipsis, maxLines = 3
             )
             Row(Modifier.fillMaxWidth()) {
@@ -364,7 +378,7 @@ fun MessageResultItem(
                     text = getTimeAsString(message.createdTime, includeTime = true),
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.W400,
-                        color = grayscale2
+                        color = LocalColorMapping.current.descriptionText
                     ), overflow = TextOverflow.Ellipsis, maxLines = 1
                 )
                 Spacer(Modifier.width(4.sdp()))
@@ -373,7 +387,7 @@ fun MessageResultItem(
                     groupName,
                     query,
                     style = MaterialTheme.typography.body2.copy(
-                        color = grayscale2
+                        color = LocalColorMapping.current.descriptionText
                     ), overflow = TextOverflow.Ellipsis, maxLines = 1
                 )
             }
@@ -401,7 +415,7 @@ fun HighlightedSearchText(
                 withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
                     append(fullString.substring(matchIndex until newIndex))
                 }
-                withStyle(SpanStyle(color = Color.Black)) {
+                withStyle(SpanStyle(color = LocalColorMapping.current.profileText)) {
                     append(fullString.substring(newIndex until newIndex + query.length))
                 }
                 matchIndex = newIndex + query.length

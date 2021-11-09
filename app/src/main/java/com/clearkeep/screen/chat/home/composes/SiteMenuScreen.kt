@@ -67,13 +67,9 @@ fun SiteMenuScreen(
         Row(
             Modifier.background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 ),
-                alpha = 0.4f
+                alpha = if (LocalColorMapping.current.isDarkTheme) 1f else .4f
             )
         ) {
             Box(
@@ -85,7 +81,7 @@ fun SiteMenuScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(top = 20.sdp(), bottom = 20.sdp()),
-                backgroundColor = Color.White,
+                backgroundColor = LocalColorMapping.current.surface,
                 shape = RoundedCornerShape(topStart = 30.sdp(), bottomStart = 30.sdp()),
                 elevation = 8.sdp()
             ) {
@@ -122,7 +118,7 @@ fun SiteMenuScreen(
                                     Icon(
                                         imageVector = Icons.Filled.Close,
                                         contentDescription = "",
-                                        tint = MaterialTheme.colors.primaryVariant,
+                                        tint = LocalColorMapping.current.iconColorAlt,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 }
@@ -154,13 +150,13 @@ fun SiteMenuScreen(
                         Icon(
                             painter = painterResource(R.drawable.ic_logout),
                             contentDescription = null,
-                            tint = errorDefault,
+                            tint = LocalColorMapping.current.error,
                             modifier = Modifier.size(24.sdp())
                         )
                         Text(
                             text = stringResource(R.string.sign_out), modifier = Modifier
                                 .padding(start = 16.sdp()), style = TextStyle(
-                                color = errorDefault,
+                                color = LocalColorMapping.current.error,
                                 fontSize = defaultNonScalableTextSize(),
                                 fontWeight = FontWeight.Bold
                             )
@@ -232,7 +228,8 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                         null,
                         alignment = Alignment.Center,
                         modifier = Modifier.size(12.sdp()),
-                        contentScale = ContentScale.FillBounds
+                        contentScale = ContentScale.FillBounds,
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
                 }
             }
@@ -253,7 +250,9 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                     modifier = Modifier.constrainAs(text) {
                         linkTo(parent.start, image.start, endMargin = 4.dp)
                         width = Dimension.fillToConstraints
-                    })
+                    },
+                    color = LocalColorMapping.current.profileText
+                )
                 IconButton(
                     onClick = {
                         copyProfileLinkToClipBoard(
@@ -322,10 +321,11 @@ fun ItemSiteSetting(
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            modifier = Modifier.size(24.sdp())
+            modifier = Modifier.size(24.sdp()),
+            tint = LocalColorMapping.current.iconColorAlt
         )
         SideBarLabel(
-            text = name, color = textColor, modifier = Modifier
+            text = name, color = LocalColorMapping.current.inputLabel, modifier = Modifier
                 .weight(0.66f)
                 .padding(start = 16.sdp())
         )
@@ -339,7 +339,7 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (User
         onDismissRequest = onDismiss,
         modifier = Modifier
             .width(165.sdp())
-            .background(Color.White, RoundedCornerShape(8.sdp()))
+            .background(LocalColorMapping.current.surfaceDialog, RoundedCornerShape(8.sdp()))
     ) {
         StatusItem(
             onClick = { statusChoose.invoke(UserStatus.ONLINE) },

@@ -171,6 +171,11 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
     val workSpaces = mainViewModel.servers.observeAsState()
     val selectingJoinServer = mainViewModel.selectingJoinServer.observeAsState()
 
+    val overlayModifier = if (!LocalColorMapping.current.isDarkTheme) Modifier.background(
+        color = grayscaleOverlay,
+        shape = RoundedCornerShape(topEnd = 30.sdp()),
+    ) else Modifier
+
     workSpaces.value?.let { serverList ->
         Column(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -180,21 +185,15 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
                     .background(
                         shape = RoundedCornerShape(topEnd = 30.sdp()),
                         brush = Brush.horizontalGradient(
-                            //todo disable dark mode
-                            colors = listOf(
-                                if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                                if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                            )
+                            colors = LocalColorMapping.current.surfaceBrush
                         )
                     ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .background(
-                            color = grayscaleOverlay,
-                            shape = RoundedCornerShape(topEnd = 30.sdp()),
-                        ), horizontalAlignment = Alignment.CenterHorizontally
+                        .then(overlayModifier),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     LazyColumn(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -271,7 +270,7 @@ fun ItemListDirectMessage(
                     .fillMaxWidth()
                     .padding(start = 16.sdp()),
                 maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
-                    color = MaterialTheme.colors.onBackground,
+                    color = LocalColorMapping.current.descriptionText,
                     fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Bold
                 )
@@ -299,7 +298,7 @@ fun ChatGroupItemView(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(
-                    color = MaterialTheme.colors.onBackground,
+                    color = LocalColorMapping.current.descriptionText,
                     fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Bold
                 )
@@ -332,7 +331,8 @@ fun ChatGroupView(
                             R.string.home_group_chat_list_title,
                             chatGroups.value?.size ?: 0
                         ),
-                        headerTextType = HeaderTextType.Normal, color = grayscale2
+                        headerTextType = HeaderTextType.Normal,
+                        color = LocalColorMapping.current.headerTextAlt
                     )
 
                     Box(modifier = Modifier.padding(8.sdp())) {
@@ -340,7 +340,8 @@ fun ChatGroupView(
                             painter = painterResource(id = R.drawable.ic_chev_down),
                             null,
                             alignment = Alignment.Center,
-                            modifier = Modifier.size(18.sdp())
+                            modifier = Modifier.size(18.sdp()),
+                            colorFilter = LocalColorMapping.current.closeIconFilter
                         )
                     }
                 }
@@ -354,7 +355,8 @@ fun ChatGroupView(
                     painter = painterResource(id = R.drawable.ic_plus),
                     null,
                     alignment = Alignment.Center,
-                    modifier = Modifier.size(20.sdp())
+                    modifier = Modifier.size(20.sdp()),
+                    colorFilter = LocalColorMapping.current.closeIconFilter
                 )
             }
         }
@@ -415,7 +417,8 @@ fun DirectMessagesView(
                             R.string.home_peer_chat_list_title,
                             chatGroup.value?.size ?: 0
                         ),
-                        headerTextType = HeaderTextType.Normal, color = grayscale2
+                        headerTextType = HeaderTextType.Normal,
+                        color = LocalColorMapping.current.headerTextAlt
                     )
                     Box(modifier = Modifier.padding(8.sdp())) {
                         Image(
@@ -423,7 +426,8 @@ fun DirectMessagesView(
                             null,
                             alignment = Alignment.Center,
                             modifier = Modifier.size(20.sdp()),
-                            contentScale = ContentScale.FillBounds
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.closeIconFilter
                         )
                     }
                 }
@@ -438,7 +442,8 @@ fun DirectMessagesView(
                     null,
                     alignment = Alignment.Center,
                     modifier = Modifier.size(20.sdp()),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
+                    colorFilter = LocalColorMapping.current.closeIconFilter
                 )
             }
         }
@@ -508,7 +513,10 @@ fun JoinServerComposable(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_hamburger),
-                        null, alignment = Alignment.Center, contentScale = ContentScale.FillBounds
+                        null,
+                        alignment = Alignment.Center,
+                        contentScale = ContentScale.FillBounds,
+                        colorFilter = LocalColorMapping.current.closeIconFilter
                     )
                 }
             }
@@ -518,7 +526,8 @@ fun JoinServerComposable(
                 stringResource(R.string.join_server_caption),
                 style = MaterialTheme.typography.body2.copy(
                     fontSize = defaultNonScalableTextSize()
-                )
+                ),
+                color = LocalColorMapping.current.inputLabel
             )
             Spacer(modifier = Modifier.size(21.sdp()))
             CKTextInputField(
@@ -539,7 +548,7 @@ fun JoinServerComposable(
             Text(
                 stringResource(R.string.join_server_tips),
                 style = MaterialTheme.typography.caption.copy(
-                    color = MaterialTheme.colors.onSecondary,
+                    color = LocalColorMapping.current.descriptionTextAlt,
                     fontSize = defaultNonScalableTextSize()
                 )
             )
@@ -579,7 +588,8 @@ fun WorkSpaceView(
                     painter = painterResource(id = R.drawable.ic_hamburger),
                     null, alignment = Alignment.Center,
                     modifier = Modifier.size(24.sdp()),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
+                    colorFilter = LocalColorMapping.current.closeIconFilter
                 )
             }
         }
@@ -588,17 +598,17 @@ fun WorkSpaceView(
         Row(
             modifier = Modifier
                 .clickable { gotoSearch.invoke() }
-                .background(grayscale5, MaterialTheme.shapes.large)
+                .background(LocalColorMapping.current.textFieldBackgroundAlt, MaterialTheme.shapes.large)
                 .padding(18.sdp())
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Search, null)
+            Icon(Icons.Default.Search, null, tint = LocalColorMapping.current.textFieldIconColor)
             Spacer(Modifier.width(28.sdp()))
             CKText(
                 stringResource(R.string.search),
                 style = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.onSecondary,
+                    color = LocalColorMapping.current.bodyTextDisabled,
                     fontWeight = FontWeight.Normal,
                     fontSize = defaultNonScalableTextSize()
                 ),
@@ -656,7 +666,7 @@ fun AddWorkspace(mainViewModel: HomeViewModel) {
                 .size(42.sdp())
                 .background(color = Color.Transparent)
                 .border(
-                    BorderStroke(1.5.dp, primaryDefault),
+                    BorderStroke(1.5.dp, if (LocalColorMapping.current.isDarkTheme) Color.Black else primaryDefault),
                     shape = RoundedCornerShape(4.sdp())
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
