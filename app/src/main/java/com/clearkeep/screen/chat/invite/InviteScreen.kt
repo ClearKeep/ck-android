@@ -4,16 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +36,7 @@ fun InviteScreen(onCloseView: () -> Unit) {
         CKTextInputField(
             "Invite by email",
             email,
+            modifier = Modifier.clip(RoundedCornerShape(dimensionResource(R.dimen._16sdp))),
             keyboardType = KeyboardType.Email,
             singleLine = true,
             leadingIcon = {
@@ -50,8 +44,7 @@ fun InviteScreen(onCloseView: () -> Unit) {
                     painterResource(R.drawable.ic_icon_mail),
                     contentDescription = null
                 )
-            },
-            modifier = Modifier.clip(RoundedCornerShape(dimensionResource(R.dimen._16sdp)))
+            }
         )
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen._16sdp)))
         CKButton("Invite", {}, enabled = email.value.isNotBlank())

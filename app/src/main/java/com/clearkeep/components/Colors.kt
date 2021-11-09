@@ -19,7 +19,7 @@ val grayscale3 = Color(0xffA0A3BD)
 val grayscale4 = Color(0xffD9DBE9)
 
 /* Grayscale/Grey 5 */
-val grayscale5 = Color(0xffEFF0F7)
+val grayscale5 = Color(0xffEFF0F6)
 
 /* Grayscale/Off-white */
 val grayscaleOffWhite = Color(0xffFCFCFC)
@@ -80,3 +80,4 @@ val colorTextFieldHighlightedDark = Color(0xFFC4C4C4)
 val colorSurfaceDark = Color(0xFF222222)
 val grayscaleDarkModeGreyLight = Color(0xFFC4C4C4)
 val grayscaleDarkModeGreyLight2 = Color(0xFFE0E0E0)
+val grayscaleDarkModeDarkGrey2 = Color(0xFF3B3B3B)

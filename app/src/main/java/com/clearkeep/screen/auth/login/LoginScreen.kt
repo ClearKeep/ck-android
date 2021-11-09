@@ -31,7 +31,6 @@ import com.clearkeep.BuildConfig
 import com.clearkeep.R
 import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
-import com.clearkeep.components.colorWarningLight
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
 
@@ -95,33 +94,33 @@ fun LoginScreen(
             CKTextInputField(
                 stringResource(R.string.tv_email),
                 email,
+                modifier = Modifier.focusRequester(emailField),
                 keyboardType = KeyboardType.Email,
                 singleLine = true,
+                imeAction = ImeAction.Next,
+                onNext = {
+                    passwordField.requestFocus()
+                },
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_mail),
                         contentDescription = null,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
-                },
-                modifier = Modifier.focusRequester(emailField),
-                imeAction = ImeAction.Next,
-                onNext = {
-                    passwordField.requestFocus()
                 }
             )
             Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
             CKTextInputField(
                 stringResource(R.string.tv_password),
                 password,
+                modifier = Modifier.focusRequester(passwordField),
                 keyboardType = KeyboardType.Password,
                 singleLine = true,
-                modifier = Modifier.focusRequester(passwordField),
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
                         contentDescription = null,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
                 },
             )

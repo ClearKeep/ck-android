@@ -68,7 +68,7 @@ fun CKSimpleTheme(
         typography = ckTypography
     ) {
         CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
-            Surface(color = Color.White) {
+            Surface(color = if (darkTheme) colorBackgroundDark else Color.White) {
                 children()
             }
         }

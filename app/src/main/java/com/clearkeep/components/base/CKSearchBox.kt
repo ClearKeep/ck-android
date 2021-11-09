@@ -51,7 +51,7 @@ fun CKSearchBox(
             border = if (rememberBorderShow.value) {
                 BorderStroke(
                     dimensionResource(R.dimen._1sdp),
-                    MaterialTheme.colors.secondaryVariant
+                    LocalColorMapping.current.bodyTextAlt
                 )
             } else null,
             color = Color.Transparent,
@@ -69,27 +69,27 @@ fun CKSearchBox(
                 placeholder = {
                     CKText(
                         placeholder, style = MaterialTheme.typography.body1.copy(
-                            color = MaterialTheme.colors.onSecondary,
+                            color = LocalColorMapping.current.descriptionText,
                             fontWeight = FontWeight.Normal
                         )
                     )
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = MaterialTheme.colors.secondaryVariant,
-                    cursorColor = MaterialTheme.colors.secondaryVariant,
+                    textColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = LocalColorMapping.current.bodyTextAlt,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (rememberBorderShow.value) {
-                        grayscaleOffWhite
+                        LocalColorMapping.current.textFieldBackgroundAltFocused
                     } else {
-                        MaterialTheme.colors.secondary
+                        LocalColorMapping.current.textFieldBackgroundAlt
                     },
-                    leadingIconColor = MaterialTheme.colors.secondaryVariant,
-                    trailingIconColor = MaterialTheme.colors.secondaryVariant,
-                    errorCursorColor = MaterialTheme.colors.error,
+                    leadingIconColor =  LocalColorMapping.current.textFieldIconColor,
+                    trailingIconColor =  LocalColorMapping.current.textFieldIconColor,
+                    errorCursorColor = LocalColorMapping.current.error
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.secondaryVariant,
+                    color = LocalColorMapping.current.bodyTextAlt,
                     fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ),
@@ -103,7 +103,8 @@ fun CKSearchBox(
                     Icon(
                         Icons.Filled.Search,
                         contentDescription = "",
-                        Modifier.size(dimensionResource(R.dimen._24sdp))
+                        Modifier.size(dimensionResource(R.dimen._24sdp)),
+                        tint = LocalColorMapping.current.textFieldIconColor
                     )
                 },
                 trailingIcon = {
@@ -115,7 +116,9 @@ fun CKSearchBox(
                                 .clickable {
                                     textValue.value = ""
                                 }
-                                .size(dimensionResource(R.dimen._24sdp)))
+                                .size(dimensionResource(R.dimen._24sdp)),
+                            tint = LocalColorMapping.current.textFieldIconColor
+                        )
                     }
                 },
                 keyboardActions = KeyboardActions(onDone = {

@@ -1,13 +1,11 @@
 package com.clearkeep.screen.auth.register
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,18 +14,10 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
@@ -87,18 +77,18 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Email,
                     error = emailError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_mail),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    imeAction = ImeAction.Next,
-                    onNext = {
-                        localFocusManager.moveFocus(FocusDirection.Down)
                     }
                 )
                 Spacer(Modifier.height(10.sdp()))
@@ -107,18 +97,18 @@ fun RegisterScreen(
                     displayName,
                     error = displayNameError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_user_check),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    imeAction = ImeAction.Next,
-                    onNext = {
-                        localFocusManager.moveFocus(FocusDirection.Down)
                     },
                     maxChars = 30
                 )
@@ -129,18 +119,18 @@ fun RegisterScreen(
                     keyboardType = KeyboardType.Password,
                     error = passError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    imeAction = ImeAction.Next,
-                    onNext = {
-                        localFocusManager.moveFocus(FocusDirection.Down)
                     }
                 )
                 Spacer(Modifier.height(10.sdp()))
@@ -156,7 +146,7 @@ fun RegisterScreen(
                             contentDescription = null,
                             Modifier.size(24.sdp()),
                             contentScale = ContentScale.FillBounds,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
                     },
                 )

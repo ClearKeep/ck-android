@@ -17,7 +17,6 @@ import androidx.compose.ui.text.style.TextAlign
 import com.clearkeep.R
 import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
@@ -57,15 +56,15 @@ fun SetSocialLoginPhraseScreen(
             Spacer(Modifier.height(32.sdp()))
             CKTextInputField(
                 stringResource(R.string.security_phrase),
-                securityPhrase, singleLine = true,
+                securityPhrase, keyboardType = KeyboardType.Password,
+                singleLine = true,
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
                         contentDescription = null,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
-                },
-                keyboardType = KeyboardType.Password
+                }
             ) {
                 viewModel.setSecurityPhrase(it)
             }
