@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKSearchBox
 import com.clearkeep.components.base.CKText
 import com.clearkeep.components.separatorDarkNonOpaque
@@ -50,10 +51,11 @@ fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> 
                 .clickable {
                     onCloseView.invoke()
                 },
-            alignment = Alignment.CenterStart
+            alignment = Alignment.CenterStart,
+            colorFilter = LocalColorMapping.current.closeIconFilter
         )
         Spacer(Modifier.height(50.sdp()))
-        CKText(stringResource(R.string.country_codes), fontSize = 20.sdp().toNonScalableTextSize())
+        CKText(stringResource(R.string.country_codes), fontSize = 20.sdp().toNonScalableTextSize(), color = LocalColorMapping.current.headerText)
         Spacer(Modifier.height(25.sdp()))
         CKSearchBox(searchQuery)
         Spacer(Modifier.height(25.sdp()))
@@ -109,7 +111,8 @@ fun PhoneCountryCodeItem(
                 start.linkTo(parent.start)
                 end.linkTo(codeText.start, 8.dp)
                 width = Dimension.fillToConstraints
-            }
+            },
+            color = LocalColorMapping.current.bodyTextAlt
         )
         CKText(
             code,
@@ -120,7 +123,8 @@ fun PhoneCountryCodeItem(
                 .constrainAs(codeText) {
                     top.linkTo(parent.top)
                     end.linkTo(parent.end)
-                }
+                },
+            color = LocalColorMapping.current.bodyTextAlt
         )
     }
 }

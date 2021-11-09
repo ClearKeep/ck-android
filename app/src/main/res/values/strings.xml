@@ -106,7 +106,7 @@
     <string name="profile_username_error">This field is required</string>
     <string name="profile_phone_number_error">Invalid phone number</string>
     <string name="profile_new_call_warning">You have a call that is currently in-progress. Please end it to start a new call.</string>
-    <string name="two_factors_auth">Two Factors Authentication</string>
+    <string name="two_factors_auth">Two-factor authentication</string>
     <string name="two_factors_auth_description">Give your account more protection over scam and account hacking</string>
     <string name="wrong_server_url_error">Wrong server URL. Please try again</string>
     <string name="profile_avatar_max_size">Maximum file size 5MB</string>

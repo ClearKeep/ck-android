@@ -62,7 +62,7 @@ fun ForgotScreen(
                     Image(
                         painterResource(R.drawable.ic_icon_mail),
                         contentDescription = null,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
                 }
             )

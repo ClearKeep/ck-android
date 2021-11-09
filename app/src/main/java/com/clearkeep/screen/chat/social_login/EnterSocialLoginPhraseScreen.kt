@@ -18,7 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
 import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp
@@ -74,16 +73,16 @@ fun EnterSocialLoginPhraseScreen(
                 Spacer(Modifier.height(32.sdp()))
                 CKTextInputField(
                     stringResource(R.string.security_phrase),
-                    securityPhrase, singleLine = true,
+                    securityPhrase, keyboardType = KeyboardType.Password,
+                    error = error,
+                    singleLine = true,
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    keyboardType = KeyboardType.Password,
-                    error = error
+                    }
                 ) {
                     viewModel.setSecurityPhrase(it)
                 }
