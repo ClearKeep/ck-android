@@ -106,6 +106,12 @@ fun CKInsetTheme(
 
 data class ColorMapping(
     val warning: Color = colorWarningLight,
+    val surface: Color = Color.White,
+    val surfaceDialog: Color = Color.White,
+    val surfaceBrush: List<Color> = listOf(
+        backgroundGradientStart,
+        backgroundGradientEnd,
+    ),
     val error: Color = errorDefault,
     val backgroundBrush: List<Color> = listOf(
         backgroundGradientStart,
@@ -113,6 +119,7 @@ data class ColorMapping(
     ),
     val textFieldIconFilter: ColorFilter? = null,
     val textFieldIconColor: Color = pickledBlueWood,
+    val iconColorAlt: Color = grayscale1,
     val textFieldBackgroundAlt: Color = grayscale5,
     val textFieldBackgroundAltError: Color = grayscaleOffWhite,
     val textFieldBackgroundAltFocused: Color = grayscaleOffWhite,
@@ -123,6 +130,7 @@ data class ColorMapping(
     val bodyTextDisabled: Color = grayscale3,
     val clickableBodyText: Color = Color.White,
     val headerText: Color = Color.Black,
+    val headerTextAlt: Color = grayscale1,
     val closeIconFilter: ColorFilter? = null,
     val profileText: Color = Color.Black,
     val inputLabel: Color = grayscale1,
@@ -137,10 +145,14 @@ val LocalColorMapping = compositionLocalOf { ColorMapping() }
 fun provideColor(darkTheme: Boolean) = if (darkTheme) {
     ColorMapping(
         primaryDefault,
-        primaryDefault,
-        listOf(colorBackgroundDark, colorBackgroundDark),
+        surface = grayscaleDarkModeDarkGrey3,
+        surfaceDialog = grayscaleDarkModeGreyLight,
+        surfaceBrush = listOf(grayscaleDarkModeDarkGrey2, grayscaleDarkModeDarkGrey2),
+        error = primaryDefault,
+        backgroundBrush = listOf(colorBackgroundDark, colorBackgroundDark),
         textFieldIconFilter = ColorFilter.tint(colorTextDark),
         textFieldIconColor = colorTextDark,
+        iconColorAlt = grayscaleDarkModeGreyLight,
         textFieldBackgroundAlt = grayscaleDarkModeDarkGrey2,
         textFieldBackgroundAltError = grayscaleDarkModeDarkGrey2,
         textFieldBackgroundAltFocused = grayscaleDarkModeDarkGrey2,
@@ -151,6 +163,7 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
         bodyTextDisabled = grayscaleDarkModeGreyLight,
         clickableBodyText = primaryDefault,
         headerText = grayscaleDarkModeGreyLight2,
+        headerTextAlt = grayscaleDarkModeGreyLight2,
         closeIconFilter = ColorFilter.tint(grayscaleDarkModeGreyLight),
         profileText = grayscaleDarkModeGreyLight,
         inputLabel = grayscaleDarkModeGreyLight,
