@@ -111,11 +111,24 @@ data class ColorMapping(
         backgroundGradientStart,
         backgroundGradientEnd,
     ),
-    val iconColorFilter: ColorFilter? = null,
+    val textFieldIconFilter: ColorFilter? = null,
+    val textFieldIconColor: Color = pickledBlueWood,
+    val textFieldBackgroundAlt: Color = grayscale5,
+    val textFieldBackgroundAltError: Color = grayscaleOffWhite,
+    val textFieldBackgroundAltFocused: Color = grayscaleOffWhite,
     val topAppBarTitle: Color = grayscaleOffWhite,
     val topAppBarContent: Color = grayscaleBackground,
     val bodyText: Color = Color.White,
-    val clickableBodyText: Color = Color.White
+    val bodyTextAlt: Color = grayscaleBlack,
+    val bodyTextDisabled: Color = grayscale3,
+    val clickableBodyText: Color = Color.White,
+    val headerText: Color = Color.Black,
+    val closeIconFilter: ColorFilter? = null,
+    val profileText: Color = Color.Black,
+    val profileInputLabel: Color = grayscale1,
+    val descriptionText: Color = grayscale2,
+    val separator: Color = separatorDarkNonOpaque,
+    val isDarkTheme: Boolean = false
 )
 
 val LocalColorMapping = compositionLocalOf { ColorMapping() }
@@ -125,11 +138,24 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
         primaryDefault,
         primaryDefault,
         listOf(colorBackgroundDark, colorBackgroundDark),
-        ColorFilter.tint(colorTextDark),
+        textFieldIconFilter = ColorFilter.tint(colorTextDark),
+        textFieldIconColor = colorTextDark,
+        textFieldBackgroundAlt = grayscaleDarkModeDarkGrey2,
+        textFieldBackgroundAltError = grayscaleDarkModeDarkGrey2,
+        textFieldBackgroundAltFocused = grayscaleDarkModeDarkGrey2,
         grayscaleDarkModeGreyLight,
         grayscaleDarkModeGreyLight,
-        grayscaleDarkModeGreyLight,
+        bodyText = grayscaleDarkModeGreyLight,
+        bodyTextAlt = grayscaleDarkModeGreyLight,
+        bodyTextDisabled = grayscaleDarkModeGreyLight,
         clickableBodyText = primaryDefault,
+        headerText = grayscaleDarkModeGreyLight2,
+        closeIconFilter = ColorFilter.tint(grayscaleDarkModeGreyLight),
+        profileText = grayscaleDarkModeGreyLight,
+        profileInputLabel = grayscaleDarkModeGreyLight,
+        descriptionText = grayscaleDarkModeGreyLight,
+        separator = grayscaleDarkModeGreyLight,
+        isDarkTheme = true
     )
 } else {
     ColorMapping()

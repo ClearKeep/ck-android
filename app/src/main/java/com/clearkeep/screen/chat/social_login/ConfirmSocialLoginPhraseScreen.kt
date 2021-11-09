@@ -70,16 +70,16 @@ fun ConfirmSocialLoginPhraseScreen(
                 Spacer(Modifier.height(32.sdp()))
                 CKTextInputField(
                     stringResource(R.string.confirm_social_pin),
-                    securityPhrase, singleLine = true,
+                    securityPhrase, keyboardType = KeyboardType.Password,
+                    error = if (isSecurityPhraseValid.value == true || securityPhrase.value.isBlank()) null else "Security phrase and confirm security phrase do not match. Please try again",
+                    singleLine = true,
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    keyboardType = KeyboardType.Password,
-                    error = if (isSecurityPhraseValid.value == true || securityPhrase.value.isBlank()) null else "Security phrase and confirm security phrase do not match. Please try again"
+                    }
                 ) {
                     viewModel.setConfirmSecurityPhrase(it)
                 }

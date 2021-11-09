@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.grayscaleBlack
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.defaultNonScalableTextSize
@@ -20,14 +21,14 @@ fun CKHeaderText(
     text: String,
     modifier: Modifier = Modifier,
     headerTextType: HeaderTextType = HeaderTextType.Normal,
-    color: Color = grayscaleBlack
+    color: Color = LocalColorMapping.current.headerText
 ) {
     //todo disable dark mode
     Text(
         text = text,
         modifier = modifier,
         style = getTypography(headerTextType).copy(
-            color = if (isSystemInDarkTheme()) color else color,
+            color = color,
         ),
         maxLines = 3,
         overflow = TextOverflow.Ellipsis

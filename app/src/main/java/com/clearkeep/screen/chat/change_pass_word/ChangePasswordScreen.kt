@@ -80,7 +80,7 @@ fun ChangePasswordScreen(
             Text(
                 text = stringResource(R.string.enter_detail_change_pass),
                 style = MaterialTheme.typography.caption,
-                color = grayscaleOffWhite,
+                color = LocalColorMapping.current.topAppBarContent,
                 fontSize = 16.sdp().toNonScalableTextSize()
             )
             Spacer(Modifier.height(16.sdp()))
@@ -88,55 +88,54 @@ fun ChangePasswordScreen(
                 CKTextInputField(
                     placeholder = stringResource(R.string.current_password),
                     textValue = currentPassWord,
-                    onValueChange = { viewModel.setOldPassword(it) },
+                    modifier = Modifier.focusRequester(currentPasswordField),
                     keyboardType = KeyboardType.Password,
+                    error = currentPassWordError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        newPasswordField.requestFocus()
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
                             contentDescription = null,
                             Modifier.size(dimensionResource(R.dimen._24sdp)),
                             contentScale = ContentScale.FillBounds,
-                            colorFilter = LocalColorMapping.current.iconColorFilter
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    },
-                    error = currentPassWordError.value,
-                    modifier = Modifier.focusRequester(currentPasswordField),
-                    imeAction = ImeAction.Next,
-                    onNext = {
-                        newPasswordField.requestFocus()
                     }
-                )
+                ) { viewModel.setOldPassword(it) }
                 Spacer(Modifier.height(24.sdp()))
             }
             CKTextInputField(
                 placeholder = stringResource(R.string.new_password),
                 textValue = newPassWord,
+                modifier = Modifier.focusRequester(newPasswordField),
                 keyboardType = KeyboardType.Password,
-                onValueChange = { viewModel.setNewPassword(it) },
+                error = newPassWordError.value,
                 singleLine = true,
+                imeAction = ImeAction.Next,
+                onNext = {
+                    confirmPasswordField.requestFocus()
+                },
                 leadingIcon = {
                     Image(
                         painterResource(R.drawable.ic_icon_lock),
                         contentDescription = null,
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
                         contentScale = ContentScale.FillBounds,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
-                },
-                error = newPassWordError.value,
-                modifier = Modifier.focusRequester(newPasswordField),
-                imeAction = ImeAction.Next,
-                onNext = {
-                    confirmPasswordField.requestFocus()
                 }
-            )
+            ) { viewModel.setNewPassword(it) }
             Spacer(Modifier.height(24.sdp()))
             CKTextInputField(
                 placeholder = stringResource(R.string.confirm_password),
                 textValue = confirmPassWord,
-                onValueChange = { viewModel.setNewPasswordConfirm(it) },
+                modifier = Modifier.focusRequester(confirmPasswordField),
                 keyboardType = KeyboardType.Password,
+                error = confirmPassWordError.value,
                 singleLine = true,
                 leadingIcon = {
                     Image(
@@ -144,11 +143,10 @@ fun ChangePasswordScreen(
                         contentDescription = null,
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
                         contentScale = ContentScale.FillBounds,
-                        colorFilter = LocalColorMapping.current.iconColorFilter
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
                 },
-                error = confirmPassWordError.value,
-                modifier = Modifier.focusRequester(confirmPasswordField),
+                onValueChange = { viewModel.setNewPasswordConfirm(it) },
             )
             Spacer(Modifier.height(24.sdp()))
             val currentPasswordValid =

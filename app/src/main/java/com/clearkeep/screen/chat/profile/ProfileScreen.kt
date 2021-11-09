@@ -37,7 +37,6 @@ import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
-
 @ExperimentalMaterialApi
 @Composable
 fun ProfileScreen(
@@ -142,7 +141,7 @@ fun ProfileScreen(
                                     )
                                     SideBarLabel(
                                         text = stringResource(R.string.profile_avatar_max_size),
-                                        color = grayscale3,
+                                        color = LocalColorMapping.current.bodyTextDisabled,
                                         modifier = Modifier,
                                         fontSize = 12.sdp().toNonScalableTextSize()
                                     )
@@ -176,60 +175,67 @@ fun ProfileScreen(
                                 errorText = stringResource(R.string.profile_phone_number_error),
                                 errorVisible = phoneNumberErrorVisible.value ?: false
                             ) {
-                                Box(
-                                    Modifier
-                                        .weight(1.3f)
-                                        .height(60.sdp())
-                                        .fillMaxWidth()
-                                        .background(
-                                            if (phoneNumberErrorVisible.value == true) grayscaleOffWhite else grayscale5,
-                                            MaterialTheme.shapes.large
-                                        )
-                                        .clip(MaterialTheme.shapes.large)
-                                        .clickable {
-                                            focusManager.clearFocus()
-                                            navController.navigate("country_code_picker")
-                                        }
-                                        .then(
-                                            if (phoneNumberErrorVisible.value == true) Modifier.border(
-                                                1.sdp(),
-                                                errorDefault,
+                                Row(Modifier.height(IntrinsicSize.Max)) {
+                                    Box(
+                                        Modifier
+                                            .weight(1.3f)
+                                            .fillMaxHeight()
+                                            .fillMaxWidth()
+                                            .background(
+                                                if (phoneNumberErrorVisible.value == true) {
+                                                    LocalColorMapping.current.textFieldBackgroundAltError
+                                                } else {
+                                                    LocalColorMapping.current.textFieldBackgroundAlt
+                                                },
                                                 MaterialTheme.shapes.large
-                                            ) else Modifier
+                                            )
+                                            .clip(MaterialTheme.shapes.large)
+                                            .clickable {
+                                                focusManager.clearFocus()
+                                                navController.navigate("country_code_picker")
+                                            }
+                                            .then(
+                                                if (phoneNumberErrorVisible.value == true) Modifier.border(
+                                                    1.sdp(),
+                                                    LocalColorMapping.current.error,
+                                                    MaterialTheme.shapes.large
+                                                ) else Modifier
+                                            )
+                                    ) {
+                                        val countryCode = countryCode.value ?: ""
+                                        Text(
+                                            countryCode,
+                                            Modifier
+                                                .padding(start = 12.sdp())
+                                                .align(Alignment.CenterStart)
+                                                .fillMaxWidth(),
+                                            style = MaterialTheme.typography.body1.copy(
+                                                color = LocalColorMapping.current.bodyText,
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = defaultNonScalableTextSize()
+                                            )
                                         )
-                                ) {
-                                    val countryCode = countryCode.value ?: ""
-                                    Text(
-                                        countryCode,
-                                        Modifier
-                                            .padding(start = 12.sdp())
-                                            .align(Alignment.CenterStart)
-                                            .fillMaxWidth(),
-                                        style = MaterialTheme.typography.body1.copy(
-                                            color = grayscaleBlack,
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = defaultNonScalableTextSize()
+                                        Image(
+                                            painterResource(R.drawable.ic_chev_down),
+                                            null,
+                                            Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .padding(end = 11.sdp()),
+                                            colorFilter = LocalColorMapping.current.closeIconFilter
                                         )
-                                    )
-                                    Image(
-                                        painterResource(R.drawable.ic_chev_down),
-                                        null,
+                                    }
+                                    Spacer(Modifier.width(8.sdp()))
+                                    ItemInformationInput(
                                         Modifier
-                                            .align(Alignment.CenterEnd)
-                                            .padding(end = 11.sdp())
-                                    )
-                                }
-                                Spacer(Modifier.width(8.sdp()))
-                                ItemInformationInput(
-                                    Modifier
-                                        .weight(3f)
-                                        .fillMaxSize(),
-                                    hasError = phoneNumberErrorVisible.value ?: false,
-                                    textValue = phoneNumber.value ?: "",
-                                    keyboardType = KeyboardType.Number,
-                                    placeholder = stringResource(R.string.profile_phone_number),
-                                ) {
-                                    profileViewModel.setPhoneNumber(it)
+                                            .weight(3f)
+                                            .fillMaxSize(),
+                                        hasError = phoneNumberErrorVisible.value ?: false,
+                                        textValue = phoneNumber.value ?: "",
+                                        keyboardType = KeyboardType.Number,
+                                        placeholder = stringResource(R.string.profile_phone_number),
+                                    ) {
+                                        profileViewModel.setPhoneNumber(it)
+                                    }
                                 }
                             }
                             Spacer(Modifier.height(8.sdp()))
@@ -358,7 +364,8 @@ fun HeaderProfile(onClickSave: () -> Unit, onCloseView: () -> Unit) {
                     .clickable {
                         onCloseView.invoke()
                     },
-                alignment = Alignment.CenterStart
+                alignment = Alignment.CenterStart,
+                colorFilter = LocalColorMapping.current.closeIconFilter
             )
 
             Row(
@@ -395,16 +402,20 @@ fun ItemInformationView(
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
-                color = grayscale1,
+                color = LocalColorMapping.current.profileInputLabel,
                 fontSize = defaultNonScalableTextSize(),
                 fontWeight = FontWeight.Normal
             )
         )
-        Row(Modifier.background(grayscaleOffWhite)) {
+        Row {
             content()
         }
         if (errorVisible) {
-            Text(errorText, color = errorDefault, fontSize = 12.sdp().toNonScalableTextSize())
+            Text(
+                errorText,
+                color = LocalColorMapping.current.error,
+                fontSize = 12.sdp().toNonScalableTextSize()
+            )
         }
     }
 }
@@ -425,21 +436,24 @@ private fun ItemInformationInput(
 
     Surface(
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(1.sdp(), if (hasError) errorDefault else grayscale5),
-        modifier = modifier
+        border = BorderStroke(
+            1.sdp(),
+            if (hasError) LocalColorMapping.current.error else LocalColorMapping.current.textFieldBackgroundAlt
+        ),
+        modifier = modifier,
     ) {
         TextField(
             value = textValue,
             onValueChange = onValueChange,
             colors = TextFieldDefaults.textFieldColors(
-                textColor = if (enable) grayscaleBlack else grayscale3,
-                cursorColor = if (enable) grayscaleBlack else grayscale3,
+                textColor = if (enable) LocalColorMapping.current.bodyTextAlt else LocalColorMapping.current.bodyTextDisabled,
+                cursorColor = if (enable) LocalColorMapping.current.bodyTextAlt else LocalColorMapping.current.bodyTextDisabled,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                backgroundColor = if (hasError) grayscaleOffWhite else grayscale5
+                backgroundColor = if (hasError) LocalColorMapping.current.textFieldBackgroundAltError else LocalColorMapping.current.textFieldBackgroundAlt
             ),
             textStyle = MaterialTheme.typography.body1.copy(
-                color = if (enable) grayscaleBlack else grayscale3,
+                color = if (enable) LocalColorMapping.current.bodyTextAlt else LocalColorMapping.current.bodyTextDisabled,
                 fontWeight = FontWeight.Normal,
                 fontSize = defaultNonScalableTextSize()
             ),
@@ -476,7 +490,7 @@ fun CopyLink(onCopied: () -> Unit) {
             modifier = Modifier
                 .weight(0.66f),
             fontSize = defaultNonScalableTextSize(),
-            color = MaterialTheme.colors.primary
+            color = primaryDefault
         )
         Column(
             modifier = Modifier.clickable { },
@@ -504,7 +518,7 @@ fun ChangePassword(onChangePassword: () -> Unit) {
             modifier = Modifier
                 .weight(0.66f),
             fontSize = defaultNonScalableTextSize(),
-            color = MaterialTheme.colors.primary
+            color = primaryDefault
         )
         Column(
             modifier = Modifier.clickable { },
@@ -546,7 +560,8 @@ fun TwoFaceAuthView(
                             stringResource(R.string.disable)
                         } else stringResource(
                             R.string.enable
-                        )
+                        ),
+                        color = primaryDefault
                     )
                 }
             }
@@ -554,7 +569,7 @@ fun TwoFaceAuthView(
         Text(
             text = stringResource(R.string.two_factors_auth_description),
             style = MaterialTheme.typography.body1.copy(
-                color = grayscale2,
+                color = LocalColorMapping.current.descriptionText,
                 fontSize = defaultNonScalableTextSize(),
                 fontWeight = FontWeight.Normal
             ),
