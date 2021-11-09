@@ -125,8 +125,9 @@ data class ColorMapping(
     val headerText: Color = Color.Black,
     val closeIconFilter: ColorFilter? = null,
     val profileText: Color = Color.Black,
-    val profileInputLabel: Color = grayscale1,
+    val inputLabel: Color = grayscale1,
     val descriptionText: Color = grayscale2,
+    val descriptionTextAlt: Color = grayscale2,
     val separator: Color = separatorDarkNonOpaque,
     val isDarkTheme: Boolean = false
 )
@@ -152,8 +153,9 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
         headerText = grayscaleDarkModeGreyLight2,
         closeIconFilter = ColorFilter.tint(grayscaleDarkModeGreyLight),
         profileText = grayscaleDarkModeGreyLight,
-        profileInputLabel = grayscaleDarkModeGreyLight,
+        inputLabel = grayscaleDarkModeGreyLight,
         descriptionText = grayscaleDarkModeGreyLight,
+        descriptionTextAlt = primaryDefault,
         separator = grayscaleDarkModeGreyLight,
         isDarkTheme = true
     )
