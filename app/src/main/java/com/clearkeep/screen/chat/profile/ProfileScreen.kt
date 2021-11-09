@@ -33,7 +33,6 @@ import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -402,7 +401,7 @@ fun ItemInformationView(
     Column(Modifier.fillMaxWidth()) {
         Text(
             text = header, style = MaterialTheme.typography.body1.copy(
-                color = LocalColorMapping.current.profileInputLabel,
+                color = LocalColorMapping.current.inputLabel,
                 fontSize = defaultNonScalableTextSize(),
                 fontWeight = FontWeight.Normal
             )

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.CKSetting
 import com.clearkeep.components.base.HeaderTextType
@@ -85,10 +86,11 @@ fun HeaderNotificationSetting(onCloseView: () -> Unit) {
                     }
                     .size(24.sdp()),
                 contentScale = ContentScale.FillBounds,
-                alignment = Alignment.CenterStart
+                alignment = Alignment.CenterStart,
+                colorFilter = LocalColorMapping.current.closeIconFilter
             )
         }
         Spacer(modifier = Modifier.size(16.sdp()))
-        CKHeaderText(stringResource(R.string.notification), headerTextType = HeaderTextType.Medium)
+        CKHeaderText(stringResource(R.string.notification), headerTextType = HeaderTextType.Medium, color = LocalColorMapping.current.headerText)
     }
 }
