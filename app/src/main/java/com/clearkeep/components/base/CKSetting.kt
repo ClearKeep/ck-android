@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.primaryDefault
@@ -30,7 +31,8 @@ fun CKSetting(
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             CKHeaderText(
                 name,
-                modifier = Modifier.weight(0.66f)
+                modifier = Modifier.weight(0.66f),
+                color = LocalColorMapping.current.inputLabel
             )
             Column(
                 modifier = Modifier.clickable { },
@@ -53,7 +55,7 @@ fun CKSetting(
         if (description.isNotBlank()) {
             Text(
                 text = description, style = MaterialTheme.typography.body1.copy(
-                    color = grayscale2,
+                    color = LocalColorMapping.current.descriptionTextAlt,
                     fontSize = 14.sdp().toNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ), modifier = Modifier.fillMaxWidth(0.8f)

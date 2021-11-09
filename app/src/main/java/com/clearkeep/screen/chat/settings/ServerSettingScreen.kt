@@ -15,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.Server
 import com.clearkeep.utilities.defaultNonScalableTextSize
@@ -37,7 +38,7 @@ fun ServerSettingScreen(
         CKText(
             stringResource(R.string.server_setting_server_name),
             style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.onBackground,
+                color = LocalColorMapping.current.headerText,
                 fontSize = defaultNonScalableTextSize()
             )
         )
@@ -51,7 +52,7 @@ fun ServerSettingScreen(
         Spacer(modifier = Modifier.height(16.sdp()))
         CKText(
             stringResource(R.string.server_url), style = MaterialTheme.typography.body2.copy(
-                color = MaterialTheme.colors.onBackground,
+                color = LocalColorMapping.current.inputLabel,
                 fontSize = defaultNonScalableTextSize()
             )
         )
@@ -85,8 +86,6 @@ fun ServerSettingScreen(
 
 @Composable
 fun HeaderServerSetting(onCloseView: () -> Unit) {
-    val focusManager = LocalFocusManager.current
-
     Column(
         Modifier
             .fillMaxWidth()
@@ -102,7 +101,8 @@ fun HeaderServerSetting(onCloseView: () -> Unit) {
                     .clickable {
                         onCloseView.invoke()
                     },
-                alignment = Alignment.CenterStart
+                alignment = Alignment.CenterStart,
+                colorFilter = LocalColorMapping.current.closeIconFilter
             )
         }
         Spacer(modifier = Modifier.size(16.sdp()))
@@ -111,41 +111,5 @@ fun HeaderServerSetting(onCloseView: () -> Unit) {
             headerTextType = HeaderTextType.Medium
         )
         Spacer(modifier = Modifier.size(16.sdp()))
-    }
-}
-
-@Composable
-fun ServerItem(
-    iconPainter: Painter,
-    title: String,
-    subTitle: String,
-    onClick: () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = iconPainter,
-            contentDescription = "",
-            modifier = Modifier.clickable(
-                onClick = onClick
-            )
-        )
-        Spacer(modifier = Modifier.width(21.sdp()))
-        Column {
-            CKText(
-                title, style = MaterialTheme.typography.h6.copy(
-                    color = MaterialTheme.colors.primaryVariant,
-                    fontSize = defaultNonScalableTextSize()
-                )
-            )
-            Spacer(modifier = Modifier.height(2.sdp()))
-            CKText(
-                subTitle, style = MaterialTheme.typography.overline.copy(
-                    color = MaterialTheme.colors.onSecondary,
-                    fontSize = defaultNonScalableTextSize()
-                )
-            )
-        }
     }
 }
