@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.grayscaleOffWhite
@@ -57,7 +58,7 @@ fun FriendListItem(
                     text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.onBackground,
+                        color = LocalColorMapping.current.descriptionText,
                         fontSize = defaultNonScalableTextSize()
                     ),
                 )
