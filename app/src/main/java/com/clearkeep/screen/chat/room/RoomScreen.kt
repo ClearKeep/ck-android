@@ -31,6 +31,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,17 +65,17 @@ fun RoomScreen(
     val systemUiController = rememberSystemUiController()
     val groupState = roomViewModel.group.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
-    val isUploadPhotoDialogVisible = remember { mutableStateOf(false) }
-    val isMessageClickDialogVisible = remember { mutableStateOf(false) }
+    val isUploadPhotoDialogVisible = rememberSaveable { mutableStateOf(false) }
+    val isMessageClickDialogVisible = rememberSaveable { mutableStateOf(false) }
     val uploadFileResponse = roomViewModel.uploadFileResponse.observeAsState()
     val context = LocalContext.current
     val bottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
-    val isShowDialogCalling = remember { mutableStateOf(false) }
+    val isShowDialogCalling = rememberSaveable { mutableStateOf(false) }
     val listPeerAvatars = roomViewModel.listPeerAvatars.observeAsState()
-    val selectedFileUri = remember { mutableStateOf("") }
+    val selectedFileUri = rememberSaveable { mutableStateOf("") }
     val getGroupResponse = roomViewModel.getGroupResponse.observeAsState()
     val createGroupResponse = roomViewModel.createGroupResponse.observeAsState()
     val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()

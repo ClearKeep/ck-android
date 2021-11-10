@@ -23,6 +23,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,8 +50,8 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
     val systemUiController = rememberSystemUiController()
     val imagesList = roomViewModel.imageDetailList.observeAsState()
     val senderName = roomViewModel.imageDetailSenderName.observeAsState()
-    val selectedImageUri = remember { mutableStateOf("") }
-    val isShareDialogOpen = remember { mutableStateOf(false) }
+    val selectedImageUri = rememberSaveable { mutableStateOf("") }
+    val isShareDialogOpen = rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     val requestWriteFilePermissionLauncher =

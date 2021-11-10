@@ -11,6 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,9 +29,9 @@ fun ForgotScreen(
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
-    val email = remember { mutableStateOf("") }
-    val isEmptyEmail = remember { mutableStateOf(false) }
-    val isInvalidEmailFormat = remember { mutableStateOf(false) }
+    val email = rememberSaveable { mutableStateOf("") }
+    val isEmptyEmail = rememberSaveable { mutableStateOf(false) }
+    val isInvalidEmailFormat = rememberSaveable { mutableStateOf(false) }
 
     Column(modifier = Modifier
         .fillMaxSize()

@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,7 +66,7 @@ fun SearchUserScreen(
             .background(MaterialTheme.colors.background)
             .padding(horizontal = 16.sdp())
     ) {
-        val query = remember { mutableStateOf("") }
+        val query = rememberSaveable { mutableStateOf("") }
 
         Spacer(Modifier.height(44.sdp()))
         Box(Modifier.fillMaxWidth()) {
