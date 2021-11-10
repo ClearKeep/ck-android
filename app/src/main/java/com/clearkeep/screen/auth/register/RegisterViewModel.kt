@@ -19,6 +19,9 @@ class RegisterViewModel @Inject constructor(
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
+    private val _email = MutableLiveData<String>()
+    val email: LiveData<String> get() = _email
+
     private val _emailError = MutableLiveData<String>()
     val emailError: LiveData<String>
         get() = _emailError
@@ -77,6 +80,8 @@ class RegisterViewModel @Inject constructor(
             _confirmPassError.value = context.getString(R.string.confirm_password_is_not_match)
             isValid = false
         }
+
+        _email.value = email
 
         val result = if (isValid) {
             authRepository.register(displayName.trim(), password, email.trim(), domain)

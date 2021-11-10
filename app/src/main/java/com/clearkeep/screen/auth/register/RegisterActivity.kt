@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.register
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -141,6 +142,10 @@ class RegisterActivity : AppCompatActivity() {
                 title = stringResource(R.string.register_success_title),
                 text = stringResource(R.string.register_success_text),
                 onDismissButtonClick = {
+                    val resultIntent = Intent().apply {
+                        putExtra(EXTRA_EMAIL, registerViewModel.email.value ?: "")
+                    }
+                    setResult(RESULT_OK, resultIntent)
                     finish()
                 },
             )
@@ -149,5 +154,6 @@ class RegisterActivity : AppCompatActivity() {
 
     companion object {
         const val DOMAIN = "domain"
+        const val EXTRA_EMAIL = "EXTRA_EMAIL"
     }
 }
