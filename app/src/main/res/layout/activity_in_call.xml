@@ -46,8 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_bg_gradient" />
-
+                android:src="@drawable/ic_background_gradient_call" />
 
             <TextView
                 android:id="@+id/tvUserName2"
@@ -139,7 +138,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_bg_gradient" />
+                android:src="@drawable/ic_background_gradient_call" />
 
             <TextView
                 android:id="@+id/tvConnecting"
@@ -208,7 +207,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@drawable/ic_bg_gradient"
+        android:background="@drawable/ic_background_gradient_call"
         android:visibility="gone"
         tools:visibility="gone">
 

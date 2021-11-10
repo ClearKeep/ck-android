@@ -447,8 +447,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         if (!mIsGroupCall) {
             Glide.with(this)
                 .load(mCurrentUserAvatar)
-                .placeholder(R.drawable.ic_bg_gradient)
-                .error(R.drawable.ic_bg_gradient)
+                .placeholder(R.drawable.ic_background_gradient_call)
+                .error(R.drawable.ic_background_gradient_call)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
                 .into(imageBackground)
 
@@ -499,8 +499,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         else tvConnecting.gone()
         Glide.with(this)
             .load(mCurrentUserAvatar)
-            .placeholder(R.drawable.ic_bg_gradient)
-            .error(R.drawable.ic_bg_gradient)
+            .placeholder(R.drawable.ic_background_gradient_call)
+            .error(R.drawable.ic_background_gradient_call)
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
             .into(imageConnecting)
     }
