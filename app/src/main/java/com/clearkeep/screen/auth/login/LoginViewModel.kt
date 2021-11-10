@@ -34,6 +34,9 @@ class LoginViewModel @Inject constructor(
     var mSingleAccountApp: ISingleAccountPublicClientApplication? = null
     val loginFacebookManager: LoginManager = LoginManager.getInstance()
 
+    private val _email = MutableLiveData<String>()
+    val email: LiveData<String> get() = _email
+
     var isCustomServer: Boolean = false
     var customDomain: String = ""
 
@@ -341,6 +344,10 @@ class LoginViewModel @Inject constructor(
         return isSecurityPhraseValid(
             (_securityPhrase.value ?: "").trim()
         ) && _confirmSecurityPhrase.value?.trim() == _securityPhrase.value?.trim()
+    }
+
+    fun setEmail(email: String) {
+        _email.value = email
     }
 
     companion object {

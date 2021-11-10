@@ -1,6 +1,7 @@
 package com.clearkeep.screen.auth.login
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -55,7 +56,6 @@ import com.facebook.login.LoginResult
 import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
 
-
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
@@ -81,6 +81,14 @@ class LoginActivity : AppCompatActivity() {
                 onSignInGoogleResult(it, task)
             }
         }
+
+    private val navigateToRegister = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            val email = data?.getStringExtra(RegisterActivity.EXTRA_EMAIL)
+            loginViewModel.setEmail(email ?: "")
+        }
+    }
 
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -345,7 +353,7 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToRegisterActivity() {
         val intent = Intent(this, RegisterActivity::class.java)
         intent.putExtra(RegisterActivity.DOMAIN, loginViewModel.getDomain())
-        startActivity(intent)
+        navigateToRegister.launch(intent)
     }
 
     private fun navigateToForgotActivity() {
