@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
@@ -8,10 +9,11 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
+import com.clearkeep.components.grayscaleDarkModeDarkGrey2
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
@@ -31,17 +33,30 @@ fun ToolbarMessage(
     onAudioClick: () -> Unit,
     onVideoClick: () -> Unit
 ) {
+    val backgroundModifier = if (LocalColorMapping.current.isDarkTheme) {
+        Modifier.background(
+            grayscaleDarkModeDarkGrey2
+        ).height(58.sdp())
+    } else {
+        Modifier
+            .statusBarsHeight(58.sdp())
+            .statusBarsPadding()
+    }
+
+    if (LocalColorMapping.current.isDarkTheme) {
+        Box(Modifier.fillMaxWidth().background(grayscaleDarkModeDarkGrey2).statusBarsHeight())
+    }
+
     Row(
         modifier = Modifier
-            .statusBarsHeight(58.sdp())
-            .statusBarsPadding(),
+            .then(backgroundModifier),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
                 contentDescription = null,
-                tint = Color.White,
+                tint = LocalColorMapping.current.bodyText,
             )
         }
 
@@ -65,7 +80,7 @@ fun ToolbarMessage(
         ) {
             Text(
                 text = title,
-                color = Color.White,
+                color = LocalColorMapping.current.bodyText,
                 fontSize = 16.sdp().toNonScalableTextSize(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -87,7 +102,7 @@ fun ToolbarMessage(
                     Icon(
                         painter = painterResource(R.drawable.ic_icon_call_audio),
                         contentDescription = null,
-                        tint = Color.White
+                        tint = LocalColorMapping.current.bodyText,
                     )
                 }
                 IconButton(
@@ -100,7 +115,7 @@ fun ToolbarMessage(
                     Icon(
                         painter = painterResource(R.drawable.ic_icon_call_video),
                         contentDescription = null,
-                        tint = Color.White
+                        tint = LocalColorMapping.current.bodyText,
                     )
                 }
                 Spacer(Modifier.width(10.sdp()))

@@ -209,7 +209,7 @@ fun ProfileScreen(
                                                 .align(Alignment.CenterStart)
                                                 .fillMaxWidth(),
                                             style = MaterialTheme.typography.body1.copy(
-                                                color = LocalColorMapping.current.bodyText,
+                                                color = LocalColorMapping.current.bodyTextAlt,
                                                 fontWeight = FontWeight.Normal,
                                                 fontSize = defaultNonScalableTextSize()
                                             )

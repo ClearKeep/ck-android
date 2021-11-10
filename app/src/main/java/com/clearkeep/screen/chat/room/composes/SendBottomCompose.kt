@@ -25,11 +25,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
+import com.clearkeep.components.*
 import com.clearkeep.components.base.CKTextInputFieldChat
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscaleBackground
-import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.sdp
 
@@ -64,7 +61,7 @@ fun SendBottomCompose(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(color = grayscaleBackground)
+            modifier = Modifier.background(color = MaterialTheme.colors.background)
         ) {
             IconButton(
                 onClick = {
@@ -78,7 +75,7 @@ fun SendBottomCompose(
                 Icon(
                     painterResource(R.drawable.ic_photos),
                     contentDescription = "",
-                    tint = grayscale1,
+                    tint = LocalColorMapping.current.descriptionTextAlt,
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable {
@@ -98,7 +95,7 @@ fun SendBottomCompose(
                 Icon(
                     painter = painterResource(R.drawable.ic_link),
                     contentDescription = "",
-                    tint = grayscale1,
+                    tint = LocalColorMapping.current.descriptionTextAlt,
                     modifier = Modifier.fillMaxSize()
                 )
             }

@@ -15,15 +15,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.errorDefault
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
@@ -139,7 +140,8 @@ fun RoomInfoScreen(
                             ItemSiteSetting(
                                 stringResource(R.string.see_members),
                                 R.drawable.ic_user,
-                                textColor = grayscale1,
+                                textColor = LocalColorMapping.current.inputLabel,
+                                iconTint = LocalColorMapping.current.inputLabel,
                                 onClickAction = {
                                     //roomViewModel.getStatusUserInGroup()
                                     navHostController.navigate("member_group_screen")
@@ -152,7 +154,8 @@ fun RoomInfoScreen(
                             ItemSiteSetting(
                                 stringResource(R.string.add_member),
                                 R.drawable.ic_user_plus,
-                                textColor = grayscale1,
+                                textColor = LocalColorMapping.current.inputLabel,
+                                iconTint = LocalColorMapping.current.inputLabel,
                                 onClickAction = {
                                     navHostController.navigate("invite_group_screen")
                                 })
@@ -164,7 +167,8 @@ fun RoomInfoScreen(
                             ItemSiteSetting(
                                 stringResource(R.string.remove_member),
                                 R.drawable.ic_user_off,
-                                textColor = grayscale1,
+                                textColor = LocalColorMapping.current.inputLabel,
+                                iconTint = LocalColorMapping.current.inputLabel,
                                 onClickAction = {
                                     navHostController.navigate("remove_member")
                                 })
@@ -176,7 +180,8 @@ fun RoomInfoScreen(
                             ItemSiteSetting(
                                 stringResource(R.string.room_info_leave),
                                 R.drawable.ic_logout,
-                                textColor = errorDefault,
+                                iconTint = LocalColorMapping.current.error,
+                                textColor = LocalColorMapping.current.error,
                                 onClickAction = {
                                     confirmLeaveGroupDialogVisible.value = true
                                 })
@@ -211,6 +216,7 @@ fun RoomInfoScreen(
 fun ItemSiteSetting(
     name: String,
     icon: Int,
+    iconTint: Color? = null,
     onClickAction: (() -> Unit)? = null,
     textColor: Color? = null
 ) {
@@ -222,7 +228,8 @@ fun ItemSiteSetting(
         Image(
             painter = painterResource(icon),
             contentDescription = null,
-            modifier = Modifier.size(24.sdp())
+            modifier = Modifier.size(24.sdp()),
+            colorFilter = if (iconTint != null) ColorFilter.tint(iconTint) else null
         )
         SideBarLabel(
             text = name, color = textColor, modifier = Modifier
