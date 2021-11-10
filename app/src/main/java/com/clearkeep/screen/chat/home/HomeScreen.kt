@@ -59,7 +59,7 @@ fun HomeScreen(
     onNavigateNotes: () -> Unit,
 ) {
     val showJoinServer = homeViewModel.selectingJoinServer.observeAsState()
-    val rememberStateSiteMenu = remember { mutableStateOf(false) }
+    val rememberStateSiteMenu = rememberSaveable { mutableStateOf(false) }
     val profile = homeViewModel.profile.observeAsState()
     val swipeRefreshState = homeViewModel.isRefreshing.observeAsState()
     val serverUrlValidateResponse = homeViewModel.serverUrlValidateResponse.observeAsState()
@@ -314,7 +314,7 @@ fun ChatGroupView(
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
     val chatGroups = viewModel.chatGroups.observeAsState()
-    val rememberItemGroup = remember { mutableStateOf(true) }
+    val rememberItemGroup = rememberSaveable { mutableStateOf(true) }
     Column(
         modifier = Modifier.wrapContentHeight()
     ) {
@@ -399,7 +399,7 @@ fun DirectMessagesView(
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
     val chatGroup = viewModel.directGroups.observeAsState()
-    val rememberItemGroup = remember { mutableStateOf(true) }
+    val rememberItemGroup = rememberSaveable { mutableStateOf(true) }
     Column(modifier = Modifier.wrapContentHeight()) {
         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
             Row(

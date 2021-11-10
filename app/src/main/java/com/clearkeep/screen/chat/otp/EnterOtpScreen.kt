@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -53,7 +53,7 @@ fun EnterOtpScreen(
     onClickSave: () -> Unit,
 ) {
     printlnCK("EnterOtpScreen recompose")
-    val input = remember { mutableStateListOf(" ", " ", " ", " ") }
+    val input = rememberSaveable { mutableStateListOf(" ", " ", " ", " ") }
     val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {

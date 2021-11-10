@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,10 +54,10 @@ fun InviteGroupScreen(
     isCreateDirectGroup: Boolean = true
 ) {
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
-    val textSearch = remember { mutableStateOf("") }
-    val useCustomServerChecked = remember { mutableStateOf(false) }
-    val urlOtherServer = remember { mutableStateOf("") }
-    val addUserFromOtherServerError = remember { mutableStateOf("") }
+    val textSearch = rememberSaveable { mutableStateOf("") }
+    val useCustomServerChecked = rememberSaveable { mutableStateOf(false) }
+    val urlOtherServer = rememberSaveable { mutableStateOf("") }
+    val addUserFromOtherServerError = rememberSaveable { mutableStateOf("") }
     val checkUserUrlResponse = inviteGroupViewModel.checkUserUrlResponse.observeAsState()
     val group = chatGroup.observeAsState()
     val isLoading = inviteGroupViewModel.isLoading.observeAsState()

@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
@@ -26,7 +27,7 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun BannedUserScreen(onCloseView: () -> Unit) {
-    val text = remember { mutableStateOf("") }
+    val text = rememberSaveable { mutableStateOf("") }
     Column(
         Modifier
             .padding(horizontal = 16.sdp())

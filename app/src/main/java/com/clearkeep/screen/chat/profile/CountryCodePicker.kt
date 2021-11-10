@@ -9,6 +9,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -36,7 +37,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Composable
 fun CountryCodePicker(onPick: (countryCode: String) -> Unit, onCloseView: () -> Unit) {
     val context = LocalContext.current
-    val searchQuery = remember { mutableStateOf("") }
+    val searchQuery = rememberSaveable { mutableStateOf("") }
     val searchResult = remember { mutableStateOf(countryCodesToNames) }
 
     Column(

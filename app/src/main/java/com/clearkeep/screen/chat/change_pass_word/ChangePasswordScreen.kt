@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -53,9 +54,9 @@ fun ChangePasswordScreen(
             FocusRequester.createRefs()
         }
 
-        val currentPassWord = remember { mutableStateOf("") }
-        val newPassWord = remember { mutableStateOf("") }
-        val confirmPassWord = remember { mutableStateOf("") }
+        val currentPassWord = rememberSaveable { mutableStateOf("") }
+        val newPassWord = rememberSaveable { mutableStateOf("") }
+        val confirmPassWord = rememberSaveable { mutableStateOf("") }
 
         val currentPassWordError = viewModel.oldPasswordError.observeAsState()
         val newPassWordError = viewModel.newPasswordError.observeAsState()

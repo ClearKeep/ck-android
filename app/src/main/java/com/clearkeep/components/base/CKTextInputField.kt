@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -45,9 +46,9 @@ fun CKTextInputField(
     val focusManager = LocalFocusManager.current
 
     val isPasswordType = keyboardType == KeyboardType.Password
-    val passwordVisibility = remember { mutableStateOf(false) }
+    val passwordVisibility = rememberSaveable { mutableStateOf(false) }
 
-    val rememberBorderShow = remember { mutableStateOf(false) }
+    val rememberBorderShow = rememberSaveable { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,
