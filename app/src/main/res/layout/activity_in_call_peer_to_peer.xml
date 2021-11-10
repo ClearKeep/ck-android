@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:elevation="@dimen/_1sdp"
-        android:background="@drawable/ic_bg_gradient"
+        android:background="@drawable/ic_background_gradient_call"
         android:visibility="gone"
         tools:visibility="gone">
 
