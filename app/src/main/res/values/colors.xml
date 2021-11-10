@@ -23,4 +23,6 @@
     <color name="errorDefault">#ED2E7E</color>
     /* Grayscale/Background */
     <color name="grayscaleBackground">#F7F7FC</color>
+
+    <color name="controlCallBackground">#D9DBE9</color>
 </resources>
