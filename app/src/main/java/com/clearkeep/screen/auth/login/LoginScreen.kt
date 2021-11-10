@@ -60,6 +60,8 @@ fun LoginScreen(
     val emailError = loginViewModel.emailError.observeAsState()
     val passError = loginViewModel.passError.observeAsState()
 
+    email.value = loginViewModel.email.observeAsState().value ?: ""
+
     val image = painterResource(R.drawable.ic_logo)
 
     Column(
@@ -108,6 +110,9 @@ fun LoginScreen(
                         contentDescription = null,
                         colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
+                },
+                onValueChange = {
+                    loginViewModel.setEmail(it)
                 }
             )
             Spacer(Modifier.height(dimensionResource(R.dimen._24sdp)))
