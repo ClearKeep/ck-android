@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.components.grayscale1
@@ -81,7 +82,7 @@ fun RoomMemberHeader(onCloseView: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chev_left),
                     contentDescription = null,
-                    tint = grayscale1,
+                    tint = LocalColorMapping.current.headerText,
                 )
             }
             CKHeaderText(

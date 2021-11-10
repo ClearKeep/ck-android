@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.*
 import com.clearkeep.components.colorSuccessDefault
 import com.clearkeep.db.clear_keep.model.User
@@ -41,7 +42,7 @@ fun NewFriendListItem(
                 text = user.userName,
                 style = MaterialTheme.typography.body2.copy(
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colors.onBackground
+                    color = LocalColorMapping.current.inputLabel
                 ), overflow = TextOverflow.Ellipsis, maxLines = 1
             )
             description()

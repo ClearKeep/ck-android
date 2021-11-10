@@ -108,15 +108,10 @@ data class ColorMapping(
     val warning: Color = colorWarningLight,
     val surface: Color = Color.White,
     val surfaceDialog: Color = Color.White,
-    val surfaceBrush: List<Color> = listOf(
-        backgroundGradientStart,
-        backgroundGradientEnd,
-    ),
+    val bottomSheet: Color = bottomSheetColor,
+    val surfaceBrush: List<Color> = gradientColors,
     val error: Color = errorDefault,
-    val backgroundBrush: List<Color> = listOf(
-        backgroundGradientStart,
-        backgroundGradientEnd,
-    ),
+    val backgroundBrush: List<Color> = gradientColors,
     val textFieldIconFilter: ColorFilter? = null,
     val textFieldIconColor: Color = pickledBlueWood,
     val iconColorAlt: Color = grayscale1,
@@ -144,9 +139,10 @@ val LocalColorMapping = compositionLocalOf { ColorMapping() }
 
 fun provideColor(darkTheme: Boolean) = if (darkTheme) {
     ColorMapping(
-        primaryDefault,
+        warning = primaryDefault,
         surface = grayscaleDarkModeDarkGrey3,
         surfaceDialog = grayscaleDarkModeGreyLight,
+        bottomSheet = grayscaleDarkModeDarkGrey2,
         surfaceBrush = listOf(grayscaleDarkModeDarkGrey2, grayscaleDarkModeDarkGrey2),
         error = primaryDefault,
         backgroundBrush = listOf(colorBackgroundDark, colorBackgroundDark),
@@ -156,8 +152,8 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
         textFieldBackgroundAlt = grayscaleDarkModeDarkGrey2,
         textFieldBackgroundAltError = grayscaleDarkModeDarkGrey2,
         textFieldBackgroundAltFocused = grayscaleDarkModeDarkGrey2,
-        grayscaleDarkModeGreyLight,
-        grayscaleDarkModeGreyLight,
+        topAppBarTitle = grayscaleDarkModeGreyLight,
+        topAppBarContent = grayscaleDarkModeGreyLight,
         bodyText = grayscaleDarkModeGreyLight,
         bodyTextAlt = grayscaleDarkModeGreyLight,
         bodyTextDisabled = grayscaleDarkModeGreyLight,
@@ -175,3 +171,8 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
 } else {
     ColorMapping()
 }
+
+val gradientColors = listOf(
+    backgroundGradientStart,
+    backgroundGradientEnd,
+)

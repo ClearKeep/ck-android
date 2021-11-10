@@ -140,7 +140,7 @@ fun HeaderRemoveMember(onCloseView: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chev_left),
                     contentDescription = null,
-                    tint = grayscale1,
+                    tint = LocalColorMapping.current.headerText,
                 )
             }
             CKHeaderText(
@@ -161,7 +161,7 @@ fun RemoveMemberItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_cross),
             contentDescription = "",
-            tint = errorDefault,
+            tint = LocalColorMapping.current.error,
             modifier = Modifier.clickable {
                 onAction(user)
             }

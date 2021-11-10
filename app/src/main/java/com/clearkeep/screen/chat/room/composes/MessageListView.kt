@@ -80,7 +80,7 @@ private fun MessageListView(
                 convertMessageList(entry.value, clients, listAvatar, myClientId, isGroup)
             }
     Surface(
-        color = grayscaleBackground
+        color = MaterialTheme.colors.background
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()

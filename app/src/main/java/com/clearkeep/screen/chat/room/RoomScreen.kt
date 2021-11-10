@@ -60,6 +60,7 @@ fun RoomScreen(
     onFinishActivity: () -> Unit,
     onCallingClick: ((isPeer: Boolean) -> Unit),
 ) {
+    val isDarkMode = LocalColorMapping.current.isDarkTheme
     val systemUiController = rememberSystemUiController()
     val groupState = roomViewModel.group.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
@@ -89,7 +90,7 @@ fun RoomScreen(
     SideEffect {
         systemUiController.setSystemBarsColor(
             color = Color.Transparent,
-            darkIcons = true
+            darkIcons = !isDarkMode
         )
     }
 
@@ -111,9 +112,13 @@ fun RoomScreen(
     }
 
     val groupName =
-        if (isNote.value == true) stringResource(R.string.note) else if (group?.isDeletedUserPeer == true) stringResource(
-            R.string.deleted_user
-        ) else group?.groupName ?: ""
+        when {
+            isNote.value == true -> stringResource(R.string.note)
+            group?.isDeletedUserPeer == true -> stringResource(
+                R.string.deleted_user
+            )
+            else -> group?.groupName ?: ""
+        }
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -145,7 +150,7 @@ fun RoomScreen(
                 }
             }
         },
-        sheetBackgroundColor = bottomSheetColor,
+        sheetBackgroundColor = LocalColorMapping.current.bottomSheet,
         scrimColor = colorDialogScrim
     ) {
         Box(
@@ -175,14 +180,14 @@ fun RoomScreen(
                         } else {
                             isShowDialogCalling.value = true
                         }
-                    },
-                    onVideoClick = {
-                        if (AppCall.listenerCallingState.value?.isCalling != true) {
-                            roomViewModel.requestCall(group?.groupId ?: 0L, false)
-                        } else {
-                            isShowDialogCalling.value = true
-                        }
-                    })
+                    }
+                ) {
+                    if (AppCall.listenerCallingState.value?.isCalling != true) {
+                        roomViewModel.requestCall(group?.groupId ?: 0L, false)
+                    } else {
+                        isShowDialogCalling.value = true
+                    }
+                }
                 if (messageList?.value != null) {
                     Column(
                         modifier = Modifier
@@ -234,7 +239,7 @@ fun RoomScreen(
                     }
                 } else {
                     Column(Modifier.weight(0.66f)) {
-                        Surface(Modifier.fillMaxSize(), color = grayscaleBackground) {
+                        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
                             Box(Modifier.fillMaxSize()) {
                                 //CKCircularProgressIndicator(Modifier.align(Alignment.Center))
                             }

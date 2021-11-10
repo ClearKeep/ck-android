@@ -120,6 +120,7 @@ private fun getButtonTextColor(buttonType: ButtonType): Color {
         ButtonType.Red -> primaryDefault
         ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
+        ButtonType.Black -> Color.White
     }
 }
 
@@ -131,6 +132,7 @@ private fun getDisabledButtonTextColor(buttonType: ButtonType): Color {
         ButtonType.Red -> primaryDefault
         ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
+        ButtonType.Black -> Color.White
     }
 }
 
@@ -141,6 +143,7 @@ private fun getButtonBackgroundColor(buttonType: ButtonType): Color {
         ButtonType.Red -> grayscaleOffWhite
         ButtonType.BorderWhite -> Color.Transparent
         ButtonType.BorderGradient -> Color.Transparent
+        ButtonType.Black -> Color(0x80000000)
     }
 }
 
@@ -157,4 +160,5 @@ enum class ButtonType {
     Red,
     BorderWhite,
     BorderGradient,
+    Black
 }

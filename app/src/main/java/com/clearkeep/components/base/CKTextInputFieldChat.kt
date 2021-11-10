@@ -67,20 +67,11 @@ fun CKTextInputFieldChat(
             TextField(
                 value = textValue.value ?: "",
                 onValueChange = { onChangeMessage.invoke(it) },
-                /*label = {
-                    if (label.isNotBlank()) {
-                        Text(
-                            label, style = MaterialTheme.typography.body2.copy(
-                                color = MaterialTheme.colors.secondaryVariant
-                            )
-                        )
-                    }
-                },*/
                 placeholder = {
                     if (placeholder.isNotBlank()) {
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = grayscale3,
+                                color = LocalColorMapping.current.bodyTextDisabled,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = defaultNonScalableTextSize()
                             ),
@@ -90,22 +81,22 @@ fun CKTextInputFieldChat(
                     }
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = grayscaleBlack,
-                    cursorColor = grayscaleBlack,
+                    textColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = LocalColorMapping.current.bodyTextAlt,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (!isError) {
                         if (rememberBorderShow.value) {
-                            grayscaleOffWhite
+                            LocalColorMapping.current.textFieldBackgroundAltFocused
                         } else {
-                            grayscale5
+                            LocalColorMapping.current.textFieldBackgroundAlt
                         }
-                    } else errorLight,
+                    } else LocalColorMapping.current.error,
                     leadingIconColor = pickledBlueWood,
-                    errorCursorColor = errorLight,
+                    errorCursorColor = LocalColorMapping.current.error,
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = grayscaleBlack,
+                    color = LocalColorMapping.current.bodyTextAlt,
                     fontWeight = FontWeight.Normal,
                     fontSize = defaultNonScalableTextSize()
                 ),
