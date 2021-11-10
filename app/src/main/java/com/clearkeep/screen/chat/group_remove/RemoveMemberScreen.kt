@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,10 +34,10 @@ import java.util.*
 
 @Composable
 fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavController) {
-    val text = remember { mutableStateOf("") }
+    val text = rememberSaveable { mutableStateOf("") }
     val groupState = roomViewModel.group.observeAsState()
     val context = LocalContext.current
-    val removeMemberDialogVisible = remember { mutableStateOf(false) }
+    val removeMemberDialogVisible = rememberSaveable { mutableStateOf(false) }
     val confirmRemoveMemberData = remember { mutableStateOf<Pair<User, Long>?>(null) }
 
     groupState.value?.let { group ->

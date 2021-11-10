@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,7 +58,7 @@ class ForgotActivity : AppCompatActivity() {
     fun AppContent() {
         val (showDialog, setShowDialog) = remember { mutableStateOf(0 to "") }
         val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
-        val emailState = remember { mutableStateOf("") }
+        val emailState = rememberSaveable { mutableStateOf("") }
 
         val onForgotPressed: (String) -> Unit = { email ->
             lifecycleScope.launch {

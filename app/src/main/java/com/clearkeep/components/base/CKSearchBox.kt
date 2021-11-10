@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.focus.*
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
@@ -43,7 +44,7 @@ fun CKSearchBox(
 
     val keyboardFocusRequester = focusRequester ?: remember { FocusRequester() }
 
-    val rememberBorderShow = remember { mutableStateOf(false) }
+    val rememberBorderShow = rememberSaveable { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,

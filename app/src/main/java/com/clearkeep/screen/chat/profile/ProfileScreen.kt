@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -63,8 +64,8 @@ fun ProfileScreen(
         val phoneNumber = profileViewModel.phoneNumber.observeAsState()
         val phoneNumberErrorVisible = profileViewModel.phoneNumberError.observeAsState()
         val countryCode = profileViewModel.countryCode.observeAsState()
-        val otpErrorDialogVisible = remember { mutableStateOf(false) }
-        val pickAvatarDialogVisible = remember { mutableStateOf(false) }
+        val otpErrorDialogVisible = rememberSaveable { mutableStateOf(false) }
+        val pickAvatarDialogVisible = rememberSaveable { mutableStateOf(false) }
         val unsavedChangesDialogVisible =
             profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()

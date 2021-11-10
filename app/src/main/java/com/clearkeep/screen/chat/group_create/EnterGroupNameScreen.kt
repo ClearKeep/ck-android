@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +33,7 @@ fun EnterGroupNameScreen(
     val groupName = remember { mutableStateOf("") }
     val createGroupState = createGroupViewModel.createGroupState.observeAsState()
     val friends = createGroupViewModel.invitedFriends
-    val isLoadingState = remember { mutableStateOf(false) }
+    val isLoadingState = rememberSaveable { mutableStateOf(false) }
     Box {
         Surface(
             color = MaterialTheme.colors.background
