@@ -41,6 +41,7 @@ import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
+import com.clearkeep.screen.chat.room.forward_message.ForwardMessageBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
@@ -80,6 +81,9 @@ fun RoomScreen(
     val createGroupResponse = roomViewModel.createGroupResponse.observeAsState()
     val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()
     val sendMessageResponse = roomViewModel.sendMessageResponse.observeAsState()
+    val groups = roomViewModel.groups.observeAsState()
+    val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
+    val sheetContent = rememberSaveable { mutableStateOf(BottomSheetMode.FILE_PICKER) }
 
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -124,29 +128,47 @@ fun RoomScreen(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
-            FilePickerBottomSheetDialog(roomViewModel) {
-                coroutineScope.launch {
-                    bottomSheetState.hide()
-                    if (isNote.value == true) {
-                        roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
-                    } else if (group != null) {
-                        val isGroup = group.isGroup()
-                        if (isGroup) {
-                            roomViewModel.uploadFile(context, group.groupId, group.isJoined)
-                        } else {
-                            val friend = group.clientList.firstOrNull { client ->
-                                client.userId != roomViewModel.clientId
-                            }
-                            if (friend != null) {
-                                roomViewModel.uploadFile(context, group.groupId, null, friend)
+            when(sheetContent.value) {
+                BottomSheetMode.FILE_PICKER -> {
+                    FilePickerBottomSheetDialog(roomViewModel) {
+                        coroutineScope.launch {
+                            bottomSheetState.hide()
+                            if (isNote.value == true) {
+                                roomViewModel.uploadFile(context, group?.groupId ?: 0L, null, null)
+                            } else if (group != null) {
+                                val isGroup = group.isGroup()
+                                if (isGroup) {
+                                    roomViewModel.uploadFile(context, group.groupId, group.isJoined)
+                                } else {
+                                    val friend = group.clientList.firstOrNull { client ->
+                                        client.userId != roomViewModel.clientId
+                                    }
+                                    if (friend != null) {
+                                        roomViewModel.uploadFile(context, group.groupId, null, friend)
+                                    } else {
+                                        roomViewModel.sendMessageResponse.value =
+                                            Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                    }
+                                }
                             } else {
                                 roomViewModel.sendMessageResponse.value =
                                     Resource.error("", null, ERROR_CODE_TIMEOUT)
                             }
                         }
-                    } else {
-                        roomViewModel.sendMessageResponse.value =
-                            Resource.error("", null, ERROR_CODE_TIMEOUT)
+                    }
+                }
+                BottomSheetMode.FORWARD_MESSAGE -> {
+                    roomViewModel.selectedMessage?.message?.let {
+                        ForwardMessageBottomSheetDialog(
+                            it,
+                            groups.value ?: emptyList(),
+                            listUserStatusState.value ?: emptyList(),
+                            onForwardMessageGroup = {
+
+                            }
+                        ) {
+
+                        }
                     }
                 }
             }
@@ -196,7 +218,6 @@ fun RoomScreen(
                                 0.66f
                             )
                     ) {
-                        val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
@@ -297,6 +318,7 @@ fun RoomScreen(
                         keyboardController?.hide()
                         coroutineScope.launch {
                             delay(KEYBOARD_HIDE_DELAY_MILLIS)
+                            sheetContent.value = BottomSheetMode.FILE_PICKER
                             bottomSheetState.show()
                         }
                     }
@@ -347,9 +369,19 @@ fun RoomScreen(
     }, onTakePhoto = {
         roomViewModel.addImage()
     })
-    MessageClickDialog(roomViewModel, isMessageClickDialogVisible.value, onDismiss = {
-        isMessageClickDialogVisible.value = false
-    })
+    MessageClickDialog(
+        roomViewModel,
+        isMessageClickDialogVisible.value,
+        onDismiss = {
+            isMessageClickDialogVisible.value = false
+        },
+        onClickForward = {
+            coroutineScope.launch {
+                sheetContent.value = BottomSheetMode.FORWARD_MESSAGE
+                bottomSheetState.show()
+            }
+        }
+    )
     val response = uploadFileResponse.value
     if (response?.status == Status.ERROR) {
         CKAlertDialog(
@@ -393,6 +425,7 @@ fun MessageClickDialog(
     roomViewModel: RoomViewModel,
     isOpen: Boolean,
     onDismiss: () -> Unit,
+    onClickForward: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -430,7 +463,22 @@ fun MessageClickDialog(
                                     )
                                     .show()
                                 onDismiss()
-                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                            },
+                        textAlign = TextAlign.Center,
+                        color = colorLightBlue
+                    )
+                    Divider(color = separatorDarkNonOpaque)
+                    Text(
+                        stringResource(R.string.forward_message),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                onDismiss()
+                                onClickForward()
+                            },
+                        textAlign = TextAlign.Center,
+                        color = colorLightBlue
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -454,3 +502,8 @@ fun MessageClickDialog(
 }
 
 private const val KEYBOARD_HIDE_DELAY_MILLIS = 500L
+
+private enum class BottomSheetMode {
+    FILE_PICKER,
+    FORWARD_MESSAGE
+}
