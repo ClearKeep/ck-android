@@ -115,7 +115,7 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
-    val lastUri = remember { mutableStateOf<MemoryCache.Key?>(null) }
+    val lastUri = rememberSaveable { mutableStateOf<MemoryCache.Key?>(null) }
 
     val context = LocalContext.current
     val clickableModifier =
