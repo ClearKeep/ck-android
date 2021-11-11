@@ -287,10 +287,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             domain,
             clientId,
             roomName,
-            "",
+            roomViewModel.getUserAvatarUrl(),
             false,
             currentUserName = roomViewModel.getUserName(),
-            currentUserAvatar = roomViewModel.getUserAvatarUrl()
+            currentUserAvatar = roomViewModel.getSelfAvatarUrl()
         )
     }
 
@@ -300,7 +300,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             printlnCK("CK room go into background")
             stopChatService()
         }
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)

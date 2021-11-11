@@ -35,6 +35,8 @@ class RoomViewModel @Inject constructor(
 ) : BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
     val isLogout = serverRepository.isLogout
 
+    val profile = serverRepository.getDefaultServerProfileAsState()
+
     private var roomId: Long? = null
 
     private var friendId: String? = null
@@ -776,6 +778,10 @@ class RoomViewModel @Inject constructor(
     fun getUserAvatarUrl(): String {
         printlnCK("getUserAvatarUrl: ${listPeerAvatars.value?.get(0)}")
         return listPeerAvatars.value?.get(0) ?: ""
+    }
+
+    fun getSelfAvatarUrl(): String {
+        return environment.getServer().profile.avatar ?: ""
     }
 
     fun setSelectedMessage(selectedMessage: MessageDisplayInfo) {

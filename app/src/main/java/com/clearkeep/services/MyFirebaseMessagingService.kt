@@ -129,7 +129,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val turnUser = turnConfigJsonObject.getString("user")
         val turnPass = turnConfigJsonObject.getString("pwd")
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
-        if (!isGroup(groupType)) {
+        printlnCK("handleRequestCall avatar $avatar")
+        if (avatar.isBlank() && !isGroup(groupType)) {
             peopleRepository.getFriendFromID(fromClientId)?.avatar?.let {
                 avatar = it
             }
@@ -137,6 +138,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val currentUserName = if (isGroup(groupType)) "" else {
             val server = serverRepository.getServer(clientDomain, clientId)
             server?.profile?.userName ?: ""
+        }
+        val currentUserAvatar = if (isGroup(groupType)) "" else {
+            val server = serverRepository.getServer(clientDomain, clientId)
+            server?.profile?.avatar ?: ""
         }
         if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
@@ -146,7 +151,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 fromClientName, avatar,
                 turnUrl, turnUser, turnPass,
                 webRtcGroupId, webRtcUrl,
-                stunUrl, currentUserName
+                stunUrl, currentUserName, currentUserAvatar
             )
         } else {
             groupId?.let { videoCallRepository.busyCall(it.toInt(), Owner(clientDomain, clientId)) }
