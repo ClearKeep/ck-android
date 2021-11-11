@@ -41,7 +41,7 @@ fun SendBottomCompose(
     val selectedImagesList = roomViewModel.imageUriSelected.observeAsState()
     val isNote = roomViewModel.isNote.observeAsState()
 
-    Column(Modifier.background(grayscaleBackground)) {
+    Column(Modifier.background(MaterialTheme.colors.background)) {
         selectedImagesList.value.let { values ->
             if (!values.isNullOrEmpty())
                 Row(
