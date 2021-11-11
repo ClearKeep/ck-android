@@ -57,8 +57,6 @@ fun LoginScreen(
     val email = rememberSaveable { mutableStateOf("") }
     val password = rememberSaveable { mutableStateOf("") }
     val confirmForgotPasswordVisible = rememberSaveable { mutableStateOf(false) }
-    val emailError = loginViewModel.emailError.observeAsState()
-    val passError = loginViewModel.passError.observeAsState()
 
     email.value = loginViewModel.email.observeAsState().value ?: ""
 

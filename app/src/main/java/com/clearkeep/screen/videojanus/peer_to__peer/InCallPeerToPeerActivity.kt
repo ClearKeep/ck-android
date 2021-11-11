@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
@@ -20,7 +19,6 @@ import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -85,6 +83,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private lateinit var mOwnerDomain: String
     private lateinit var mUserNameInConversation: String
     private lateinit var mCurrentUsername: String
+    private lateinit var mPeerUserAvatar: String
     private lateinit var mCurrentUserAvatar: String
     private var mIsGroupCall: Boolean = false
 
@@ -132,6 +131,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         printlnCK("InCallPeerToPeer onCreate isAudioMode $mIsAudioMode")
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
+        mPeerUserAvatar = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
         //TODO: Remove test hardcode
         callViewModel.mIsAudioMode.value = mIsAudioMode
@@ -191,7 +191,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
 
         pipCallNamePeer.text = mCurrentUsername
-        printlnCK("avatarInConversation: $mCurrentUserAvatar")
         //todo avatarInConversation hardcode test
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
@@ -446,14 +445,14 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         if (!mIsGroupCall) {
             Glide.with(this)
-                .load(mCurrentUserAvatar)
+                .load(mPeerUserAvatar)
                 .placeholder(R.drawable.ic_background_gradient_call)
                 .error(R.drawable.ic_background_gradient_call)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
                 .into(imageBackground)
 
             Glide.with(this)
-                .load(mCurrentUserAvatar)
+                .load(mPeerUserAvatar)
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .listener(object : RequestListener<Drawable> {
@@ -498,7 +497,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvConnecting.visible()
         else tvConnecting.gone()
         Glide.with(this)
-            .load(mCurrentUserAvatar)
+            .load(mPeerUserAvatar)
             .placeholder(R.drawable.ic_background_gradient_call)
             .error(R.drawable.ic_background_gradient_call)
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
