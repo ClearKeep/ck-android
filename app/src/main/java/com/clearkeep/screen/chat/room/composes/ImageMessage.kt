@@ -11,6 +11,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +29,7 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.imageLoader
+import coil.memory.MemoryCache
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
@@ -111,10 +115,16 @@ fun ImageMessageItem(
     uri: String,
     onClick: (uri: String) -> Unit
 ) {
+    val lastUri = remember { mutableStateOf<MemoryCache.Key?>(null) }
+
     val context = LocalContext.current
     val clickableModifier =
         if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
-    val painter = rememberImagePainter(uri, context.imageLoader)
+    val painter = rememberImagePainter(uri, context.imageLoader) {
+        placeholderMemoryCacheKey(lastUri.value)
+        crossfade(250)
+    }
+
     Box(modifier) {
         Image(
             painter = painter,
@@ -129,6 +139,10 @@ fun ImageMessageItem(
         when (painter.state) {
             is ImagePainter.State.Loading -> {
                 Box(Modifier.fillMaxSize())
+            }
+            is ImagePainter.State.Success -> {
+                val memoryCacheKey = (painter.state as ImagePainter.State.Success).metadata.memoryCacheKey
+                lastUri.value = memoryCacheKey
             }
             else -> {
             }
