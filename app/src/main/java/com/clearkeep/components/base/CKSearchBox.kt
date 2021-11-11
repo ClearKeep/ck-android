@@ -37,7 +37,8 @@ fun CKSearchBox(
     placeholder: String = stringResource(R.string.search),
     maxChars: Int? = null,
     focusRequester: FocusRequester? = null,
-    onImeAction: () -> Unit = {},
+    isDarkModeInvertedColor: Boolean = false,
+    onImeAction: () -> Unit = {}
 ) {
     val shape = MaterialTheme.shapes.large
     val focusManager = LocalFocusManager.current
@@ -70,17 +71,27 @@ fun CKSearchBox(
                 placeholder = {
                     CKText(
                         placeholder, style = MaterialTheme.typography.body1.copy(
-                            color = LocalColorMapping.current.descriptionText,
+                            color = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                                grayscaleDarkModeDarkGrey2
+                            } else {
+                                LocalColorMapping.current.descriptionText
+                            },
                             fontWeight = FontWeight.Normal
                         )
                     )
                 },
                 colors = TextFieldDefaults.textFieldColors(
                     textColor = LocalColorMapping.current.bodyTextAlt,
-                    cursorColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        grayscaleDarkModeDarkGrey2
+                    } else {
+                        LocalColorMapping.current.bodyTextAlt
+                    },
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = if (rememberBorderShow.value) {
+                    backgroundColor = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        Color(0xFF9E9E9E)
+                    } else if (rememberBorderShow.value) {
                         LocalColorMapping.current.textFieldBackgroundAltFocused
                     } else {
                         LocalColorMapping.current.textFieldBackgroundAlt
@@ -90,7 +101,11 @@ fun CKSearchBox(
                     errorCursorColor = LocalColorMapping.current.error
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = LocalColorMapping.current.bodyTextAlt,
+                    color = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        grayscaleDarkModeDarkGrey2
+                    } else {
+                        LocalColorMapping.current.bodyTextAlt
+                    },
                     fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ),
@@ -105,7 +120,11 @@ fun CKSearchBox(
                         Icons.Filled.Search,
                         contentDescription = "",
                         Modifier.size(dimensionResource(R.dimen._24sdp)),
-                        tint = LocalColorMapping.current.textFieldIconColor
+                        tint = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                            grayscaleDarkModeDarkGrey2
+                        } else {
+                            LocalColorMapping.current.textFieldIconColor
+                        }
                     )
                 },
                 trailingIcon = {
@@ -118,7 +137,11 @@ fun CKSearchBox(
                                     textValue.value = ""
                                 }
                                 .size(dimensionResource(R.dimen._24sdp)),
-                            tint = LocalColorMapping.current.textFieldIconColor
+                            tint = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                                grayscaleDarkModeDarkGrey2
+                            } else {
+                                LocalColorMapping.current.textFieldIconColor
+                            }
                         )
                     }
                 },

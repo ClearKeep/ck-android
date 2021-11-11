@@ -154,9 +154,7 @@ class RoomViewModel @Inject constructor(
             } else if (!friendId.isNullOrEmpty() && !friendDomain.isNullOrEmpty()) {
                 updateGroupWithFriendId(friendId, friendDomain)
             }
-
         }
-
     }
 
     private suspend fun getStatusUserInGroup() {
