@@ -220,4 +220,5 @@
     <string name="login_custom_server">You are using custom server</string>
     <string name="file_picker_add">Add File</string>
     <string name="file_picker_your_file">Your File</string>
+    <string name="forward_message">Forward</string>
 </resources>
