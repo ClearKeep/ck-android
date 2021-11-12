@@ -170,7 +170,7 @@ private fun MessageListView(
         ) {
             if (showButton.value) {
                 ScrollToButtonButton(
-                    isNewMessage = mIsNewMessage && lastNewestItem.value != messageList[0] && messageList[0].senderId != myClientId,
+                    isNewMessage = mIsNewMessage && messageList.isNotEmpty() && lastNewestItem.value != messageList[0] && messageList[0].senderId != myClientId,
                     onClick = {
                         mIsNewMessage = false
                         coroutineScope.launch {

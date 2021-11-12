@@ -10,7 +10,6 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +24,6 @@ import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.grayscale1
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
@@ -81,7 +79,7 @@ fun RoomInfoScreen(
                 ) {
                     val maxItems = 4
                     Box(modifier = Modifier.wrapContentWidth()) {
-                        val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
+                        val listUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
                         for (i in group.clientList.indices) {
                             if (i < maxItems) {
                                 FriendListItemInfo(

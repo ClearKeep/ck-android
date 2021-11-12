@@ -3,11 +3,8 @@ package com.clearkeep.screen.chat.room.forward_message
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Constraints
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
@@ -30,15 +26,17 @@ import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.sdp
 
 @Composable
 fun ForwardMessageBottomSheetDialog(
     message: Message,
     allGroups: List<ChatGroup>,
-    userStatus: List<User>,
-    onForwardMessageGroup: () -> Unit,
-    onForwardMessagePeer: () -> Unit
+    peerUsersStatus: List<User>,
+    currentGroupUsersStatus: List<User>,
+    onForwardMessageGroup: (groupId: Long) -> Unit,
+    onForwardMessagePeer: (receiver: User, groupId: Long) -> Unit
 ) {
     val query = rememberSaveable { mutableStateOf("") }
 
@@ -48,11 +46,13 @@ fun ForwardMessageBottomSheetDialog(
     LazyColumn(Modifier.padding(horizontal = 16.sdp())) {
         item {
             Spacer(Modifier.height(40.sdp()))
-            val user = userStatus.find { it.userId == message.senderId }
-            user?.let {
-                QuotedMessage(message, user = user)
+            if (!isImageMessage(message.message)) {
+                val user = currentGroupUsersStatus.find { it.userId == message.senderId }
+                user?.let {
+                    QuotedMessage(message, user = user)
+                }
+                Spacer(Modifier.height(16.sdp()))
             }
-            Spacer(Modifier.height(16.sdp()))
             CKText(
                 "Forward to",
                 color = LocalColorMapping.current.descriptionText,
@@ -76,7 +76,7 @@ fun ForwardMessageBottomSheetDialog(
         items(groups.size) { index ->
             val group = groups[index]
             ForwardGroupItem(group) {
-
+                onForwardMessageGroup(group.groupId)
             }
         }
         if (users.isNotEmpty()) {
@@ -87,9 +87,12 @@ fun ForwardMessageBottomSheetDialog(
         }
         items(users.size) { index ->
             val peerChatGroup = users[index]
-            val user = userStatus.find { it.userId != peerChatGroup.owner.clientId }
-            ForwardPeerItem(peerChatGroup, user ?: User("", "", "")) {
-
+            val otherUserId = peerChatGroup.clientList.find { it.userId != peerChatGroup.owner.clientId }?.userId ?: ""
+            val user = peerUsersStatus.find { it.userId == otherUserId }
+            user?.let {
+                ForwardPeerItem(peerChatGroup, it) {
+                    onForwardMessagePeer(it, peerChatGroup.groupId)
+                }
             }
         }
     }
