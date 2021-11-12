@@ -21,24 +21,33 @@ fun convertMessageList(
 
     return groupedMessagesById.flatMap { subList ->
         val groupedSize = subList.size
-        subList.mapIndexed { index, message ->
-            val isOwner = myClientId == message.senderId
+        subList.mapIndexed { index, rawMessage ->
+            val isOwner = myClientId == rawMessage.senderId
             val showAvatarAndName = (index == groupedSize - 1) && isGroup && !isOwner
             val showSpacerTop = index == groupedSize - 1
             val userName = clients.firstOrNull {
-                it.userId == message.senderId
-            }?.userName ?: message.senderId
+                it.userId == rawMessage.senderId
+            }?.userName ?: rawMessage.senderId
 
             val avatar = listAvatar.firstOrNull {
-                it.userId == message.senderId
+                it.userId == rawMessage.senderId
             }?.avatar ?: ""
+
+            val isForwardedMessage = rawMessage.message.startsWith(">>>")
+
+            val message = if (isForwardedMessage) {
+                val content = rawMessage.message.substring(3)
+                rawMessage.copy(message = content)
+            } else {
+                rawMessage
+            }
 
             MessageDisplayInfo(
                 message, isOwner, showAvatarAndName, showSpacerTop, userName,
                 if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(
                     index,
                     groupedSize
-                ), avatar
+                ), avatar, isForwardedMessage
             )
 
         }

@@ -10,6 +10,7 @@
     <string name="btn_create_account">Create an account</string>
     <string name="btn_forgot_password">Forgot password?</string>
     <string name="btn_send">Send</string>
+    <string name="btn_sent">Sent</string>
     <string name="btn_reset_password">Reset password</string>
     <string name="btn_create_group">Create Group</string>
     <string name="btn_decline">Decline</string>
@@ -221,4 +222,7 @@
     <string name="file_picker_add">Add File</string>
     <string name="file_picker_your_file">Your File</string>
     <string name="forward_message">Forward</string>
+
+    <string name="forwarded_message">%1$s forwarded a message</string>
+    <string name="forwarded_message_from_you">You</string>
 </resources>
