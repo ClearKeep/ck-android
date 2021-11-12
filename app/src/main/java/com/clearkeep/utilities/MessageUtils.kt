@@ -16,6 +16,10 @@ fun isTempMessage(content: String): Boolean {
     )
 }
 
+fun isForwardedMessage(content: String): Boolean {
+    return content.contains(">>>")
+}
+
 fun getImageUriStrings(content: String): List<String> {
     val temp = remoteImageRegex.findAll(content).map {
         it.value.split(" ")

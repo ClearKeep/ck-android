@@ -84,6 +84,8 @@ fun RoomScreen(
     val groups = roomViewModel.groups.observeAsState()
     val listGroupUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
     val listPeerUserStatus = roomViewModel.listUserStatus.observeAsState()
+    val forwardMessageResponse = roomViewModel.forwardMessageResponse.observeAsState()
+
     val sheetContent = rememberSaveable { mutableStateOf(BottomSheetMode.FILE_PICKER) }
 
     val requestWriteFilePermissionLauncher =
@@ -162,14 +164,15 @@ fun RoomScreen(
                     roomViewModel.selectedMessage?.message?.let { message ->
                         ForwardMessageBottomSheetDialog(
                             message,
+                            forwardMessageResponse.value,
                             groups.value ?: emptyList(),
                             listPeerUserStatus.value ?: emptyList(),
                             listGroupUserStatusState.value ?: emptyList(),
                             onForwardMessageGroup = {
-                                roomViewModel.sendMessageToGroup(context, it, message.message, false)
+                                roomViewModel.sendMessageToGroup(context, it, message.message, false, isForwardMessage = true)
                             },
                             onForwardMessagePeer = { receiver, groupId ->
-                                roomViewModel.sendMessageToUser(context, receiver, groupId, message.message)
+                                roomViewModel.sendMessageToUser(context, receiver, groupId, message.message, isForwardMessage = true)
                             }
                         )
                     }
@@ -381,6 +384,7 @@ fun RoomScreen(
         onClickForward = {
             coroutineScope.launch {
                 sheetContent.value = BottomSheetMode.FORWARD_MESSAGE
+                roomViewModel.forwardMessageResponse.value = null
                 bottomSheetState.show()
             }
         }

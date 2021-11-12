@@ -27,11 +27,13 @@ import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.isImageMessage
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 
 @Composable
 fun ForwardMessageBottomSheetDialog(
     message: Message,
+    forwardMessageResponse: Long?,
     allGroups: List<ChatGroup>,
     peerUsersStatus: List<User>,
     currentGroupUsersStatus: List<User>,
@@ -39,6 +41,8 @@ fun ForwardMessageBottomSheetDialog(
     onForwardMessagePeer: (receiver: User, groupId: Long) -> Unit
 ) {
     val query = rememberSaveable { mutableStateOf("") }
+
+    printlnCK("ForwardMessageBottomSheetDialog forwardMessageResponse $forwardMessageResponse")
 
     val groups = allGroups.filter { it.isGroup() && it.groupName.contains(query.value, true) }
     val users = allGroups.filter { !it.isGroup() && it.groupName.contains(query.value, true) }
@@ -75,7 +79,8 @@ fun ForwardMessageBottomSheetDialog(
         }
         items(groups.size) { index ->
             val group = groups[index]
-            ForwardGroupItem(group) {
+            val sent = forwardMessageResponse == group.groupId
+            ForwardGroupItem(group, sent) {
                 onForwardMessageGroup(group.groupId)
             }
         }
@@ -89,8 +94,9 @@ fun ForwardMessageBottomSheetDialog(
             val peerChatGroup = users[index]
             val otherUserId = peerChatGroup.clientList.find { it.userId != peerChatGroup.owner.clientId }?.userId ?: ""
             val user = peerUsersStatus.find { it.userId == otherUserId }
+            val sent = forwardMessageResponse == peerChatGroup.groupId
             user?.let {
-                ForwardPeerItem(peerChatGroup, it) {
+                ForwardPeerItem(peerChatGroup, sent, it) {
                     onForwardMessagePeer(it, peerChatGroup.groupId)
                 }
             }
@@ -125,7 +131,12 @@ fun QuotedMessage(message: Message, user: User) {
             .padding(end = 16.sdp())
             .fillMaxWidth()
     ) {
-        Box(Modifier.height(IntrinsicSize.Max).width(2.sdp()).background(grayscale1))
+        Box(
+            Modifier
+                .height(IntrinsicSize.Max)
+                .width(2.sdp())
+                .background(grayscale1)
+        )
         Spacer(Modifier.width(16.sdp()))
         CKText(
             message.message,
@@ -136,7 +147,7 @@ fun QuotedMessage(message: Message, user: User) {
 }
 
 @Composable
-private fun ForwardGroupItem(group: ChatGroup, onClick: () -> Unit) {
+private fun ForwardGroupItem(group: ChatGroup, sent: Boolean, onClick: () -> Unit) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
@@ -157,7 +168,7 @@ private fun ForwardGroupItem(group: ChatGroup, onClick: () -> Unit) {
             color = LocalColorMapping.current.bodyTextAlt
         )
         CKButton(
-            stringResource(R.string.btn_send),
+            if (sent) stringResource(R.string.btn_sent) else stringResource(R.string.btn_send),
             onClick = {
                 onClick()
             },
@@ -173,7 +184,7 @@ private fun ForwardGroupItem(group: ChatGroup, onClick: () -> Unit) {
 }
 
 @Composable
-fun ForwardPeerItem(peer: ChatGroup, userInfo: User, onClick: () -> Unit) {
+fun ForwardPeerItem(peer: ChatGroup, sent: Boolean, userInfo: User, onClick: () -> Unit) {
     val user =
         User(
             "",
@@ -191,7 +202,7 @@ fun ForwardPeerItem(peer: ChatGroup, userInfo: User, onClick: () -> Unit) {
         user,
         action = {
             CKButton(
-                stringResource(R.string.btn_send),
+                if (sent) stringResource(R.string.btn_sent) else stringResource(R.string.btn_send),
                 modifier = Modifier.width(120.sdp()),
                 onClick = {
                     onClick()
