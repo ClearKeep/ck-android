@@ -82,7 +82,8 @@ fun RoomScreen(
     val inviteToGroupResponse = roomViewModel.inviteToGroupResponse.observeAsState()
     val sendMessageResponse = roomViewModel.sendMessageResponse.observeAsState()
     val groups = roomViewModel.groups.observeAsState()
-    val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
+    val listGroupUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
+    val listPeerUserStatus = roomViewModel.listUserStatus.observeAsState()
     val sheetContent = rememberSaveable { mutableStateOf(BottomSheetMode.FILE_PICKER) }
 
     val requestWriteFilePermissionLauncher =
@@ -158,17 +159,19 @@ fun RoomScreen(
                     }
                 }
                 BottomSheetMode.FORWARD_MESSAGE -> {
-                    roomViewModel.selectedMessage?.message?.let {
+                    roomViewModel.selectedMessage?.message?.let { message ->
                         ForwardMessageBottomSheetDialog(
-                            it,
+                            message,
                             groups.value ?: emptyList(),
-                            listUserStatusState.value ?: emptyList(),
+                            listPeerUserStatus.value ?: emptyList(),
+                            listGroupUserStatusState.value ?: emptyList(),
                             onForwardMessageGroup = {
-
+                                roomViewModel.sendMessageToGroup(context, it, message.message, false)
+                            },
+                            onForwardMessagePeer = { receiver, groupId ->
+                                roomViewModel.sendMessageToUser(context, receiver, groupId, message.message)
                             }
-                        ) {
-
-                        }
+                        )
                     }
                 }
             }
@@ -221,7 +224,7 @@ fun RoomScreen(
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
-                            listAvatar = listUserStatusState.value ?: emptyList(),
+                            listAvatar = listGroupUserStatusState.value ?: emptyList(),
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,

@@ -84,9 +84,12 @@ class RoomViewModel @Inject constructor(
     val imageDetailSenderName: LiveData<String>
         get() = _imageDetailSenderName
 
+    private val _listGroupUserStatus = MutableLiveData<List<User>>()
+    val listGroupUserStatus: LiveData<List<User>>
+        get() = _listGroupUserStatus
+    
     private val _listUserStatus = MutableLiveData<List<User>>()
-    val listUserStatus: LiveData<List<User>>
-        get() = _listUserStatus
+    val listUserStatus: LiveData<List<User>> get() = _listUserStatus
 
     val listPeerAvatars = MutableLiveData<List<String>>()
 
@@ -105,6 +108,12 @@ class RoomViewModel @Inject constructor(
     private var endOfPaginationReached = false
     @Volatile
     private var lastLoadRequestTimestamp = 0L
+
+    init {
+        viewModelScope.launch {
+            getStatusUserInDirectGroup()
+        }
+    }
 
     fun setMessage(message: String) {
         _message.value = message
@@ -162,7 +171,7 @@ class RoomViewModel @Inject constructor(
             val listClientStatus = it.let { it1 ->
                 peopleRepository.getListClientStatus(it1)
             }
-            _listUserStatus.postValue(listClientStatus)
+            _listGroupUserStatus.postValue(listClientStatus)
 
             listClientStatus?.forEach {
                 peopleRepository.updateAvatarUserEntity(it, getOwner())
@@ -175,6 +184,44 @@ class RoomViewModel @Inject constructor(
                 }
                 listPeerAvatars.postValue(avatars)
             }
+        }
+    }
+
+    private suspend fun getStatusUserInDirectGroup() {
+        try {
+            val currentUser = getUser()
+
+            val listUserRequest = arrayListOf<User>()
+            roomRepository.getAllPeerGroupByDomain(
+                owner = Owner(
+                    currentUser.domain,
+                    currentUser.userId
+                )
+            )
+                .forEach { group ->
+                    if (!group.isGroup()) {
+                        val user = group.clientList.firstOrNull { client ->
+                            client.userId != currentUser.userId
+                        }
+                        if (user != null) {
+                            listUserRequest.add(user)
+                        }
+                    }
+                }
+            val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+            _listUserStatus.postValue(listClientStatus)
+            listClientStatus?.forEach {
+                currentServer.value?.serverDomain?.let { it1 ->
+                    currentServer.value?.ownerClientId?.let { it2 ->
+                        Owner(it1, it2)
+                    }
+                }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
+            }
+            delay(60 * 1000)
+            getStatusUserInDirectGroup()
+
+        } catch (e: Exception) {
+            printlnCK("getStatusUserInDirectGroup error: ${e.message}")
         }
     }
 
