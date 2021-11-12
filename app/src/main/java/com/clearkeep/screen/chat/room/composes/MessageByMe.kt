@@ -3,8 +3,10 @@ package com.clearkeep.screen.chat.room.composes
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -14,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.clearkeep.R
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
@@ -44,15 +48,39 @@ fun MessageByMe(
             horizontalAlignment = Alignment.End
         ) {
             Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
-            Text(
-                text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
-                style = MaterialTheme.typography.caption.copy(
-                    fontWeight = FontWeight.Medium,
-                    color = grayscale3,
-                    textAlign = TextAlign.Start,
-                    fontSize = defaultNonScalableTextSize()
-                ),
-            )
+            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.height(IntrinsicSize.Max), verticalAlignment = Alignment.CenterVertically) {
+                if (messageDisplayInfo.isForwardedMessage) {
+                    Box(
+                        Modifier
+                            .fillMaxHeight()
+                            .width(4.sdp())
+                            .background(grayscale2, RoundedCornerShape(8.sdp()))
+                    )
+                    Spacer(Modifier.width(4.sdp()))
+                    val forwardedMessageSender = stringResource(R.string.forwarded_message_from_you)
+                    Text(
+                        text = stringResource(R.string.forwarded_message, forwardedMessageSender),
+                        modifier = Modifier.fillMaxHeight(),
+                        style = MaterialTheme.typography.caption.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = grayscale3,
+                            textAlign = TextAlign.Start,
+                            fontSize = defaultNonScalableTextSize()
+                        ),
+                    )
+                }
+                Spacer(Modifier.width(4.sdp()))
+                Text(
+                    text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
+                    modifier = Modifier.fillMaxHeight(),
+                    style = MaterialTheme.typography.caption.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = grayscale3,
+                        textAlign = TextAlign.Start,
+                        fontSize = defaultNonScalableTextSize()
+                    ),
+                )
+            }
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically

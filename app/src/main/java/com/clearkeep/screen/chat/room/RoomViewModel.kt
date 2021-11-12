@@ -101,6 +101,7 @@ class RoomViewModel @Inject constructor(
     val createGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val sendMessageResponse = MutableLiveData<Resource<Any>>()
+    val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
 
@@ -323,13 +324,18 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
-    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String) {
+    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String, isForwardMessage: Boolean = false) {
         viewModelScope.launch {
             try {
+                val encodedMessage = if (isForwardMessage) ">>>$message" else message
+
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, groupId, message, null, receiverPeople)
+                    uploadImage(context, groupId, encodedMessage, null, receiverPeople)
                 } else {
-                    sendMessageToUser(receiverPeople, groupId, message)
+                    sendMessageToUser(receiverPeople, groupId, encodedMessage)
+                }
+                if (isForwardMessage) {
+                    forwardMessageResponse.value = groupId
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -394,14 +400,21 @@ class RoomViewModel @Inject constructor(
         context: Context,
         groupId: Long,
         message: String,
-        isRegisteredGroup: Boolean
+        isRegisteredGroup: Boolean,
+        isForwardMessage: Boolean = false
     ) {
         viewModelScope.launch {
             try {
+                val encodedMessage = if (isForwardMessage) ">>>$message" else message
+
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, groupId, message, isRegisteredGroup)
+                    uploadImage(context, groupId, encodedMessage, isRegisteredGroup)
                 } else {
-                    sendMessageToGroup(groupId, message)
+                    sendMessageToGroup(groupId, encodedMessage)
+                }
+
+                if (isForwardMessage) {
+                    forwardMessageResponse.value = groupId
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

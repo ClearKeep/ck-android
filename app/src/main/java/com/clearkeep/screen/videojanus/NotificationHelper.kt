@@ -12,7 +12,6 @@ import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import androidx.core.app.NotificationManagerCompat
@@ -65,6 +64,9 @@ fun showMessagingStyleNotification(
         isFileMessage(message.message) -> {
             val messageSender = if (groupSender.isNotBlank()) groupSender else sender
             getFileNotificationContent(context, message.message, messageSender, chatGroup.isGroup())
+        }
+        isForwardedMessage(message.message) -> {
+            message.message.substring(3)
         }
         else -> {
             message.message
@@ -192,7 +194,6 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
     }
 }
 
-
 fun showMessageNotificationToSystemBar(
     context: Context,
     me: User,
@@ -236,6 +237,9 @@ fun showMessageNotificationToSystemBar(
                                 people?.userName ?: "",
                                 chatGroup.isGroup()
                             )
+                        }
+                        isForwardedMessage(message.message) -> {
+                            message.message.substring(3)
                         }
                         else -> {
                             message.message

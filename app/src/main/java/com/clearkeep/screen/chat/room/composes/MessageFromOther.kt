@@ -1,7 +1,9 @@
 package com.clearkeep.screen.chat.room.composes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -11,9 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.CKText
 import com.clearkeep.screen.chat.composes.CircleAvatar
@@ -52,18 +55,42 @@ fun MessageFromOther(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     if (messageDisplayInfo.showAvatarAndName) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max),
                             horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = messageDisplayInfo.userName,
-                                style = MaterialTheme.typography.body2.copy(
-                                    color = colorSuccessDefault,
-                                    fontWeight = FontWeight.W600,
-                                    fontSize = defaultNonScalableTextSize()
-                                ),
-                            )
+                            if (messageDisplayInfo.isForwardedMessage) {
+                                Box(
+                                    Modifier
+                                        .fillMaxHeight()
+                                        .width(4.sdp())
+                                        .background(grayscale2, RoundedCornerShape(8.sdp()))
+                                )
+                                Spacer(Modifier.width(4.sdp()))
+                                Text(
+                                    text = stringResource(
+                                        R.string.forwarded_message,
+                                        messageDisplayInfo.userName
+                                    ),
+                                    style = MaterialTheme.typography.caption.copy(
+                                        fontWeight = FontWeight.Medium,
+                                        color = grayscale3,
+                                        textAlign = TextAlign.Start,
+                                        fontSize = defaultNonScalableTextSize()
+                                    ),
+                                )
+                            } else {
+                                Text(
+                                    text = messageDisplayInfo.userName,
+                                    style = MaterialTheme.typography.body2.copy(
+                                        color = colorSuccessDefault,
+                                        fontWeight = FontWeight.W600,
+                                        fontSize = defaultNonScalableTextSize()
+                                    ),
+                                )
+                            }
                             Spacer(modifier = Modifier.height(8.sdp()))
                             Text(
                                 text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
@@ -83,16 +110,40 @@ fun MessageFromOther(
                         Column(
                             horizontalAlignment = Alignment.Start,
                         ) {
-                            if (!messageDisplayInfo.showAvatarAndName) {
-                                CKText(
-                                    text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
-                                    style = MaterialTheme.typography.caption.copy(
-                                        fontWeight = FontWeight.Medium,
-                                        color = grayscale3,
-                                        textAlign = TextAlign.End,
-                                        fontSize = defaultNonScalableTextSize()
-                                    ),
-                                )
+                            Row(Modifier.height(IntrinsicSize.Max)) {
+                                if (!messageDisplayInfo.showAvatarAndName) {
+                                    if (messageDisplayInfo.isForwardedMessage) {
+                                        Box(
+                                            Modifier
+                                                .fillMaxHeight()
+                                                .width(4.sdp())
+                                                .background(grayscale2, RoundedCornerShape(8.sdp()))
+                                        )
+                                        Spacer(Modifier.width(4.sdp()))
+                                        Text(
+                                            text = stringResource(
+                                                R.string.forwarded_message,
+                                                messageDisplayInfo.userName
+                                            ),
+                                            style = MaterialTheme.typography.caption.copy(
+                                                fontWeight = FontWeight.Medium,
+                                                color = grayscale3,
+                                                textAlign = TextAlign.Start,
+                                                fontSize = defaultNonScalableTextSize()
+                                            ),
+                                        )
+                                        Spacer(Modifier.width(4.sdp()))
+                                        CKText(
+                                            text = getHourTimeAsString(messageDisplayInfo.message.createdTime),
+                                            style = MaterialTheme.typography.caption.copy(
+                                                fontWeight = FontWeight.Medium,
+                                                color = grayscale3,
+                                                textAlign = TextAlign.End,
+                                                fontSize = defaultNonScalableTextSize()
+                                            ),
+                                        )
+                                    }
+                                }
                             }
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Card(
