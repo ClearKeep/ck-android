@@ -16,7 +16,6 @@ import com.clearkeep.R
 import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.grayscale1
 import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -27,7 +26,7 @@ fun GroupMemberScreen(
     navHostController: NavHostController,
 ) {
     val groupState = roomViewModel.group.observeAsState()
-    val listUserStatusState = roomViewModel.listUserStatus.observeAsState()
+    val listUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
 
     groupState.value?.let { group ->
         Surface(
