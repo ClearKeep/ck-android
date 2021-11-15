@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale4
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
@@ -22,16 +23,16 @@ import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
 
 @Composable
-fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
+fun FileMessageContent(fileUrls: List<String>, isQuote: Boolean, onClick: (uri: String) -> Unit) {
     Column {
         fileUrls.forEach {
-            MessageFileItem(it, onClick)
+            MessageFileItem(it, isQuote, onClick)
         }
     }
 }
 
 @Composable
-fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
+fun MessageFileItem(fileUrl: String, isQuote: Boolean, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
     val fileName =
         if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(
@@ -54,7 +55,7 @@ fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
         }
         Text(
             getFileSizeInMegabytesString(fileSize),
-            color = grayscale4,
+            color = if (isQuote) grayscale2 else grayscale4,
             fontSize = 12.sdp().toNonScalableTextSize()
         )
     }

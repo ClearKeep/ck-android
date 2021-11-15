@@ -1,7 +1,5 @@
 package com.clearkeep.screen.chat.room.composes
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -19,13 +17,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
-import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 
@@ -81,6 +80,9 @@ fun MessageByMe(
                     ),
                 )
             }
+            if (messageDisplayInfo.isQuoteMessage) {
+                QuotedMessageView(messageDisplayInfo)
+            }
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -100,41 +102,54 @@ fun MessageByMe(
                     backgroundColor = grayscale2,
                     shape = messageDisplayInfo.cornerShape,
                 ) {
-                    Column(horizontalAlignment = Alignment.End) {
-                        if (isImageMessage(message)) {
-                            ImageMessageContent(
-                                Modifier.padding(24.sdp(), 16.sdp()),
-                                getImageUriStrings(message)
-                            ) {
-                                onClickImage.invoke(getImageUriStrings(message), "You")
-                            }
-                        } else if (isFileMessage(message)) {
-                            FileMessageContent(getFileUriStrings(message)) {
-                                onClickFile.invoke(it)
-                            }
-                        }
-                        val messageContent = getMessageContent(message)
-                        if (messageContent.isNotBlank()) {
-                            Row(
-                                Modifier
-                                    .align(Alignment.End)
-                                    .wrapContentHeight()
-                                    .pointerInput(messageDisplayInfo.message.hashCode()) {
-                                        detectTapGestures(
-                                            onLongPress = {
-                                                onLongClick(messageDisplayInfo)
-                                            }
-                                        )
-                                    }) {
-                                ClickableLinkContent(
-                                    messageContent,
-                                    messageDisplayInfo.message.hashCode()
+                    ConstraintLayout {
+                        val (messageContent, quotedMessageIndicator) = createRefs()
+
+                        Column(Modifier.constrainAs(messageContent) {
+                            start.linkTo(parent.start)
+                            top.linkTo(parent.top)
+                            end.linkTo(quotedMessageIndicator.start)
+                            height = Dimension.wrapContent
+                            width = Dimension.wrapContent
+                        }, horizontalAlignment = Alignment.End) {
+                            if (isImageMessage(message)) {
+                                ImageMessageContent(
+                                    Modifier.padding(24.sdp(), 16.sdp()),
+                                    getImageUriStrings(message),
+                                    false
                                 ) {
-                                    onLongClick(messageDisplayInfo)
+                                    onClickImage.invoke(getImageUriStrings(message), "You")
+                                }
+                            } else if (isFileMessage(message)) {
+                                FileMessageContent(getFileUriStrings(message), false) {
+                                    onClickFile.invoke(it)
+                                }
+                            }
+                            val messageContent = getMessageContent(message)
+                            if (messageContent.isNotBlank()) {
+                                Row(
+                                    Modifier
+                                        .align(Alignment.End)
+                                        .wrapContentHeight()
+                                        .pointerInput(messageDisplayInfo.message.hashCode()) {
+                                            detectTapGestures(
+                                                onLongPress = {
+                                                    onLongClick(messageDisplayInfo)
+                                                }
+                                            )
+                                        }) {
+                                    ClickableLinkContent(
+                                        messageContent,
+                                        false,
+                                        messageDisplayInfo.message.hashCode()
+                                    ) {
+                                        onLongClick(messageDisplayInfo)
+                                    }
                                 }
                             }
                         }
                     }
+
                 }
             }
         }

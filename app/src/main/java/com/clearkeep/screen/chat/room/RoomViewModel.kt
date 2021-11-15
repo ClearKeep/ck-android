@@ -97,6 +97,8 @@ class RoomViewModel @Inject constructor(
     val selectedMessage: MessageDisplayInfo?
         get() = _selectedMessage
 
+    val quotedMessage = MutableLiveData<MessageDisplayInfo>()
+
     val getGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val createGroupResponse = MutableLiveData<Resource<ChatGroup>>()
     val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
@@ -114,6 +116,14 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             getStatusUserInDirectGroup()
         }
+    }
+
+    fun setQuoteMessage() {
+        quotedMessage.value = selectedMessage
+    }
+
+    fun clearQuoteMessage() {
+        quotedMessage.value = null
     }
 
     fun setMessage(message: String) {
@@ -327,7 +337,9 @@ class RoomViewModel @Inject constructor(
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String, isForwardMessage: Boolean = false) {
         viewModelScope.launch {
             try {
-                val encodedMessage = if (isForwardMessage) ">>>$message" else message
+                val quotedMessage = quotedMessage.value
+                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
                     uploadImage(context, groupId, encodedMessage, null, receiverPeople)
@@ -405,7 +417,9 @@ class RoomViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val encodedMessage = if (isForwardMessage) ">>>$message" else message
+                val quotedMessage = quotedMessage.value
+                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
                     uploadImage(context, groupId, encodedMessage, isRegisteredGroup)

@@ -30,6 +30,8 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import coil.memory.MemoryCache
+import coil.size.OriginalSize
+import coil.size.Scale
 import com.clearkeep.R
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
@@ -41,14 +43,22 @@ import com.clearkeep.utilities.toNonScalableTextSize
 fun ImageMessageContent(
     modifier: Modifier,
     imageUris: List<String>,
+    isQuote: Boolean,
     onClickItem: (uri: String) -> Unit
 ) {
-    printlnCK("ImageMessageContent $imageUris")
-    if (imageUris.size == 1) {
+    if (isQuote) {
+        ImageMessageItem(
+            Modifier
+                .width(242.sdp())
+                .height(60.sdp())
+                .aspectRatio(1.33f),
+            imageUris[0], cropped = true, onClickItem
+        )
+    } else if (imageUris.size == 1) {
         ImageMessageItem(
             Modifier
                 .then(modifier)
-                .size(130.sdp()), imageUris[0], onClickItem
+                .size(130.sdp()), imageUris[0], onClick = onClickItem
         )
     } else {
         Column(
@@ -62,7 +72,7 @@ fun ImageMessageContent(
                     ImageMessageItem(
                         Modifier
                             .size(110.sdp())
-                            .padding(4.sdp()), imageUris[i], onClickItem
+                            .padding(4.sdp()), imageUris[i], onClick = onClickItem
                     )
                 }
             }
@@ -72,7 +82,7 @@ fun ImageMessageContent(
                         ImageMessageItem(
                             Modifier
                                 .size(110.sdp())
-                                .padding(4.sdp()), imageUris[i], onClickItem
+                                .padding(4.sdp()), imageUris[i], onClick = onClickItem
                         )
                     } else {
                         Box(
@@ -83,7 +93,7 @@ fun ImageMessageContent(
                                 .padding(4.sdp()),
                             contentAlignment = Alignment.Center
                         ) {
-                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[i], onClickItem)
+                            ImageMessageItem(Modifier.fillMaxSize(), imageUris[i], onClick = onClickItem)
                             Box(
                                 Modifier
                                     .background(Color(0x4D000000), RoundedCornerShape(16.sdp()))
@@ -113,6 +123,7 @@ fun ImageMessageContent(
 fun ImageMessageItem(
     modifier: Modifier = Modifier,
     uri: String,
+    cropped: Boolean = false,
     onClick: (uri: String) -> Unit
 ) {
     val lastUri = rememberSaveable { mutableStateOf<MemoryCache.Key?>(null) }
@@ -120,6 +131,7 @@ fun ImageMessageItem(
     val context = LocalContext.current
     val clickableModifier =
         if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
+    val sizeModifier = if (cropped) Modifier.fillMaxWidth().height(120.sdp()) else Modifier.fillMaxSize().aspectRatio(1f)
     val painter = rememberImagePainter(uri, context.imageLoader) {
         placeholderMemoryCacheKey(lastUri.value)
         crossfade(250)
@@ -131,9 +143,8 @@ fun ImageMessageItem(
             contentScale = ContentScale.Crop,
             contentDescription = null,
             modifier = Modifier
-                .fillMaxSize()
+                .then(sizeModifier)
                 .clip(RoundedCornerShape(16.sdp()))
-                .aspectRatio(1f)
                 .then(clickableModifier)
         )
         when (painter.state) {

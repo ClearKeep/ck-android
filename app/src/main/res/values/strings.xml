@@ -225,4 +225,6 @@
 
     <string name="forwarded_message">%1$s forwarded a message</string>
     <string name="forwarded_message_from_you">You</string>
+    <string name="quote">Quote</string>
+    <string name="replying_to">Replying to %1$s</string>
 </resources>

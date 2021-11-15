@@ -110,6 +110,10 @@ fun MessageFromOther(
                         Column(
                             horizontalAlignment = Alignment.Start,
                         ) {
+                            if (messageDisplayInfo.isQuoteMessage) {
+                                QuotedMessageView(messageDisplayInfo)
+                            }
+
                             Row(Modifier.height(IntrinsicSize.Max)) {
                                 if (!messageDisplayInfo.showAvatarAndName) {
                                     if (messageDisplayInfo.isForwardedMessage) {
@@ -158,34 +162,38 @@ fun MessageFromOther(
                                     backgroundColor = primaryDefault,
                                     shape = messageDisplayInfo.cornerShape,
                                 ) {
-                                    Column(horizontalAlignment = Alignment.Start) {
-                                        if (isImageMessage(message)) {
-                                            ImageMessageContent(
-                                                Modifier.padding(24.sdp(), 16.sdp()),
-                                                getImageUriStrings(message)
-                                            ) {
-                                                onClickImage.invoke(
+                                    Row(Modifier.height(IntrinsicSize.Max)) {
+                                        Column(horizontalAlignment = Alignment.Start) {
+                                            if (isImageMessage(message)) {
+                                                ImageMessageContent(
+                                                    Modifier.padding(24.sdp(), 16.sdp()),
                                                     getImageUriStrings(message),
-                                                    messageDisplayInfo.userName
-                                                )
-                                            }
-                                        } else if (isFileMessage(message)) {
-                                            FileMessageContent(getFileUriStrings(message)) {
-                                                onClickFile.invoke(it)
-                                            }
-                                        }
-                                        val messageContent = getMessageContent(message)
-                                        if (messageContent.isNotBlank()) {
-                                            Row(
-                                                Modifier
-                                                    .align(Alignment.Start)
-                                                    .wrapContentHeight()
-                                            ) {
-                                                ClickableLinkContent(
-                                                    messageContent,
-                                                    messageDisplayInfo.message.hashCode()
+                                                    false
                                                 ) {
-                                                    onLongClick(messageDisplayInfo)
+                                                    onClickImage.invoke(
+                                                        getImageUriStrings(message),
+                                                        messageDisplayInfo.userName
+                                                    )
+                                                }
+                                            } else if (isFileMessage(message)) {
+                                                FileMessageContent(getFileUriStrings(message), false) {
+                                                    onClickFile.invoke(it)
+                                                }
+                                            }
+                                            val messageContent = getMessageContent(message)
+                                            if (messageContent.isNotBlank()) {
+                                                Row(
+                                                    Modifier
+                                                        .align(Alignment.Start)
+                                                        .wrapContentHeight()
+                                                ) {
+                                                    ClickableLinkContent(
+                                                        messageContent,
+                                                        false,
+                                                        messageDisplayInfo.message.hashCode()
+                                                    ) {
+                                                        onLongClick(messageDisplayInfo)
+                                                    }
                                                 }
                                             }
                                         }
