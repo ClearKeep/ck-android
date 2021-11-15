@@ -11,5 +11,9 @@ data class MessageDisplayInfo(
     val userName: String,
     val cornerShape: RoundedCornerShape,
     val avatar: String,
-    val isForwardedMessage: Boolean = false
+    val isForwardedMessage: Boolean = false,
+    val isQuoteMessage: Boolean = false,
+    val quotedUser: String = "",
+    val quotedMessage: String = "",
+    val quotedTimestamp: Long = 0L
 )

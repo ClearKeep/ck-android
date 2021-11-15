@@ -4,6 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.utilities.printlnCK
 import kotlin.collections.ArrayList
 
 
@@ -34,12 +35,36 @@ fun convertMessageList(
             }?.avatar ?: ""
 
             val isForwardedMessage = rawMessage.message.startsWith(">>>")
+            val isQuoteMessage = rawMessage.message.startsWith("```")
 
-            val message = if (isForwardedMessage) {
-                val content = rawMessage.message.substring(3)
-                rawMessage.copy(message = content)
-            } else {
-                rawMessage
+            var quotedUser = ""
+            var quotedMessage = ""
+            var quotedMessageTimestamp = 0L
+
+            val message = when {
+                isForwardedMessage -> {
+                    val content = rawMessage.message.substring(3)
+                    rawMessage.copy(message = content)
+                }
+                isQuoteMessage -> {
+                    val parts = rawMessage.message.substring(3).split("|")
+                    if (parts.size == 4) {
+                        quotedUser = parts[0]
+                        quotedMessage = parts[1]
+                        quotedMessageTimestamp = parts[2].toLongOrNull() ?: 0L
+                        val newMessage = parts[3]
+
+                        printlnCK("convertMessageList quotedUser $quotedUser quotedMessage $quotedMessage quotedMessageTimestamp $quotedMessageTimestamp newMsg $newMessage")
+
+                        rawMessage.copy(message = newMessage)
+                    } else {
+                        printlnCK("MessageUtils cannot parse quoted message")
+                        rawMessage
+                    }
+                }
+                else -> {
+                    rawMessage
+                }
             }
 
             MessageDisplayInfo(
@@ -47,7 +72,7 @@ fun convertMessageList(
                 if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(
                     index,
                     groupedSize
-                ), avatar, isForwardedMessage
+                ), avatar, isForwardedMessage, isQuoteMessage, quotedUser, quotedMessage, quotedMessageTimestamp
             )
 
         }

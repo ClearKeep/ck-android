@@ -13,7 +13,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -22,12 +21,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.CKTextInputFieldChat
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.sdp
 
 @Composable
@@ -39,9 +43,75 @@ fun SendBottomCompose(
 ) {
     val msgState = roomViewModel.message.observeAsState()
     val selectedImagesList = roomViewModel.imageUriSelected.observeAsState()
-    val isNote = roomViewModel.isNote.observeAsState()
+    val quotedMessage = roomViewModel.quotedMessage.observeAsState()
 
     Column(Modifier.background(MaterialTheme.colors.background)) {
+        if (quotedMessage.value != null) {
+            ConstraintLayout(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.sdp())) {
+                val (reply, close) = createRefs()
+
+                val quotedMessageSender =
+                    if (quotedMessage.value!!.isOwner) "You" else quotedMessage.value!!.userName
+                CKText(
+                    stringResource(R.string.replying_to, quotedMessageSender),
+                    Modifier
+                        .constrainAs(reply) {
+                            top.linkTo(close.top)
+                            bottom.linkTo(close.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(close.end)
+                            width = Dimension.fillToConstraints
+                        },
+                    color = LocalColorMapping.current.bodyTextDisabled
+                )
+                val iconMargin = 10.sdp()
+                Icon(painterResource(R.drawable.ic_cross),
+                    null,
+                    Modifier
+                        .padding(vertical = 8.sdp())
+                        .size(28.sdp())
+                        .clickable {
+                            roomViewModel.clearQuoteMessage()
+                        }
+                        .constrainAs(close) {
+                            end.linkTo(parent.end, iconMargin)
+                            top.linkTo(parent.top)
+                        },
+                    tint = LocalColorMapping.current.bodyTextDisabled
+                )
+            }
+
+            Row(
+                Modifier
+                    .padding(horizontal = 14.sdp())
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Max)
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .width(4.sdp())
+                        .background(grayscale2, RoundedCornerShape(8.sdp()))
+                )
+                Spacer(Modifier.width(16.sdp()))
+                val quote =
+                    if (isImageMessage(quotedMessage.value!!.message.message)) {
+                        "Image"
+                    } else {
+                        quotedMessage.value!!.message.message
+                    }
+                CKText(
+                    quote,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = LocalColorMapping.current.bodyTextDisabled
+                )
+            }
+        }
+
         selectedImagesList.value.let { values ->
             if (!values.isNullOrEmpty())
                 Row(
@@ -166,7 +236,8 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
                 .clickable {
                     onRemove(uri)
                 }
-                .align(Alignment.TopEnd)) {
+                .align(Alignment.TopEnd)
+        ) {
             Icon(
                 painter = painterResource(R.drawable.ic_cross),
                 null,

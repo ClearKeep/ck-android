@@ -231,7 +231,7 @@ fun RoomScreen(
                             myClientId = roomViewModel.clientId,
                             group?.isGroup() ?: false,
                             isLoading = false,
-                            onScrollChange = { index, lastTimestamp ->
+                            onScrollChange = { _, lastTimestamp ->
                               roomViewModel.onScrollChange(lastTimestamp)
                             },
                             onClickFile = {
@@ -387,6 +387,9 @@ fun RoomScreen(
                 roomViewModel.forwardMessageResponse.value = null
                 bottomSheetState.show()
             }
+        },
+        onClickQuote = {
+            roomViewModel.setQuoteMessage()
         }
     )
     val response = uploadFileResponse.value
@@ -432,7 +435,8 @@ fun MessageClickDialog(
     roomViewModel: RoomViewModel,
     isOpen: Boolean,
     onDismiss: () -> Unit,
-    onClickForward: () -> Unit
+    onClickForward: () -> Unit,
+    onClickQuote: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -483,6 +487,19 @@ fun MessageClickDialog(
                             .clickable {
                                 onDismiss()
                                 onClickForward()
+                            },
+                        textAlign = TextAlign.Center,
+                        color = colorLightBlue
+                    )
+                    Divider(color = separatorDarkNonOpaque)
+                    Text(
+                        stringResource(R.string.quote),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable {
+                                onDismiss()
+                                onClickQuote()
                             },
                         textAlign = TextAlign.Center,
                         color = colorLightBlue
