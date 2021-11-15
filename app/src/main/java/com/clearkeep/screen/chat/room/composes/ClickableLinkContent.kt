@@ -21,12 +21,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.core.content.ContextCompat
+import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 
 @Composable
-fun ClickableLinkContent(message: String, longClickKey: Int, onLongClick: () -> Unit) {
+fun ClickableLinkContent(message: String, isQuoteMessage: Boolean, longClickKey: Int, onLongClick: () -> Unit) {
     val context = LocalContext.current
 
     val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
@@ -58,7 +59,7 @@ fun ClickableLinkContent(message: String, longClickKey: Int, onLongClick: () -> 
     BasicText(
         text = annotatedString,
         style = MaterialTheme.typography.body2.copy(
-            color = grayscaleOffWhite
+            color = if (isQuoteMessage) grayscale2 else grayscaleOffWhite
         ),
         modifier = Modifier
             .padding(horizontal = 24.sdp(), vertical = 8.sdp())
