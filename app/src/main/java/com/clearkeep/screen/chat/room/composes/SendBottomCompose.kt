@@ -31,6 +31,7 @@ import com.clearkeep.components.*
 import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.CKTextInputFieldChat
 import com.clearkeep.screen.chat.room.RoomViewModel
+import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.sdp
 
@@ -98,10 +99,16 @@ fun SendBottomCompose(
                 )
                 Spacer(Modifier.width(16.sdp()))
                 val quote =
-                    if (isImageMessage(quotedMessage.value!!.message.message)) {
-                        "Image"
-                    } else {
-                        quotedMessage.value!!.message.message
+                    when {
+                        isImageMessage(quotedMessage.value!!.message.message) -> {
+                            "Image"
+                        }
+                        isFileMessage(quotedMessage.value!!.message.message) -> {
+                            "File"
+                        }
+                        else -> {
+                            quotedMessage.value!!.message.message
+                        }
                     }
                 CKText(
                     quote,

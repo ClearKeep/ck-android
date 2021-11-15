@@ -865,12 +865,24 @@ class RoomViewModel @Inject constructor(
             viewModelScope.launch {
                 isLoading.value = true
                 val server = environment.getServer()
-                val endOfPagination = messageRepository.updateMessageFromAPI(
+                val loadResponse = messageRepository.updateMessageFromAPI(
                     group.value?.groupId ?: 0,
                     Owner(server.serverDomain, server.profile.userId),
-                    lastMessageAt
+                    if (isRefresh) 0 else lastMessageAt
                 )
+                val endOfPagination =  loadResponse.endOfPaginationReached
                 endOfPaginationReached = endOfPagination
+                var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
+                while (isRefresh && newestMessageTimestamp > lastMessageAt) {
+                    val response = messageRepository.updateMessageFromAPI(
+                        group.value?.groupId ?: 0,
+                        Owner(server.serverDomain, server.profile.userId),
+                        newestMessageTimestamp
+                    )
+                    newestMessageTimestamp = response.newestMessageLoadedTimestamp
+                    endOfPaginationReached = response.endOfPaginationReached
+                }
+
                 while (!endOfPagination && lastLoadRequestTimestamp != 0L) {
                     //Execute queued load request
                     val temp = lastLoadRequestTimestamp
@@ -879,7 +891,7 @@ class RoomViewModel @Inject constructor(
                         group.value?.groupId ?: 0,
                         Owner(server.serverDomain, server.profile.userId),
                         temp
-                    )
+                    ).endOfPaginationReached
                 }
                 isLoading.value = false
             }

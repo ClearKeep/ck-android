@@ -79,9 +79,13 @@ class MessageRepository @Inject constructor(
     private suspend fun insertNote(note: Note) = noteDAO.insert(note)
 
     //Return true if there's no more message
-    suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long = 0, loadSize: Int = 20): Boolean = withContext(Dispatchers.IO) {
+    suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long = 0, loadSize: Int = 20): MessagePagingResponse = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext true
+            val server = serverRepository.getServerByOwner(owner) ?: return@withContext MessagePagingResponse(
+                isSuccess = false,
+                endOfPaginationReached = true,
+                newestMessageLoadedTimestamp = 0L
+            )
             val messageGrpc = apiProvider.provideMessageBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
             val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
                     .setGroupId(groupId)
@@ -100,12 +104,22 @@ class MessageRepository @Inject constructor(
             if (listMessage.isNotEmpty()) {
                 messageDAO.insertMessages(listMessage)
                 val lastMessage = listMessage.maxByOrNull { it.createdTime }
+                val lastMessageOther = listMessage.minByOrNull { it.createdTime }
+
                 if (lastMessage != null) {
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
-                return@withContext false
+                return@withContext MessagePagingResponse(
+                    isSuccess = true,
+                    endOfPaginationReached = false,
+                    newestMessageLoadedTimestamp = lastMessageOther?.createdTime ?: 0L
+                )
             }
-            return@withContext true
+            return@withContext MessagePagingResponse(
+                isSuccess = true,
+                endOfPaginationReached = true,
+                newestMessageLoadedTimestamp = lastMessageAt
+            )
         } catch (e: StatusRuntimeException) {
 
             val parsedError = parseError(e)
@@ -118,10 +132,18 @@ class MessageRepository @Inject constructor(
                 }
                 else -> parsedError.message
             }
-            return@withContext true
+            return@withContext MessagePagingResponse(
+                isSuccess = false,
+                endOfPaginationReached = true,
+                newestMessageLoadedTimestamp = lastMessageAt
+            )
         } catch (exception: Exception) {
             printlnCK("fetchMessageFromAPI: $exception")
-            return@withContext true
+            return@withContext MessagePagingResponse(
+                isSuccess = false,
+                endOfPaginationReached = true,
+                newestMessageLoadedTimestamp = lastMessageAt
+            )
         }
     }
 
@@ -597,3 +619,9 @@ class MessageRepository @Inject constructor(
         messageDAO.deleteMessageByDomain(domain, userId)
     }
 }
+
+data class MessagePagingResponse(
+    val isSuccess: Boolean,
+    val endOfPaginationReached: Boolean,
+    val newestMessageLoadedTimestamp: Long
+)
