@@ -17,7 +17,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
 import com.clearkeep.presentation.screen.chat.utils.isGroup
-import com.clearkeep.presentation.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
+import com.clearkeep.presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity
 import com.clearkeep.utilities.*
 
 object AppCall {

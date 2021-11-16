@@ -23,7 +23,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.grayscale1
 import com.clearkeep.presentation.components.grayscale2
 import com.clearkeep.presentation.components.grayscale3
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi

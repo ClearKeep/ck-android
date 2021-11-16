@@ -10,18 +10,14 @@ import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
 import com.clearkeep.data.local.signal.model.SignalIdentityKey
 import com.clearkeep.domain.repository.*
 import com.clearkeep.srp.NativeLib
-import com.clearkeep.data.remote.dynamicapi.CallCredentials
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.data.remote.dynamicapi.ParamAPI
-import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-
 import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
+import com.clearkeep.data.remote.service.AuthService
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
-import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,18 +29,12 @@ import org.whispersystems.libsignal.ecc.ECPublicKey
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.util.KeyHelper
-import user.UserGrpc
-import user.UserOuterClass
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    // network
-    private val paramAPIProvider: ParamAPIProvider,
-
     private val userManager: AppStorage,
     private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
@@ -53,8 +43,9 @@ class AuthRepositoryImpl @Inject constructor(
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val roomRepository: GroupRepository,
     private val userKeyRepository: UserKeyRepository,
-    private val messageRepository: MessageRepository
-): AuthRepository {
+    private val messageRepository: MessageRepository,
+    private val authService: AuthService
+) : AuthRepository {
     override suspend fun register(
         displayName: String,
         password: String,
@@ -78,38 +69,31 @@ class AuthRepositoryImpl @Inject constructor(
         val preKey = preKeys[0]
         val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
         val transitionID = KeyHelper.generateRegistrationId(false)
-        val setClientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-            .setDeviceId(SENDER_DEVICE_ID)
-            .setRegistrationId(transitionID)
-            .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-            .setPreKey(ByteString.copyFrom(preKey.serialize()))
-            .setPreKeyId(preKey.id)
-            .setSignedPreKeyId(signedPreKey.id)
-            .setSignedPreKey(ByteString.copyFrom(signedPreKey.serialize()))
-            .setIdentityKeyEncrypted(decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
-                toHex(it)
-            }
-            )
-            .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-            .build()
+        val iv = toHex(decrypter.getIv())
+        val identityKeyPublic = key.publicKey.serialize()
+        val preKeyId = preKey.id
+        val identityKeyEncrypted = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+            toHex(it)
+        }
 
-        val request = AuthOuterClass.RegisterSRPReq.newBuilder()
-            .setWorkspaceDomain(domain)
-            .setEmail(email)
-            .setPasswordVerifier(verificatorHex)
-            .setSalt(saltHex)
-            .setDisplayName(displayName)
-            .setAuthType(0L)
-            .setFirstName("")
-            .setLastName("")
-            .setClientKeyPeer(setClientKeyPeer)
-            .setIvParameter(toHex(decrypter.getIv()))
-            .build()
         try {
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).registerSrp(request)
+            val response = authService.registerSrp(
+                domain,
+                email,
+                verificatorHex,
+                saltHex,
+                displayName,
+                iv,
+                transitionID,
+                identityKeyPublic,
+                preKeyId,
+                preKey.serialize(),
+                signedPreKey.id,
+                signedPreKey.serialize(),
+                identityKeyEncrypted,
+                signedPreKey.signature
+            )
+
             if (response.error.isNullOrBlank()) {
                 return@withContext Resource.success(response)
             } else {
@@ -129,20 +113,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun login(userName: String, password: String, domain: String): Resource<LoginResponse> =
+    override suspend fun login(
+        userName: String,
+        password: String,
+        domain: String
+    ): Resource<LoginResponse> =
         withContext(Dispatchers.IO) {
             try {
                 val nativeLib = NativeLib()
                 val a = nativeLib.getA(userName, password)
                 val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-                val request = AuthOuterClass.AuthChallengeReq.newBuilder()
-                    .setEmail(userName)
-                    .setClientPublic(aHex)
-                    .build()
-                val response =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-                        .loginChallenge(request)
+                val response = authService.loginChallenge(userName, aHex, domain)
 
                 val salt = response.salt
                 val b = response.publicChallengeB
@@ -152,14 +134,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 nativeLib.freeMemoryAuthenticate()
 
-                val authReq = AuthOuterClass.AuthenticateReq.newBuilder()
-                    .setUserName(userName)
-                    .setClientPublic(aHex)
-                    .setClientSessionKeyProof(mHex)
-                    .build()
-
-                val authResponse = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-                    .loginAuthenticate(authReq)
+                val authResponse = authService.loginAuthenticate(userName, aHex, mHex, domain)
 
                 if (authResponse.error.isNullOrBlank()) {
                     printlnCK("login successfully")
@@ -223,16 +198,7 @@ class AuthRepositoryImpl @Inject constructor(
         domain: String
     ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
-            val request = AuthOuterClass
-                .GoogleLoginReq
-                .newBuilder()
-                .setIdToken(token)
-                .setWorkspaceDomain(domain)
-                .build()
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).loginGoogle(request)
+            val response = authService.loginByGoogle(token, domain)
 
             return@withContext Resource.success(response)
         } catch (e: StatusRuntimeException) {
@@ -254,16 +220,7 @@ class AuthRepositoryImpl @Inject constructor(
         domain: String
     ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
-            val request = AuthOuterClass
-                .FacebookLoginReq
-                .newBuilder()
-                .setAccessToken(token)
-                .setWorkspaceDomain(domain)
-                .build()
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).loginFacebook(request)
+            val response = authService.loginByFacebook(token, domain)
 
             return@withContext Resource.success(response)
         } catch (e: StatusRuntimeException) {
@@ -285,16 +242,7 @@ class AuthRepositoryImpl @Inject constructor(
         domain: String
     ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
-            val request = AuthOuterClass
-                .OfficeLoginReq
-                .newBuilder()
-                .setAccessToken(accessToken)
-                .setWorkspaceDomain(domain)
-                .build()
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).loginOffice(request)
+            val response = authService.loginByMicrosoft(accessToken, domain)
 
             return@withContext Resource.success(response)
         } catch (e: StatusRuntimeException) {
@@ -339,36 +287,24 @@ class AuthRepositoryImpl @Inject constructor(
                 toHex(it)
             }
 
-            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(SENDER_DEVICE_ID)
-                .setRegistrationId(transitionID)
-                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-                .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                .setPreKeyId(preKey.id)
-                .setSignedPreKeyId(signedPreKey.id)
-                .setSignedPreKey(
-                    ByteString.copyFrom(signedPreKey.serialize())
-                )
-                .setIdentityKeyEncrypted(
-                    decryptResult
-                )
-                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
-
-            val request = AuthOuterClass
-                .RegisterPinCodeReq
-                .newBuilder()
-                .setUserName(userId)
-                .setHashPincode(verificatorHex)
-                .setSalt(saltHex)
-                .setClientKeyPeer(clientKeyPeer)
-                .setIvParameter(toHex(decrypter.getIv()))
-                .build()
-
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).registerPincode(request)
+            val identityKeyPublic = key.publicKey.serialize()
+            val preKeyId = preKey.id
+            val signedPreKeyId = signedPreKey.id
+            val response = authService.registerPincode(
+                transitionID,
+                identityKeyPublic,
+                preKey.serialize(),
+                preKeyId,
+                signedPreKeyId,
+                signedPreKey.serialize(),
+                decryptResult,
+                signedPreKey.signature,
+                userId,
+                saltHex,
+                verificatorHex,
+                toHex(decrypter.getIv()),
+                domain
+            )
             if (response.error.isEmpty()) {
                 printlnCK("registerSocialPin success ${response.requireAction}")
                 val profileResponse =
@@ -390,23 +326,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun verifySocialPin(domain: String, rawPin: String, userId: String): Resource<AuthOuterClass.AuthRes> =
+    override suspend fun verifySocialPin(
+        domain: String,
+        rawPin: String,
+        userName: String
+    ): Resource<AuthOuterClass.AuthRes> =
         withContext(Dispatchers.IO) {
             try {
                 val nativeLib = NativeLib()
-                val a = nativeLib.getA(userId, rawPin)
+                val a = nativeLib.getA(userName, rawPin)
                 val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
-                val challengeReq = AuthOuterClass.AuthSocialChallengeReq
-                    .newBuilder()
-                    .setUserName(userId)
-                    .setClientPublic(aHex)
-                    .build()
-
-                val challengeRes =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                        REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                    ).loginSocialChallange(challengeReq)
+                val challengeRes = authService.loginSocialChallenge(userName, aHex, domain)
 
                 val salt = challengeRes.salt
                 val b = challengeRes.publicChallengeB
@@ -416,18 +347,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 nativeLib.freeMemoryAuthenticate()
 
-                val request = AuthOuterClass
-                    .VerifyPinCodeReq
-                    .newBuilder()
-                    .setUserName(userId)
-                    .setClientPublic(aHex)
-                    .setClientSessionKeyProof(mHex)
-                    .build()
-
-                val response =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                        REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                    ).verifyPincode(request)
+                val response = authService.verifyPinCode(userName, aHex, mHex, domain)
                 if (response.error.isEmpty()) {
                     printlnCK("verifySocialPin success ${response.requireAction}")
                     return@withContext onLoginSuccess(
@@ -454,13 +374,13 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun resetSocialPin(
         domain: String,
         rawPin: String,
-        userId: String,
+        userName: String,
         resetPincodeToken: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val nativeLib = NativeLib()
 
-            val salt = nativeLib.getSalt(userId, rawPin)
+            val salt = nativeLib.getSalt(userName, rawPin)
             val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
             val verificator = nativeLib.getVerificator()
@@ -474,43 +394,28 @@ class AuthRepositoryImpl @Inject constructor(
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId + domain).hashCode())
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userName + domain).hashCode())
             val transitionID = KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
                 toHex(it)
             }
 
-            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(SENDER_DEVICE_ID)
-                .setRegistrationId(transitionID)
-                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-                .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                .setPreKeyId(preKey.id)
-                .setSignedPreKeyId(signedPreKey.id)
-                .setSignedPreKey(
-                    ByteString.copyFrom(signedPreKey.serialize())
-                )
-                .setIdentityKeyEncrypted(
-                    decryptResult
-                )
-                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
-
-            val request = AuthOuterClass
-                .ResetPinCodeReq
-                .newBuilder()
-                .setUserName(userId)
-                .setResetPincodeToken(resetPincodeToken)
-                .setHashPincode(verificatorHex)
-                .setSalt(saltHex)
-                .setIvParameter(toHex(decrypter.getIv()))
-                .setClientKeyPeer(clientKeyPeer)
-                .build()
-
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).resetPincode(request)
+            val response = authService.resetPinCode(
+                transitionID,
+                key.publicKey.serialize(),
+                preKey.serialize(),
+                preKey.id,
+                signedPreKey.serialize(),
+                signedPreKey.id,
+                decryptResult,
+                signedPreKey.signature,
+                userName,
+                resetPincodeToken,
+                verificatorHex,
+                saltHex,
+                toHex(decrypter.getIv()),
+                domain
+            )
             if (response.error.isEmpty()) {
                 printlnCK("resetSocialPin success ${response.requireAction}")
                 return@withContext onLoginSuccess(
@@ -539,7 +444,7 @@ class AuthRepositoryImpl @Inject constructor(
         preAccessToken: String,
         email: String,
         domain: String,
-        rawNewPassword: String
+        rawNewPassword: String,
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val nativeLib = NativeLib()
@@ -564,37 +469,22 @@ class AuthRepositoryImpl @Inject constructor(
                 toHex(it)
             }
 
-            val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
-                .setDeviceId(SENDER_DEVICE_ID)
-                .setRegistrationId(transitionID)
-                .setIdentityKeyPublic(ByteString.copyFrom(key.publicKey.serialize()))
-                .setPreKey(ByteString.copyFrom(preKey.serialize()))
-                .setPreKeyId(preKey.id)
-                .setSignedPreKeyId(signedPreKey.id)
-                .setSignedPreKey(
-                    ByteString.copyFrom(signedPreKey.serialize())
-                )
-                .setIdentityKeyEncrypted(
-                    decryptResult
-                )
-                .setSignedPreKeySignature(ByteString.copyFrom(signedPreKey.signature))
-                .build()
-
-            val request = AuthOuterClass
-                .ForgotPasswordUpdateReq
-                .newBuilder()
-                .setPreAccessToken(preAccessToken)
-                .setEmail(email)
-                .setPasswordVerifier(verificatorHex)
-                .setSalt(saltHex)
-                .setIvParameter(toHex(decrypter.getIv()))
-                .setClientKeyPeer(clientKeyPeer)
-                .build()
-
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).forgotPasswordUpdate(request)
+            val response = authService.forgotPasswordUpdate(
+                transitionID,
+                key.publicKey.serialize(),
+                preKey.serialize(),
+                preKey.id,
+                signedPreKey.id,
+                signedPreKey.serialize(),
+                decryptResult,
+                signedPreKey.signature,
+                preAccessToken,
+                email,
+                verificatorHex,
+                saltHex,
+                toHex(decrypter.getIv()),
+                domain
+            )
             if (response.error.isEmpty()) {
                 return@withContext onLoginSuccess(
                     domain,
@@ -623,13 +513,8 @@ class AuthRepositoryImpl @Inject constructor(
     ): Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
         printlnCK("recoverPassword: $email")
         try {
-            val request = AuthOuterClass.ForgotPasswordReq.newBuilder()
-                .setEmail(email)
-                .build()
-            val response =
-                paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-                ).forgotPassword(request)
+            val response = authService.forgotPassword(email, domain)
+
             if (response?.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {
@@ -649,18 +534,10 @@ class AuthRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             printlnCK("logoutFromAPI")
             try {
-                val request = AuthOuterClass.LogoutReq.newBuilder()
-                    .setDeviceId(userManager.getUniqueDeviceID())
-                    .setRefreshToken(server.refreshToken)
-                    .build()
+                val deviceId = userManager.getUniqueDeviceID()
+                val response = authService.logout(deviceId, server)
 
-                val authBlockingWithHeader =
-                    paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
-                        .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
-                        .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
-                val response = authBlockingWithHeader
-                    .logout(request)
-                if (response?.error?.isEmpty() == true) {
+                if (response.error?.isEmpty() == true) {
                     printlnCK("logoutFromAPI successed")
                     return@withContext Resource.success(response)
                 } else {
@@ -681,25 +558,9 @@ class AuthRepositoryImpl @Inject constructor(
         hashKey: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
-            val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
-                .setOtpCode(otp)
-                .setPreAccessToken(otpHash)
-                .setUserId(userId)
-                .build()
-            val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-            val response = stub.validateOtp(request)
+            val response = authService.validateOtp(otp, otpHash, userId, domain)
             val accessToken = response.accessToken
-            printlnCK("validateOtp error? ${response.error}")
-            printlnCK("validateOtp access token ${response.accessToken} domain $domain hashkey $hashKey")
-            val profile = getProfile(
-                paramAPIProvider.provideUserBlockingStub(
-                    ParamAPI(
-                        domain,
-                        accessToken,
-                        hashKey
-                    )
-                )
-            )
+            val profile = getProfile(domain, accessToken, hashKey)
                 ?: return@withContext Resource.error("Can not get profile", null)
             serverRepository.insertServer(
                 Server(
@@ -740,12 +601,7 @@ class AuthRepositoryImpl @Inject constructor(
         userId: String
     ): Resource<Pair<Int, String>> = withContext(Dispatchers.IO) {
         try {
-            val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
-                .setPreAccessToken(otpHash)
-                .setUserId(userId)
-                .build()
-            val stub = paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
-            val response = stub.resendOtp(request)
+            val response = authService.resendOtp(otpHash, userId, domain)
             printlnCK("mfaResendOtp oldOtpHash $otpHash newOtpHash? ${response.preAccessToken} success? ${response.success}")
             return@withContext if (response.preAccessToken.isNotBlank()) Resource.success(0 to response.preAccessToken) else Resource.error(
                 "",
@@ -806,15 +662,7 @@ class AuthRepositoryImpl @Inject constructor(
                     response.ivParameter,
                     salt
                 )
-            val profile = getProfile(
-                paramAPIProvider.provideUserBlockingStub(
-                    ParamAPI(
-                        domain,
-                        accessToken,
-                        hashKey
-                    )
-                )
-            )
+            val profile = getProfile(domain, accessToken, hashKey)
                 ?: return Resource.error("Can not get profile", null)
             printlnCK("onLoginSuccess userId ${profile.userId}")
             printlnCK("insert signalIdentityKeyDAO")
@@ -875,11 +723,10 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun getProfile(userGrpc: UserGrpc.UserBlockingStub): Profile? =
+    private suspend fun getProfile(domain: String, accessToken: String, hashKey: String): Profile? =
         withContext(Dispatchers.IO) {
             try {
-                val request = UserOuterClass.Empty.newBuilder().build()
-                val response = userGrpc.getProfile(request)
+                val response = authService.getProfile(domain, accessToken, hashKey)
                 printlnCK("getProfileWithGrpc: $response")
                 return@withContext Profile(
                     userId = response.id,

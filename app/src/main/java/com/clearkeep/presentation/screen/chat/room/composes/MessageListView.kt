@@ -17,8 +17,8 @@ import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.presentation.components.grayscale3
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.MessageDisplayInfo
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.convertMessageList
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.convertMessageList
 import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp

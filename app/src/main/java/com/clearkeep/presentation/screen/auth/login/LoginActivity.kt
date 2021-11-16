@@ -30,9 +30,9 @@ import com.clearkeep.presentation.screen.auth.advancedsettings.CustomServerScree
 import com.clearkeep.presentation.screen.auth.forgot.ForgotActivity
 import com.clearkeep.presentation.screen.auth.register.RegisterActivity
 import com.clearkeep.presentation.screen.chat.otp.EnterOtpScreen
-import com.clearkeep.presentation.screen.chat.social_login.ConfirmSocialLoginPhraseScreen
-import com.clearkeep.presentation.screen.chat.social_login.EnterSocialLoginPhraseScreen
-import com.clearkeep.presentation.screen.chat.social_login.SetSocialLoginPhraseScreen
+import com.clearkeep.presentation.screen.chat.sociallogin.ConfirmSocialLoginPhraseScreen
+import com.clearkeep.presentation.screen.chat.sociallogin.EnterSocialLoginPhraseScreen
+import com.clearkeep.presentation.screen.chat.sociallogin.SetSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.splash.SplashActivity
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.network.Resource

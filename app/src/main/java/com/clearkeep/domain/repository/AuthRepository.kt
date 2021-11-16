@@ -28,13 +28,13 @@ interface AuthRepository {
     suspend fun registerSocialPin(
         domain: String,
         rawPin: String,
-        userId: String
+        userName: String
     ): Resource<AuthOuterClass.AuthRes>
-    suspend fun verifySocialPin(domain: String, rawPin: String, userId: String): Resource<AuthOuterClass.AuthRes>
+    suspend fun verifySocialPin(domain: String, rawPin: String, userName: String): Resource<AuthOuterClass.AuthRes>
     suspend fun resetSocialPin(
         domain: String,
         rawPin: String,
-        userId: String,
+        userName: String,
         resetPincodeToken: String
     ): Resource<AuthOuterClass.AuthRes>
     suspend fun resetPassword(
