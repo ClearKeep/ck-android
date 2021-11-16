@@ -8,10 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKRadioButton
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.CKRadioButton
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.utilities.sdp
 
 @Composable

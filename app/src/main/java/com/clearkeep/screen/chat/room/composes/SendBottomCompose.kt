@@ -27,9 +27,9 @@ import androidx.constraintlayout.compose.Dimension
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.base.CKTextInputFieldChat
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.presentation.components.base.CKTextInputFieldChat
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage

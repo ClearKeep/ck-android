@@ -2,12 +2,12 @@ package com.clearkeep.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalKeyDAO
-import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
-import com.clearkeep.db.signal_key.model.SignalIdentityKey
-import com.clearkeep.db.signal_key.model.SignalPreKey
-import com.clearkeep.db.signal_key.model.SignalSenderKey
+import com.clearkeep.db.signalkey.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signalkey.dao.SignalKeyDAO
+import com.clearkeep.db.signalkey.dao.SignalPreKeyDAO
+import com.clearkeep.db.signalkey.model.SignalIdentityKey
+import com.clearkeep.db.signalkey.model.SignalPreKey
+import com.clearkeep.db.signalkey.model.SignalSenderKey
 
 @Database(
     entities = [

@@ -1,18 +1,19 @@
 package com.clearkeep.screen.chat.group_create
 
 import androidx.lifecycle.*
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.GroupRepository
+import com.clearkeep.domain.repository.GroupRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class CreateGroupViewModel @Inject constructor(
     private val groupRepository: GroupRepository,
 
     private val environment: Environment
 ) : ViewModel() {
-
     var groupId: Long = -1
 
     val invitedFriends: MutableList<User> = mutableListOf()
@@ -46,7 +47,7 @@ class CreateGroupViewModel @Inject constructor(
                 )
             )
             val res =
-                groupRepository.createGroupFromAPI(server.profile.userId, groupName, list, true)
+                groupRepository.createGroup(server.profile.userId, groupName, list, true)
             if (res?.data != null) {
                 groupId = res.data.groupId
                 _createGroupState.value = CreateGroupSuccess

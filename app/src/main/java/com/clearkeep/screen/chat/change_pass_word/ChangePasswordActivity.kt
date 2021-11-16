@@ -6,21 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val changePasswordViewModel: ChangePasswordViewModel by viewModels {
-        viewModelFactory
-    }
+    private val changePasswordViewModel: ChangePasswordViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

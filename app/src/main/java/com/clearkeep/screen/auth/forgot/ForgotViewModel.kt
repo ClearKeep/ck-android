@@ -4,8 +4,10 @@ import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.network.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+@HiltViewModel
 class ForgotViewModel @Inject constructor(
     private val loginRepository: AuthRepository
 ) : ViewModel() {

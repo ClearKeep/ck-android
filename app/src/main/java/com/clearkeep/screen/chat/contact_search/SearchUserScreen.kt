@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -28,16 +27,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.*
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.db.clearkeep.model.ChatGroup
+import com.clearkeep.db.clearkeep.model.Message
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun SearchUserScreen(

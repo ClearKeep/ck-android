@@ -5,16 +5,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clearkeep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.auth.repo.AuthRepository
-import com.clearkeep.repo.ProfileRepository
+import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
     private val profileRepository: ProfileRepository,

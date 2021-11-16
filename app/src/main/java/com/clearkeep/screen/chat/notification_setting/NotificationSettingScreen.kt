@@ -5,30 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.CKSetting
-import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscale3
-import com.clearkeep.components.primaryDefault
-import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.CKHeaderText
+import com.clearkeep.presentation.components.base.CKSetting
+import com.clearkeep.presentation.components.base.HeaderTextType
 import com.clearkeep.utilities.sdp
 
 

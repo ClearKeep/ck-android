@@ -1,6 +1,6 @@
 package com.clearkeep.dynamicapi
 
-import com.clearkeep.db.clear_keep.model.Server
+import com.clearkeep.db.clearkeep.model.Server
 import com.clearkeep.utilities.printlnCK
 import java.lang.IllegalArgumentException
 import javax.inject.Inject

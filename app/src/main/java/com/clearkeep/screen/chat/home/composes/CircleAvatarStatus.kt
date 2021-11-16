@@ -14,12 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import coil.compose.rememberImagePainter
-import com.clearkeep.R
 import coil.request.CachePolicy
-import com.clearkeep.components.*
-import com.clearkeep.components.base.CKText
-import com.clearkeep.db.clear_keep.model.UserStatus
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.db.clearkeep.model.UserStatus
 import com.clearkeep.utilities.sdp
 
 @Composable

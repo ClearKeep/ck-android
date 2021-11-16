@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.db.clearkeep.model.Owner
+import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint

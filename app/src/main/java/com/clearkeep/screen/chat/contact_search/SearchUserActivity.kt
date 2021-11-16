@@ -5,22 +5,15 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
-import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.db.clearkeep.model.ChatGroup
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.screen.chat.room.RoomActivity
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchUserActivity : AppCompatActivity() {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val searchViewModel: SearchViewModel by viewModels {
-        viewModelFactory
-    }
+    private val searchViewModel: SearchViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

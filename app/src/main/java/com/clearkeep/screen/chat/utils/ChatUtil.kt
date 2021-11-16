@@ -1,6 +1,6 @@
 package com.clearkeep.screen.chat.utils
 
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.utilities.printlnCK
 
 fun isGroup(groupType: String): Boolean {

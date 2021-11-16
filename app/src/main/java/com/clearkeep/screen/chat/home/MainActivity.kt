@@ -12,12 +12,11 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.presentation.components.CKSimpleTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.contact_search.SearchUserActivity
 import com.clearkeep.screen.chat.group_create.CreateGroupActivity
@@ -27,29 +26,22 @@ import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKCircularProgressIndicator
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.signal_key.CKSignalProtocolAddress
+import com.clearkeep.presentation.components.base.CKButton
+import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.banned_users.BannedUserActivity
-import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.invite.InviteActivity
 import com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.utilities.sdp
-import org.whispersystems.libsignal.groups.SenderKeyName
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val homeViewModel: HomeViewModel by viewModels {
-        viewModelFactory
-    }
+
+    private val homeViewModel: HomeViewModel by viewModels()
 
     private val startCreateGroupForResult =
         (this as ComponentActivity).registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->

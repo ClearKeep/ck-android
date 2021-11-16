@@ -11,9 +11,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.clearkeep.components.*
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.*
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.utilities.sdp
 
 @Composable

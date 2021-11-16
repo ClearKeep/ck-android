@@ -7,7 +7,8 @@ import android.net.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.db.clearkeep.model.*
+import com.clearkeep.domain.repository.*
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -18,7 +19,6 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
-import com.clearkeep.repo.*
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.services.utils.MessageChannelSubscriber
 import com.clearkeep.services.utils.NotificationChannelSubscriber

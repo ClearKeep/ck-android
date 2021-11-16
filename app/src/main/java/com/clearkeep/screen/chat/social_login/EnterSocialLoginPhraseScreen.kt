@@ -16,8 +16,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.*
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.*
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.sdp

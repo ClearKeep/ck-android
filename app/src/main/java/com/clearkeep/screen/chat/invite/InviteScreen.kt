@@ -17,10 +17,10 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscale5
-import com.clearkeep.components.pickledBlueWood
-import com.clearkeep.components.primaryDefault
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.presentation.components.grayscale5
+import com.clearkeep.presentation.components.pickledBlueWood
+import com.clearkeep.presentation.components.primaryDefault
 
 @Composable
 fun InviteScreen(onCloseView: () -> Unit) {

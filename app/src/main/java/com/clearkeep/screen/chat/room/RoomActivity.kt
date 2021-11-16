@@ -10,12 +10,11 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
-import com.clearkeep.components.CKInsetTheme
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.CKInsetTheme
+import com.clearkeep.db.clearkeep.model.ChatGroup
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_create.EnterGroupNameScreen
 import com.clearkeep.screen.chat.group_invite.AddMemberUIType
@@ -29,15 +28,11 @@ import com.clearkeep.screen.chat.room.room_detail.RoomInfoScreen
 import com.clearkeep.services.ChatService
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import android.app.ActivityManager
 import androidx.compose.material.ExperimentalMaterialApi
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
-import android.view.Display
-import android.view.Surface
 import android.view.View
-import android.view.WindowManager
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -48,19 +43,9 @@ import com.clearkeep.utilities.*
 
 @AndroidEntryPoint
 class RoomActivity : AppCompatActivity(), LifecycleObserver {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val roomViewModel: RoomViewModel by viewModels {
-        viewModelFactory
-    }
-    private val createGroupViewModel: CreateGroupViewModel by viewModels {
-        viewModelFactory
-    }
-
-    private val inviteGroupViewModel: InviteGroupViewModel by viewModels {
-        viewModelFactory
-    }
+    private val roomViewModel: RoomViewModel by viewModels()
+    private val createGroupViewModel: CreateGroupViewModel by viewModels()
+    private val inviteGroupViewModel: InviteGroupViewModel by viewModels()
 
     private var addMemberReceiver: BroadcastReceiver? = null
 

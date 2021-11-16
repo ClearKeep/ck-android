@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,12 +33,12 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.db.clear_keep.model.Profile
-import com.clearkeep.db.clear_keep.model.UserStatus
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.presentation.components.base.CKHeaderText
+import com.clearkeep.presentation.components.base.HeaderTextType
+import com.clearkeep.db.clearkeep.model.Profile
+import com.clearkeep.db.clearkeep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp

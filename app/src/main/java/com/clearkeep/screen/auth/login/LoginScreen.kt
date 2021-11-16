@@ -30,9 +30,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.presentation.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
 
 

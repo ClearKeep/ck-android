@@ -2,7 +2,8 @@ package com.clearkeep.screen.splash
 
 import androidx.lifecycle.ViewModel
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
+import com.clearkeep.data.repository.ServerRepositoryImpl
+import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

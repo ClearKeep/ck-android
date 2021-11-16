@@ -1,22 +1,24 @@
 package com.clearkeep.screen.chat.contact_search
 
 import androidx.lifecycle.*
-import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.db.clearkeep.model.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.repo.GroupRepository
-import com.clearkeep.repo.MessageRepository
-import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.domain.repository.GroupRepository
+import com.clearkeep.domain.repository.MessageRepository
+import com.clearkeep.domain.repository.PeopleRepository
+import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import java.lang.Exception
 import javax.inject.Inject
 
+@HiltViewModel
 class SearchViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val messageRepository: MessageRepository,

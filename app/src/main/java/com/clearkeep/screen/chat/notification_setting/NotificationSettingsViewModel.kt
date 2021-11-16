@@ -3,17 +3,18 @@ package com.clearkeep.screen.chat.notification_setting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.db.clear_keep.model.UserPreference
+import com.clearkeep.db.clearkeep.model.UserPreference
+import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.UserPreferenceRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class NotificationSettingsViewModel @Inject constructor(
     private val environment: Environment,
     private val userPreferenceRepository: UserPreferenceRepository
 ) : ViewModel() {
-
     private lateinit var _userPreference: LiveData<UserPreference>
     val userPreference: LiveData<UserPreference>
         get() = _userPreference
@@ -26,7 +27,7 @@ class NotificationSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val domain = environment.getServer().serverDomain
             val userId = environment.getServer().profile.userId
-            _userPreference = userPreferenceRepository.getUserPreferenceLiveData(domain, userId)
+            _userPreference = userPreferenceRepository.getUserPreferenceState(domain, userId)
         }
     }
 

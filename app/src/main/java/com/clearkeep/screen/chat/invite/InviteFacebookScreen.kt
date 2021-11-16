@@ -8,15 +8,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.clearkeep.R
-import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscale5
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.presentation.components.grayscale5
 import com.clearkeep.utilities.sdp
 
 @Composable

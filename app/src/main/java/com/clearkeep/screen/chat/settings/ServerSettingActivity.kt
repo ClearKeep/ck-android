@@ -6,7 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.content.ClipData
@@ -19,12 +19,7 @@ import com.clearkeep.R
 
 @AndroidEntryPoint
 class ServerSettingActivity : AppCompatActivity(), LifecycleObserver {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val serverSettingViewModel: ServerSettingViewModel by viewModels {
-        viewModelFactory
-    }
+    private val serverSettingViewModel: ServerSettingViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

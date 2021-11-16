@@ -1,7 +1,7 @@
 package com.clearkeep.screen.chat.room.message_display_generator
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.clearkeep.db.clear_keep.model.Message
+import com.clearkeep.db.clearkeep.model.Message
 
 data class MessageDisplayInfo(
     val message: Message,

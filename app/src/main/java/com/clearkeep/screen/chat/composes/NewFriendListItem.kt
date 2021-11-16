@@ -8,11 +8,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.*
-import com.clearkeep.components.colorSuccessDefault
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserStatus
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.presentation.components.colorSuccessDefault
+import com.clearkeep.db.clearkeep.model.User
+import com.clearkeep.db.clearkeep.model.UserStatus
 import com.clearkeep.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.screen.chat.home.composes.StatusIndicator
 import com.clearkeep.utilities.sdp

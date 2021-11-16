@@ -6,7 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.content.ClipData
@@ -16,7 +16,6 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,16 +24,9 @@ import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.otp.OtpActivity
 import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
 
-
 @AndroidEntryPoint
 class ProfileActivity : AppCompatActivity(), LifecycleObserver {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val profileViewModel: ProfileViewModel by viewModels {
-        viewModelFactory
-    }
-
+    private val profileViewModel: ProfileViewModel by viewModels()
 
     @ExperimentalMaterialApi
         @ExperimentalFoundationApi

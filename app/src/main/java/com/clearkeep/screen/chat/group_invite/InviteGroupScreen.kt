@@ -27,11 +27,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.LiveData
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.*
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.db.clearkeep.model.ChatGroup
+import com.clearkeep.db.clearkeep.model.User
+import com.clearkeep.db.clearkeep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.FriendListItem
 import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
