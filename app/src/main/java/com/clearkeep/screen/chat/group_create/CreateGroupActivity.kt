@@ -8,33 +8,22 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.screen.chat.group_invite.InviteGroupScreen
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import androidx.navigation.compose.*
-import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.screen.chat.group_invite.InsertFriendScreen
 import com.clearkeep.screen.chat.group_invite.InviteMemberUIType
 import com.clearkeep.utilities.printlnCK
 
 @AndroidEntryPoint
 class CreateGroupActivity : AppCompatActivity() {
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val createGroupViewModel: CreateGroupViewModel by viewModels {
-        viewModelFactory
-    }
-
-    private val inviteGroupViewModel: InviteGroupViewModel by viewModels {
-        viewModelFactory
-    }
+    private val createGroupViewModel: CreateGroupViewModel by viewModels()
+    private val inviteGroupViewModel: InviteGroupViewModel by viewModels()
 
     private var isDirectChat: Boolean = false
 

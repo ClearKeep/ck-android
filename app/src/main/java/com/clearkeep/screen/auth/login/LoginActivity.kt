@@ -17,7 +17,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -25,10 +24,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.components.CKInsetTheme
-import com.clearkeep.components.CKTheme
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.presentation.components.CKTheme
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.auth.advance_setting.CustomServerScreen
 import com.clearkeep.screen.auth.forgot.ForgotActivity
 import com.clearkeep.screen.auth.register.RegisterActivity
@@ -58,13 +56,7 @@ import com.microsoft.identity.client.exception.MsalServiceException
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val loginViewModel: LoginViewModel by viewModels {
-        viewModelFactory
-    }
+    private val loginViewModel: LoginViewModel by viewModels()
 
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
     private val callbackManager = CallbackManager.Factory.create()

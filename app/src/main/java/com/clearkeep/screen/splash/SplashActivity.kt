@@ -6,8 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
-import com.clearkeep.components.CKTheme
+import com.clearkeep.presentation.components.CKTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.home.MainActivity
 import com.clearkeep.utilities.storage.UserPreferencesStorage

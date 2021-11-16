@@ -27,8 +27,8 @@ import androidx.compose.ui.text.input.*
 import androidx.navigation.NavController
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.*
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.*
 import com.clearkeep.screen.chat.composes.CircleAvatar
 import com.clearkeep.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.screen.chat.room.UploadPhotoDialog

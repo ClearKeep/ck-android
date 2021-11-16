@@ -31,12 +31,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.ButtonType
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTopAppBarSample
-import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.ButtonType
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.presentation.components.base.CKButton
+import com.clearkeep.presentation.components.base.CKTopAppBarSample
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.printlnCK

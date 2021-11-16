@@ -37,8 +37,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.components.colorDialogScrim
-import com.clearkeep.components.colorLightBlue
+import com.clearkeep.presentation.components.colorDialogScrim
+import com.clearkeep.presentation.components.colorLightBlue
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.sdp
@@ -57,7 +57,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                roomViewModel.downloadFile(context, selectedImageUri.value)
+                roomViewModel.downloadFile(selectedImageUri.value)
             }
         }
 
@@ -145,7 +145,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
             isShareDialogOpen.value = false
         }, onClickSave = {
             if (isWriteFilePermissionGranted(context)) {
-                roomViewModel.downloadFile(context, selectedImageUri.value)
+                roomViewModel.downloadFile(selectedImageUri.value)
             } else {
                 requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }

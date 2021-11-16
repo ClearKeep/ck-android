@@ -19,12 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import coil.compose.rememberImagePainter
 import coil.imageLoader
-import coil.request.CachePolicy
-import com.clearkeep.R
-import com.clearkeep.components.backgroundGradientEnd
-import com.clearkeep.components.backgroundGradientStart
-import com.clearkeep.components.colorTest
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.presentation.components.backgroundGradientEnd
+import com.clearkeep.presentation.components.backgroundGradientStart
+import com.clearkeep.presentation.components.colorTest
 import com.clearkeep.utilities.sdp
 
 @Composable

@@ -19,10 +19,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.clearkeep.utilities.sdp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.*
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale3
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.*
 import com.clearkeep.screen.chat.composes.FriendListItem
 
 @Composable

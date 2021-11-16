@@ -2,8 +2,8 @@ package com.clearkeep.screen.chat.room.message_display_generator
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clearkeep.model.Message
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.utilities.printlnCK
 import kotlin.collections.ArrayList
 

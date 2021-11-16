@@ -3,11 +3,11 @@ package com.clearkeep.screen.videojanus
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserPreference
-import com.clearkeep.repo.GroupRepository
-import com.clearkeep.repo.MessageRepository
-import com.clearkeep.repo.UserPreferenceRepository
+import com.clearkeep.db.clearkeep.model.User
+import com.clearkeep.db.clearkeep.model.UserPreference
+import com.clearkeep.domain.repository.GroupRepository
+import com.clearkeep.domain.repository.MessageRepository
+import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope

@@ -1,19 +1,21 @@
 package com.clearkeep.screen.chat.home
 
 import androidx.lifecycle.*
-import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.data.repository.*
+import com.clearkeep.db.clearkeep.model.*
+import com.clearkeep.domain.repository.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-
+@HiltViewModel
 class HomeViewModel @Inject constructor(
     roomRepository: GroupRepository,
     serverRepository: ServerRepository,

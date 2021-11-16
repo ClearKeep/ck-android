@@ -7,22 +7,24 @@ import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
-import com.clearkeep.MyApplication
 import com.clearkeep.R
-import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.data.repository.*
+import com.clearkeep.db.clearkeep.model.*
+import com.clearkeep.domain.repository.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import java.util.*
 
+@HiltViewModel
 class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val groupRepository: GroupRepository,
@@ -366,7 +368,7 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
                 user.avatar = ""
-                createGroupResponse.value = groupRepository.createGroupFromAPI(
+                createGroupResponse.value = groupRepository.createGroup(
                     user.userId,
                     "$user,${receiverPeople.userName}",
                     mutableListOf(getUser(), receiverPeople),
@@ -556,7 +558,7 @@ class RoomViewModel @Inject constructor(
                 val user = getUser()
                 printlnCK("requestCall $domain")
                 val friend = peopleRepository.getFriend(friendId!!, friendDomain!!, getOwner())!!
-                createGroupResponse.value = groupRepository.createGroupFromAPI(
+                createGroupResponse.value = groupRepository.createGroup(
                     user.userId,
                     "",
                     mutableListOf(user, friend),
@@ -824,8 +826,8 @@ class RoomViewModel @Inject constructor(
         _fileUriStaged.value = selectedList
     }
 
-    fun downloadFile(context: Context, url: String) {
-        chatRepository.downloadFile(context, getFileNameFromUrl(url), getFileUrl(url))
+    fun downloadFile(url: String) {
+        chatRepository.downloadFile(getFileNameFromUrl(url), getFileUrl(url))
     }
 
     fun getPhotoUri(context: Context): Uri {

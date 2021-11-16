@@ -25,8 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.*
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.*
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status

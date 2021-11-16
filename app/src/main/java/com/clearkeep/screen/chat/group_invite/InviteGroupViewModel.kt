@@ -1,16 +1,18 @@
 package com.clearkeep.screen.chat.group_invite
 
 import androidx.lifecycle.*
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.db.clearkeep.model.Owner
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@HiltViewModel
 class InviteGroupViewModel @Inject constructor(
     private val peopleRepository: PeopleRepository,
     private val environment: Environment

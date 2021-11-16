@@ -2,10 +2,12 @@ package com.clearkeep.screen.chat.settings
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.repo.ServerRepository
+import com.clearkeep.db.clearkeep.model.Server
+import com.clearkeep.domain.repository.ServerRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
+@HiltViewModel
 class ServerSettingViewModel @Inject constructor(
     serverRepository: ServerRepository,
 ) : ViewModel() {

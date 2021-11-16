@@ -23,10 +23,10 @@ import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
-import com.clearkeep.db.clear_keep.model.ChatGroup
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.db.clear_keep.model.UserPreference
+import com.clearkeep.db.clearkeep.model.ChatGroup
+import com.clearkeep.db.clearkeep.model.Message
+import com.clearkeep.db.clearkeep.model.User
+import com.clearkeep.db.clearkeep.model.UserPreference
 import com.clearkeep.screen.chat.home.MainActivity
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000

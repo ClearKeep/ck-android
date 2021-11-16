@@ -20,11 +20,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscale3
+import com.clearkeep.presentation.components.grayscale1
+import com.clearkeep.presentation.components.grayscale2
+import com.clearkeep.presentation.components.grayscale3
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 

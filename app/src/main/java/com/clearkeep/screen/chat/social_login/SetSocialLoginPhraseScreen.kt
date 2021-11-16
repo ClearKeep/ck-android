@@ -15,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.*
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.*
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize

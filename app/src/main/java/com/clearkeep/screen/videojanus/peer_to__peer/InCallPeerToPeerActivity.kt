@@ -19,7 +19,6 @@ import androidx.activity.viewModels
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -27,11 +26,11 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
-import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.clearkeep.model.Owner
 import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.repo.PeopleRepository
-import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.domain.repository.PeopleRepository
+import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.*
 import com.clearkeep.screen.videojanus.common.CallState
@@ -66,12 +65,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    val callViewModel: CallViewModel by viewModels {
-        viewModelFactory
-    }
+    val callViewModel: CallViewModel by viewModels()
 
     private var mIsMuteVideo = false
     private var mIsSpeaker = false

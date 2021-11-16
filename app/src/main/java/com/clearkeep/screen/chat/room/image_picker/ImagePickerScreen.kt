@@ -25,9 +25,9 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.components.*
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.base.CKTopAppBar
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.presentation.components.base.CKTopAppBar
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.insets.navigationBarsPadding

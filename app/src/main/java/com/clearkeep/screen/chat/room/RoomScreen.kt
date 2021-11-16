@@ -16,9 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.clearkeep.components.*
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
+import com.clearkeep.presentation.components.*
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.db.clearkeep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.screen.chat.room.composes.ToolbarMessage
@@ -39,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
 import com.clearkeep.R
-import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.chat.room.forward_message.ForwardMessageBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
@@ -91,7 +91,7 @@ fun RoomScreen(
     val requestWriteFilePermissionLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
-                roomViewModel.downloadFile(context, selectedFileUri.value)
+                roomViewModel.downloadFile(selectedFileUri.value)
             }
         }
 
@@ -236,7 +236,7 @@ fun RoomScreen(
                             },
                             onClickFile = {
                                 if (isWriteFilePermissionGranted(context)) {
-                                    roomViewModel.downloadFile(context, it)
+                                    roomViewModel.downloadFile(it)
                                 } else {
                                     selectedFileUri.value = it
                                     requestWriteFilePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)

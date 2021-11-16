@@ -1,20 +1,17 @@
 package com.clearkeep.screen.chat.room.composes
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscale3
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.presentation.components.grayscale2
+import com.clearkeep.presentation.components.grayscale3
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 

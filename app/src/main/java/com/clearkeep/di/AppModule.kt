@@ -11,9 +11,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-
 @InstallIn(SingletonComponent::class)
-@Module(includes = [ViewModelModule::class, StorageModule::class, DatabaseModule::class])
+@Module(includes = [StorageModule::class, DatabaseModule::class])
 class AppModule {
     @Singleton
     @Provides

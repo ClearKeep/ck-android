@@ -10,6 +10,7 @@ import com.clearkeep.januswrapper.*
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
 import com.clearkeep.utilities.printlnCK
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import org.json.JSONObject
 import org.webrtc.*
@@ -17,6 +18,7 @@ import java.lang.ref.WeakReference
 import java.math.BigInteger
 import javax.inject.Inject
 
+@HiltViewModel
 class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     PeerConnectionClient.PeerConnectionEvents, IControlCall {
 

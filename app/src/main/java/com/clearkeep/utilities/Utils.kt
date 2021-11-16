@@ -15,9 +15,8 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
-import com.clearkeep.db.clear_keep.model.ProtoResponse
+import com.clearkeep.db.clearkeep.model.ProtoResponse
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp

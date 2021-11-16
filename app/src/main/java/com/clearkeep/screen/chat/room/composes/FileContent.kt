@@ -10,14 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscale4
-import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.presentation.components.grayscale2
+import com.clearkeep.presentation.components.grayscale4
+import com.clearkeep.presentation.components.grayscaleOffWhite
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize

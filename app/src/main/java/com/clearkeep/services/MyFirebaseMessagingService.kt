@@ -2,14 +2,13 @@ package com.clearkeep.services
 
 import android.content.Intent
 import android.util.Base64
-import android.util.Log
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.UserPreference
-import com.clearkeep.db.signal_key.CKSignalProtocolAddress
+import com.clearkeep.db.clearkeep.model.Owner
+import com.clearkeep.db.clearkeep.model.UserPreference
+import com.clearkeep.db.signalkey.CKSignalProtocolAddress
+import com.clearkeep.domain.repository.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
+import com.clearkeep.data.local.signal.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.AppCall
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification

@@ -20,11 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKHeaderText
-import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.primaryDefault
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.presentation.components.base.CKHeaderText
+import com.clearkeep.presentation.components.base.HeaderTextType
+import com.clearkeep.presentation.components.primaryDefault
 import com.clearkeep.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.screen.chat.home.composes.SideBarLabel

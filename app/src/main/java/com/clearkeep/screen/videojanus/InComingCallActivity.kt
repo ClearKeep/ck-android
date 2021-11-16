@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioAttributes
 import android.media.Ringtone
@@ -25,7 +24,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,15 +36,12 @@ import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
+import com.clearkeep.db.clearkeep.model.Owner
+import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_coming_call.imageBackground
-import kotlinx.android.synthetic.main.activity_in_coming_call.tvEndButtonDescription
-import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
@@ -65,7 +60,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imgEnd: ImageView
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
-    private val environment: Environment? = null
 
     private var ringtone: Ringtone? = null
 

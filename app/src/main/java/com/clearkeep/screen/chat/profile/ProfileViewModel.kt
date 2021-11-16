@@ -3,11 +3,11 @@ package com.clearkeep.screen.chat.profile
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.*
-import com.clearkeep.db.clear_keep.model.*
+import com.clearkeep.db.clearkeep.model.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
-import com.clearkeep.repo.ProfileRepository
-import com.clearkeep.repo.UserPreferenceRepository
+import com.clearkeep.domain.repository.ProfileRepository
+import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
@@ -21,8 +21,10 @@ import java.security.MessageDigest
 import java.util.*
 import javax.inject.Inject
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlin.Exception
 
+@HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
     private val profileRepository: ProfileRepository,
@@ -99,7 +101,7 @@ class ProfileViewModel @Inject constructor(
                 )
             )
         }
-        _userPreference = userPreferenceRepository.getUserPreferenceLiveData(
+        _userPreference = userPreferenceRepository.getUserPreferenceState(
             server.serverDomain,
             server.profile.userId
         )

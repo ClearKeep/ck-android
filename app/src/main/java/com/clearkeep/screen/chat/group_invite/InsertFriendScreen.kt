@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.components.base.*
-import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.presentation.components.base.*
+import com.clearkeep.db.clearkeep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize

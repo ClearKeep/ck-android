@@ -1,19 +1,21 @@
 package com.clearkeep.screen.auth.repo
 
 import auth.AuthOuterClass
-import com.clearkeep.db.clear_keep.model.LoginResponse
-import com.clearkeep.db.clear_keep.model.Server
-import com.clearkeep.db.clear_keep.model.Profile
-import com.clearkeep.db.clear_keep.model.UserKey
-import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
-import com.clearkeep.db.signal_key.model.SignalIdentityKey
+import com.clearkeep.data.repository.*
+import com.clearkeep.db.clearkeep.model.LoginResponse
+import com.clearkeep.db.clearkeep.model.Server
+import com.clearkeep.db.clearkeep.model.Profile
+import com.clearkeep.db.clearkeep.model.UserKey
+import com.clearkeep.db.signalkey.dao.SignalIdentityKeyDAO
+import com.clearkeep.db.signalkey.model.SignalIdentityKey
+import com.clearkeep.domain.repository.*
 import com.clearkeep.srp.NativeLib
 import com.clearkeep.dynamicapi.CallCredentials
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.dynamicapi.ParamAPI
 import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
+
+import com.clearkeep.data.local.signal.InMemorySignalProtocolStore
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.fromHex
@@ -46,7 +48,6 @@ class AuthRepository @Inject constructor(
     private val userManager: AppStorage,
     private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
-    private val signalKeyRepository: SignalKeyRepository,
     private val userPreferenceRepository: UserPreferenceRepository,
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,

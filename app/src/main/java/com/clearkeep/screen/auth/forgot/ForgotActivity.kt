@@ -17,9 +17,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.clearkeep.R
-import com.clearkeep.components.CKTheme
-import com.clearkeep.components.base.CKAlertDialog
-import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.presentation.components.CKTheme
+import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,13 +28,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ForgotActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val forgotViewModel: ForgotViewModel by viewModels {
-        viewModelFactory
-    }
+    private val forgotViewModel: ForgotViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

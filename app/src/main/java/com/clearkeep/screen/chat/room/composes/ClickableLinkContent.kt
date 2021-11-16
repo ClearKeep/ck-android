@@ -6,13 +6,11 @@ import android.util.Patterns
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -21,9 +19,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.core.content.ContextCompat
-import com.clearkeep.components.grayscale2
-import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.presentation.components.grayscale2
+import com.clearkeep.presentation.components.grayscaleOffWhite
 import com.clearkeep.utilities.sdp
 
 @Composable

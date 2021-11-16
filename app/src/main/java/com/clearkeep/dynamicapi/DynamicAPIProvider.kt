@@ -1,7 +1,7 @@
 package com.clearkeep.dynamicapi
 
 import auth.AuthGrpc
-import com.clearkeep.db.clear_keep.model.Server
+import com.clearkeep.db.clearkeep.model.Server
 import group.GroupGrpc
 import message.MessageGrpc
 import note.NoteGrpc

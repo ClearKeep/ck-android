@@ -17,10 +17,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,11 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.ButtonType
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKText
-import com.clearkeep.components.separatorDarkNonOpaque
+import com.clearkeep.presentation.components.LocalColorMapping
+import com.clearkeep.presentation.components.base.ButtonType
+import com.clearkeep.presentation.components.base.CKButton
+import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.presentation.components.separatorDarkNonOpaque
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.sdp
