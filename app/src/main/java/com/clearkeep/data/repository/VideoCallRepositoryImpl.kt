@@ -1,7 +1,7 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.data.remote.VideoCallService
-import com.clearkeep.db.clearkeep.model.Owner
+import com.clearkeep.data.remote.service.VideoCallService
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.utilities.*

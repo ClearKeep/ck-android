@@ -1,7 +1,7 @@
 package com.clearkeep.utilities
 
-import com.clearkeep.utilities.storage.PersistPreferencesStorage
-import com.clearkeep.utilities.storage.UserPreferencesStorage
+import com.clearkeep.data.local.preference.PersistPreferencesStorage
+import com.clearkeep.data.local.preference.UserPreferencesStorage
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton

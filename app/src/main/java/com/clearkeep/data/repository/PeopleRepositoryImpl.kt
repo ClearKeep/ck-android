@@ -2,14 +2,14 @@ package com.clearkeep.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import com.clearkeep.data.remote.GroupService
-import com.clearkeep.db.clearkeep.dao.UserDAO
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.User
-import com.clearkeep.db.clearkeep.model.UserEntity
+import com.clearkeep.data.remote.service.GroupService
+import com.clearkeep.data.local.clearkeep.dao.UserDAO
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.User
+import com.clearkeep.domain.model.UserEntity
 import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK

@@ -1,7 +1,7 @@
 package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
-import com.clearkeep.db.clearkeep.model.UserPreference
+import com.clearkeep.domain.model.UserPreference
 
 interface UserPreferenceRepository {
     suspend fun initDefaultUserPreference(

@@ -1,7 +1,7 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.db.clearkeep.dao.UserPreferenceDAO
-import com.clearkeep.db.clearkeep.model.UserPreference
+import com.clearkeep.data.local.clearkeep.dao.UserPreferenceDAO
+import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.UserPreferenceRepository
 import javax.inject.Inject
 

@@ -1,7 +1,7 @@
 package com.clearkeep.domain.repository
 
 import android.content.Context
-import com.clearkeep.db.clearkeep.model.Note
+import com.clearkeep.domain.model.Note
 import com.clearkeep.utilities.network.Resource
 
 interface ChatRepository {
@@ -17,12 +17,14 @@ interface ChatRepository {
         isForceProcessKey: Boolean = false,
         cachedMessageId: Int = 0
     ): Resource<Nothing>
+
     suspend fun processPeerKey(
         receiverId: String,
         receiverWorkspaceDomain: String,
         senderId: String,
         ownerWorkSpace: String
     ): Boolean
+
     suspend fun sendMessageToGroup(
         senderId: String,
         ownerWorkSpace: String,
@@ -30,6 +32,7 @@ interface ChatRepository {
         plainMessage: String,
         cachedMessageId: Int = 0
     ): Resource<Nothing>
+
     suspend fun sendNote(note: Note, cachedNoteId: Long = 0): Boolean
     suspend fun uploadFile(
         context: Context,
@@ -37,5 +40,6 @@ interface ChatRepository {
         fileName: String,
         fileUri: String
     ): Resource<String>
+
     fun downloadFile(fileName: String, url: String)
 }
