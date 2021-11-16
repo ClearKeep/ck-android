@@ -1,6 +1,6 @@
 package com.clearkeep.domain.repository
 
-import com.clearkeep.db.clearkeep.model.UserKey
+import com.clearkeep.domain.model.UserKey
 
 interface UserKeyRepository {
     suspend fun insert(userKey: UserKey)

@@ -1,9 +1,9 @@
 package com.clearkeep.domain.repository
 
-import com.clearkeep.db.clearkeep.model.ChatGroup
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.Server
-import com.clearkeep.db.signalkey.model.SignalIdentityKey
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Server
+import com.clearkeep.data.local.signal.model.SignalIdentityKey
+import com.clearkeep.domain.model.ChatGroup
 
 interface SignalKeyRepository {
     fun getIdentityKey(clientId: String, domain: String): SignalIdentityKey?

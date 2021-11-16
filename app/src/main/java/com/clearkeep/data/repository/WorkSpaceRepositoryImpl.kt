@@ -1,19 +1,14 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.data.remote.WorkspaceService
+import com.clearkeep.data.remote.service.WorkspaceService
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.WorkSpaceRepository
-import com.clearkeep.dynamicapi.ParamAPI
-import com.clearkeep.dynamicapi.ParamAPIProvider
-import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
 import com.clearkeep.utilities.printlnCK
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import workspace.WorkspaceOuterClass
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class WorkSpaceRepositoryImpl @Inject constructor(

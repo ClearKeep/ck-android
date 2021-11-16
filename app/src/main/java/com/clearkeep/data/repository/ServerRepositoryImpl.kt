@@ -3,12 +3,12 @@ package com.clearkeep.data.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
-import com.clearkeep.db.clearkeep.dao.ServerDAO
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.Profile
-import com.clearkeep.db.clearkeep.model.Server
+import com.clearkeep.data.local.clearkeep.dao.ServerDAO
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Profile
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.data.remote.dynamicapi.Environment
 import javax.inject.Inject
 import javax.inject.Singleton
 

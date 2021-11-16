@@ -15,7 +15,7 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
-import com.clearkeep.db.clearkeep.model.ProtoResponse
+import com.clearkeep.domain.model.ProtoResponse
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.core.content.ContextCompat
 import com.clearkeep.R
-import com.clearkeep.screen.splash.SplashActivity
+import com.clearkeep.presentation.screen.splash.SplashActivity
 import com.google.gson.Gson
 import io.grpc.StatusRuntimeException
 import kotlin.system.exitProcess

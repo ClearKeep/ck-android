@@ -4,11 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.db.clearkeep.model.Server
-import com.clearkeep.screen.auth.repo.AuthRepository
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

@@ -1,9 +1,9 @@
 package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.User
-import com.clearkeep.db.clearkeep.model.UserEntity
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.User
+import com.clearkeep.domain.model.UserEntity
 import com.clearkeep.utilities.network.Resource
 
 interface PeopleRepository {

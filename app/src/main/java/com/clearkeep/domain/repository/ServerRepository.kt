@@ -2,13 +2,13 @@ package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.Profile
-import com.clearkeep.db.clearkeep.model.Server
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Profile
+import com.clearkeep.domain.model.Server
 
 interface ServerRepository {
-    val isLogout : MutableLiveData<Boolean>
-    val activeServer : MutableLiveData<Server>
+    val isLogout: MutableLiveData<Boolean>
+    val activeServer: MutableLiveData<Server>
     fun getServersAsState(): LiveData<List<Server>>
     suspend fun getServers(): List<Server>
     suspend fun getServerByDomain(url: String): Server?

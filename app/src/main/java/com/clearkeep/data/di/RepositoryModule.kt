@@ -42,4 +42,7 @@ interface RepositoryModule {
 
     @Binds
     fun bindWorkSpaceRepository (workSpaceRepositoryImpl: WorkSpaceRepositoryImpl): WorkSpaceRepository
+
+    @Binds
+    fun bindAuthRepository (authRepositoryImpl: AuthRepositoryImpl): AuthRepository
 }

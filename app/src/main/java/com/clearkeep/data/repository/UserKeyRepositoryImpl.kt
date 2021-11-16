@@ -1,7 +1,7 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.db.clearkeep.dao.UserKeyDAO
-import com.clearkeep.db.clearkeep.model.UserKey
+import com.clearkeep.data.local.clearkeep.dao.UserKeyDAO
+import com.clearkeep.domain.model.UserKey
 import com.clearkeep.domain.repository.UserKeyRepository
 import javax.inject.Inject
 import javax.inject.Singleton

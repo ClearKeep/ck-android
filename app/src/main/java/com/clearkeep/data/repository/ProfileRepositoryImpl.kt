@@ -1,10 +1,10 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.data.remote.PushNotificationService
-import com.clearkeep.data.remote.UserService
-import com.clearkeep.db.clearkeep.model.Owner
-import com.clearkeep.db.clearkeep.model.Profile
-import com.clearkeep.db.clearkeep.model.Server
+import com.clearkeep.data.remote.service.PushNotificationService
+import com.clearkeep.data.remote.service.UserService
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Profile
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.SignalKeyRepository

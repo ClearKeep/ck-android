@@ -35,7 +35,7 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup">
         <service
-            android:name=".services.ChatService"
+            android:name="com.clearkeep.data.services.ChatService"
             android:enabled="true"
             android:exported="false"></service>
 
@@ -55,17 +55,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".screen.chat.contact_search.SearchUserActivity"
+            android:name=".presentation.screen.chat.contact_search.SearchUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".screen.chat.group_create.CreateGroupActivity"
+            android:name=".presentation.screen.chat.group_create.CreateGroupActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name="com.clearkeep.screen.chat.room.RoomActivity"
+            android:name="com.clearkeep.presentation.screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".screen.splash.SplashActivity"
+            android:name=".presentation.screen.splash.SplashActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:exported="true">
             <intent-filter>
@@ -75,45 +75,45 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".screen.auth.login.LoginActivity"
+            android:name=".presentation.screen.auth.login.LoginActivity"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/btn_login"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
-            android:name=".screen.auth.register.RegisterActivity"
+            android:name=".presentation.screen.auth.register.RegisterActivity"
             android:label="@string/btn_register"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".screen.auth.forgot.ForgotActivity"
+            android:name=".presentation.screen.auth.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
-            android:name="com.clearkeep.screen.chat.home.MainActivity"
+            android:name="com.clearkeep.presentation.screen.chat.home.MainActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
+            android:name="com.clearkeep.presentation.screen.chat.profile.ProfileActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"
+            android:name="com.clearkeep.presentation.screen.chat.settings.ServerSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.screen.chat.notification_setting.NotificationSettingActivity"
+            android:name="com.clearkeep.presentation.screen.chat.notification_setting.NotificationSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.screen.chat.invite.InviteActivity"
+            android:name="com.clearkeep.presentation.screen.chat.invite.InviteActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.screen.chat.banned_users.BannedUserActivity"
+            android:name="com.clearkeep.presentation.screen.chat.banned_users.BannedUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
-            android:name=".services.MyFirebaseMessagingService"
+            android:name="com.clearkeep.data.services.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -125,7 +125,7 @@
             android:foregroundServiceType="camera|microphone" />
         -->
         <activity
-            android:name=".screen.videojanus.InCallActivity"
+            android:name=".presentation.screen.videojanus.InCallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -134,7 +134,7 @@
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
+            android:name=".presentation.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -143,13 +143,13 @@
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".screen.videojanus.InComingCallActivity"
+            android:name=".presentation.screen.videojanus.InComingCallActivity"
             android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
 
-        <receiver android:name=".screen.videojanus.DismissNotificationReceiver" />
-        <receiver android:name=".screen.videojanus.ShowSummaryNotificationReceiver" />
+        <receiver android:name=".presentation.screen.videojanus.DismissNotificationReceiver" />
+        <receiver android:name=".presentation.screen.videojanus.ShowSummaryNotificationReceiver" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -183,7 +183,7 @@
         </activity>
 
         <activity
-            android:name=".screen.chat.change_pass_word.ChangePasswordActivity"
+            android:name=".presentation.screen.chat.change_pass_word.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:launchMode="singleTop"
             android:exported="true">
@@ -201,7 +201,7 @@
         </activity>
 
         <activity
-            android:name=".screen.chat.otp.OtpActivity"
+            android:name=".presentation.screen.chat.otp.OtpActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <provider
