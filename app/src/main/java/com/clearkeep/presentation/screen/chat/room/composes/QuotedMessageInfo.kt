@@ -12,7 +12,7 @@ import com.clearkeep.presentation.components.LocalColorMapping
 import com.clearkeep.presentation.components.base.CKText
 import com.clearkeep.presentation.components.grayscale2
 import com.clearkeep.presentation.components.grayscale3
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 
 @Composable

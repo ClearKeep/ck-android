@@ -40,8 +40,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
 import com.clearkeep.R
 import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
-import com.clearkeep.presentation.screen.chat.room.file_picker.FilePickerBottomSheetDialog
-import com.clearkeep.presentation.screen.chat.room.forward_message.ForwardMessageBottomSheetDialog
+import com.clearkeep.presentation.screen.chat.room.filepicker.FilePickerBottomSheetDialog
+import com.clearkeep.presentation.screen.chat.room.forwardmessage.ForwardMessageBottomSheetDialog
 import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted

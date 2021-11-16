@@ -17,9 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.*
 import com.clearkeep.presentation.components.CKSimpleTheme
-import com.clearkeep.presentation.screen.chat.contact_search.SearchUserActivity
-import com.clearkeep.presentation.screen.chat.group_create.CreateGroupActivity
-import com.clearkeep.presentation.screen.chat.group_create.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
+import com.clearkeep.presentation.screen.chat.contactsearch.SearchUserActivity
+import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity
+import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.presentation.screen.chat.room.RoomActivity
 import com.clearkeep.data.services.ChatService
 import com.clearkeep.utilities.printlnCK
@@ -27,9 +27,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.clearkeep.presentation.components.base.CKButton
 import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.presentation.screen.auth.login.LoginActivity
-import com.clearkeep.presentation.screen.chat.banned_users.BannedUserActivity
+import com.clearkeep.presentation.screen.chat.bannedusers.BannedUserActivity
 import com.clearkeep.presentation.screen.chat.invite.InviteActivity
-import com.clearkeep.presentation.screen.chat.notification_setting.NotificationSettingActivity
+import com.clearkeep.presentation.screen.chat.notificationsetting.NotificationSettingActivity
 import com.clearkeep.presentation.screen.chat.profile.ProfileActivity
 import com.clearkeep.presentation.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot

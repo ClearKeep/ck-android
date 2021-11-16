@@ -36,8 +36,8 @@ import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.videojanus.common.CallState
 import com.clearkeep.presentation.screen.videojanus.common.createVideoCapture
-import com.clearkeep.presentation.screen.videojanus.surface_generator.SurfacePosition
-import com.clearkeep.presentation.screen.videojanus.surface_generator.SurfacePositionFactory
+import com.clearkeep.presentation.screen.videojanus.surfacegenerator.SurfacePosition
+import com.clearkeep.presentation.screen.videojanus.surfacegenerator.SurfacePositionFactory
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation

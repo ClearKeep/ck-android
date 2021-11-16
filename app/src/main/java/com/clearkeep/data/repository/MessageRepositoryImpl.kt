@@ -20,7 +20,7 @@ import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
 import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
 import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.presentation.screen.chat.contact_search.MessageSearchResult
+import com.clearkeep.presentation.screen.chat.contactsearch.MessageSearchResult
 import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import com.google.protobuf.ByteString

@@ -55,10 +55,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".presentation.screen.chat.contact_search.SearchUserActivity"
+            android:name=".presentation.screen.chat.contactsearch.SearchUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".presentation.screen.chat.group_create.CreateGroupActivity"
+            android:name=".presentation.screen.chat.groupcreate.CreateGroupActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name="com.clearkeep.presentation.screen.chat.room.RoomActivity"
@@ -101,7 +101,7 @@
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.notification_setting.NotificationSettingActivity"
+            android:name="com.clearkeep.presentation.screen.chat.notificationsetting.NotificationSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
@@ -109,7 +109,7 @@
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.banned_users.BannedUserActivity"
+            android:name="com.clearkeep.presentation.screen.chat.bannedusers.BannedUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
@@ -134,7 +134,7 @@
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".presentation.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
+            android:name=".presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -183,7 +183,7 @@
         </activity>
 
         <activity
-            android:name=".presentation.screen.chat.change_pass_word.ChangePasswordActivity"
+            android:name=".presentation.screen.chat.changepassword.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:launchMode="singleTop"
             android:exported="true">

@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import com.clearkeep.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -20,9 +19,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.clearkeep.presentation.screen.chat.change_pass_word.ChangePasswordActivity
+import com.clearkeep.presentation.screen.chat.changepassword.ChangePasswordActivity
 import com.clearkeep.presentation.screen.chat.otp.OtpActivity
-import com.clearkeep.presentation.screen.chat.room.image_picker.ImagePickerScreen
+import com.clearkeep.presentation.screen.chat.room.imagepicker.ImagePickerScreen
 
 @AndroidEntryPoint
 class ProfileActivity : AppCompatActivity(), LifecycleObserver {

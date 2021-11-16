@@ -15,16 +15,16 @@ import androidx.core.view.WindowCompat
 import com.clearkeep.presentation.components.CKInsetTheme
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.User
-import com.clearkeep.presentation.screen.chat.group_create.CreateGroupViewModel
-import com.clearkeep.presentation.screen.chat.group_create.EnterGroupNameScreen
-import com.clearkeep.presentation.screen.chat.group_invite.AddMemberUIType
-import com.clearkeep.presentation.screen.chat.group_invite.InviteGroupScreen
+import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupViewModel
+import com.clearkeep.presentation.screen.chat.groupcreate.EnterGroupNameScreen
+import com.clearkeep.presentation.screen.chat.groupinvite.AddMemberUIType
+import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupScreen
 import com.clearkeep.presentation.screen.videojanus.AppCall
-import com.clearkeep.presentation.screen.chat.group_invite.InviteGroupViewModel
-import com.clearkeep.presentation.screen.chat.group_remove.RemoveMemberScreen
-import com.clearkeep.presentation.screen.chat.room.image_picker.ImagePickerScreen
-import com.clearkeep.presentation.screen.chat.room.room_detail.GroupMemberScreen
-import com.clearkeep.presentation.screen.chat.room.room_detail.RoomInfoScreen
+import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupViewModel
+import com.clearkeep.presentation.screen.chat.groupremove.RemoveMemberScreen
+import com.clearkeep.presentation.screen.chat.room.imagepicker.ImagePickerScreen
+import com.clearkeep.presentation.screen.chat.room.roomdetail.GroupMemberScreen
+import com.clearkeep.presentation.screen.chat.room.roomdetail.RoomInfoScreen
 import com.clearkeep.data.services.ChatService
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,7 +37,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.compose.*
-import com.clearkeep.presentation.screen.chat.room.photo_detail.PhotoDetailScreen
+import com.clearkeep.presentation.screen.chat.room.photodetail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
 
@@ -48,13 +48,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private val inviteGroupViewModel: InviteGroupViewModel by viewModels()
 
     private var addMemberReceiver: BroadcastReceiver? = null
-
     private var roomId: Long = 0
     private lateinit var domain: String
     private lateinit var clientId: String
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
-
 
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi

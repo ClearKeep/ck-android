@@ -20,7 +20,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.CKText
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString
 import com.clearkeep.utilities.*
 

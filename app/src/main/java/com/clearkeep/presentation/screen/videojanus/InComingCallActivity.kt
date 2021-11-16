@@ -39,7 +39,7 @@ import com.clearkeep.R
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
-import com.clearkeep.presentation.screen.videojanus.peer_to__peer.InCallPeerToPeerActivity
+import com.clearkeep.presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_coming_call.imageBackground
 import kotlinx.coroutines.delay

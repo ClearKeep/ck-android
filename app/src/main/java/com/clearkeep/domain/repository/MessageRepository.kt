@@ -7,7 +7,7 @@ import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.Note
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.presentation.screen.chat.contact_search.MessageSearchResult
+import com.clearkeep.presentation.screen.chat.contactsearch.MessageSearchResult
 import com.google.protobuf.ByteString
 import message.MessageOuterClass
 

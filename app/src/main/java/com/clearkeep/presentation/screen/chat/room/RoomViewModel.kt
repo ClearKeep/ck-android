@@ -13,7 +13,7 @@ import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.repository.AuthRepository
-import com.clearkeep.presentation.screen.chat.room.message_display_generator.MessageDisplayInfo
+import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
