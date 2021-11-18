@@ -67,8 +67,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        roomViewModel.isLogOutCompleted.observe(this) {
-            printlnCK("RoomActivity isLogoutCompleted $it")
+        roomViewModel.shouldReLogin.observe(this) {
             if (it) {
                 restartToRoot(this)
             }

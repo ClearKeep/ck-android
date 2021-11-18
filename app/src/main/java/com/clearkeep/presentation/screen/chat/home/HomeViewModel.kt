@@ -10,13 +10,11 @@ import com.clearkeep.data.local.preference.UserPreferencesStorage
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.notification.RegisterTokenUseCase
-import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
 import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
 import com.clearkeep.domain.usecase.group.GetAllRoomsUseCase
 import com.clearkeep.domain.usecase.message.ClearTempMessageUseCase
 import com.clearkeep.domain.usecase.message.ClearTempNotesUseCase
-import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
 import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
 import com.clearkeep.domain.usecase.people.SendPingUseCase
 import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
@@ -54,24 +52,15 @@ class HomeViewModel @Inject constructor(
 
     private val deleteKeyUseCase: DeleteKeyUseCase,
 
-    deleteGroupUseCase: DeleteGroupUseCase,
-    deleteMessageUseCase: DeleteMessageUseCase,
-    logoutUseCase: LogoutUseCase,
-    deleteServerUseCase: DeleteServerUseCase,
-    setActiveServerUseCase: SetActiveServerUseCase,
-    getServersUseCase: GetServersUseCase,
     getServersAsStateUseCase: GetServersAsStateUseCase,
+    logoutUseCase: LogoutUseCase,
     getActiveServerUseCase: GetActiveServerUseCase,
-) : BaseViewModel(
-    deleteGroupUseCase,
-    deleteMessageUseCase,
-    logoutUseCase,
-    deleteServerUseCase,
-    setActiveServerUseCase,
-    getServersUseCase,
-    getServersAsStateUseCase,
-    getActiveServerUseCase
-) {
+
+    private val setActiveServerUseCase: SetActiveServerUseCase
+) : BaseViewModel(logoutUseCase) {
+    val currentServer = getActiveServerUseCase()
+    val servers: LiveData<List<Server>> = getServersAsStateUseCase()
+
     var profile = getDefaultServerProfileAsStateUseCase()
 
     val isLogout = getIsLogoutUseCase()
@@ -227,7 +216,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    override fun selectChannel(server: Server) {
+    fun selectChannel(server: Server) {
         viewModelScope.launch {
             setActiveServerUseCase(server)
             selectingJoinServer.value = false

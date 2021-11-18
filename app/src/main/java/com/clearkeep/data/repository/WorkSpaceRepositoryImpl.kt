@@ -31,6 +31,7 @@ class WorkSpaceRepositoryImpl @Inject constructor(
                         printlnCK("getWorkspaceInfo token expired")
                         serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH move logic to Use case
                         "" to 0
+                        throw Exception()
                     }
                     else -> {
                         if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED) {
