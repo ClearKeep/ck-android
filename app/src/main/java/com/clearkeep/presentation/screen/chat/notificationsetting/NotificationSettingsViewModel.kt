@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
+import com.clearkeep.domain.usecase.preferences.UpdateDoNotDisturbUseCase
+import com.clearkeep.domain.usecase.preferences.UpdateShowNotificationPreviewUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -13,7 +16,9 @@ import javax.inject.Inject
 @HiltViewModel
 class NotificationSettingsViewModel @Inject constructor(
     private val environment: Environment,
-    private val userPreferenceRepository: UserPreferenceRepository
+    private val getUserPreferenceUseCase: GetUserPreferenceUseCase,
+    private val updateShowNotificationPreviewUseCase: UpdateShowNotificationPreviewUseCase,
+    private val updateDoNotDisturbUseCase: UpdateDoNotDisturbUseCase
 ) : ViewModel() {
     private lateinit var _userPreference: LiveData<UserPreference>
     val userPreference: LiveData<UserPreference>
@@ -27,7 +32,7 @@ class NotificationSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val domain = environment.getServer().serverDomain
             val userId = environment.getServer().profile.userId
-            _userPreference = userPreferenceRepository.getUserPreferenceState(domain, userId)
+            _userPreference = getUserPreferenceUseCase.asState(domain, userId)
         }
     }
 
@@ -35,7 +40,7 @@ class NotificationSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val domain = environment.getServer().serverDomain
             val userId = environment.getServer().profile.userId
-            userPreferenceRepository.updateShowNotificationPreview(domain, userId, enabled)
+            updateShowNotificationPreviewUseCase(domain, userId, enabled)
         }
     }
 
@@ -43,7 +48,7 @@ class NotificationSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val domain = environment.getServer().serverDomain
             val userId = environment.getServer().profile.userId
-            userPreferenceRepository.updateDoNotDisturb(domain, userId, enabled)
+            updateDoNotDisturbUseCase(domain, userId, enabled)
         }
     }
 }

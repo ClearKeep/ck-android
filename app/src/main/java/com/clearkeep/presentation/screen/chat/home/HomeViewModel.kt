@@ -8,7 +8,22 @@ import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.data.local.preference.UserPreferencesStorage
 import com.clearkeep.domain.model.*
-import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.LogoutUseCase
+import com.clearkeep.domain.usecase.notification.RegisterTokenUseCase
+import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
+import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
+import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
+import com.clearkeep.domain.usecase.group.GetAllRoomsUseCase
+import com.clearkeep.domain.usecase.message.ClearTempMessageUseCase
+import com.clearkeep.domain.usecase.message.ClearTempNotesUseCase
+import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
+import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
+import com.clearkeep.domain.usecase.people.SendPingUseCase
+import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
+import com.clearkeep.domain.usecase.people.UpdateStatusUseCase
+import com.clearkeep.domain.usecase.server.*
+import com.clearkeep.domain.usecase.signalkey.DeleteKeyUseCase
+import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
 import com.clearkeep.presentation.screen.chat.utils.getLinkFromPeople
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,20 +32,49 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    roomRepository: GroupRepository,
-    serverRepository: ServerRepository,
-    private val profileRepository: ProfileRepository,
-    messageRepository: MessageRepository,
     private val environment: Environment,
-    authRepository: AuthRepository,
     private val storage: UserPreferencesStorage,
-    private val workSpaceRepository: WorkSpaceRepository,
-    private val peopleRepository: PeopleRepository,
-    private val signalKeyRepository: SignalKeyRepository,
-) : BaseViewModel(authRepository, roomRepository, serverRepository, messageRepository) {
-    var profile = serverRepository.getDefaultServerProfileAsState()
+    private val registerTokenUseCase: RegisterTokenUseCase,
+    private val fetchGroupsUseCase: FetchGroupsUseCase,
+    private val getAllPeerGroupByDomainUseCase: GetAllPeerGroupByDomainUseCase,
+    private val clearTempNotesUseCase: ClearTempNotesUseCase,
+    private val clearTempMessageUseCase: ClearTempMessageUseCase,
+    private val getServerByDomainUseCase: GetServerByDomainUseCase,
 
-    val isLogout = serverRepository.isLogout
+    private val getWorkspaceInfoUseCase: GetWorkspaceInfoUseCase,
+
+    private val getListClientStatusUseCase: GetListClientStatusUseCase,
+    private val updateStatusUseCase: UpdateStatusUseCase,
+    private val sendPingUseCase: SendPingUseCase,
+    private val updateAvatarUserEntityUseCase: UpdateAvatarUserEntityUseCase,
+
+    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
+    getIsLogoutUseCase: GetIsLogoutUseCase,
+    getAllRoomsUseCase: GetAllRoomsUseCase,
+
+    private val deleteKeyUseCase: DeleteKeyUseCase,
+
+    deleteGroupUseCase: DeleteGroupUseCase,
+    deleteMessageUseCase: DeleteMessageUseCase,
+    logoutUseCase: LogoutUseCase,
+    deleteServerUseCase: DeleteServerUseCase,
+    setActiveServerUseCase: SetActiveServerUseCase,
+    getServersUseCase: GetServersUseCase,
+    getServersAsStateUseCase: GetServersAsStateUseCase,
+    getActiveServerUseCase: GetActiveServerUseCase,
+) : BaseViewModel(
+    deleteGroupUseCase,
+    deleteMessageUseCase,
+    logoutUseCase,
+    deleteServerUseCase,
+    setActiveServerUseCase,
+    getServersUseCase,
+    getServersAsStateUseCase,
+    getActiveServerUseCase
+) {
+    var profile = getDefaultServerProfileAsStateUseCase()
+
+    val isLogout = getIsLogoutUseCase()
 
     val selectingJoinServer = MutableLiveData(false)
     private val _prepareState = MutableLiveData<PrepareViewState>()
@@ -38,7 +82,7 @@ class HomeViewModel @Inject constructor(
     val prepareState: LiveData<PrepareViewState>
         get() = _prepareState
 
-    val groups: LiveData<List<ChatGroup>> = roomRepository.getAllRooms()
+    val groups: LiveData<List<ChatGroup>> = getAllRoomsUseCase()
 
     val isRefreshing = MutableLiveData(false)
 
@@ -59,9 +103,9 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            messageRepository.clearTempNotes()
-            messageRepository.clearTempMessage()
-            roomRepository.fetchGroups()
+            clearTempNotesUseCase()
+            clearTempMessageUseCase()
+            fetchGroupsUseCase()
             getStatusUserInDirectGroup()
         }
 
@@ -71,7 +115,7 @@ class HomeViewModel @Inject constructor(
     fun onPullToRefresh() {
         isRefreshing.postValue(true)
         viewModelScope.launch {
-            roomRepository.fetchGroups()
+            fetchGroupsUseCase()
             isRefreshing.postValue(false)
         }
     }
@@ -127,7 +171,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun getStatusUserInDirectGroup() {
         try {
             val listUserRequest = arrayListOf<User>()
-            roomRepository.getAllPeerGroupByDomain(
+            getAllPeerGroupByDomainUseCase(
                 owner = Owner(
                     getDomainOfActiveServer(),
                     getClientIdOfActiveServer()
@@ -143,14 +187,14 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-            val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+            val listClientStatus = getListClientStatusUseCase(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
                         Owner(it1, it2)
                     }
-                }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
+                }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
             delay(60 * 1000)
             getStatusUserInDirectGroup()
@@ -163,14 +207,14 @@ class HomeViewModel @Inject constructor(
     private fun sendPing() {
         viewModelScope.launch {
             delay(60 * 1000)
-            peopleRepository.sendPing()
+            sendPingUseCase()
             sendPing()
         }
     }
 
     fun setUserStatus(status: UserStatus) {
         viewModelScope.launch {
-            val result = peopleRepository.updateStatus(status.value)
+            val result = updateStatusUseCase(status.value)
             if (result) _currentStatus.postValue(status.value)
         }
     }
@@ -185,7 +229,7 @@ class HomeViewModel @Inject constructor(
 
     override fun selectChannel(server: Server) {
         viewModelScope.launch {
-            serverRepository.setActiveServer(server)
+            setActiveServerUseCase(server)
             selectingJoinServer.value = false
         }
     }
@@ -223,7 +267,7 @@ class HomeViewModel @Inject constructor(
     private suspend fun pushFireBaseTokenToServer() = withContext(Dispatchers.IO) {
         val token = storage.getString(FIREBASE_TOKEN)
         if (!token.isNullOrEmpty()) {
-            profileRepository.registerToken(token)
+            registerTokenUseCase(token)
         }
     }
 
@@ -249,7 +293,7 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
 
-            if (serverRepository.getServerByDomain(url) != null) {
+            if (getServerByDomainUseCase(url) != null) {
                 printlnCK("checkValidServerUrl duplicate server")
                 serverUrlValidateResponse.value = ""
                 _isServerUrlValidateLoading.value = false
@@ -258,7 +302,7 @@ class HomeViewModel @Inject constructor(
 
             val server = environment.getServer()
             val workspaceInfoResponse =
-                workSpaceRepository.getWorkspaceInfo(server.serverDomain, url)
+                getWorkspaceInfoUseCase(server.serverDomain, url)
             _isServerUrlValidateLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
@@ -279,7 +323,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val server = environment.getServer()
             val owner = Owner(server.serverDomain, server.ownerClientId)
-            signalKeyRepository.deleteKey(owner, currentServer.value!!, chatGroups.value)
+            deleteKeyUseCase(owner, currentServer.value!!, chatGroups.value)
         }
     }
 }

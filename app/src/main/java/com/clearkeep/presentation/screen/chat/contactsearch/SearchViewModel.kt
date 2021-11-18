@@ -7,6 +7,15 @@ import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.domain.repository.ServerRepository
+import com.clearkeep.domain.usecase.group.GetGroupsByDomainUseCase
+import com.clearkeep.domain.usecase.group.GetGroupsByGroupNameUseCase
+import com.clearkeep.domain.usecase.group.GetPeerRoomsByPeerNameUseCase
+import com.clearkeep.domain.usecase.message.GetMessageByTextUseCase
+import com.clearkeep.domain.usecase.people.GetFriendsUseCase
+import com.clearkeep.domain.usecase.people.InsertFriendUseCase
+import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
+import com.clearkeep.domain.usecase.server.GetActiveServerUseCase
+import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.network.Resource
@@ -20,16 +29,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val peopleRepository: PeopleRepository,
-    private val messageRepository: MessageRepository,
-    private val roomRepository: GroupRepository,
     private val environment: Environment,
-    serverRepository: ServerRepository,
+    private val getGroupsByGroupNameUseCase: GetGroupsByGroupNameUseCase,
+    private val getGroupsByDomainUseCase: GetGroupsByDomainUseCase,
+    private val getPeerRoomsByPeerNameUseCase: GetPeerRoomsByPeerNameUseCase,
+    private val getMessageByTextUseCase: GetMessageByTextUseCase,
+    private val insertFriendUseCase: InsertFriendUseCase,
+    private val updatePeopleUseCase: UpdatePeopleUseCase,
+    private val getFriendsUseCase: GetFriendsUseCase,
+    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
+    getActiveServerUseCase: GetActiveServerUseCase,
 ) : ViewModel() {
     private var searchJob: Job? = null
 
     val isShowLoading: MutableLiveData<Boolean> = MutableLiveData()
-    var profile = serverRepository.getDefaultServerProfileAsState()
+    var profile = getDefaultServerProfileAsStateUseCase()
 
     private val _friends: MutableLiveData<List<User>> = MutableLiveData()
     val friends: LiveData<List<User>> get() = _friends
@@ -50,7 +64,7 @@ class SearchViewModel @Inject constructor(
 
     val getPeopleResponse = MutableLiveData<Resource<Nothing>>()
 
-    val currentServer = serverRepository.activeServer
+    val currentServer = getActiveServerUseCase()
 
     fun getClientIdOfActiveServer() = environment.getServer().profile.userId
 
@@ -58,7 +72,7 @@ class SearchViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getPeopleResponse.value = peopleRepository.updatePeople()
+            getPeopleResponse.value = updatePeopleUseCase()
         }
         setSearchMode(SearchMode.ALL)
     }
@@ -111,7 +125,7 @@ class SearchViewModel @Inject constructor(
         withContext(Dispatchers.Main) {
             _groups.removeSource(groupSource)
             withContext(Dispatchers.IO) {
-                groupSource = roomRepository.getGroupsByGroupName(
+                groupSource = getGroupsByGroupNameUseCase(
                     server.serverDomain,
                     server.profile.userId,
                     query
@@ -131,10 +145,10 @@ class SearchViewModel @Inject constructor(
 
     private suspend fun searchUsers(server: Server, query: String) {
         val allPeopleInGroupChats =
-            roomRepository.getGroupsByDomain(server.serverDomain, server.profile.userId).asFlow()
+            getGroupsByDomainUseCase(server.serverDomain, server.profile.userId).asFlow()
         val allPeopleInServer =
-            peopleRepository.getFriends(server.serverDomain, server.profile.userId)
-        val allPeerChat = roomRepository.getPeerRoomsByPeerName(
+            getFriendsUseCase(server.serverDomain, server.profile.userId)
+        val allPeerChat = getPeerRoomsByPeerNameUseCase(
             server.serverDomain,
             server.profile.userId,
             query
@@ -188,7 +202,7 @@ class SearchViewModel @Inject constructor(
         withContext(Dispatchers.Main) {
             _messages.removeSource(messagesSource)
             withContext(Dispatchers.IO) {
-                messagesSource = messageRepository.getMessageByText(
+                messagesSource = getMessageByTextUseCase(
                     server.serverDomain,
                     server.profile.userId,
                     query
@@ -209,7 +223,7 @@ class SearchViewModel @Inject constructor(
 
     fun insertFriend(people: User) {
         viewModelScope.launch {
-            peopleRepository.insertFriend(
+            insertFriendUseCase(
                 people,
                 owner = Owner(getDomainOfActiveServer(), getClientIdOfActiveServer())
             )

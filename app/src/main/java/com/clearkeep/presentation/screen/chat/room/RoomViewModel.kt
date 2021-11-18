@@ -12,7 +12,15 @@ import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.*
-import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.LogoutUseCase
+import com.clearkeep.domain.usecase.chat.*
+import com.clearkeep.domain.usecase.group.*
+import com.clearkeep.domain.usecase.message.*
+import com.clearkeep.domain.usecase.people.GetFriendUseCase
+import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
+import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
+import com.clearkeep.domain.usecase.server.*
+import com.clearkeep.domain.usecase.signalkey.RegisterSenderKeyToGroupUseCase
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
@@ -26,18 +34,55 @@ import java.util.*
 
 @HiltViewModel
 class RoomViewModel @Inject constructor(
-    private val chatRepository: ChatRepository,
-    private val groupRepository: GroupRepository,
-    private val signalKeyRepository: SignalKeyRepository,
-    authRepository: AuthRepository,
-    serverRepository: ServerRepository,
-    messageRepository: MessageRepository,
-    private val peopleRepository: PeopleRepository,
     private val environment: Environment,
-) : BaseViewModel(authRepository, groupRepository, serverRepository, messageRepository) {
-    val isLogout = serverRepository.isLogout
+    getAllRoomsUseCase: GetAllRoomsUseCase,
+    private val createGroupUseCase: CreateGroupUseCase,
+    private val inviteToGroupUseCase: InviteToGroupUseCase,
+    private val removeMemberUseCase: RemoveMemberUseCase,
+    private val leaveGroupUseCase: LeaveGroupUseCase,
+    private val getGroupByGroupIdUseCase: GetGroupByGroupIdUseCase,
+    private val getTemporaryGroupUseCase: GetTemporaryGroupUseCase,
+    private val getGroupByIdUseCase: GetGroupByIdUseCase,
+    deleteGroupUseCase: DeleteGroupUseCase,
+    deleteMessageUseCase: DeleteMessageUseCase,
+    private val getGroupPeerByClientIdUseCase: GetGroupPeerByClientIdUseCase,
+    private val remarkGroupKeyRegisteredUseCase: RemarkGroupKeyRegisteredUseCase,
+    private val getAllPeerGroupByDomainUseCase: GetAllPeerGroupByDomainUseCase,
+    private val downloadFileUseCase: DownloadFileUseCase,
 
-    val profile = serverRepository.getDefaultServerProfileAsState()
+    private val sendMessageUseCase: SendMessageUseCase,
+    private val sendNoteUseCase: SendNoteUseCase,
+    private val uploadFileUseCase: UploadFileUseCase,
+    private val setJoiningRoomUseCase: SetJoiningRoomUseCase,
+
+    private val getMessageAsStateUseCase: GetMessageAsStateUseCase,
+    private val getNotesAsStateUseCase: GetNotesAsStateUseCase,
+    private val saveMessageUseCase: SaveMessageUseCase,
+    private val saveNoteUseCase: SaveNoteUseCase,
+    private val clearTempNotesUseCase: ClearTempNotesUseCase,
+    private val clearTempMessageUseCase: ClearTempMessageUseCase,
+    private val updateNotesFromApiUseCase: UpdateNotesFromApiUseCase,
+    private val updateMessageFromApiUseCase: UpdateMessageFromApiUseCase,
+    private val getServerByOwnerUseCase: GetServerByOwnerUseCase,
+
+    private val getListClientStatusUseCase: GetListClientStatusUseCase,
+    private val updateAvatarUserEntityUseCase: UpdateAvatarUserEntityUseCase,
+    private val getFriendUseCase: GetFriendUseCase,
+
+    private val registerSenderKeyToGroupUseCase: RegisterSenderKeyToGroupUseCase,
+
+    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
+    setActiveServerUseCase: SetActiveServerUseCase,
+    logoutUseCase: LogoutUseCase,
+    deleteServerUseCase: DeleteServerUseCase,
+    getIsLogoutUseCase: GetIsLogoutUseCase,
+    getServersUseCase: GetServersUseCase,
+    getServersAsStateUseCase: GetServersAsStateUseCase,
+    getActiveServerUseCase: GetActiveServerUseCase,
+) : BaseViewModel(deleteGroupUseCase, deleteMessageUseCase, logoutUseCase, deleteServerUseCase, setActiveServerUseCase, getServersUseCase, getServersAsStateUseCase, getActiveServerUseCase) {
+    val isLogout = getIsLogoutUseCase()
+
+    val profile = getDefaultServerProfileAsStateUseCase()
 
     private var roomId: Long? = null
 
@@ -56,7 +101,7 @@ class RoomViewModel @Inject constructor(
     var clientId: String = ""
     var domain: String = ""
 
-    val groups: LiveData<List<ChatGroup>> = groupRepository.getAllRooms()
+    val groups: LiveData<List<ChatGroup>> = getAllRoomsUseCase()
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
@@ -134,8 +179,8 @@ class RoomViewModel @Inject constructor(
 
     fun clearTempMessage() {
         viewModelScope.launch {
-            messageRepository.clearTempMessage()
-            messageRepository.clearTempNotes()
+            clearTempMessageUseCase()
+            clearTempNotesUseCase()
         }
     }
 
@@ -160,13 +205,13 @@ class RoomViewModel @Inject constructor(
 
         viewModelScope.launch {
             val selectedServer =
-                serverRepository.getServerByOwner(Owner(ownerDomain, ownerClientId))
+                getServerByOwnerUseCase(Owner(ownerDomain, ownerClientId))
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
                 return@launch
             }
             environment.setUpDomain(selectedServer)
-            serverRepository.setActiveServer(selectedServer)
+            setActiveServerUseCase(selectedServer)
 
             if (roomId != null && roomId != 0L) {
                 isLoading.postValue(true)
@@ -182,12 +227,12 @@ class RoomViewModel @Inject constructor(
     private suspend fun getStatusUserInGroup() {
         group.value?.clientList?.let {
             val listClientStatus = it.let { it1 ->
-                peopleRepository.getListClientStatus(it1)
+                getListClientStatusUseCase(it1)
             }
             _listGroupUserStatus.postValue(listClientStatus)
 
             listClientStatus?.forEach {
-                peopleRepository.updateAvatarUserEntity(it, getOwner())
+                updateAvatarUserEntityUseCase(it, getOwner())
             }
             if (group.value?.isGroup() == false) {
                 val avatars = arrayListOf<String>()
@@ -205,7 +250,7 @@ class RoomViewModel @Inject constructor(
             val currentUser = getUser()
 
             val listUserRequest = arrayListOf<User>()
-            roomRepository.getAllPeerGroupByDomain(
+            getAllPeerGroupByDomainUseCase(
                 owner = Owner(
                     currentUser.domain,
                     currentUser.userId
@@ -221,14 +266,14 @@ class RoomViewModel @Inject constructor(
                         }
                     }
                 }
-            val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
+            val listClientStatus = getListClientStatusUseCase(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
                         Owner(it1, it2)
                     }
-                }?.let { it2 -> peopleRepository.updateAvatarUserEntity(it, owner = it2) }
+                }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
             delay(60 * 1000)
             getStatusUserInDirectGroup()
@@ -265,16 +310,15 @@ class RoomViewModel @Inject constructor(
     }
 
     fun setJoiningRoomId(roomId: Long) {
-        chatRepository.setJoiningRoomId(roomId)
+        setJoiningRoomUseCase(roomId)
     }
 
     fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
-        printlnCK("getMessages: groupId $groupId")
-        return messageRepository.getMessagesAsState(groupId, Owner(domain, clientId))
+        return getMessageAsStateUseCase(groupId, Owner(domain, clientId))
     }
 
     fun getNotes(): LiveData<List<Message>> {
-        return messageRepository.getNotesAsState(Owner(domain, clientId)).map { notes ->
+        return getNotesAsStateUseCase(Owner(domain, clientId)).map { notes ->
             notes.map {
                 Message(
                     it.generateId?.toInt(),
@@ -295,7 +339,7 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
-        getGroupResponse.value = groupRepository.getGroupByID(groupId, domain, clientId)
+        getGroupResponse.value = getGroupByIdUseCase(groupId, domain, clientId)
         getGroupResponse.value?.data?.let {
             setJoiningGroup(it)
             updateMessagesFromRemote(it.lastMessageSyncTimestamp)
@@ -304,18 +348,18 @@ class RoomViewModel @Inject constructor(
 
     private suspend fun updateGroupWithFriendId(friendId: String, friendDomain: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
-        val friend = peopleRepository.getFriend(friendId, friendDomain, getOwner())
+        val friend = getFriendUseCase(friendId, friendDomain, getOwner())
             ?: User(userId = friendId, userName = "", domain = friendDomain)
         if (friend == null) {
             printlnCK("updateGroupWithFriendId: can not find friend with id $friendId")
             return
         }
-        var existingGroup = groupRepository.getGroupPeerByClientId(
+        var existingGroup = getGroupPeerByClientIdUseCase(
             friend,
             Owner(domain = domain, clientId = clientId)
         )
         if (existingGroup == null) {
-            existingGroup = groupRepository.getTemporaryGroupWithAFriend(getUser(), friend)
+            existingGroup = getTemporaryGroupUseCase(getUser(), friend)
         } else {
             updateMessagesFromRemote(existingGroup.lastMessageSyncTimestamp)
         }
@@ -331,9 +375,8 @@ class RoomViewModel @Inject constructor(
     }
 
     private suspend fun updateNotesFromRemote() {
-
         val server = environment.getServer()
-        messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
+        updateNotesFromApiUseCase(Owner(server.serverDomain, server.profile.userId))
     }
 
     fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String, isForwardMessage: Boolean = false) {
@@ -368,7 +411,7 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
                 user.avatar = ""
-                createGroupResponse.value = groupRepository.createGroup(
+                createGroupResponse.value = createGroupUseCase(
                     user.userId,
                     "$user,${receiverPeople.userName}",
                     mutableListOf(getUser(), receiverPeople),
@@ -383,7 +426,7 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId != GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
-                    val response = chatRepository.sendMessageInPeer(
+                    val response = sendMessageUseCase.toPeer(
                         clientId,
                         domain,
                         receiverPeople.userId,
@@ -396,7 +439,7 @@ class RoomViewModel @Inject constructor(
                     isLatestPeerSignalKeyProcessed = response.status == Status.SUCCESS
                     sendMessageResponse.value = response
                 } else {
-                    sendMessageResponse.value = chatRepository.sendMessageInPeer(
+                    sendMessageResponse.value = sendMessageUseCase.toPeer(
                         clientId,
                         domain,
                         receiverPeople.userId,
@@ -443,14 +486,14 @@ class RoomViewModel @Inject constructor(
         message: String,
         cachedMessageId: Int = 0
     ) {
-        val group = groupRepository.getGroupByGroupId(groupId)
+        val group = getGroupByGroupIdUseCase(groupId)
         group?.let {
             if (!group.isJoined) {
                 val result =
-                    signalKeyRepository.registerSenderKeyToGroup(groupId, clientId, domain)
+                    registerSenderKeyToGroupUseCase(groupId, clientId, domain)
                 if (result) {
-                    _group.value = groupRepository.remarkGroupKeyRegistered(groupId)
-                    sendMessageResponse.value = chatRepository.sendMessageToGroup(
+                    _group.value = remarkGroupKeyRegisteredUseCase(groupId)
+                    sendMessageResponse.value = sendMessageUseCase.toGroup(
                         clientId,
                         domain,
                         groupId,
@@ -461,7 +504,7 @@ class RoomViewModel @Inject constructor(
                     sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
                 }
             } else {
-                sendMessageResponse.value = chatRepository.sendMessageToGroup(
+                sendMessageResponse.value = sendMessageUseCase.toGroup(
                     clientId,
                     domain,
                     groupId,
@@ -488,7 +531,7 @@ class RoomViewModel @Inject constructor(
 
     private fun sendNote(message: String, cachedNoteId: Long = 0) {
         viewModelScope.launch {
-            chatRepository.sendNote(
+            sendNoteUseCase(
                 Note(
                     null,
                     message,
@@ -503,7 +546,7 @@ class RoomViewModel @Inject constructor(
     fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
         viewModelScope.launch {
             inviteToGroupResponse.value =
-                groupRepository.inviteToGroupFromAPIs(invitedUsers, groupId, getOwner())
+                inviteToGroupUseCase(invitedUsers, groupId, getOwner())
             inviteToGroupResponse.value!!.data?.let {
                 setJoiningGroup(it)
             }
@@ -517,9 +560,9 @@ class RoomViewModel @Inject constructor(
         onError: (() -> Unit)?
     ) {
         viewModelScope.launch {
-            val remoteMember = groupRepository.removeMemberInGroup(user, groupId, getOwner())
+            val remoteMember = removeMemberUseCase(user, groupId, getOwner())
             if (remoteMember) {
-                val ret = groupRepository.getGroupFromAPIById(groupId, domain, clientId)
+                val ret = getGroupByIdUseCase(groupId, domain, clientId)
                 ret?.data?.let {
                     setJoiningGroup(it)
                     updateMessagesFromRemote(it.lastMessageSyncTimestamp)
@@ -534,9 +577,9 @@ class RoomViewModel @Inject constructor(
     fun leaveGroup(onSuccess: (() -> Unit)? = null, onError: (() -> Unit)? = null) {
         roomId?.let {
             viewModelScope.launch {
-                val result = groupRepository.leaveGroup(it, getOwner())
+                val result = leaveGroupUseCase(it, getOwner())
                 if (result) {
-                    messageRepository.deleteMessageInGroup(
+                    deleteMessageUseCase(
                         it,
                         getOwner().domain,
                         getOwner().clientId
@@ -557,8 +600,8 @@ class RoomViewModel @Inject constructor(
             if (lastGroupId == GROUP_ID_TEMPO) {
                 val user = getUser()
                 printlnCK("requestCall $domain")
-                val friend = peopleRepository.getFriend(friendId!!, friendDomain!!, getOwner())!!
-                createGroupResponse.value = groupRepository.createGroup(
+                val friend = getFriendUseCase(friendId!!, friendDomain!!, getOwner())!!
+                createGroupResponse.value = createGroupUseCase(
                     user.userId,
                     "",
                     mutableListOf(user, friend),
@@ -590,7 +633,7 @@ class RoomViewModel @Inject constructor(
 
     private fun setJoiningGroup(group: ChatGroup) {
         _group.value = group
-        chatRepository.setJoiningRoomId(group.groupId)
+        setJoiningRoomUseCase(group.groupId)
         endOfPaginationReached = false
         lastLoadRequestTimestamp = 0L
     }
@@ -702,7 +745,7 @@ class RoomViewModel @Inject constructor(
                 val tempMessageContent =
                     if (message != null) "$tempMessageUris $message" else tempMessageUris
                 val tempMessageId = if (isNote.value == true) {
-                    messageRepository.saveNote(
+                    saveNoteUseCase(
                         Note(
                             null,
                             tempMessageContent,
@@ -713,7 +756,7 @@ class RoomViewModel @Inject constructor(
                         )
                     )
                 } else {
-                    messageRepository.saveMessage(
+                    saveMessageUseCase(
                         Message(
                             null,
                             "",
@@ -743,7 +786,7 @@ class RoomViewModel @Inject constructor(
                     }
                     val mimeType = getFileMimeType(context, uri, persistablePermission)
                     val fileName = uri.getFileName(context, persistablePermission)
-                    val urlResponse = chatRepository.uploadFile(
+                    val urlResponse = uploadFileUseCase(
                         context,
                         mimeType,
                         fileName.replace(" ", "_"),
@@ -827,7 +870,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun downloadFile(url: String) {
-        chatRepository.downloadFile(getFileNameFromUrl(url), getFileUrl(url))
+        downloadFileUseCase(url)
     }
 
     fun getPhotoUri(context: Context): Uri {
@@ -867,7 +910,7 @@ class RoomViewModel @Inject constructor(
             viewModelScope.launch {
                 isLoading.value = true
                 val server = environment.getServer()
-                val loadResponse = messageRepository.updateMessageFromAPI(
+                val loadResponse = updateMessageFromApiUseCase(
                     group.value?.groupId ?: 0,
                     Owner(server.serverDomain, server.profile.userId),
                     if (isRefresh) 0 else lastMessageAt
@@ -876,7 +919,7 @@ class RoomViewModel @Inject constructor(
                 endOfPaginationReached = endOfPagination
                 var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
                 while (isRefresh && newestMessageTimestamp > lastMessageAt) {
-                    val response = messageRepository.updateMessageFromAPI(
+                    val response = updateMessageFromApiUseCase(
                         group.value?.groupId ?: 0,
                         Owner(server.serverDomain, server.profile.userId),
                         newestMessageTimestamp
@@ -889,7 +932,7 @@ class RoomViewModel @Inject constructor(
                     //Execute queued load request
                     val temp = lastLoadRequestTimestamp
                     lastLoadRequestTimestamp = 0L
-                    endOfPaginationReached = messageRepository.updateMessageFromAPI(
+                    endOfPaginationReached = updateMessageFromApiUseCase(
                         group.value?.groupId ?: 0,
                         Owner(server.serverDomain, server.profile.userId),
                         temp

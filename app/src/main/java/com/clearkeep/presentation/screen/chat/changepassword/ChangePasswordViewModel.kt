@@ -9,6 +9,8 @@ import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.ResetPasswordUseCase
+import com.clearkeep.domain.usecase.profile.ChangePasswordUseCase
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
-    private val profileRepository: ProfileRepository,
-    private val authRepository: AuthRepository,
+    private val changePasswordUseCase: ChangePasswordUseCase,
+    private val resetPasswordUseCase: ResetPasswordUseCase,
 ) : ViewModel() {
     private val _oldPassword = MutableLiveData<String>()
     private val _oldPasswordError = MutableLiveData<String>()
@@ -98,7 +100,7 @@ class ChangePasswordViewModel @Inject constructor(
         val owner = Owner(server.serverDomain, server.profile.userId)
 
         viewModelScope.launch {
-            val response = profileRepository.changePassword(
+            val response = changePasswordUseCase(
                 owner,
                 server.profile.email ?: "",
                 oldPassword,
@@ -117,7 +119,7 @@ class ChangePasswordViewModel @Inject constructor(
 
         viewModelScope.launch {
             changePasswordResponse.value =
-                authRepository.resetPassword(preAccessToken, userId, serverDomain, newPassword)
+                resetPasswordUseCase(preAccessToken, userId, serverDomain, newPassword)
         }
     }
 

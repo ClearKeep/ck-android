@@ -5,8 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.VideoCallRepository
+import com.clearkeep.domain.usecase.call.CancelCallUseCase
 import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,10 +16,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DismissNotificationReceiver : BroadcastReceiver() {
     @Inject
-    lateinit var videoCallRepository: VideoCallRepository
-
-    @Inject
-    lateinit var serverRepository: ServerRepository
+    lateinit var cancelCallUseCase: CancelCallUseCase
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -33,7 +29,7 @@ class DismissNotificationReceiver : BroadcastReceiver() {
                 printlnCK("onReceive dismiss call notification, group id = $groupId")
                 if (!isGroup(groupType) && domain.isNotBlank() && clientId.isNotBlank()) {
                     GlobalScope.launch {
-                        videoCallRepository.cancelCall(groupId.toInt(), Owner(domain, clientId))
+                        cancelCallUseCase(groupId.toInt(), Owner(domain, clientId))
                     }
                 }
 

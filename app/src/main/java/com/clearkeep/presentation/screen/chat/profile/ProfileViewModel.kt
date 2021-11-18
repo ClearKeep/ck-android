@@ -11,6 +11,12 @@ import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.UserPreferenceRepository
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
+import com.clearkeep.domain.usecase.profile.GetMfaSettingsUseCase
+import com.clearkeep.domain.usecase.profile.UpdateMfaSettingsUseCase
+import com.clearkeep.domain.usecase.profile.UpdateProfileUseCase
+import com.clearkeep.domain.usecase.profile.UploadAvatarUseCase
+import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
 import com.clearkeep.presentation.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.utilities.network.Resource
@@ -30,13 +36,16 @@ import kotlin.Exception
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val environment: Environment,
-    private val profileRepository: ProfileRepository,
-    private val userPreferenceRepository: UserPreferenceRepository,
-    serverRepository: ServerRepository
+    private val uploadAvatarUseCase: UploadAvatarUseCase,
+    private val updateProfileUseCase: UpdateProfileUseCase,
+    private val getMfaSettingsUseCase: GetMfaSettingsUseCase,
+    private val updateMfaSettingsUseCase: UpdateMfaSettingsUseCase,
+    private val getUserPreferenceUseCase: GetUserPreferenceUseCase,
+    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
 ) : ViewModel() {
     private val phoneUtil = PhoneNumberUtil.getInstance()
 
-    val profile: LiveData<Profile?> = serverRepository.getDefaultServerProfileAsState().map {
+    val profile: LiveData<Profile?> = getDefaultServerProfileAsStateUseCase().map {
         _username.postValue(it.userName)
         _email.postValue(it.email)
 
@@ -97,14 +106,14 @@ class ProfileViewModel @Inject constructor(
     fun getMfaDetail() {
         val server = environment.getServer()
         viewModelScope.launch {
-            profileRepository.getMfaSettingsFromAPI(
+            getMfaSettingsUseCase(
                 Owner(
                     server.serverDomain,
                     server.profile.userId
                 )
             )
         }
-        _userPreference = userPreferenceRepository.getUserPreferenceState(
+        _userPreference = getUserPreferenceUseCase.asState(
             server.serverDomain,
             server.profile.userId
         )
@@ -198,7 +207,7 @@ class ProfileViewModel @Inject constructor(
             GlobalScope.launch {
                 val avatarUrl = uploadAvatarImage(avatarToUpload, context)
                 if (profile.value != null) {
-                    profileRepository.updateProfile(
+                    updateProfileUseCase(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
                             userName = displayName.trim(),
@@ -208,7 +217,7 @@ class ProfileViewModel @Inject constructor(
                         )
                     )
                     if (shouldUpdateMfaSetting) {
-                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        val response = updateMfaSettingsUseCase(getOwner(), false)
                         updateMfaSettingResponse.value = response
                     }
                 }
@@ -217,7 +226,7 @@ class ProfileViewModel @Inject constructor(
             //Update normal data only
             viewModelScope.launch {
                 if (profile.value != null) {
-                    profileRepository.updateProfile(
+                    updateProfileUseCase(
                         Owner(server.serverDomain, server.profile.userId),
                         profile.value!!.copy(
                             userName = displayName.trim(),
@@ -225,7 +234,7 @@ class ProfileViewModel @Inject constructor(
                         )
                     )
                     if (shouldUpdateMfaSetting) {
-                        val response = profileRepository.updateMfaSettings(getOwner(), false)
+                        val response = updateMfaSettingsUseCase(getOwner(), false)
                         if (response.status == Status.ERROR) {
                             updateMfaSettingResponse.value = response
                         }
@@ -285,7 +294,7 @@ class ProfileViewModel @Inject constructor(
 
     fun updateMfaSettings(enabled: Boolean) {
         viewModelScope.launch {
-            val response = profileRepository.updateMfaSettings(getOwner(), enabled)
+            val response = updateMfaSettingsUseCase(getOwner(), enabled)
             if (enabled || response.status == Status.ERROR) {
                 //Don't send message to UI when disable success
                 updateMfaSettingResponse.value = response
@@ -320,10 +329,10 @@ class ProfileViewModel @Inject constructor(
         val fileHashByteArray = fileDigest.digest()
         val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
         val server = environment.getServer()
-        return profileRepository.uploadAvatar(
+        return uploadAvatarUseCase(
             Owner(server.serverDomain, server.profile.userId),
             mimeType,
-            fileName.replace(" ", "_"),
+            fileName,
             byteStrings,
             fileHashString
         )

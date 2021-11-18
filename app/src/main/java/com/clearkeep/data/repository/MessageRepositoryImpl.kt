@@ -53,8 +53,8 @@ class MessageRepositoryImpl @Inject constructor(
     private val noteDAO: NoteDAO,
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val serverRepository: ServerRepository,
-    private val groupRepository: GroupRepository,
+    private val serverRepository: ServerRepository, //TODO: Clean
+    private val groupRepository: GroupRepository, //TODO: Clean
     private val signalKeyDistributionService: SignalKeyDistributionService,
     private val messageService: MessageService,
     private val noteService: NoteService,
@@ -334,7 +334,7 @@ class MessageRepositoryImpl @Inject constructor(
 
         val groupId = message.groupId
         val room: ChatGroup? =
-            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data //TODO: CLEAN ARCH Move logic to UseCase
 
         printlnCK("saveNewMessage group $room")
 
@@ -387,35 +387,8 @@ class MessageRepositoryImpl @Inject constructor(
         return insertNote(note)
     }
 
-    override suspend fun updateMessage(message: Message) {
-        messageDAO.updateMessage(message)
-    }
-
-    override suspend fun updateNote(note: Note) {
-        noteDAO.updateNotes(note)
-    }
-
     override suspend fun saveMessage(message: Message): Int {
         return messageDAO.insert(message).toInt()
-    }
-
-    override fun convertMessageResponse(
-        value: MessageOuterClass.MessageObjectResponse,
-        decryptedMessage: String,
-        owner: Owner
-    ): Message {
-        return Message(
-            messageId = value.id,
-            groupId = value.groupId,
-            groupType = value.groupType,
-            senderId = value.fromClientId,
-            receiverId = value.clientId,
-            message = decryptedMessage,
-            createdTime = value.createdAt,
-            updatedTime = value.updatedAt,
-            ownerDomain = owner.domain,
-            ownerClientId = owner.clientId
-        )
     }
 
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
@@ -479,65 +452,6 @@ class MessageRepositoryImpl @Inject constructor(
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
     }
 
-    override suspend fun initSessionUserPeer(
-        signalProtocolAddress: CKSignalProtocolAddress,
-        signalProtocolStore: InMemorySignalProtocolStore,
-        owner: Owner
-    ): Boolean = withContext(Dispatchers.IO) {
-        val remoteClientId = signalProtocolAddress.owner.clientId
-        printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
-        if (TextUtils.isEmpty(remoteClientId)) {
-            return@withContext false
-        }
-        try {
-            val server = serverRepository.getServerByOwner(owner)
-            if (server == null) {
-                printlnCK("initSessionUserPeer: server must be not null")
-                return@withContext false
-            }
-
-            val remoteKeyBundle = signalKeyDistributionService.getPeerClientKey(server, remoteClientId, signalProtocolAddress.owner.domain)
-
-            val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
-            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
-            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic.toByteArray(), 0)
-
-            val retrievedPreKey = PreKeyBundle(
-                remoteKeyBundle.registrationId,
-                signalProtocolAddress.deviceId,
-                preKey.id,
-                preKey.keyPair.publicKey,
-                remoteKeyBundle.signedPreKeyId,
-                signedPreKey.keyPair.publicKey,
-                signedPreKey.signature,
-                identityKeyPublic
-            )
-
-            val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
-
-            // Build a session with a PreKey retrieved from the server.
-            sessionBuilder.process(retrievedPreKey)
-            printlnCK("initSessionUserPeer: success")
-            return@withContext true
-        } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("initSessionUserPeer token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-            printlnCK("initSessionUserPeer: $e")
-        }
-
-        return@withContext false
-    }
-
     private suspend fun initSessionUserInGroup(
         groupId: Long, fromClientId: String,
         groupSender: SenderKeyName,
@@ -584,7 +498,7 @@ class MessageRepositoryImpl @Inject constructor(
         printlnCK("deleteMessageInGroup: $index")
     }
 
-    override suspend fun clearMessageByDomain(domain: String, userId: String) {
+    override suspend fun deleteMessageByDomain(domain: String, userId: String) {
         messageDAO.deleteMessageByDomain(domain, userId)
     }
 }

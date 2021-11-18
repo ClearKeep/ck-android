@@ -17,6 +17,7 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -67,6 +68,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), JanusRTCInterface,
     PeerConnectionClient.PeerConnectionEvents {
+    private val viewModel: InCallViewModel by viewModels()
+
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
 
@@ -140,7 +143,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         if (environment.getServerCanNull() == null) {
             GlobalScope.launch(context = Dispatchers.Main) {
-                val selectedServer = serverRepository.getDefaultServer()
+                val selectedServer = viewModel.getDefaultServer()
                 environment.setUpDomain(selectedServer)
             }
         }
@@ -247,7 +250,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
             // TODO
-            group = groupRepository.getGroupByID(
+            group = viewModel.getGroupById(
                 intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(),
                 mOwnerDomain,
                 mOwnerClientId
@@ -272,8 +275,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 )
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result =
-                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result = viewModel.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
 
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -559,7 +561,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         configMedia(isSpeaker = true, isMuteVideo = false)
         updateUIByStateAndMode()
         callScope.launch {
-            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
+            viewModel.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 
@@ -669,7 +671,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private fun cancelCallAPI() {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(mGroupId.toInt(), getOwnerServer())
+            viewModel.cancelCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 

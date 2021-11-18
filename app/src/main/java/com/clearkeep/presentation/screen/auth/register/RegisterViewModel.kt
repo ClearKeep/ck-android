@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.RegisterUseCase
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val registerUseCase: RegisterUseCase,
 ) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
@@ -86,7 +87,7 @@ class RegisterViewModel @Inject constructor(
         _email.value = email
 
         val result = if (isValid) {
-            authRepository.register(displayName.trim(), password, email.trim(), domain)
+            registerUseCase(displayName, password, email, domain)
         } else {
             null
         }

@@ -36,14 +36,14 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val userManager: AppStorage,
-    private val serverRepository: ServerRepository,
+    private val serverRepository: ServerRepository, //TODO: Clean
     private val myStore: InMemorySignalProtocolStore,
-    private val userPreferenceRepository: UserPreferenceRepository,
+    private val userPreferenceRepository: UserPreferenceRepository, //TODO: Clean
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val roomRepository: GroupRepository,
-    private val userKeyRepository: UserKeyRepository,
-    private val messageRepository: MessageRepository,
+    private val roomRepository: GroupRepository, //TODO: Clean
+    private val userKeyRepository: UserKeyRepository, //TODO: Clean
+    private val messageRepository: MessageRepository, //TODO: Clean
     private val authService: AuthService
 ) : AuthRepository {
     override suspend fun register(
@@ -262,12 +262,12 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun registerSocialPin(
         domain: String,
         rawPin: String,
-        userId: String
+        userName: String
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val nativeLib = NativeLib()
 
-            val salt = nativeLib.getSalt(userId, rawPin)
+            val salt = nativeLib.getSalt(userName, rawPin)
             val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
             val verificator = nativeLib.getVerificator()
@@ -281,7 +281,7 @@ class AuthRepositoryImpl @Inject constructor(
 
             val preKeys = KeyHelper.generatePreKeys(1, 1)
             val preKey = preKeys[0]
-            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userId + domain).hashCode())
+            val signedPreKey = KeyHelper.generateSignedPreKey(key, (userName + domain).hashCode())
             val transitionID = KeyHelper.generateRegistrationId(false)
             val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
                 toHex(it)
@@ -299,7 +299,7 @@ class AuthRepositoryImpl @Inject constructor(
                 signedPreKey.serialize(),
                 decryptResult,
                 signedPreKey.signature,
-                userId,
+                userName,
                 saltHex,
                 verificatorHex,
                 toHex(decrypter.getIv()),
@@ -515,7 +515,7 @@ class AuthRepositoryImpl @Inject constructor(
         try {
             val response = authService.forgotPassword(email, domain)
 
-            if (response?.error?.isEmpty() == true) {
+            if (response.error?.isEmpty() == true) {
                 return@withContext Resource.success(response)
             } else {
                 return@withContext Resource.error(response.error, null)
@@ -579,7 +579,7 @@ class AuthRepositoryImpl @Inject constructor(
                 domain,
                 profile.userId,
                 isSocialAccount = false
-            )
+            ) //TODO: CLEAN ARCHITECTURE move to use case
             return@withContext Resource.success(response)
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
@@ -668,7 +668,6 @@ class AuthRepositoryImpl @Inject constructor(
             printlnCK("insert signalIdentityKeyDAO")
             signalIdentityKeyDAO.insert(signalIdentityKey)
 
-
             environment.setUpTempDomain(
                 Server(
                     null,
@@ -688,10 +687,10 @@ class AuthRepositoryImpl @Inject constructor(
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
 
             if (clearOldUserData) {
-                val oldServer = serverRepository.getServer(domain, profile.userId)
+                val oldServer = serverRepository.getServer(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
                 oldServer?.id?.let {
-                    roomRepository.removeGroupByDomain(domain, profile.userId)
-                    messageRepository.clearMessageByDomain(domain, profile.userId)
+                    roomRepository.deleteGroup(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
+                    messageRepository.deleteMessageByDomain(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
                 }
             }
 
@@ -707,13 +706,13 @@ class AuthRepositoryImpl @Inject constructor(
                     refreshToken = response.refreshToken,
                     profile = profile,
                 )
-            )
+            ) //TODO: CLEAN ARCHITECTURE move to use case
             userPreferenceRepository.initDefaultUserPreference(
                 domain,
                 profile.userId,
                 isSocialAccount
-            )
-            userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv))
+            ) //TODO: CLEAN ARCHITECTURE move to use case
+            userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv)) //TODO: CLEAN ARCHITECTURE move to use case
             printlnCK("onLoginSuccess insert server success")
 
             return Resource.success(response)
@@ -723,7 +722,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun getProfile(domain: String, accessToken: String, hashKey: String): Profile? =
+    override suspend fun getProfile(domain: String, accessToken: String, hashKey: String): Profile? =
         withContext(Dispatchers.IO) {
             try {
                 val response = authService.getProfile(domain, accessToken, hashKey)

@@ -218,8 +218,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 callViewModel.onSpeakChange(mIsSpeaker)
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result =
-                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result = callViewModel.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
                 if (result != null) {
                     val turnConfig = result.turnServer
                     val stunConfig = result.stunServer
@@ -595,7 +594,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 tvUserNameVideoCall.visibility = View.GONE
                 viewVideoCalled.visibility = View.VISIBLE
             }
-
         }
     }
 
@@ -607,7 +605,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun switchToVideoMode() {
         callViewModel.mIsAudioMode.postValue(false)
         callScope.launch {
-            videoCallRepository.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
+            callViewModel.switchAudioToVideoCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 
@@ -630,7 +628,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private fun cancelCallAPI() {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(mGroupId.toInt(), getOwnerServer())
+            callViewModel.cancelCall(mGroupId.toInt(), getOwnerServer())
         }
     }
 

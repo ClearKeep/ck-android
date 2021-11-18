@@ -8,6 +8,9 @@ import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.repository.UserPreferenceRepository
+import com.clearkeep.domain.usecase.group.GetGroupByIdUseCase
+import com.clearkeep.domain.usecase.message.GetUnreadMessageUseCase
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
@@ -24,7 +27,13 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
     lateinit var groupRepository: GroupRepository
 
     @Inject
-    lateinit var userPreferenceRepository: UserPreferenceRepository
+    lateinit var getUserPreferenceUseCase: GetUserPreferenceUseCase
+
+    @Inject
+    lateinit var getGroupByIdUseCase: GetGroupByIdUseCase
+
+    @Inject
+    lateinit var getUnreadMessageUseCase: GetUnreadMessageUseCase
 
     override fun onReceive(context: Context, intent: Intent) {
         val groupId = intent.getLongExtra(EXTRA_GROUP_ID, 0)
@@ -43,13 +52,13 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
     ) {
         GlobalScope.launch {
             val unreadMessages =
-                messageRepository.getUnreadMessage(groupId, ownerDomain, ownerClientId)
-            val group = groupRepository.getGroupByID(groupId, ownerDomain, ownerClientId)
+                getUnreadMessageUseCase(groupId, ownerDomain, ownerClientId)
+            val group = getGroupByIdUseCase(groupId, ownerDomain, ownerClientId)
             if (group?.data != null && unreadMessages.isNotEmpty()) {
                 val me = group.data.clientList.find { it.userId == ownerClientId }
                     ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
                 val userPreference =
-                    userPreferenceRepository.getUserPreference(ownerDomain, ownerClientId)
+                    getUserPreferenceUseCase(ownerDomain, ownerClientId)
                 showMessageNotificationToSystemBar(
                     context,
                     me,

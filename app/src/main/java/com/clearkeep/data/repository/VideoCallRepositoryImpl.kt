@@ -1,7 +1,9 @@
 package com.clearkeep.data.repository
 
+import com.clearkeep.data.local.clearkeep.dao.ServerDAO
 import com.clearkeep.data.remote.service.VideoCallService
 import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.utilities.*
@@ -13,20 +15,13 @@ import javax.inject.Singleton
 
 @Singleton
 class VideoCallRepositoryImpl @Inject constructor(
-    private val serverRepository: ServerRepository,
     private val videoCallService: VideoCallService
 ): VideoCallRepository {
     override suspend fun requestVideoCall(
         groupId: Int,
         isAudioMode: Boolean,
-        owner: Owner
+        server: Server
     ): VideoCallOuterClass.ServerResponse? = withContext(Dispatchers.IO) {
-        printlnCK("requestVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
-        val server = serverRepository.getServer(owner.domain, owner.clientId)
-        if (server == null) {
-            printlnCK("requestVideoCall: Can not find server: ${owner.domain} + ${owner.clientId}")
-            return@withContext null
-        }
         try {
             return@withContext videoCallService.requestVideoCall(groupId, isAudioMode, server)
         } catch (e: Exception) {
@@ -35,13 +30,7 @@ class VideoCallRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun cancelCall(groupId: Int, owner: Owner): Boolean = withContext(Dispatchers.IO) {
-        printlnCK("cancelCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
-        val server = serverRepository.getServer(owner.domain, owner.clientId)
-        if (server == null) {
-            printlnCK("cancelCall: Can not find server: ${owner.domain} + ${owner.clientId}")
-            return@withContext false
-        }
+    override suspend fun cancelCall(groupId: Int, server: Server): Boolean = withContext(Dispatchers.IO) {
         try {
             val response = videoCallService.cancelCall(groupId, server)
             val success = response.error.isNullOrEmpty()
@@ -53,13 +42,7 @@ class VideoCallRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun busyCall(groupId: Int, owner: Owner): Boolean = withContext(Dispatchers.IO) {
-        printlnCK("cancelCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
-        val server = serverRepository.getServer(owner.domain, owner.clientId)
-        if (server == null) {
-            printlnCK("cancelCall: Can not find server: ${owner.domain} + ${owner.clientId}")
-            return@withContext false
-        }
+    override suspend fun busyCall(groupId: Int, server: Server): Boolean = withContext(Dispatchers.IO) {
         try {
             val response = videoCallService.setBusy(groupId, server)
             val success = response.error.isNullOrEmpty()
@@ -71,14 +54,8 @@ class VideoCallRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner): Boolean =
+    override suspend fun switchAudioToVideoCall(groupId: Int, server: Server): Boolean =
         withContext(Dispatchers.IO) {
-            printlnCK("switchAudioToVideoCall: groupId = $groupId, ${owner.domain}, ${owner.clientId}")
-            val server = serverRepository.getServer(owner.domain, owner.clientId)
-            if (server == null) {
-                printlnCK("switchAudioToVideoCall: Can not find server: ${owner.domain} + ${owner.clientId}")
-                return@withContext false
-            }
             try {
                 val response = videoCallService.switchFromAudioToVideoCall(groupId, server)
                 val success = response.error.isNullOrEmpty()
