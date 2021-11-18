@@ -69,12 +69,12 @@ class AuthRepositoryImpl @Inject constructor(
         val preKey = preKeys[0]
         val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
         val transitionID = KeyHelper.generateRegistrationId(false)
-        val iv = toHex(decrypter.getIv())
         val identityKeyPublic = key.publicKey.serialize()
         val preKeyId = preKey.id
         val identityKeyEncrypted = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
             toHex(it)
         }
+        val iv = toHex(decrypter.getIv())
 
         try {
             val response = authService.registerSrp(

@@ -38,8 +38,6 @@ import com.clearkeep.utilities.sdp
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
-
-
     private val homeViewModel: HomeViewModel by viewModels()
 
     private val startCreateGroupForResult =
@@ -190,41 +188,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun subscriberLogout() {
-        homeViewModel.isLogOutCompleted.observe(this, { completed ->
+        homeViewModel.shouldReLogin.observe(this, { completed ->
             if (completed) {
                 restartToRoot(this)
             }
         })
-
-        homeViewModel.servers.observe(this, Observer {
-            printlnCK("homeViewModel servers: ${it.size}")
-        })
-
-
-    }
-
-    @Composable
-    private fun LogoutProgress() {
-        homeViewModel.isLogOutProcessing.observeAsState().value?.let { isProcessing ->
-            if (isProcessing) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        CircularProgressIndicator(color = Color.Blue)
-                        Spacer(modifier = Modifier.height(10.sdp()))
-                        Text(
-                            text = "Leave server...",
-                            style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                }
-            }
-        }
     }
 
     private fun signOut() {

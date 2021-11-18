@@ -43,8 +43,7 @@ class RoomViewModel @Inject constructor(
     private val getGroupByGroupIdUseCase: GetGroupByGroupIdUseCase,
     private val getTemporaryGroupUseCase: GetTemporaryGroupUseCase,
     private val getGroupByIdUseCase: GetGroupByIdUseCase,
-    deleteGroupUseCase: DeleteGroupUseCase,
-    deleteMessageUseCase: DeleteMessageUseCase,
+    private val deleteMessageUseCase: DeleteMessageUseCase,
     private val getGroupPeerByClientIdUseCase: GetGroupPeerByClientIdUseCase,
     private val remarkGroupKeyRegisteredUseCase: RemarkGroupKeyRegisteredUseCase,
     private val getAllPeerGroupByDomainUseCase: GetAllPeerGroupByDomainUseCase,
@@ -71,15 +70,14 @@ class RoomViewModel @Inject constructor(
 
     private val registerSenderKeyToGroupUseCase: RegisterSenderKeyToGroupUseCase,
 
-    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
-    setActiveServerUseCase: SetActiveServerUseCase,
-    logoutUseCase: LogoutUseCase,
-    deleteServerUseCase: DeleteServerUseCase,
-    getIsLogoutUseCase: GetIsLogoutUseCase,
-    getServersUseCase: GetServersUseCase,
-    getServersAsStateUseCase: GetServersAsStateUseCase,
+    private val setActiveServerUseCase: SetActiveServerUseCase,
     getActiveServerUseCase: GetActiveServerUseCase,
-) : BaseViewModel(deleteGroupUseCase, deleteMessageUseCase, logoutUseCase, deleteServerUseCase, setActiveServerUseCase, getServersUseCase, getServersAsStateUseCase, getActiveServerUseCase) {
+    getIsLogoutUseCase: GetIsLogoutUseCase,
+    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
+
+    logoutUseCase: LogoutUseCase,
+) : BaseViewModel(logoutUseCase) {
+    val currentServer = getActiveServerUseCase()
     val isLogout = getIsLogoutUseCase()
 
     val profile = getDefaultServerProfileAsStateUseCase()
@@ -134,7 +132,7 @@ class RoomViewModel @Inject constructor(
     private val _listGroupUserStatus = MutableLiveData<List<User>>()
     val listGroupUserStatus: LiveData<List<User>>
         get() = _listGroupUserStatus
-    
+
     private val _listUserStatus = MutableLiveData<List<User>>()
     val listUserStatus: LiveData<List<User>> get() = _listUserStatus
 
@@ -156,6 +154,7 @@ class RoomViewModel @Inject constructor(
 
     @Volatile
     private var endOfPaginationReached = false
+
     @Volatile
     private var lastLoadRequestTimestamp = 0L
 
@@ -379,11 +378,18 @@ class RoomViewModel @Inject constructor(
         updateNotesFromApiUseCase(Owner(server.serverDomain, server.profile.userId))
     }
 
-    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String, isForwardMessage: Boolean = false) {
+    fun sendMessageToUser(
+        context: Context,
+        receiverPeople: User,
+        groupId: Long,
+        message: String,
+        isForwardMessage: Boolean = false
+    ) {
         viewModelScope.launch {
             try {
                 val quotedMessage = quotedMessage.value
-                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                val encodedMessage =
+                    if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
@@ -463,7 +469,8 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val quotedMessage = quotedMessage.value
-                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                val encodedMessage =
+                    if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
@@ -915,7 +922,7 @@ class RoomViewModel @Inject constructor(
                     Owner(server.serverDomain, server.profile.userId),
                     if (isRefresh) 0 else lastMessageAt
                 )
-                val endOfPagination =  loadResponse.endOfPaginationReached
+                val endOfPagination = loadResponse.endOfPaginationReached
                 endOfPaginationReached = endOfPagination
                 var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
                 while (isRefresh && newestMessageTimestamp > lastMessageAt) {
