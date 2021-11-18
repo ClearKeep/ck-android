@@ -9,6 +9,15 @@ import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
+import com.clearkeep.domain.usecase.call.BusyCallUseCase
+import com.clearkeep.domain.usecase.group.*
+import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
+import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
+import com.clearkeep.domain.usecase.people.DeleteFriendUseCase
+import com.clearkeep.domain.usecase.people.GetFriendUseCase
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
+import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
+import com.clearkeep.domain.usecase.server.GetServerUseCase
 import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
@@ -43,13 +52,43 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var messageRepository: MessageRepository
 
     @Inject
-    lateinit var userPreferenceRepository: UserPreferenceRepository
+    lateinit var getUserPreferenceUseCase: GetUserPreferenceUseCase
+
+    @Inject
+    lateinit var disableChatOfDeactivatedUserUseCase: DisableChatOfDeactivatedUserUseCase
+
+    @Inject
+    lateinit var getGroupByIdUseCase: GetGroupByIdUseCase
+
+    @Inject
+    lateinit var deleteGroupUseCase: DeleteGroupUseCase
+
+    @Inject
+    lateinit var getListClientInGroupUseCase: GetListClientInGroupUseCase
+
+    @Inject
+    lateinit var deleteMessageUseCase: DeleteMessageUseCase
+
+    @Inject
+    lateinit var decryptMessageUseCase: DecryptMessageUseCase
+
+    @Inject
+    lateinit var getOwnerClientIdsUseCase: GetOwnerClientIdsUseCase
+
+    @Inject
+    lateinit var getServerUseCase: GetServerUseCase
+
+    @Inject
+    lateinit var deleteFriendUseCase: DeleteFriendUseCase
+
+    @Inject
+    lateinit var getFriendUseCase: GetFriendUseCase
 
     @Inject
     lateinit var peopleRepository: PeopleRepository
 
     @Inject
-    lateinit var videoCallRepository: VideoCallRepository
+    lateinit var busyCallUseCase: BusyCallUseCase
 
     @Inject
     lateinit var environment: Environment
@@ -68,7 +107,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         printlnCK("notification $clientId")
         GlobalScope.launch {
-            val server = serverRepository.getServer(clientDomain, clientId)
+            val server = getServerUseCase(clientDomain, clientId)
             printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
@@ -130,16 +169,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val isAudioMode = groupCallType == CALL_TYPE_AUDIO
         printlnCK("handleRequestCall avatar $avatar")
         if (avatar.isBlank() && !isGroup(groupType)) {
-            peopleRepository.getFriendFromID(fromClientId)?.avatar?.let {
+            getFriendUseCase(fromClientId)?.avatar?.let {
                 avatar = it
             }
         }
         val currentUserName = if (isGroup(groupType)) "" else {
-            val server = serverRepository.getServer(clientDomain, clientId)
+            val server = getServerUseCase(clientDomain, clientId)
             server?.profile?.userName ?: ""
         }
         val currentUserAvatar = if (isGroup(groupType)) "" else {
-            val server = serverRepository.getServer(clientDomain, clientId)
+            val server = getServerUseCase(clientDomain, clientId)
             server?.profile?.avatar ?: ""
         }
         if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
@@ -153,7 +192,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 stunUrl, currentUserName, currentUserAvatar
             )
         } else {
-            groupId?.let { videoCallRepository.busyCall(it.toInt(), Owner(clientDomain, clientId)) }
+            groupId?.let { busyCallUseCase(it.toInt(), Owner(clientDomain, clientId)) }
         }
     }
 
@@ -176,20 +215,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         printlnCK("Notification raw message messageBase64 $messageBase64")
         val messageContent: ByteString = ByteString.copyFrom(messageBase64)
         try {
-            val decryptedMessage = messageRepository.decryptMessage(
+            val decryptedMessage = decryptMessageUseCase(
                 messageId, groupId, groupType,
                 fromClientID, fromDomain,
                 createdAt, createdAt,
                 messageContent,
                 Owner(clientDomain, clientId)
             )
-            val isShowNotification = serverRepository.getOwnerClientIds().contains(fromClientID)
+            val isShowNotification = getOwnerClientIdsUseCase().contains(fromClientID)
             if (!isShowNotification) {
                 val userPreference =
-                    userPreferenceRepository.getUserPreference(clientDomain, clientId)
-                val group = groupRepository.getGroupByID(groupId, clientDomain, clientId)
+                    getUserPreferenceUseCase(clientDomain, clientId)
+                val group = getGroupByIdUseCase(groupId, clientDomain, clientId)
                 group?.data?.let {
-                    val avatar = peopleRepository.getFriendFromID(fromClientID)?.avatar
+                    val avatar = getFriendUseCase(fromClientID)?.avatar
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = group.data,
@@ -214,22 +253,14 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
             printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: groupId")
-            if (!serverRepository.getOwnerClientIds().contains(removedMember))
-                groupRepository.getGroupFromAPIById(groupId, clientDomain, clientId)
+            if (!getOwnerClientIdsUseCase().contains(removedMember))
+                getGroupByIdUseCase(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
-                peopleRepository.deleteFriend(removedMember)
-                if (serverRepository.getOwnerClientIds().contains(removedMember)) {
-                    messageRepository.deleteMessageInGroup(groupId, clientDomain, removedMember)
+                deleteFriendUseCase(removedMember)
+                if (getOwnerClientIdsUseCase().contains(removedMember)) {
+                    deleteMessageUseCase(groupId, clientDomain, removedMember)
                 }
-                printlnCK(
-                    "getListClientInGroup ${
-                        groupRepository.getListClientInGroup(
-                            groupId,
-                            clientDomain
-                        )?.size
-                    }"
-                )
-                groupRepository.getListClientInGroup(groupId, clientDomain)?.forEach {
+                getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
@@ -247,9 +278,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
                 }
-                groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
+                deleteGroupUseCase(groupId, clientDomain, removedMember)
             }
-            if (!serverRepository.getOwnerClientIds().contains(removedMember)) {
+            if (!getOwnerClientIdsUseCase().contains(removedMember)) {
                 val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                 updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
                 sendBroadcast(updateGroupIntent)
@@ -268,7 +299,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val deactivatedAccountId = data["deactive_account_id"] ?: ""
         printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
 
-        groupRepository.disableChatOfDeactivatedUser(clientId, clientDomain, deactivatedAccountId)
+        disableChatOfDeactivatedUserUseCase(clientId, clientDomain, deactivatedAccountId)
     }
 
     private suspend fun handleCancelCall(remoteMessage: RemoteMessage) {
@@ -278,7 +309,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (groupId.isNullOrBlank()) {
             return
         }
-        val group = groupRepository.getGroupByID(groupId.toLong(), clientDomain, clientId)
+        val group = getGroupByIdUseCase(groupId.toLong(), clientDomain, clientId)
         if (group != null) {
             NotificationManagerCompat.from(applicationContext)
                 .cancel(null, INCOMING_NOTIFICATION_ID)
@@ -295,7 +326,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         if (groupId.isNullOrBlank()) {
             return
         }
-        val group = groupRepository.getGroupByID(groupId.toLong(), clientDomain, clientId)
+        val group = getGroupByIdUseCase(groupId.toLong(), clientDomain, clientId)
         if (group != null) {
             val endIntent = Intent(ACTION_CALL_BUSY)
             endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)

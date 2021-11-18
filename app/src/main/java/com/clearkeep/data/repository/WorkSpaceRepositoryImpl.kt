@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class WorkSpaceRepositoryImpl @Inject constructor(
-    private val serverRepository: ServerRepository,
+    private val serverRepository: ServerRepository, //TODO: Clean
     private val workspaceService: WorkspaceService
 ): WorkSpaceRepository {
     override suspend fun getWorkspaceInfo(currentDomain: String?, domain: String): Resource<String> =
@@ -29,7 +29,7 @@ class WorkSpaceRepositoryImpl @Inject constructor(
                 val (message, code) = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("getWorkspaceInfo token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH move logic to Use case
                         "" to 0
                     }
                     else -> {

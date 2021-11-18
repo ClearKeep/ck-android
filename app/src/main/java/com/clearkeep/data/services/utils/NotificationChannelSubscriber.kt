@@ -9,7 +9,6 @@ import notification.NotifyOuterClass
 
 class NotificationChannelSubscriber(
     private val domain: String,
-    private val clientId: String,
     private val notifyBlockingStub: NotifyGrpc.NotifyBlockingStub,
     private val notifyStub: NotifyGrpc.NotifyStub,
     private val notificationChannelListener: NotificationSubscriberListener,

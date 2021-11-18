@@ -21,6 +21,18 @@ import com.clearkeep.data.remote.dynamicapi.subscriber.DynamicSubscriberAPIProvi
 import com.clearkeep.domain.model.*
 import com.clearkeep.data.services.utils.MessageChannelSubscriber
 import com.clearkeep.data.services.utils.NotificationChannelSubscriber
+import com.clearkeep.domain.usecase.chat.GetJoiningRoomUseCase
+import com.clearkeep.domain.usecase.chat.ProcessPeerKeyUseCase
+import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
+import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
+import com.clearkeep.domain.usecase.group.GetGroupByIdUseCase
+import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
+import com.clearkeep.domain.usecase.message.UpdateMessageFromApiUseCase
+import com.clearkeep.domain.usecase.people.GetFriendUseCase
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
+import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
+import com.clearkeep.domain.usecase.server.GetServerUseCase
+import com.clearkeep.domain.usecase.server.GetServersUseCase
 import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
 
 @AndroidEntryPoint
@@ -46,7 +58,37 @@ class ChatService : Service(),
     lateinit var groupRepository: GroupRepository
 
     @Inject
-    lateinit var userPreferenceRepository: UserPreferenceRepository
+    lateinit var fetchGroupsUseCase: FetchGroupsUseCase
+
+    @Inject
+    lateinit var getGroupByIdUseCase: GetGroupByIdUseCase
+
+    @Inject
+    lateinit var getUserPreferenceUseCase: GetUserPreferenceUseCase
+
+    @Inject
+    lateinit var deleteGroupUseCase: DeleteGroupUseCase
+
+    @Inject
+    lateinit var processPeerKeyUseCase: ProcessPeerKeyUseCase
+
+    @Inject
+    lateinit var getJoiningRoomUseCase: GetJoiningRoomUseCase
+
+    @Inject
+    lateinit var decryptMessageUseCase: DecryptMessageUseCase
+
+    @Inject
+    lateinit var updateMessageFromApiUseCase: UpdateMessageFromApiUseCase
+
+    @Inject
+    lateinit var getOwnerClientIdsUseCase: GetOwnerClientIdsUseCase
+
+    @Inject
+    lateinit var getServersUseCase: GetServersUseCase
+
+    @Inject
+    lateinit var getFriendUseCase: GetFriendUseCase
 
     @Inject
     lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
@@ -114,12 +156,11 @@ class ChatService : Service(),
     }
 
     private suspend fun subscribe() {
-        val servers = serverRepository.getServers()
+        val servers = getServersUseCase()
         servers.forEach { server ->
             val domain = server.serverDomain
             val messageSubscriber = MessageChannelSubscriber(
                 domain = domain,
-                clientId = server.profile.userId,
                 messageBlockingStub = apiProvider.provideMessageBlockingStub(
                     ParamAPI(
                         domain,
@@ -135,11 +176,10 @@ class ChatService : Service(),
                     )
                 ),
                 onMessageSubscriberListener = this,
-                appStorage
+                userManager = appStorage
             )
             val notificationSubscriber = NotificationChannelSubscriber(
                 domain = domain,
-                clientId = server.profile.userId,
                 notifyBlockingStub = apiProvider.provideNotifyBlockingStub(
                     ParamAPI(
                         domain,
@@ -155,7 +195,7 @@ class ChatService : Service(),
                     )
                 ),
                 notificationChannelListener = this,
-                appStorage
+                userManager = appStorage
             )
             messageSubscriber.subscribeAndListen()
             notificationSubscriber.subscribeAndListen()
@@ -181,7 +221,7 @@ class ChatService : Service(),
                     Profile(null, value.clientId, "", "", "", 0L, "")
                 )
             )
-            val res = messageRepository.decryptMessage(
+            val res = decryptMessageUseCase(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
                 value.createdAt, value.updatedAt,
@@ -189,9 +229,9 @@ class ChatService : Service(),
                 Owner(domain, value.clientId)
             )
             val isShowNotification =
-                serverRepository.getOwnerClientIds().contains(value.fromClientId)
+                getOwnerClientIdsUseCase().contains(value.fromClientId)
             if (!isShowNotification) {
-                val roomId = chatRepository.getJoiningRoomId()
+                val roomId = getJoiningRoomUseCase()
                 val groupId = value.groupId
                 handleShowNotification(
                     joiningRoomId = roomId,
@@ -212,15 +252,13 @@ class ChatService : Service(),
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
-                    // groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
-                    groupRepository.fetchGroups()
+                    fetchGroupsUseCase()
                 }
                 "new-peer" -> {
-                    // groupRepository.fetchNewGroup(value.refGroupId, Owner(value.clientWorkspaceDomain, value.clientId))
-                    groupRepository.fetchGroups()
+                    fetchGroupsUseCase()
                 }
                 "peer-update-key" -> {
-                    chatRepository.processPeerKey(
+                    processPeerKeyUseCase(
                         value.refClientId,
                         value.refWorkspaceDomain,
                         value.clientId,
@@ -228,15 +266,15 @@ class ChatService : Service(),
                     )
                 }
                 "member-add" -> {
-                    groupRepository.fetchGroups()
+                    fetchGroupsUseCase()
                     val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                     updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
                     sendBroadcast(updateGroupIntent)
                 }
 
                 "member-removal", "member-leave" -> {
-                    groupRepository.getGroupFromAPIById(value.refGroupId, domain, value.clientId)
-                    groupRepository.removeGroupOnWorkSpace(
+                    getGroupByIdUseCase(value.refGroupId, domain, value.clientId)
+                    deleteGroupUseCase(
                         value.refGroupId,
                         domain,
                         value.refClientId
@@ -246,9 +284,6 @@ class ChatService : Service(),
                     sendBroadcast(updateGroupIntent)
 
                 }
-                "notify_type" -> {
-                    printlnCK("chatService Deactive account ref_client_id ${value.refClientId} ref_group_id ${value.refGroupId}")
-                }
                 CALL_TYPE_VIDEO -> {
                     val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
                     switchIntent.putExtra(EXTRA_CALL_SWITCH_VIDEO, value.refGroupId)
@@ -256,7 +291,7 @@ class ChatService : Service(),
                 }
                 CALL_UPDATE_TYPE_CANCEL -> {
                     val groupAsyncRes = async {
-                        groupRepository.getGroupByID(
+                        getGroupByIdUseCase(
                             value.refGroupId,
                             domain,
                             value.clientId
@@ -284,14 +319,14 @@ class ChatService : Service(),
     ) {
         scope.launch {
             printlnCK("handleShowNotification $groupId")
-            val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
+            val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
             group?.data?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
                     val userPreference =
-                        userPreferenceRepository.getUserPreference(domain, ownerClientId)
+                        getUserPreferenceUseCase(domain, ownerClientId)
                             ?: UserPreference.getDefaultUserPreference("", "", false)
-                    val senderUser = peopleRepository.getFriendFromID(
+                    val senderUser = getFriendUseCase(
                         message.senderId
                     )
                     val avatar = senderUser?.avatar
@@ -309,20 +344,20 @@ class ChatService : Service(),
     }
 
     private suspend fun updateMessageHistory() {
-        groupRepository.fetchGroups()
+        fetchGroupsUseCase()
     }
 
     private suspend fun updateMessageAndKeyInOnlineRoom() {
-        val roomId = chatRepository.getJoiningRoomId()
+        val roomId = getJoiningRoomUseCase()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = groupRepository.getGroupByID(
+            val group = getGroupByIdUseCase(
                 roomId,
                 currentServer.serverDomain,
                 currentServer.profile.userId
             )
             group?.data?.let {
-                messageRepository.updateMessageFromAPI(
+                updateMessageFromApiUseCase(
                     it.groupId,
                     Owner(currentServer.serverDomain, currentServer.profile.userId),
                     it.lastMessageSyncTimestamp
@@ -333,7 +368,7 @@ class ChatService : Service(),
                         client.userId != currentServer.profile.userId
                     }
                     if (receiver != null) {
-                        chatRepository.processPeerKey(
+                        processPeerKeyUseCase(
                             receiver.userId,
                             receiver.domain,
                             currentServer.profile.userId,

@@ -7,6 +7,9 @@ import com.clearkeep.R
 import com.clearkeep.domain.model.LoginResponse
 import com.clearkeep.domain.repository.WorkSpaceRepository
 import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.*
+import com.clearkeep.domain.usecase.profile.MfaResendOtpUseCase
+import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -26,8 +29,16 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepo: AuthRepository,
-    private val workSpaceRepository: WorkSpaceRepository
+    private val loginUseCase: LoginUseCase,
+    private val loginByGoogleUseCase: LoginByGoogleUseCase,
+    private val loginByMicrosoftUseCase: LoginByMicrosoftUseCase,
+    private val loginByFacebookUseCase: LoginByFacebookUseCase,
+    private val registerSocialPinUseCase: RegisterSocialPinUseCase,
+    private val verifySocialPinUseCase: VerifySocialPinUseCase,
+    private val resetSocialPinUseCase: ResetSocialPinUseCase,
+    private val validateOtpUseCase: ValidateOtpUseCase,
+    private val mfaResendOtpUseCase: LoginMfaResendOtpUseCase,
+    private val getWorkspaceInfoUseCase: GetWorkspaceInfoUseCase,
 ) : ViewModel() {
     lateinit var googleSignIn: GoogleSignInOptions
     lateinit var googleSignInClient: GoogleSignInClient
@@ -138,7 +149,7 @@ class LoginViewModel @Inject constructor(
 
     suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
-        val result = authRepo.loginByGoogle(token, getDomain()).also {
+        val result = loginByGoogleUseCase(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
@@ -150,7 +161,7 @@ class LoginViewModel @Inject constructor(
 
     suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
-        val result = authRepo.loginByFacebook(token, getDomain()).also {
+        val result = loginByFacebookUseCase(token, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
@@ -176,7 +187,7 @@ class LoginViewModel @Inject constructor(
 
     suspend fun loginByMicrosoft(accessToken: String): Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
-        val result = authRepo.loginByMicrosoft(accessToken, getDomain()).also {
+        val result = loginByMicrosoftUseCase(accessToken, getDomain()).also {
             if (it.status == Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
@@ -218,7 +229,7 @@ class LoginViewModel @Inject constructor(
             )
             null
         } else {
-            authRepo.login(email.trim(), password, getDomain())
+            loginUseCase(email, password, getDomain())
         }
         _isLoading.value = false
         return result
@@ -240,9 +251,9 @@ class LoginViewModel @Inject constructor(
             _isLoading.value = true
             val pin = _confirmSecurityPhrase.value?.trim() ?: ""
             registerSocialPinResponse.value = if (isResetPincode) {
-                authRepo.resetSocialPin(getDomain(), pin, userId, resetPincodeToken)
+                resetSocialPinUseCase(getDomain(), pin, userId, resetPincodeToken)
             } else {
-                authRepo.registerSocialPin(getDomain(), pin, userId)
+                registerSocialPinUseCase(getDomain(), pin, userId)
             }
             _isLoading.value = false
         }
@@ -252,7 +263,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val pin = _securityPhrase.value?.trim() ?: ""
-            verifyPassphraseResponse.value = authRepo.verifySocialPin(getDomain(), pin, userId)
+            verifyPassphraseResponse.value = verifySocialPinUseCase(getDomain(), pin, userId)
             _isLoading.value = false
         }
     }
@@ -265,7 +276,7 @@ class LoginViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val response = authRepo.validateOtp(getDomain(), otp, otpHash, userId, hashKey)
+            val response = validateOtpUseCase(getDomain(), otp, otpHash, userId, hashKey)
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(
                     response.message ?: "The code you’ve entered is incorrect. Please try again",
@@ -279,7 +290,7 @@ class LoginViewModel @Inject constructor(
 
     fun requestResendOtp() {
         viewModelScope.launch {
-            val response = authRepo.mfaResendOtp(getDomain(), otpHash, userId)
+            val response = mfaResendOtpUseCase(getDomain(), otpHash, userId)
             val errorCode = response.data?.first
 
             if (response.status == Status.ERROR) {
@@ -312,7 +323,7 @@ class LoginViewModel @Inject constructor(
                 return@launch
             }
 
-            val workspaceInfoResponse = workSpaceRepository.getWorkspaceInfo(domain = url)
+            val workspaceInfoResponse = getWorkspaceInfoUseCase(domain = url)
             _isLoading.value = false
             if (workspaceInfoResponse.status == Status.ERROR) {
                 serverUrlValidateResponse.value = workspaceInfoResponse

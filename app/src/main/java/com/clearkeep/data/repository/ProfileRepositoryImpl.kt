@@ -1,5 +1,7 @@
 package com.clearkeep.data.repository
 
+import com.clearkeep.data.local.clearkeep.dao.UserPreferenceDAO
+import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
 import com.clearkeep.data.remote.service.PushNotificationService
 import com.clearkeep.data.remote.service.UserService
 import com.clearkeep.domain.model.Owner
@@ -7,7 +9,6 @@ import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.srp.NativeLib
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
@@ -16,32 +17,34 @@ import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ProfileRepositoryImpl @Inject constructor(
-    private val serverRepository: ServerRepository,
-    private val userPreferenceRepository: UserPreferenceRepositoryImpl,
+    private val serverRepository: ServerRepository, //TODO: Clean
     private val userManager: AppStorage,
-    private val signalKeyRepository: SignalKeyRepository,
     private val pushNotificationService: PushNotificationService,
+    private val userPreferenceDAO: UserPreferenceDAO,
+    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val userService: UserService
-): ProfileRepository {
-    override suspend fun registerToken(token: String) = withContext(Dispatchers.IO) {
-        printlnCK("registerToken: token = $token")
-        val server = serverRepository.getServers()
-        server.forEach { server ->
-            registerTokenByOwner(token, server)
+) : ProfileRepository {
+    override suspend fun registerToken(token: String, servers: List<Server>) =
+        withContext(Dispatchers.IO) {
+            printlnCK("registerToken: token = $token")
+            servers.forEach { server ->
+                registerTokenByOwner(token, server)
+            }
         }
-    }
 
     private suspend fun registerTokenByOwner(token: String, server: Server): Boolean =
         withContext(Dispatchers.IO) {
             val deviceId = userManager.getUniqueDeviceID()
             printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, token = $token, deviceId = $deviceId")
             try {
-                val response = pushNotificationService.registerPushNotificationToken(deviceId, token, server)
+                val response =
+                    pushNotificationService.registerPushNotificationToken(deviceId, token, server)
                 printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
                 return@withContext response.error.isNullOrEmpty()
             } catch (e: StatusRuntimeException) {
@@ -51,7 +54,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("registerTokenByOwner token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         parsedError.message
                     }
                     else -> parsedError.message
@@ -64,28 +67,24 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     override suspend fun updateProfile(
-        owner: Owner,
+        server: Server,
         profile: Profile
     ): Boolean = withContext(Dispatchers.IO) {
         try {
-            printlnCK("updateProfile $profile")
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext false
-            val phoneNumber = profile.phoneNumber?.trim()
-            val displayName = profile.userName?.trim()
-            val response = userService.updateProfile(server, phoneNumber, displayName, profile.avatar)
-            printlnCK("updateProfile success? ${response.error.isNullOrEmpty()} errors? ${response.error}")
-            if (response.error.isNullOrEmpty()) {
-                serverRepository.updateServerProfile(owner.domain, profile)
-            }
+            val response = userService.updateProfile(
+                server,
+                profile.phoneNumber,
+                profile.userName,
+                profile.avatar
+            )
             return@withContext response.error.isNullOrEmpty()
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
                     printlnCK("updateProfile token expired")
-                    serverRepository.isLogout.postValue(true)
+                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                     parsedError.message
                 }
                 else -> parsedError.message
@@ -98,7 +97,7 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun uploadAvatar(
-        owner: Owner,
+        server: Server,
         mimeType: String,
         fileName: String,
         byteStrings: List<ByteString>,
@@ -106,10 +105,8 @@ class ProfileRepositoryImpl @Inject constructor(
     ): String {
         return withContext(Dispatchers.IO) {
             try {
-                val server = serverRepository.getServerByOwner(owner) ?: return@withContext ""
-                val response = userService.uploadAvatar(server, fileName, mimeType, byteStrings, fileHash)
-
-                printlnCK("uploadAvatar response ${response.fileUrl}")
+                val response =
+                    userService.uploadAvatar(server, fileName, mimeType, byteStrings, fileHash)
                 return@withContext response.fileUrl
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
@@ -117,7 +114,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("uploadAvatar token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         parsedError.message
                     }
                     else -> parsedError.message
@@ -130,12 +127,11 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getMfaSettingsFromAPI(owner: Owner) = withContext(Dispatchers.IO) {
+    override suspend fun getMfaSettings(server: Server) = withContext(Dispatchers.IO) {
         try {
-            val server = serverRepository.getServerByOwner(owner) ?: return@withContext
             val response = userService.getMfaSettings(server)
             val isMfaEnabled = response.mfaEnable
-            userPreferenceRepository.updateMfa(
+            userPreferenceDAO.updateMfa(
                 server.serverDomain,
                 server.profile.userId,
                 isMfaEnabled
@@ -145,7 +141,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
             val message = when (parsedError.code) {
                 1000, 1077 -> {
-                    serverRepository.isLogout.postValue(true)
+                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                     printlnCK("getMfaSettingsFromAPI token expired")
                     parsedError.message
                 }
@@ -156,15 +152,16 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateMfaSettings(owner: Owner, enabled: Boolean): Resource<Pair<String, String>> =
+    override suspend fun updateMfaSettings(
+        server: Server,
+        enabled: Boolean
+    ): Resource<Pair<String, String>> =
         withContext(Dispatchers.IO) {
             try {
-                val server = serverRepository.getServerByOwner(owner)
-                    ?: return@withContext Resource.error("", null)
                 val response = userService.updateMfaSettings(server, enabled)
                 printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
                 if (response.success && !enabled) {
-                    userPreferenceRepository.updateMfa(
+                    userPreferenceDAO.updateMfa(
                         server.serverDomain,
                         server.profile.userId,
                         false
@@ -176,7 +173,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 val parsedError = parseError(e)
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         printlnCK("updateMfaSettings token expired")
                         "" to parsedError.message
                     }
@@ -191,16 +188,10 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     override suspend fun mfaValidatePassword(
-        owner: Owner,
+        server: Server,
         password: String
     ): Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
-            val server =
-                serverRepository.getServerByOwner(owner) ?: return@withContext Resource.error(
-                    "",
-                    "" to ""
-                )
-
             val nativeLib = NativeLib()
             val a = nativeLib.getA(server.profile.email ?: "", password)
             val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -227,7 +218,7 @@ class ProfileRepositoryImpl @Inject constructor(
             val message = when (parsedError.code) {
                 1000, 1077 -> {
                     printlnCK("mfaValidatePassword token expired")
-                    serverRepository.isLogout.postValue(true)
+                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                     "Error" to "Expired token"
                 }
                 1001 -> "Error" to "The password is incorrect. Try again"
@@ -241,15 +232,17 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun mfaValidateOtp(owner: Owner, otp: String): Resource<String> =
+    override suspend fun mfaValidateOtp(
+        server: Server,
+        owner: Owner,
+        otp: String
+    ): Resource<String> =
         withContext(Dispatchers.IO) {
             try {
-                val server = serverRepository.getServerByOwner(owner)
-                    ?: return@withContext Resource.error("", null)
                 val response = userService.mfaValidateOtp(server, otp)
                 printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
                 return@withContext if (response.success) {
-                    userPreferenceRepository.updateMfa(owner.domain, owner.clientId, true)
+                    userPreferenceDAO.updateMfa(owner.domain, owner.clientId, true)
                     Resource.success(null)
                 } else {
                     Resource.error(response.error, null)
@@ -259,7 +252,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("mfaValidateOtp token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         ""
                     }
                     1071 -> "Authentication failed. Please retry."
@@ -273,11 +266,9 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun mfaResendOtp(owner: Owner): Resource<Pair<Int, String>> =
+    override suspend fun mfaResendOtp(server: Server): Resource<Pair<Int, String>> =
         withContext(Dispatchers.IO) {
             try {
-                val server = serverRepository.getServerByOwner(owner)
-                    ?: return@withContext Resource.error("", 0 to "")
                 val response = userService.mfaRequestResendOtp(server)
                 printlnCK("mfaResendOtp success? ${response.success} error? ${response.error} code $response")
                 return@withContext if (response.success) Resource.success(null) else Resource.error(
@@ -289,7 +280,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("mfaResendOtp token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         ""
                     }
                     1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
@@ -303,16 +294,13 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     override suspend fun changePassword(
-        owner: Owner,
+        server: Server,
         email: String,
         oldPassword: String,
         newPassword: String
     ): Resource<String> =
         withContext(Dispatchers.IO) {
             try {
-                val server = serverRepository.getServerByOwner(owner)
-                    ?: return@withContext Resource.error("", null)
-
                 val nativeLib = NativeLib()
                 val a = nativeLib.getA(email, oldPassword)
 
@@ -340,7 +328,8 @@ class ProfileRepositoryImpl @Inject constructor(
                 nativeLib.freeMemoryCreateAccount()
 
                 val decrypter = DecryptsPBKDF2(newPassword)
-                val oldIdentityKey = signalKeyRepository.getIdentityKey(
+
+                val oldIdentityKey = signalIdentityKeyDAO.getIdentityKey(
                     server.profile.userId,
                     server.serverDomain
                 )!!.identityKeyPair.privateKey.serialize()
@@ -354,7 +343,15 @@ class ProfileRepositoryImpl @Inject constructor(
                     )
                 }
 
-                val changePasswordResponse = userService.changePassword(server, aHex, mHex, verificatorHex, newSaltHex, toHex(decrypter.getIv()), decryptResult)
+                val changePasswordResponse = userService.changePassword(
+                    server,
+                    aHex,
+                    mHex,
+                    verificatorHex,
+                    newSaltHex,
+                    toHex(decrypter.getIv()),
+                    decryptResult
+                )
                 return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(
                     null
                 ) else Resource.error(
@@ -369,7 +366,7 @@ class ProfileRepositoryImpl @Inject constructor(
                     }
                     1000, 1077 -> {
                         printlnCK("changePassword token expired")
-                        serverRepository.isLogout.postValue(true)
+                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
                         ""
                     }
                     else -> parsedError.message

@@ -5,6 +5,10 @@ import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.User
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.PeopleRepository
+import com.clearkeep.domain.usecase.people.GetFriendsUseCase
+import com.clearkeep.domain.usecase.people.GetUserInfoUseCase
+import com.clearkeep.domain.usecase.people.InsertFriendUseCase
+import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,8 +18,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InviteGroupViewModel @Inject constructor(
-    private val peopleRepository: PeopleRepository,
-    private val environment: Environment
+    private val environment: Environment,
+    private val getUserInfoUseCase: GetUserInfoUseCase,
+    private val insertFriendUseCase: InsertFriendUseCase,
+    private val updatePeopleUseCase: UpdatePeopleUseCase,
+    getFriendsUseCase: GetFriendsUseCase
 ) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
@@ -23,7 +30,7 @@ class InviteGroupViewModel @Inject constructor(
 
     private var textSearch = MutableLiveData<String>()
 
-    val friends: LiveData<List<User>> = peopleRepository.getFriends(getDomain(), getClientId())
+    val friends: LiveData<List<User>> = getFriendsUseCase(getDomain(), getClientId())
 
     val checkUserUrlResponse = MutableLiveData<Resource<User>>()
 
@@ -50,7 +57,7 @@ class InviteGroupViewModel @Inject constructor(
     fun insertFriend(people: User) {
         viewModelScope.launch {
             _isLoading.value = true
-            peopleRepository.insertFriend(people, owner = getOwner())
+            insertFriendUseCase(people, owner = getOwner())
             _isLoading.value = false
         }
     }
@@ -66,7 +73,7 @@ class InviteGroupViewModel @Inject constructor(
     fun updateContactList() {
         printlnCK("update contact list from remote API")
         viewModelScope.launch {
-            peopleRepository.updatePeople()
+            updatePeopleUseCase()
         }
     }
 
@@ -75,7 +82,7 @@ class InviteGroupViewModel @Inject constructor(
 
         checkUserUrlJob = viewModelScope.launch {
             _isLoading.value = true
-            checkUserUrlResponse.value = peopleRepository.getUserInfo(userId, userDomain)
+            checkUserUrlResponse.value = getUserInfoUseCase(userId, userDomain)
             _isLoading.value = false
         }
     }

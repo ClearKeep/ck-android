@@ -3,13 +3,14 @@ package com.clearkeep.presentation.screen.auth.forgot
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.RecoverPasswordUseCase
 import com.clearkeep.utilities.network.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ForgotViewModel @Inject constructor(
-    private val loginRepository: AuthRepository
+    private val recoverPasswordUseCase: RecoverPasswordUseCase,
 ) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
@@ -26,7 +27,7 @@ class ForgotViewModel @Inject constructor(
 
     suspend fun recoverPassword(email: String): Resource<AuthOuterClass.BaseResponse> {
         _isLoading.value = true
-        val res = loginRepository.recoverPassword(email.trim(), domain)
+        val res = recoverPasswordUseCase(email, domain)
         _isLoading.value = false
         return res
     }

@@ -7,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.ProfileRepository
+import com.clearkeep.domain.usecase.profile.MfaResendOtpUseCase
+import com.clearkeep.domain.usecase.profile.MfaValidateOtpUseCase
+import com.clearkeep.domain.usecase.profile.MfaValidatePasswordUseCase
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +19,9 @@ import javax.inject.Inject
 @HiltViewModel
 class OtpViewModel @Inject constructor(
     private val environment: Environment,
-    private val profileRepository: ProfileRepository
+    private val mfaValidatePasswordUseCase: MfaValidatePasswordUseCase,
+    private val mfaValidateOtpUseCase: MfaValidateOtpUseCase,
+    private val mfaResendOtpUseCase: MfaResendOtpUseCase
 ) : ViewModel() {
 
     val verifyPasswordResponse = MutableLiveData<Resource<Pair<String, String>>?>()
@@ -37,7 +42,7 @@ class OtpViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val response = profileRepository.mfaValidatePassword(getOwner(), password)
+            val response = mfaValidatePasswordUseCase(getOwner(), password)
             verifyPasswordResponse.value = response
         }
     }
@@ -49,7 +54,7 @@ class OtpViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val response = profileRepository.mfaValidateOtp(getOwner(), otp)
+            val response = mfaValidateOtpUseCase(getOwner(), otp)
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(
                     response.message ?: "The code you’ve entered is incorrect. Please try again",
@@ -63,7 +68,7 @@ class OtpViewModel @Inject constructor(
 
     fun requestResendOtp() {
         viewModelScope.launch {
-            val response = profileRepository.mfaResendOtp(getOwner())
+            val response = mfaResendOtpUseCase(getOwner())
             val errorCode = response.data?.first
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(

@@ -1,5 +1,7 @@
 package com.clearkeep.data.repository
 
+import com.clearkeep.data.local.clearkeep.dao.ServerDAO
+import com.clearkeep.data.local.clearkeep.dao.UserKeyDAO
 import com.clearkeep.data.local.signal.CKSignalProtocolAddress
 import com.clearkeep.data.remote.service.SignalKeyDistributionService
 import com.clearkeep.domain.model.Owner
@@ -13,6 +15,7 @@ import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.domain.repository.UserKeyRepository
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
 import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.UserKey
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import io.grpc.StatusRuntimeException
@@ -26,12 +29,12 @@ import javax.inject.Singleton
 
 @Singleton
 class SignalKeyRepositoryImpl @Inject constructor(
-    // network calls
     private val senderKeyStore: InMemorySenderKeyStore,
-    private val serverRepository: ServerRepository,
-    private val userKeyRepository: UserKeyRepository,
+    private val serverRepository: ServerRepository, //TODO: Clean
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val signalPreKeyDAO: SignalPreKeyDAO,
+    private val userKeyDAO: UserKeyDAO,
+    private val serverDAO: ServerDAO,
     private val signalKeyDAO: SignalKeyDAO,
     private val signalKeyDistributionService: SignalKeyDistributionService
 ) : SignalKeyRepository {
@@ -95,13 +98,13 @@ class SignalKeyRepositoryImpl @Inject constructor(
                 )
 
                 //Encrypt sender key
-                val userKey = userKeyRepository.get(domain, clientId)
+                val userKey = userKeyDAO.getKey(domain, domain) ?: UserKey(domain, domain, "", "")
                 val encryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
                 val encryptedGroupPrivateKey =
                     encryptor.encrypt(key.privateKey.serialize(), userKey.salt, userKey.iv)
 
                 try {
-                    val server = serverRepository.getServer(domain = domain, ownerId = clientId)
+                    val server = serverDAO.getServer(domain, clientId)
                     if (server == null) {
                         printlnCK("fetchNewGroup: can not find server")
                         return@withContext false

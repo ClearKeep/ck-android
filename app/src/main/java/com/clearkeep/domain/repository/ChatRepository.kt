@@ -2,12 +2,14 @@ package com.clearkeep.domain.repository
 
 import android.content.Context
 import com.clearkeep.domain.model.Note
+import com.clearkeep.domain.model.Server
 import com.clearkeep.utilities.network.Resource
 
 interface ChatRepository {
     fun setJoiningRoomId(roomId: Long)
     fun getJoiningRoomId(): Long
     suspend fun sendMessageInPeer(
+        server: Server,
         senderId: String,
         ownerWorkSpace: String,
         receiverId: String,

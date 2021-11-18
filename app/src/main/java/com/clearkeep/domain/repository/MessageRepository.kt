@@ -50,21 +50,7 @@ interface MessageRepository {
     suspend fun clearTempMessage()
     suspend fun clearTempNotes()
     suspend fun saveNote(note: Note): Long
-    suspend fun updateMessage(message: Message)
-    suspend fun updateNote(note: Note)
     suspend fun saveMessage(message: Message): Int
-    fun convertMessageResponse(
-        value: MessageOuterClass.MessageObjectResponse,
-        decryptedMessage: String,
-        owner: Owner
-    ): Message
-
-    suspend fun initSessionUserPeer(
-        signalProtocolAddress: CKSignalProtocolAddress,
-        signalProtocolStore: InMemorySignalProtocolStore,
-        owner: Owner
-    ): Boolean
-
     suspend fun deleteMessageInGroup(groupId: Long, ownerDomain: String, ownerClientId: String)
-    suspend fun clearMessageByDomain(domain: String, userId: String)
+    suspend fun deleteMessageByDomain(domain: String, userId: String)
 }

@@ -10,7 +10,6 @@ import message.MessageOuterClass
 
 class MessageChannelSubscriber(
     private val domain: String,
-    private val clientId: String,
     private val messageBlockingStub: MessageGrpc.MessageBlockingStub,
     private val messageGrpc: MessageGrpc.MessageStub,
     private val onMessageSubscriberListener: MessageSubscriberListener,

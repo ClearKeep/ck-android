@@ -5,24 +5,31 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.AuthRepository
+import com.clearkeep.domain.usecase.auth.LogoutUseCase
+import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
+import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
+import com.clearkeep.domain.usecase.server.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 open class BaseViewModel @Inject constructor(
-    protected val authRepository: AuthRepository,
-    protected val roomRepository: GroupRepository,
-    protected val serverRepository: ServerRepository,
-    protected val messageRepository: MessageRepository
+    protected val deleteGroupUseCase: DeleteGroupUseCase,
+    protected val deleteMessageUseCase: DeleteMessageUseCase,
+    protected val logoutUseCase: LogoutUseCase,
+    protected val deleteServerUseCase: DeleteServerUseCase,
+    protected val setActiveServerUseCase: SetActiveServerUseCase,
+    protected val getServersUseCase: GetServersUseCase,
+    getServersAsStateUseCase: GetServersAsStateUseCase,
+    getActiveServerUseCase: GetActiveServerUseCase,
 ) : ViewModel() {
-    val currentServer = serverRepository.activeServer
+    val currentServer = getActiveServerUseCase()
 
-    val servers: LiveData<List<Server>> = serverRepository.getServersAsState()
+    val servers: LiveData<List<Server>> = getServersAsStateUseCase()
 
     private val _isLogOutCompleted = MutableLiveData(false)
     val isLogOutCompleted: LiveData<Boolean>
@@ -30,22 +37,21 @@ open class BaseViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            val response = authRepository.logoutFromAPI(currentServer.value!!)
+            val response = logoutUseCase(currentServer.value!!)
 
             if (response.data?.error.isNullOrBlank()) {
                 currentServer.value?.id?.let {
-                    val removeResult = serverRepository.deleteServer(it)
-                    roomRepository.removeGroupByDomain(
+                    val removeResult = deleteServerUseCase(it)
+                    deleteGroupUseCase(
                         currentServer.value!!.serverDomain,
                         currentServer.value!!.ownerClientId
                     )
-                    messageRepository.clearMessageByDomain(
+                    deleteMessageUseCase(
                         currentServer.value!!.serverDomain,
                         currentServer.value!!.ownerClientId
                     )
                     if (removeResult > 0) {
-                        printlnCK("serverRepository: ${serverRepository.getServers().size}")
-                        if (serverRepository.getServers().isNotEmpty()) {
+                        if (getServersUseCase().isNotEmpty()) {
                             selectChannel(servers.value!![0])
                         } else {
                             _isLogOutCompleted.value = true
@@ -60,7 +66,7 @@ open class BaseViewModel @Inject constructor(
 
     open fun selectChannel(server: Server) {
         viewModelScope.launch {
-            serverRepository.setActiveServer(server)
+            setActiveServerUseCase(server)
         }
     }
 }

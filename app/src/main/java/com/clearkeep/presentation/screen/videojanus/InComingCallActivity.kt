@@ -18,6 +18,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.RemoteViews
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -46,6 +47,8 @@ import kotlinx.coroutines.delay
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
+    private val viewModel: InComingCallViewModel by viewModels()
+
     private var mUserNameInConversation: String? = null
     private var mAvatarInConversation: String? = null
     private lateinit var mOwnerId: String
@@ -529,7 +532,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun cancelCallAPI(groupId: Int) {
         GlobalScope.launch {
-            videoCallRepository.cancelCall(groupId, Owner(mDomain, mOwnerId))
+            viewModel.cancelCall(groupId, Owner(mDomain, mOwnerId))
         }
     }
 

@@ -6,6 +6,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.usecase.call.CancelCallUseCase
+import com.clearkeep.domain.usecase.call.RequestVideoCallUseCase
+import com.clearkeep.domain.usecase.call.SwitchAudioToVideoCallUseCase
 import com.clearkeep.januswrapper.*
 import com.clearkeep.presentation.screen.videojanus.common.CallState
 import com.clearkeep.presentation.screen.videojanus.common.createVideoCapture
@@ -14,12 +18,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import org.json.JSONObject
 import org.webrtc.*
+import video_call.VideoCallOuterClass
 import java.lang.ref.WeakReference
 import java.math.BigInteger
 import javax.inject.Inject
 
 @HiltViewModel
-class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
+class CallViewModel @Inject constructor(
+    private val requestVideoCallUseCase: RequestVideoCallUseCase,
+    private val switchAudioToVideoCallUseCase: SwitchAudioToVideoCallUseCase,
+    private val cancelCallUseCase: CancelCallUseCase
+) : ViewModel(), JanusRTCInterface,
     PeerConnectionClient.PeerConnectionEvents, IControlCall {
 
     val rootEglBase by lazy { EglBase.create() }
@@ -33,7 +42,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     var mIsAudioMode = MutableLiveData<Boolean>(null)
     var totalTimeRun: Long = 0
     var totalTimeRunJob: Job? = null
-    var mIsMute = MutableLiveData<Boolean>(false)
+    var mIsMute = MutableLiveData(false)
 
     fun startVideo(
         context: Context, mLocalSurfaceRenderer: SurfaceViewRenderer,
@@ -66,6 +75,17 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         peerConnectionClient.startVideoSource()
     }
 
+    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: Owner): VideoCallOuterClass.ServerResponse? {
+        return requestVideoCallUseCase(groupId, isAudioMode, owner)
+    }
+
+    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner): Boolean {
+        return switchAudioToVideoCallUseCase(groupId, owner)
+    }
+
+    suspend fun cancelCall(groupId: Int, owner: Owner): Boolean {
+        return cancelCallUseCase(groupId, owner)
+    }
 
     override fun onPublisherJoined(handleId: BigInteger) {
         offerPeerConnection(handleId)

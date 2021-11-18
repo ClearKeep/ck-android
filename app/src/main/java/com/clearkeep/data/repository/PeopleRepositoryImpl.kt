@@ -25,7 +25,7 @@ import javax.inject.Singleton
 class PeopleRepositoryImpl @Inject constructor(
     private val peopleDao: UserDAO,
     private val environment: Environment,
-    private val serverRepository: ServerRepository,
+    private val serverRepository: ServerRepository, //TODO: Clean
     private val groupService: GroupService
 ): PeopleRepository {
     override fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
