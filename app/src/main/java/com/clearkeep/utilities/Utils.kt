@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.core.content.ContextCompat
 import com.clearkeep.R
+import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.presentation.screen.splash.SplashActivity
 import com.google.gson.Gson
 import io.grpc.StatusRuntimeException
@@ -41,13 +42,6 @@ fun restartToRoot(context: Context) {
 fun getCurrentDateTime(): Date {
     return Calendar.getInstance().time
 }
-
-/*fun getTimeAsString(timeMs: Long) : String {
-    val formatter = SimpleDateFormat("EEE HH:mm")
-
-    *//*return formatter.format(Date(timeMs))*//*
-    return DateUtils.getRelativeTimeSpanString(timeMs).toString()
-}*/
 
 fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val nowTime = Calendar.getInstance()
@@ -208,7 +202,12 @@ fun parseError(e: StatusRuntimeException): ProtoResponse {
 
     val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
     return try {
-        Gson().fromJson(rawError, ProtoResponse::class.java)
+        val response = Gson().fromJson(rawError, ProtoResponse::class.java)
+        if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED && response.code == 1000 || response.code == 1077) {
+            response.copy(cause = TokenExpiredException())
+        } else {
+            response
+        }
     } catch (e: Exception) {
         printlnCK("parseError exception rawError $rawError, exception ${e.message}")
         ProtoResponse(0, rawError)

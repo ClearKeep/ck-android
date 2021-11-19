@@ -18,7 +18,6 @@ fun CKHeaderText(
     headerTextType: HeaderTextType = HeaderTextType.Normal,
     color: Color = LocalColorMapping.current.headerText
 ) {
-    //todo disable dark mode
     Text(
         text = text,
         modifier = modifier,

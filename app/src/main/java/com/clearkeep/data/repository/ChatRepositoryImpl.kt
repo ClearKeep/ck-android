@@ -43,15 +43,14 @@ import kotlin.coroutines.suspendCoroutine
 class ChatRepositoryImpl @Inject constructor(
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val messageRepository: MessageRepository, //TODO: Clean
-    private val serverRepository: ServerRepository, //TODO: Clean
+    private val messageRepository: MessageRepository,
+    private val serverRepository: ServerRepository,
     private val userManager: AppStorage,
     private val messageDAO: MessageDAO,
     private val noteDAO: NoteDAO,
     private val signalKeyDistributionService: SignalKeyDistributionService,
     private val downloadService: DownloadService,
     private val uploadFileService: UploadFileService,
-    private val noteService: NoteService,
     private val messageService: MessageService
 ) : ChatRepository {
     private var roomId: Long = -1
@@ -106,9 +105,9 @@ class ChatRepositoryImpl @Inject constructor(
                 response,
                 plainMessage,
                 Owner(ownerWorkSpace, senderId)
-            ) //TODO: CLEAN ARCH Move logic to UseCase
+            )
             if (cachedMessageId == 0) {
-                messageRepository.saveNewMessage(responseMessage) //TODO: CLEAN ARCH Move logic to UseCase
+                messageRepository.saveNewMessage(responseMessage)
             } else {
                 updateMessage(responseMessage.copy(generateId = cachedMessageId))
             }
@@ -116,16 +115,7 @@ class ChatRepositoryImpl @Inject constructor(
             return@withContext Resource.success(null)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("sendMessageInPeer token expire")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext Resource.error(message, null, parsedError.code)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
         } catch (e: java.lang.Exception) {
             printlnCK("sendMessage: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -173,7 +163,7 @@ class ChatRepositoryImpl @Inject constructor(
             val ciphertextFromAlice: ByteArray =
                 aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
-            val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId)) //TODO: CLEAN ARCH Move logic to UseCase
+            val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
             if (server == null) {
                 printlnCK("sendMessageToGroup: server must be not null")
                 return@withContext Resource.error("server must be not null", null)
@@ -185,10 +175,10 @@ class ChatRepositoryImpl @Inject constructor(
                 response,
                 plainMessage,
                 Owner(ownerWorkSpace, senderId)
-            ) //TODO: CLEAN ARCH Move logic to UseCase
+            )
 
             if (cachedMessageId == 0) {
-                messageRepository.saveNewMessage(message) //TODO: CLEAN ARCH Move logic to UseCase
+                messageRepository.saveNewMessage(message)
             } else {
                 updateMessage(message.copy(generateId = cachedMessageId))
             }
@@ -197,55 +187,12 @@ class ChatRepositoryImpl @Inject constructor(
             return@withContext Resource.success(null)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("sendMessageToGroup token expired")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext Resource.error(message, null, parsedError.code)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
             return@withContext Resource.error(e.toString(), null)
         }
     }
-
-    override suspend fun sendNote(note: Note, cachedNoteId: Long): Boolean =
-        withContext(Dispatchers.IO) {
-            try {
-                val response = noteService.sendNote(note.content)
-                if (cachedNoteId == 0L) {
-                    messageRepository.saveNote(note.copy(createdTime = response.createdAt)) //TODO: CLEAN ARCH Move logic to UseCase
-                } else {
-                    updateNote(
-                        note.copy(
-                            generateId = cachedNoteId,
-                            createdTime = response.createdAt
-                        )
-                    ) //TODO: Move to notes repo
-                }
-                return@withContext true
-            } catch (e: StatusRuntimeException) {
-
-                val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("sendNote token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
-            } catch (e: Exception) {
-                printlnCK("create note $e")
-            }
-
-            return@withContext false
-        }
 
     override suspend fun uploadFile(
         context: Context,
@@ -311,19 +258,7 @@ class ChatRepositoryImpl @Inject constructor(
                 }
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-
-                printlnCK("uploadFile statusRuntime $e")
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("uploadFile token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
-
-                return@withContext Resource.error(message, null, parsedError.code)
+                return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
             } catch (e: Exception) {
                 printlnCK("uploadFile exception $e")
                 return@withContext Resource.error(e.toString(), null)
@@ -402,16 +337,7 @@ class ChatRepositoryImpl @Inject constructor(
             printlnCK("initSessionUserPeer: success")
             return@withContext true
         } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("initSessionUserPeer token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
+            printlnCK("initSessionUserPeer: $e")
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
             printlnCK("initSessionUserPeer: $e")

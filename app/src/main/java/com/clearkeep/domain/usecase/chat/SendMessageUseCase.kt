@@ -18,7 +18,7 @@ class SendMessageUseCase @Inject constructor(private val chatRepository: ChatRep
         isForceProcessKey: Boolean = false,
         cachedMessageId: Int = 0
     ): Resource<Nothing> {
-        val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId)) //TODO: CLEAN ARCH Move logic to UseCase
+        val server = serverRepository.getServerByOwner(Owner(ownerWorkSpace, senderId))
         if (server == null) {
             printlnCK("sendMessageInPeer: server must be not null")
             return Resource.error("", null)

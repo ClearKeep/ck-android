@@ -4,11 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.domain.model.Server
+import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
-import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
-import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
-import com.clearkeep.domain.usecase.server.*
+import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +23,12 @@ open class BaseViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             _shouldReLogin.value = logoutUseCase()
+        }
+    }
+
+    fun handleResponse(response: Resource<Any>?) {
+        if (response?.status == Status.ERROR && response.error is TokenExpiredException) {
+            signOut()
         }
     }
 }

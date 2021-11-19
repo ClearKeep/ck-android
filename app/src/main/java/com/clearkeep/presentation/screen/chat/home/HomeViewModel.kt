@@ -12,7 +12,7 @@ import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.notification.RegisterTokenUseCase
 import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
-import com.clearkeep.domain.usecase.group.GetAllRoomsUseCase
+import com.clearkeep.domain.usecase.group.GetAllRoomsAsStateUseCase
 import com.clearkeep.domain.usecase.message.ClearTempMessageUseCase
 import com.clearkeep.domain.usecase.message.ClearTempNotesUseCase
 import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
@@ -20,7 +20,6 @@ import com.clearkeep.domain.usecase.people.SendPingUseCase
 import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
 import com.clearkeep.domain.usecase.people.UpdateStatusUseCase
 import com.clearkeep.domain.usecase.server.*
-import com.clearkeep.domain.usecase.signalkey.DeleteKeyUseCase
 import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
 import com.clearkeep.presentation.screen.chat.utils.getLinkFromPeople
 import com.google.firebase.messaging.FirebaseMessaging
@@ -48,9 +47,7 @@ class HomeViewModel @Inject constructor(
 
     getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
     getIsLogoutUseCase: GetIsLogoutUseCase,
-    getAllRoomsUseCase: GetAllRoomsUseCase,
-
-    private val deleteKeyUseCase: DeleteKeyUseCase,
+    getAllRoomsAsStateUseCase: GetAllRoomsAsStateUseCase,
 
     getServersAsStateUseCase: GetServersAsStateUseCase,
     logoutUseCase: LogoutUseCase,
@@ -71,7 +68,7 @@ class HomeViewModel @Inject constructor(
     val prepareState: LiveData<PrepareViewState>
         get() = _prepareState
 
-    val groups: LiveData<List<ChatGroup>> = getAllRoomsUseCase()
+    val groups: LiveData<List<ChatGroup>> = getAllRoomsAsStateUseCase()
 
     val isRefreshing = MutableLiveData(false)
 
@@ -94,7 +91,8 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             clearTempNotesUseCase()
             clearTempMessageUseCase()
-            fetchGroupsUseCase()
+            val fetchGroupResponse = fetchGroupsUseCase()
+            handleResponse(fetchGroupResponse)
             getStatusUserInDirectGroup()
         }
 
@@ -104,7 +102,8 @@ class HomeViewModel @Inject constructor(
     fun onPullToRefresh() {
         isRefreshing.postValue(true)
         viewModelScope.launch {
-            fetchGroupsUseCase()
+            val fetchGroupResponse = fetchGroupsUseCase()
+            handleResponse(fetchGroupResponse)
             isRefreshing.postValue(false)
         }
     }
@@ -119,7 +118,6 @@ class HomeViewModel @Inject constructor(
                         && it.ownerClientId == server.profile.userId
                         && it.isGroup()
                         && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
-
             }
         }
 
@@ -306,14 +304,6 @@ class HomeViewModel @Inject constructor(
     fun cancelCheckValidServer() {
         _isServerUrlValidateLoading.value = false
         checkValidServerJob?.cancel()
-    }
-
-    fun deleteKey() {
-        viewModelScope.launch {
-            val server = environment.getServer()
-            val owner = Owner(server.serverDomain, server.ownerClientId)
-            deleteKeyUseCase(owner, currentServer.value!!, chatGroups.value)
-        }
     }
 }
 

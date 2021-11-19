@@ -2,6 +2,7 @@ package com.clearkeep.data.remote.dynamicapi
 
 import auth.AuthGrpc
 import com.clearkeep.data.remote.dynamicapi.channel.ChannelSelector
+import com.clearkeep.data.remote.utils.ServiceExceptionHandler
 import group.GroupGrpc
 import message.MessageGrpc
 import note.NoteGrpc
@@ -22,7 +23,9 @@ class ParamAPIProviderImpl @Inject constructor(
 
     override fun provideSignalKeyDistributionGrpc(paramAPI: ParamAPI): SignalKeyDistributionGrpc.SignalKeyDistributionStub {
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
-        return SignalKeyDistributionGrpc.newStub(managedChannel)
+        return SignalKeyDistributionGrpc.newStub(managedChannel).withInterceptors(
+            ServiceExceptionHandler()
+        )
     }
 
     override fun provideSignalKeyDistributionBlockingStub(paramAPI: ParamAPI): SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub {
@@ -32,7 +35,7 @@ class ParamAPIProviderImpl @Inject constructor(
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return SignalKeyDistributionGrpc.newBlockingStub(managedChannel).withCallCredentials(
             CallCredentials(paramAPI.accessKey, paramAPI.hashKey)
-        )
+        ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideNotifyStub(paramAPI: ParamAPI): NotifyGrpc.NotifyStub {
@@ -46,7 +49,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideNotifyBlockingStub(paramAPI: ParamAPI): NotifyGrpc.NotifyBlockingStub {
@@ -60,12 +63,12 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideAuthBlockingStub(paramAPI: ParamAPI): AuthGrpc.AuthBlockingStub {
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
-        return AuthGrpc.newBlockingStub(managedChannel)
+        return AuthGrpc.newBlockingStub(managedChannel).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideUserBlockingStub(paramAPI: ParamAPI): UserGrpc.UserBlockingStub {
@@ -79,7 +82,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideGroupBlockingStub(paramAPI: ParamAPI): GroupGrpc.GroupBlockingStub {
@@ -93,7 +96,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideMessageBlockingStub(paramAPI: ParamAPI): MessageGrpc.MessageBlockingStub {
@@ -107,7 +110,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideNotesBlockingStub(paramAPI: ParamAPI): NoteGrpc.NoteBlockingStub {
@@ -121,7 +124,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideMessageStub(paramAPI: ParamAPI): MessageGrpc.MessageStub {
@@ -135,7 +138,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideNotifyPushBlockingStub(paramAPI: ParamAPI): NotifyPushGrpc.NotifyPushBlockingStub {
@@ -149,7 +152,7 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideVideoCallBlockingStub(paramAPI: ParamAPI): VideoCallGrpc.VideoCallBlockingStub {
@@ -163,11 +166,12 @@ class ParamAPIProviderImpl @Inject constructor(
                     paramAPI.accessKey,
                     paramAPI.hashKey
                 )
-            )
+            ).withInterceptors(ServiceExceptionHandler())
     }
 
     override fun provideWorkspaceBlockingStub(paramAPI: ParamAPI): WorkspaceGrpc.WorkspaceBlockingStub {
         val managedChannel = channelSelector.getChannel(paramAPI.serverDomain)
         return WorkspaceGrpc.newBlockingStub(managedChannel)
+            .withInterceptors(ServiceExceptionHandler())
     }
 }

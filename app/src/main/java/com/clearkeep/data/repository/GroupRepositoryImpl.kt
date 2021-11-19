@@ -8,9 +8,9 @@ import com.clearkeep.data.local.signal.CKSignalProtocolAddress
 import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.UserKeyRepository
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
+import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.domain.model.*
 import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.chat.utils.*
@@ -31,48 +31,22 @@ import javax.inject.Inject
 
 class GroupRepositoryImpl @Inject constructor(
     private val groupDAO: GroupDAO,
-    private val serverRepository: ServerRepository, //TODO: Clean
+    private val serverRepository: ServerRepository,
     private val environment: Environment,
     private val senderKeyStore: InMemorySenderKeyStore,
     private val userKeyDAO: UserKeyDAO,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-
     private val groupService: GroupService
 ) : GroupRepository {
-    override fun getAllRooms() = groupDAO.getRoomsAsState()
+    override fun getAllRoomsAsState() = groupDAO.getRoomsAsState()
+
+    override suspend fun getAllRooms(): List<ChatGroup> {
+        return groupDAO.getRooms()
+    }
 
     private fun getClientId(): String = environment.getServer().profile.userId
 
     private fun getDomain() = environment.getServer().serverDomain
-
-    override suspend fun fetchGroups(servers: List<Server>) = withContext(Dispatchers.IO) {
-        servers.forEach { server ->
-            try {
-                val groups = getGroupListFromAPI(server.profile.userId)
-                for (group in groups) {
-                    val decryptedGroup =
-                        convertGroupFromResponse(group, server.serverDomain, server.profile.userId)
-
-                    val oldGroup = groupDAO.getGroupById(group.groupId, server.serverDomain)
-                    if (oldGroup?.isDeletedUserPeer != true) {
-                        insertGroup(decryptedGroup)
-                    }
-                }
-            } catch (e: StatusRuntimeException) {
-                val parsedError = parseError(e)
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("fetchGroups token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
-            } catch (exception: Exception) {
-                printlnCK("fetchGroups: $exception")
-            }
-        }
-    }
 
     override suspend fun disableChatOfDeactivatedUser(clientId: String, domain: String, userId: String) {
         printlnCK("disableChatOfDeactivatedUser clientId $clientId domain $domain $userId")
@@ -100,15 +74,7 @@ class GroupRepositoryImpl @Inject constructor(
             return@withContext Resource.success(group)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("createGroupFromAPI token expired")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext Resource.error(message, null, parsedError.code)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code)
         } catch (e: Exception) {
             printlnCK("createGroup error: $e")
             return@withContext null
@@ -140,17 +106,7 @@ class GroupRepositoryImpl @Inject constructor(
                 printlnCK("removeMemberInGroup: ${response.error}")
                 return@withContext true
             } catch (e: StatusRuntimeException) {
-
                 val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("removeMemberInGroup token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return@withContext false
             } catch (e: Exception) {
                 printlnCK("removeMemberInGroup: ${e.message}")
@@ -171,17 +127,7 @@ class GroupRepositoryImpl @Inject constructor(
                 printlnCK("inviteToGroupFromAPI: ${response.error}")
                 return@withContext response
             } catch (e: StatusRuntimeException) {
-
                 val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("inviteToGroupFromAPI token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return@withContext null
             } catch (e: Exception) {
                 printlnCK("inviteToGroupFromAPI error: $e")
@@ -219,17 +165,6 @@ class GroupRepositoryImpl @Inject constructor(
                 }
                 return@withContext false
             } catch (e: StatusRuntimeException) {
-
-                val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("leaveGroup token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return@withContext false
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -256,16 +191,10 @@ class GroupRepositoryImpl @Inject constructor(
         } catch (e: StatusRuntimeException) {
             printlnCK("getGroupFromAPI: ${e.message.toString()}")
             val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getGroupFromAPI token expired}")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
+            if (parsedError.code == 1018) {
+                return@withContext Resource.error(parsedError.message, null, parsedError.code, TokenExpiredException())
             }
-            return@withContext Resource.error(message, null, parsedError.code)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code)
         } catch (e: Exception) {
             printlnCK("getGroupFromAPI error: $e")
             return@withContext Resource.error(e.toString(), null)
@@ -276,50 +205,44 @@ class GroupRepositoryImpl @Inject constructor(
         return groupDAO.getGroupById(groupId, getDomain(), getClientId())
     }
 
-    @Throws(Exception::class)
-    private suspend fun getGroupListFromAPI(
+    override suspend fun fetchGroups(
         clientId: String
-    ): List<GroupOuterClass.GroupObjectResponse> = withContext(Dispatchers.IO) {
+    ): Resource<List<GroupOuterClass.GroupObjectResponse>> = withContext(Dispatchers.IO) {
         try {
-            printlnCK("getGroupListFromAPI: $clientId")
-            val server = serverRepository.getServer(getDomain(), clientId) //TODO: CLEAN ARCH Move logic to UseCase
+            printlnCK("fetchGroup: $clientId")
+            val server = serverRepository.getServer(getDomain(), clientId)
             if (server == null) {
                 printlnCK("getGroupByID: null server")
-                throw NullPointerException("getGroupListFromAPI null server")
+                throw NullPointerException("fetchGroup null server")
             }
             val response = groupService.getJoinedGroups(server)
-            return@withContext response.lstGroupList
+            return@withContext Resource.success(response.lstGroupList)
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getGroupListFromAPI token expired")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
-            return@withContext emptyList()
+            return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
         } catch (e: Exception) {
-            return@withContext emptyList()
+            return@withContext Resource.error(e.message ?: "", null, 0, e)
         }
     }
 
-    private suspend fun insertGroup(group: ChatGroup) {
+    override suspend fun insertGroup(group: ChatGroup) {
         val oldGroup = groupDAO.getGroupById(group.groupId, group.ownerDomain)
         printlnCK("insertGroup called oldGroup $oldGroup")
         groupDAO.insert(group.copy(isDeletedUserPeer = oldGroup?.isDeletedUserPeer ?: false))
     }
 
     override suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): Resource<ChatGroup> {
-        val server = serverRepository.getServer(domain, ownerId) //TODO: CLEAN ARCH Move logic to UseCase
+        val server = serverRepository.getServer(domain, ownerId)
         printlnCK("getGroupByID: groupId $groupId")
         val room: Resource<ChatGroup> = getGroupFromAPI(groupId, Owner(domain, ownerId), server)
         if (room.data != null) {
             insertGroup(room.data)
         }
         return room
+    }
+
+    override suspend fun getGroupByID(groupId: Long, serverDomain: String): ChatGroup? {
+        return groupDAO.getGroupById(groupId, serverDomain)
     }
 
     override suspend fun deleteGroup(groupId: Long, domain: String, ownerClientId: String) {
@@ -400,12 +323,12 @@ class GroupRepositoryImpl @Inject constructor(
         return groupDAO.getGroupById(groupId, domain)?.clientList?.map { it -> it.userId }
     }
 
-    private suspend fun convertGroupFromResponse(
+    override suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
         serverDomain: String,
         ownerId: String
     ): ChatGroup {
-        val server = serverRepository.getServer(serverDomain, ownerId) //TODO: CLEAN ARCH Move logic to UseCase
+        val server = serverRepository.getServer(serverDomain, ownerId)
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         var isRegisteredKey = oldGroup?.isJoined ?: false
         val lastMessageSyncTime =
@@ -433,7 +356,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val senderKeyID = response.clientKey.senderKeyId
                 val senderKey = response.clientKey.senderKey.toByteArray()
                 val privateKeyEncrypt = response.clientKey.privateKey
-                val userKey = userKeyDAO.getKey(serverDomain, ownerId) ?: UserKey(serverDomain, ownerId, "", "") //TODO: CLEAN ARCH Move logic to UseCase
+                val userKey = userKeyDAO.getKey(serverDomain, ownerId) ?: UserKey(serverDomain, ownerId, "", "")
                 val identityKey = signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
                 val privateKey = identityKey?.identityKeyPair?.privateKey
 

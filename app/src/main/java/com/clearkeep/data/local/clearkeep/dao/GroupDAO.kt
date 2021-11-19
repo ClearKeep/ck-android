@@ -25,6 +25,9 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
     fun getRoomsAsState(): LiveData<List<ChatGroup>>
 
+    @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
+    fun getRooms(): List<ChatGroup>
+
     @Query("DELETE  FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
 

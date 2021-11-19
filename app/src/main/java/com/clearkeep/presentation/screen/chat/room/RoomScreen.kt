@@ -113,9 +113,6 @@ fun RoomScreen(
             roomViewModel.getMessages(group.groupId, group.ownerDomain, group.ownerClientId)
                 .observeAsState()
         }
-        isNote.value == true -> {
-            roomViewModel.getNotes().observeAsState()
-        }
         else -> null
     }
 
@@ -285,9 +282,7 @@ fun RoomScreen(
                                 return@SendBottomCompose
                             }
                             val isGroup = group.isGroup()
-                            if (isNote.value == true) {
-                                roomViewModel.sendNote(context, )
-                            } else if (isGroup) {
+                            if (isGroup) {
                                 val isJoined = group.isJoined
                                 roomViewModel.sendMessageToGroup(
                                     context,

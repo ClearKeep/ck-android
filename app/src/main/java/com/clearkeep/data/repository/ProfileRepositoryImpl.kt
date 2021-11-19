@@ -23,7 +23,6 @@ import javax.inject.Singleton
 
 @Singleton
 class ProfileRepositoryImpl @Inject constructor(
-    private val serverRepository: ServerRepository, //TODO: Clean
     private val userManager: AppStorage,
     private val pushNotificationService: PushNotificationService,
     private val userPreferenceDAO: UserPreferenceDAO,
@@ -48,17 +47,6 @@ class ProfileRepositoryImpl @Inject constructor(
                 printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
                 return@withContext response.error.isNullOrEmpty()
             } catch (e: StatusRuntimeException) {
-
-                val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("registerTokenByOwner token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return@withContext false
             } catch (e: Exception) {
                 printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
@@ -79,16 +67,6 @@ class ProfileRepositoryImpl @Inject constructor(
             )
             return@withContext response.error.isNullOrEmpty()
         } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("updateProfile token expired")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
             return@withContext false
         } catch (e: Exception) {
             printlnCK("updateProfile error: $e")
@@ -109,16 +87,6 @@ class ProfileRepositoryImpl @Inject constructor(
                     userService.uploadAvatar(server, fileName, mimeType, byteStrings, fileHash)
                 return@withContext response.fileUrl
             } catch (e: StatusRuntimeException) {
-                val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("uploadAvatar token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return@withContext ""
             } catch (e: Exception) {
                 printlnCK("uploadAvatar $e")
@@ -137,16 +105,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 isMfaEnabled
             )
         } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    printlnCK("getMfaSettingsFromAPI token expired")
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
+            printlnCK("getMfaSettingsFromAPI: $e")
         } catch (exception: Exception) {
             printlnCK("getMfaSettingsFromAPI: $exception")
         }
@@ -172,15 +131,10 @@ class ProfileRepositoryImpl @Inject constructor(
 
                 val parsedError = parseError(e)
                 val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        printlnCK("updateMfaSettings token expired")
-                        "" to parsedError.message
-                    }
                     1069 -> "Account is locked" to "Your account has been locked out due to too many attempts. Please try again later!"
                     else -> "" to parsedError.message
                 }
-                return@withContext Resource.error("", message)
+                return@withContext Resource.error("", message, error = parsedError.cause)
             } catch (exception: Exception) {
                 printlnCK("updateMfaSettings: $exception")
                 return@withContext Resource.error("", "" to exception.toString())
@@ -216,16 +170,11 @@ class ProfileRepositoryImpl @Inject constructor(
 
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("mfaValidatePassword token expired")
-                    serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                    "Error" to "Expired token"
-                }
                 1001 -> "Error" to "The password is incorrect. Try again"
                 1069 -> "Warning" to "Your account has been locked out due to too many attempts. Please try again later!"
                 else -> "Error" to parsedError.message
             }
-            return@withContext Resource.error("", message)
+            return@withContext Resource.error("", message, error = parsedError.cause)
         } catch (exception: Exception) {
             printlnCK("mfaValidatePassword: $exception")
             return@withContext Resource.error("", "" to exception.toString())
@@ -250,16 +199,11 @@ class ProfileRepositoryImpl @Inject constructor(
             } catch (exception: StatusRuntimeException) {
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("mfaValidateOtp token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        ""
-                    }
                     1071 -> "Authentication failed. Please retry."
                     1068, 1072 -> "Verification code has expired. Please request a new code and retry."
                     else -> parsedError.message
                 }
-                return@withContext Resource.error(message, null)
+                return@withContext Resource.error(message, null, error = parsedError.cause)
             } catch (exception: Exception) {
                 printlnCK("mfaValidateOtp: $exception")
                 return@withContext Resource.error(exception.toString(), null)
@@ -278,15 +222,10 @@ class ProfileRepositoryImpl @Inject constructor(
             } catch (exception: StatusRuntimeException) {
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("mfaResendOtp token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        ""
-                    }
                     1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                     else -> parsedError.message
                 }
-                return@withContext Resource.error("", parsedError.code to message)
+                return@withContext Resource.error("", parsedError.code to message, error = parsedError.cause)
             } catch (exception: Exception) {
                 printlnCK("mfaResendOtp: $exception")
                 return@withContext Resource.error("", 0 to exception.toString())
@@ -364,14 +303,9 @@ class ProfileRepositoryImpl @Inject constructor(
                     1001, 1079 -> {
                         "The password is incorrect. Try again"
                     }
-                    1000, 1077 -> {
-                        printlnCK("changePassword token expired")
-                        serverRepository.isLogout.postValue(true) //TODO: CLEAN ARCH Move logic to UseCase
-                        ""
-                    }
                     else -> parsedError.message
                 }
-                return@withContext Resource.error(message, null)
+                return@withContext Resource.error(message, null, error = parsedError.cause)
             } catch (exception: Exception) {
                 printlnCK("changePassword: $exception")
                 return@withContext Resource.error("", null)

@@ -8,15 +8,16 @@ data class Resource<out T>(
     val status: Status,
     val data: T?,
     val message: String?,
-    val errorCode: Int = 0
+    val errorCode: Int = 0,
+    val error: Throwable? = null
 ) {
     companion object {
         fun <T> success(data: T?): Resource<T> {
             return Resource(SUCCESS, data, null)
         }
 
-        fun <T> error(msg: String, data: T?, errorCode: Int = 0): Resource<T> {
-            return Resource(ERROR, data, msg, errorCode)
+        fun <T> error(msg: String, data: T?, errorCode: Int = 0, error: Throwable? = null): Resource<T> {
+            return Resource(ERROR, data, msg, errorCode, error)
         }
 
         fun <T> loading(data: T?): Resource<T> {

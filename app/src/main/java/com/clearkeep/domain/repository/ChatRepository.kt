@@ -35,7 +35,6 @@ interface ChatRepository {
         cachedMessageId: Int = 0
     ): Resource<Nothing>
 
-    suspend fun sendNote(note: Note, cachedNoteId: Long = 0): Boolean
     suspend fun uploadFile(
         context: Context,
         mimeType: String,
