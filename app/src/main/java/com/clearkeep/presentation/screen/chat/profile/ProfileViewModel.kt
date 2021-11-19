@@ -8,9 +8,6 @@ import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.domain.repository.ProfileRepository
-import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.profile.GetMfaSettingsUseCase
 import com.clearkeep.domain.usecase.profile.UpdateMfaSettingsUseCase

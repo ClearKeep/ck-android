@@ -8,7 +8,6 @@ import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserEntity
 import com.clearkeep.domain.repository.PeopleRepository
-import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.parseError
@@ -25,7 +24,6 @@ import javax.inject.Singleton
 class PeopleRepositoryImpl @Inject constructor(
     private val peopleDao: UserDAO,
     private val environment: Environment,
-    private val serverRepository: ServerRepository, //TODO: Clean
     private val groupService: GroupService
 ): PeopleRepository {
     override fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
@@ -136,17 +134,7 @@ class PeopleRepositoryImpl @Inject constructor(
                     })
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("getFriendsFromAPI token expired")
-                        serverRepository.isLogout.postValue(true)
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
-
-                return@withContext Resource.error(message, emptyList(), parsedError.code)
+                return@withContext Resource.error(parsedError.message, emptyList(), parsedError.code)
             } catch (e: Exception) {
                 printlnCK("getFriendsFromAPI: $e")
                 return@withContext Resource.error(e.toString(), emptyList())
@@ -186,16 +174,6 @@ class PeopleRepositoryImpl @Inject constructor(
             val response = groupService.sendPing()
             return@withContext response.error.isNullOrEmpty()
         } catch (e: StatusRuntimeException) {
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("sendPing token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
             return@withContext false
         } catch (e: Exception) {
             printlnCK("sendPing: $e")
@@ -209,17 +187,6 @@ class PeopleRepositoryImpl @Inject constructor(
             val response = groupService.updateStatus(status)
             return@withContext response.error.isNullOrEmpty()
         } catch (e: StatusRuntimeException) {
-
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("updateStatus token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
             return@withContext false
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
@@ -240,17 +207,6 @@ class PeopleRepositoryImpl @Inject constructor(
             }
             return@withContext list
         } catch (e: StatusRuntimeException) {
-
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("getListClientStatus token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
             return@withContext emptyList()
         } catch (e: Exception) {
             printlnCK("updateStatus: $e")
@@ -275,11 +231,6 @@ class PeopleRepositoryImpl @Inject constructor(
 
                 val errorMessage = when (parsedError.code) {
                     1008, 1005 -> "Profile link is incorrect."
-                    1077 -> {
-                        printlnCK("getUserInfo token expired")
-                        serverRepository.isLogout.postValue(true)
-                        parsedError.message
-                    }
                     else -> {
                         if (e.status.code == Status.Code.DEADLINE_EXCEEDED) {
                             "Network error,We are unable to detect an internet connection. Please try again when you have a stronger connection."

@@ -11,6 +11,7 @@ import com.clearkeep.R
 import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.chat.*
@@ -35,7 +36,7 @@ import java.util.*
 @HiltViewModel
 class RoomViewModel @Inject constructor(
     private val environment: Environment,
-    getAllRoomsUseCase: GetAllRoomsUseCase,
+    getAllRoomsAsStateUseCase: GetAllRoomsAsStateUseCase,
     private val createGroupUseCase: CreateGroupUseCase,
     private val inviteToGroupUseCase: InviteToGroupUseCase,
     private val removeMemberUseCase: RemoveMemberUseCase,
@@ -50,17 +51,14 @@ class RoomViewModel @Inject constructor(
     private val downloadFileUseCase: DownloadFileUseCase,
 
     private val sendMessageUseCase: SendMessageUseCase,
-    private val sendNoteUseCase: SendNoteUseCase,
     private val uploadFileUseCase: UploadFileUseCase,
     private val setJoiningRoomUseCase: SetJoiningRoomUseCase,
 
     private val getMessageAsStateUseCase: GetMessageAsStateUseCase,
-    private val getNotesAsStateUseCase: GetNotesAsStateUseCase,
     private val saveMessageUseCase: SaveMessageUseCase,
     private val saveNoteUseCase: SaveNoteUseCase,
     private val clearTempNotesUseCase: ClearTempNotesUseCase,
     private val clearTempMessageUseCase: ClearTempMessageUseCase,
-    private val updateNotesFromApiUseCase: UpdateNotesFromApiUseCase,
     private val updateMessageFromApiUseCase: UpdateMessageFromApiUseCase,
     private val getServerByOwnerUseCase: GetServerByOwnerUseCase,
 
@@ -77,7 +75,7 @@ class RoomViewModel @Inject constructor(
 
     logoutUseCase: LogoutUseCase,
 ) : BaseViewModel(logoutUseCase) {
-    val currentServer = getActiveServerUseCase()
+    private val currentServer = getActiveServerUseCase()
     val isLogout = getIsLogoutUseCase()
 
     val profile = getDefaultServerProfileAsStateUseCase()
@@ -99,7 +97,7 @@ class RoomViewModel @Inject constructor(
     var clientId: String = ""
     var domain: String = ""
 
-    val groups: LiveData<List<ChatGroup>> = getAllRoomsUseCase()
+    val groups: LiveData<List<ChatGroup>> = getAllRoomsAsStateUseCase()
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
@@ -282,21 +280,6 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun initNotes(
-        ownerDomain: String,
-        ownerClientId: String,
-    ) {
-        if (ownerDomain.isBlank() || ownerClientId.isBlank()) {
-            throw IllegalArgumentException("domain and clientId must be not NULL")
-        }
-        this.domain = ownerDomain
-        this.clientId = ownerClientId
-        _isNote.value = true
-        viewModelScope.launch {
-            updateNotesFromRemote()
-        }
-    }
-
     fun leaveRoom() {
         setJoiningRoomId(-1)
     }
@@ -316,29 +299,11 @@ class RoomViewModel @Inject constructor(
         return getMessageAsStateUseCase(groupId, Owner(domain, clientId))
     }
 
-    fun getNotes(): LiveData<List<Message>> {
-        return getNotesAsStateUseCase(Owner(domain, clientId)).map { notes ->
-            notes.map {
-                Message(
-                    it.generateId?.toInt(),
-                    "",
-                    0L,
-                    "",
-                    it.ownerClientId,
-                    "",
-                    it.content,
-                    it.createdTime,
-                    it.createdTime,
-                    it.ownerDomain,
-                    it.ownerClientId
-                )
-            }
-        }
-    }
-
     private suspend fun updateGroupWithId(groupId: Long) {
         printlnCK("updateGroupWithId: groupId $groupId")
-        getGroupResponse.value = getGroupByIdUseCase(groupId, domain, clientId)
+        val response = getGroupByIdUseCase(groupId, domain, clientId)
+        handleResponse(response)
+        getGroupResponse.value = response
         getGroupResponse.value?.data?.let {
             setJoiningGroup(it)
             updateMessagesFromRemote(it.lastMessageSyncTimestamp)
@@ -371,11 +336,6 @@ class RoomViewModel @Inject constructor(
 
     private fun updateMessagesFromRemote(lastMessageAt: Long) {
         onScrollChange(lastMessageAt, true)
-    }
-
-    private suspend fun updateNotesFromRemote() {
-        val server = environment.getServer()
-        updateNotesFromApiUseCase(Owner(server.serverDomain, server.profile.userId))
     }
 
     fun sendMessageToUser(
@@ -496,9 +456,8 @@ class RoomViewModel @Inject constructor(
         val group = getGroupByGroupIdUseCase(groupId)
         group?.let {
             if (!group.isJoined) {
-                val result =
-                    registerSenderKeyToGroupUseCase(groupId, clientId, domain)
-                if (result) {
+                val result = registerSenderKeyToGroupUseCase(groupId, clientId, domain)
+                if (result.status == Status.SUCCESS) {
                     _group.value = remarkGroupKeyRegisteredUseCase(groupId)
                     sendMessageResponse.value = sendMessageUseCase.toGroup(
                         clientId,
@@ -508,7 +467,10 @@ class RoomViewModel @Inject constructor(
                         cachedMessageId
                     )
                 } else {
-                    sendMessageResponse.value = Resource.error("", null, ERROR_CODE_TIMEOUT)
+                    if (result.status == Status.ERROR && result.error is TokenExpiredException) {
+                        logoutUseCase()
+                    }
+                    sendMessageResponse.value = result
                 }
             } else {
                 sendMessageResponse.value = sendMessageUseCase.toGroup(
@@ -519,34 +481,6 @@ class RoomViewModel @Inject constructor(
                     cachedMessageId
                 )
             }
-        }
-    }
-
-    fun sendNote(context: Context) {
-        viewModelScope.launch {
-            try {
-                if (!_imageUriSelected.value.isNullOrEmpty()) {
-                    uploadImage(context, message = _message.value ?: "")
-                } else {
-                    sendNote(_message.value ?: "")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    private fun sendNote(message: String, cachedNoteId: Long = 0) {
-        viewModelScope.launch {
-            sendNoteUseCase(
-                Note(
-                    null,
-                    message,
-                    Calendar.getInstance().timeInMillis,
-                    domain,
-                    clientId
-                ), cachedNoteId
-            )
         }
     }
 
@@ -817,23 +751,19 @@ class RoomViewModel @Inject constructor(
                 val messageContent =
                     if (message != null) "$fileUrlsString $message" else fileUrlsString
                 withContext(Dispatchers.Main) {
-                    if (isNote.value == true) {
-                        sendNote(messageContent, tempMessageId.toLong())
+                    if (isRegisteredGroup != null) {
+                        sendMessageToGroup(
+                            groupId,
+                            messageContent,
+                            tempMessageId.toInt()
+                        )
                     } else {
-                        if (isRegisteredGroup != null) {
-                            sendMessageToGroup(
-                                groupId,
-                                messageContent,
-                                tempMessageId.toInt()
-                            )
-                        } else {
-                            sendMessageToUser(
-                                receiverPeople!!,
-                                groupId,
-                                messageContent,
-                                tempMessageId.toInt()
-                            )
-                        }
+                        sendMessageToUser(
+                            receiverPeople!!,
+                            groupId,
+                            messageContent,
+                            tempMessageId.toInt()
+                        )
                     }
                 }
             }

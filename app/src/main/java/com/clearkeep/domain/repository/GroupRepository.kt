@@ -6,10 +6,11 @@ import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.User
 import com.clearkeep.utilities.network.Resource
+import group.GroupOuterClass
 
 interface GroupRepository {
-    fun getAllRooms(): LiveData<List<ChatGroup>>
-    suspend fun fetchGroups(servers: List<Server>)
+    fun getAllRoomsAsState(): LiveData<List<ChatGroup>>
+    suspend fun getAllRooms(): List<ChatGroup>
     suspend fun disableChatOfDeactivatedUser(clientId: String, domain: String, userId: String)
     suspend fun createGroup(
         createClientId: String,
@@ -28,7 +29,15 @@ interface GroupRepository {
     suspend fun removeMemberInGroup(removedUser: User, groupId: Long, owner: Owner): Boolean
     suspend fun leaveGroup(groupId: Long, owner: Owner): Boolean
     suspend fun getGroupByGroupId(groupId: Long): ChatGroup?
+    suspend fun fetchGroups(clientId: String): Resource<List<GroupOuterClass.GroupObjectResponse>>
+    suspend fun convertGroupFromResponse(
+        response: GroupOuterClass.GroupObjectResponse,
+        serverDomain: String,
+        ownerId: String
+    ): ChatGroup
+    suspend fun insertGroup(group: ChatGroup)
     suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): Resource<ChatGroup>
+    suspend fun getGroupByID(groupId: Long, serverDomain: String): ChatGroup?
     suspend fun deleteGroup(groupId: Long, domain: String, ownerClientId: String)
     suspend fun deleteGroup(domain: String, ownerClientId: String)
     suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup?

@@ -18,6 +18,7 @@ import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.UserKey
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
+import com.clearkeep.utilities.network.Resource
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,7 +31,6 @@ import javax.inject.Singleton
 @Singleton
 class SignalKeyRepositoryImpl @Inject constructor(
     private val senderKeyStore: InMemorySenderKeyStore,
-    private val serverRepository: ServerRepository, //TODO: Clean
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val signalPreKeyDAO: SignalPreKeyDAO,
     private val userKeyDAO: UserKeyDAO,
@@ -69,7 +69,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String): Boolean =
+    override suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String): Resource<Any> =
         withContext(Dispatchers.IO) {
             //get private key
             val identityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
@@ -106,8 +106,8 @@ class SignalKeyRepositoryImpl @Inject constructor(
                 try {
                     val server = serverDAO.getServer(domain, clientId)
                     if (server == null) {
-                        printlnCK("fetchNewGroup: can not find server")
-                        return@withContext false
+                        printlnCK("fetchNewGroup: ")
+                        return@withContext Resource.error("can not find server", null)
                     }
                     val response = signalKeyDistributionService.registerClientKey(
                         server,
@@ -121,24 +121,18 @@ class SignalKeyRepositoryImpl @Inject constructor(
                     )
                     if (response?.error.isNullOrEmpty()) {
                         printlnCK("registerSenderKeyToGroup: $groupID: success")
-                        return@withContext true
+                        return@withContext Resource.success(null)
                     }
                 } catch (e: StatusRuntimeException) {
                     printlnCK("registerSenderKeyToGroup: $e")
 
                     val parsedError = parseError(e)
-                    val message = when (parsedError.code) {
-                        1000, 1077 -> {
-                            printlnCK("registerSenderKeyToGroup token expired")
-                            serverRepository.isLogout.postValue(true)
-                            parsedError.message
-                        }
-                        else -> parsedError.message
-                    }
+                    return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
                 } catch (e: Exception) {
                     printlnCK("registerSenderKeyToGroup: $e")
+                    return@withContext Resource.error("", null, error = e)
                 }
             }
-            return@withContext false
+            return@withContext Resource.error("", null)
         }
 }

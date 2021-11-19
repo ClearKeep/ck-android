@@ -127,7 +127,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         mCurrentUsername = intent.getStringExtra(EXTRA_CURRENT_USERNAME) ?: ""
         mPeerUserAvatar = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION) ?: ""
         mCurrentUserAvatar = intent.getStringExtra(EXTRA_CURRENT_USER_AVATAR) ?: ""
-        //TODO: Remove test hardcode
         callViewModel.mIsAudioMode.value = mIsAudioMode
         isShowedDialogCamera = !mIsAudioMode
 
@@ -185,7 +184,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         }
 
         pipCallNamePeer.text = mCurrentUsername
-        //todo avatarInConversation hardcode test
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()

@@ -1,3 +1,3 @@
 package com.clearkeep.domain.model
 
-data class ProtoResponse(val code: Int, val message: String)
+data class ProtoResponse(val code: Int, val message: String, val cause: Exception? = null)

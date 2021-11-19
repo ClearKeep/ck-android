@@ -31,7 +31,6 @@ import com.clearkeep.domain.usecase.message.UpdateMessageFromApiUseCase
 import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
-import com.clearkeep.domain.usecase.server.GetServerUseCase
 import com.clearkeep.domain.usecase.server.GetServersUseCase
 import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
 

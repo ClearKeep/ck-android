@@ -1,6 +1,5 @@
 package com.clearkeep.data.repository
 
-import android.text.TextUtils
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
@@ -38,9 +37,6 @@ import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import org.whispersystems.libsignal.state.PreKeyBundle
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.inject.Inject
@@ -53,16 +49,14 @@ class MessageRepositoryImpl @Inject constructor(
     private val noteDAO: NoteDAO,
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val serverRepository: ServerRepository, //TODO: Clean
-    private val groupRepository: GroupRepository, //TODO: Clean
+    private val serverRepository: ServerRepository,
+    private val groupRepository: GroupRepository,
     private val signalKeyDistributionService: SignalKeyDistributionService,
     private val messageService: MessageService,
     private val noteService: NoteService,
 ): MessageRepository {
     override fun getMessagesAsState(groupId: Long, owner: Owner) =
         messageDAO.getMessagesAsState(groupId, owner.domain, owner.clientId)
-
-    override fun getNotesAsState(owner: Owner) = noteDAO.getNotesAsState(owner.domain, owner.clientId)
 
     override suspend fun getUnreadMessage(
         groupId: Long,
@@ -119,7 +113,6 @@ class MessageRepositoryImpl @Inject constructor(
                 newestMessageLoadedTimestamp = lastMessageAt
             )
         } catch (e: StatusRuntimeException) {
-
             val parsedError = parseError(e)
 
             val message = when (parsedError.code) {
@@ -130,6 +123,7 @@ class MessageRepositoryImpl @Inject constructor(
                 }
                 else -> parsedError.message
             }
+
             return@withContext MessagePagingResponse(
                 isSuccess = false,
                 endOfPaginationReached = true,
@@ -154,17 +148,7 @@ class MessageRepositoryImpl @Inject constructor(
                 noteDAO.insertNotes(notes)
             }
         } catch (e: StatusRuntimeException) {
-
-            val parsedError = parseError(e)
-
-            val message = when (parsedError.code) {
-                1000, 1077 -> {
-                    printlnCK("updateNotesFromAPI token expired")
-                    serverRepository.isLogout.postValue(true)
-                    parsedError.message
-                }
-                else -> parsedError.message
-            }
+            printlnCK("updateNotesFromAPI: $e")
         } catch (e: Exception) {
             printlnCK("updateNotesFromAPI: $e")
         }
@@ -334,7 +318,7 @@ class MessageRepositoryImpl @Inject constructor(
 
         val groupId = message.groupId
         val room: ChatGroup? =
-            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId)?.data //TODO: CLEAN ARCH Move logic to UseCase
+            groupRepository.getGroupByID(groupId, message.ownerDomain, message.ownerClientId).data
 
         printlnCK("saveNewMessage group $room")
 
@@ -475,15 +459,6 @@ class MessageRepositoryImpl @Inject constructor(
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-
-                val message = when (parsedError.code) {
-                    1000, 1077 -> {
-                        printlnCK("initSessionUsInGroup token expired")
-                        serverRepository.isLogout.postValue(true)
-                        parsedError.message
-                    }
-                    else -> parsedError.message
-                }
                 return false
             } catch (e: java.lang.Exception) {
                 printlnCK("initSessionUserInGroup:${fromClientId} ${e.message}")

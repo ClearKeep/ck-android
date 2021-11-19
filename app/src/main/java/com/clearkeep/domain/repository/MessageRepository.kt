@@ -13,7 +13,6 @@ import message.MessageOuterClass
 
 interface MessageRepository {
     fun getMessagesAsState(groupId: Long, owner: Owner): LiveData<List<Message>>
-    fun getNotesAsState(owner: Owner): LiveData<List<Note>>
     suspend fun getUnreadMessage(
         groupId: Long,
         domain: String,

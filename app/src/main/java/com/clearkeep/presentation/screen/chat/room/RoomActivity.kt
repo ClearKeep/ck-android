@@ -102,11 +102,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManagerCompat.cancel(roomId.toInt())
         }
-        if (isNote) {
-            roomViewModel.initNotes(domain, clientId)
-        } else {
-            roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
-        }
+        roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {

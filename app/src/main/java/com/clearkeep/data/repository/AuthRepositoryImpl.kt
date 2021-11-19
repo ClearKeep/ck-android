@@ -36,14 +36,14 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val userManager: AppStorage,
-    private val serverRepository: ServerRepository, //TODO: Clean
+    private val serverRepository: ServerRepository,
     private val myStore: InMemorySignalProtocolStore,
-    private val userPreferenceRepository: UserPreferenceRepository, //TODO: Clean
+    private val userPreferenceRepository: UserPreferenceRepository,
     private val environment: Environment,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
-    private val roomRepository: GroupRepository, //TODO: Clean
-    private val userKeyRepository: UserKeyRepository, //TODO: Clean
-    private val messageRepository: MessageRepository, //TODO: Clean
+    private val roomRepository: GroupRepository,
+    private val userKeyRepository: UserKeyRepository,
+    private val messageRepository: MessageRepository,
     private val authService: AuthService
 ) : AuthRepository {
     override suspend fun register(
@@ -559,27 +559,6 @@ class AuthRepositoryImpl @Inject constructor(
     ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.validateOtp(otp, otpHash, userId, domain)
-            val accessToken = response.accessToken
-            val profile = getProfile(domain, accessToken, hashKey)
-                ?: return@withContext Resource.error("Can not get profile", null)
-            serverRepository.insertServer(
-                Server(
-                    serverName = response.workspaceName,
-                    serverDomain = domain,
-                    ownerClientId = profile.userId,
-                    serverAvatar = "",
-                    loginTime = getCurrentDateTime().time,
-                    accessKey = accessToken,
-                    hashKey = hashKey,
-                    refreshToken = response.refreshToken,
-                    profile = profile,
-                )
-            )
-            userPreferenceRepository.initDefaultUserPreference(
-                domain,
-                profile.userId,
-                isSocialAccount = false
-            ) //TODO: CLEAN ARCHITECTURE move to use case
             return@withContext Resource.success(response)
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
@@ -687,10 +666,10 @@ class AuthRepositoryImpl @Inject constructor(
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
 
             if (clearOldUserData) {
-                val oldServer = serverRepository.getServer(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
+                val oldServer = serverRepository.getServer(domain, profile.userId)
                 oldServer?.id?.let {
-                    roomRepository.deleteGroup(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
-                    messageRepository.deleteMessageByDomain(domain, profile.userId) //TODO: CLEAN ARCHITECTURE move to use case
+                    roomRepository.deleteGroup(domain, profile.userId)
+                    messageRepository.deleteMessageByDomain(domain, profile.userId)
                 }
             }
 
@@ -706,13 +685,13 @@ class AuthRepositoryImpl @Inject constructor(
                     refreshToken = response.refreshToken,
                     profile = profile,
                 )
-            ) //TODO: CLEAN ARCHITECTURE move to use case
+            )
             userPreferenceRepository.initDefaultUserPreference(
                 domain,
                 profile.userId,
                 isSocialAccount
-            ) //TODO: CLEAN ARCHITECTURE move to use case
-            userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv)) //TODO: CLEAN ARCHITECTURE move to use case
+            )
+            userKeyRepository.insert(UserKey(domain, profile.userId, salt, iv))
             printlnCK("onLoginSuccess insert server success")
 
             return Resource.success(response)

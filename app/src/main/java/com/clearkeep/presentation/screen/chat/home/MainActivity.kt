@@ -67,10 +67,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         homeViewModel.isLogout.observe(this) {
-//            if (false) {
-            printlnCK("MainActivity signOut")
-            homeViewModel.signOut()
-//            }
+            if (it) {
+                homeViewModel.signOut()
+            }
         }
 
         setContent {
@@ -196,7 +195,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun signOut() {
-        homeViewModel.deleteKey()
         homeViewModel.signOut()
     }
 

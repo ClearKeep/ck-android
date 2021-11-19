@@ -108,7 +108,7 @@ fun CKTextInputField(
                             } else {
                                 grayscale5
                             }
-                        } else LocalColorMapping.current.error
+                        } else errorLight
                     },
                     leadingIconColor = LocalColorMapping.current.textFieldIconColor,
                     errorCursorColor = LocalColorMapping.current.error,
