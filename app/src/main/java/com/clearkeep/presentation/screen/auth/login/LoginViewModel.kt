@@ -30,9 +30,6 @@ class LoginViewModel @Inject constructor(
     private val loginByGoogleUseCase: LoginByGoogleUseCase,
     private val loginByMicrosoftUseCase: LoginByMicrosoftUseCase,
     private val loginByFacebookUseCase: LoginByFacebookUseCase,
-    private val registerSocialPinUseCase: RegisterSocialPinUseCase,
-    private val verifySocialPinUseCase: VerifySocialPinUseCase,
-    private val resetSocialPinUseCase: ResetSocialPinUseCase,
     private val validateOtpUseCase: ValidateOtpUseCase,
     private val mfaResendOtpUseCase: LoginMfaResendOtpUseCase,
     private val getWorkspaceInfoUseCase: GetWorkspaceInfoUseCase,
@@ -226,7 +223,7 @@ class LoginViewModel @Inject constructor(
             )
             null
         } else {
-            loginUseCase(email, password, getDomain())
+            loginUseCase.byEmail(email, password, getDomain())
         }
         _isLoading.value = false
         return result
@@ -248,9 +245,9 @@ class LoginViewModel @Inject constructor(
             _isLoading.value = true
             val pin = _confirmSecurityPhrase.value?.trim() ?: ""
             registerSocialPinResponse.value = if (isResetPincode) {
-                resetSocialPinUseCase(getDomain(), pin, userId, resetPincodeToken)
+                loginUseCase.resetSocialPin(getDomain(), pin, userId, resetPincodeToken)
             } else {
-                registerSocialPinUseCase(getDomain(), pin, userId)
+                loginUseCase.registerSocialPin(getDomain(), pin, userId)
             }
             _isLoading.value = false
         }
@@ -260,7 +257,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             val pin = _securityPhrase.value?.trim() ?: ""
-            verifyPassphraseResponse.value = verifySocialPinUseCase(getDomain(), pin, userId)
+            verifyPassphraseResponse.value = loginUseCase.verifySocialPin(getDomain(), pin, userId)
             _isLoading.value = false
         }
     }

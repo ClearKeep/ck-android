@@ -32,7 +32,7 @@ interface GroupDAO {
     suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
 
     @Query("UPDATE chatgroup SET is_deleted_user_peer = 1 WHERE generateId IN (:ids)")
-    suspend fun disableChatOfDeactivatedUser(ids: List<Int>)
+    suspend fun setDeletedUserPeerGroup(ids: List<Int>)
 
     @Query("DELETE  FROM chatgroup WHERE  owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun deleteGroupByOwnerDomain(domain: String, ownerId: String): Int

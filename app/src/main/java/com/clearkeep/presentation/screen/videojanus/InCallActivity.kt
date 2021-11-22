@@ -249,7 +249,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     override fun onPermissionsAvailable() {
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
-            // TODO
             group = viewModel.getGroupById(
                 intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(),
                 mOwnerDomain,

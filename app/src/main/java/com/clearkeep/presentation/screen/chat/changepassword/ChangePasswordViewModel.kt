@@ -7,9 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.domain.repository.ProfileRepository
-import com.clearkeep.domain.repository.AuthRepository
-import com.clearkeep.domain.usecase.auth.ResetPasswordUseCase
+import com.clearkeep.domain.usecase.auth.LoginUseCase
 import com.clearkeep.domain.usecase.profile.ChangePasswordUseCase
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
@@ -21,7 +19,7 @@ import javax.inject.Inject
 class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
     private val changePasswordUseCase: ChangePasswordUseCase,
-    private val resetPasswordUseCase: ResetPasswordUseCase,
+    private val loginUseCase: LoginUseCase
 ) : ViewModel() {
     private val _oldPassword = MutableLiveData<String>()
     private val _oldPasswordError = MutableLiveData<String>()
@@ -119,7 +117,7 @@ class ChangePasswordViewModel @Inject constructor(
 
         viewModelScope.launch {
             changePasswordResponse.value =
-                resetPasswordUseCase(preAccessToken, userId, serverDomain, newPassword)
+                loginUseCase.resetPassword(preAccessToken, userId, serverDomain, newPassword)
         }
     }
 

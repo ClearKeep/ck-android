@@ -14,7 +14,6 @@ class GetGroupByIdUseCase @Inject constructor(private val groupRepository: Group
             printlnCK("getGroupByID: null server")
             return null
         }
-
-        return groupRepository.getGroupByID(groupId, domain, ownerId)
+        return groupRepository.getGroupByID(groupId, domain, ownerId, server, true)
     }
 }

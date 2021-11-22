@@ -1,138 +1,134 @@
 package com.clearkeep.data.repository
 
-import com.clearkeep.data.local.clearkeep.dao.ServerDAO
 import com.clearkeep.data.local.clearkeep.dao.UserKeyDAO
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
 import com.clearkeep.data.remote.service.SignalKeyDistributionService
-import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Server
 import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
 import com.clearkeep.data.local.signal.dao.SignalKeyDAO
 import com.clearkeep.data.local.signal.dao.SignalPreKeyDAO
 import com.clearkeep.data.local.signal.model.SignalIdentityKey
-import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.domain.repository.UserKeyRepository
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
-import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.UserKey
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.utilities.network.Resource
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.whispersystems.libsignal.ecc.ECKeyPair
 import org.whispersystems.libsignal.groups.SenderKeyName
+import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import org.whispersystems.libsignal.util.KeyHelper
+import signal.Signal
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class SignalKeyRepositoryImpl @Inject constructor(
     private val senderKeyStore: InMemorySenderKeyStore,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val signalPreKeyDAO: SignalPreKeyDAO,
     private val userKeyDAO: UserKeyDAO,
-    private val serverDAO: ServerDAO,
     private val signalKeyDAO: SignalKeyDAO,
     private val signalKeyDistributionService: SignalKeyDistributionService
 ) : SignalKeyRepository {
-    override fun getIdentityKey(clientId: String, domain: String): SignalIdentityKey? =
-        signalIdentityKeyDAO.getIdentityKey(clientId, domain)
-
-    override suspend fun deleteKey(owner: Owner, server: Server, chatGroups: List<ChatGroup>?) {
-        val (domain, clientId) = owner
-
-        signalIdentityKeyDAO
-            .deleteSignalKeyByOwnerDomain(domain, clientId)
-        val senderAddress = CKSignalProtocolAddress(
-            Owner(server.serverDomain, server.ownerClientId),
-            RECEIVER_DEVICE_ID
-        )
-
-        signalPreKeyDAO.deleteSignalSenderKey(server.serverDomain, server.ownerClientId)
-
-        chatGroups?.forEach { group ->
-            val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)
-            senderKeyStore.deleteSenderKey(groupSender2)
-            group.clientList.forEach {
-                val senderAddress = CKSignalProtocolAddress(
-                    Owner(
-                        it.domain,
-                        it.userId
-                    ), SENDER_DEVICE_ID
-                )
-                val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
-                signalKeyDAO.deleteSignalSenderKey(groupSender.groupId, groupSender.sender.name)
-            }
-        }
+    override suspend fun getIdentityKey(clientId: String, domain: String): SignalIdentityKey? = withContext(Dispatchers.IO) {
+        return@withContext signalIdentityKeyDAO.getIdentityKey(clientId, domain)
     }
 
-    override suspend fun registerSenderKeyToGroup(groupID: Long, clientId: String, domain: String): Resource<Any> =
+    override suspend fun saveIdentityKey(signalIdentityKey: SignalIdentityKey) =
         withContext(Dispatchers.IO) {
-            //get private key
-            val identityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
-            val privateKey = identityKey?.identityKeyPair?.privateKey
-            //end get private key
-            val senderAddress = CKSignalProtocolAddress(Owner(domain, clientId), 111)
-            val groupSender = SenderKeyName(groupID.toString(), senderAddress)
-            if (!senderKeyStore.hasSenderKey(groupSender)) {
-                val senderKeyID = KeyHelper.generateSenderKeyId()
-                val senderKey = KeyHelper.generateSenderKey()
-                val key = KeyHelper.generateSenderSigningKey()
-                val senderKeyRecord = senderKeyStore.loadSenderKey(groupSender)
-                senderKeyRecord.setSenderKeyState(
-                    senderKeyID,
-                    0,
-                    senderKey,
-                    key
-                )
-                senderKeyStore.storeSenderKey(groupSender, senderKeyRecord)
-                val state = senderKeyRecord.senderKeyState
-                val sentAliceDistributionMessage = SenderKeyDistributionMessage(
-                    state.keyId,
-                    state.senderChainKey.iteration,
-                    state.senderChainKey.seed,
-                    state.signingKeyPublic
-                )
-
-                //Encrypt sender key
-                val userKey = userKeyDAO.getKey(domain, domain) ?: UserKey(domain, domain, "", "")
-                val encryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
-                val encryptedGroupPrivateKey =
-                    encryptor.encrypt(key.privateKey.serialize(), userKey.salt, userKey.iv)
-
-                try {
-                    val server = serverDAO.getServer(domain, clientId)
-                    if (server == null) {
-                        printlnCK("fetchNewGroup: ")
-                        return@withContext Resource.error("can not find server", null)
-                    }
-                    val response = signalKeyDistributionService.registerClientKey(
-                        server,
-                        senderAddress.deviceId,
-                        groupID,
-                        sentAliceDistributionMessage,
-                        encryptedGroupPrivateKey,
-                        key,
-                        senderKeyID,
-                        senderKey
-                    )
-                    if (response?.error.isNullOrEmpty()) {
-                        printlnCK("registerSenderKeyToGroup: $groupID: success")
-                        return@withContext Resource.success(null)
-                    }
-                } catch (e: StatusRuntimeException) {
-                    printlnCK("registerSenderKeyToGroup: $e")
-
-                    val parsedError = parseError(e)
-                    return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
-                } catch (e: Exception) {
-                    printlnCK("registerSenderKeyToGroup: $e")
-                    return@withContext Resource.error("", null, error = e)
-                }
-            }
-            return@withContext Resource.error("", null)
+            signalIdentityKeyDAO.insert(signalIdentityKey)
         }
+
+    override suspend fun deleteIdentityKeyByOwnerDomain(domain: String, clientId: String): Unit = withContext(Dispatchers.IO) {
+        signalIdentityKeyDAO
+            .deleteSignalKeyByOwnerDomain(domain, clientId)
+    }
+
+    override suspend fun deleteSenderPreKey(domain: String, clientId: String): Unit = withContext(Dispatchers.IO) {
+        signalPreKeyDAO.deleteSignalSenderKey(domain, clientId)
+    }
+
+    override suspend fun deleteGroupSenderKey(senderKeyName: SenderKeyName) = withContext(Dispatchers.IO) {
+        senderKeyStore.deleteSenderKey(senderKeyName)
+    }
+
+    override suspend fun deleteGroupSenderKey(groupId: String, groupSender: String): Unit = withContext(Dispatchers.IO) {
+        signalKeyDAO.deleteSignalSenderKey(groupId, groupSender)
+    }
+
+    override suspend fun hasSenderKey(senderKeyName: SenderKeyName): Boolean = withContext(Dispatchers.IO) {
+        printlnCK("SignalKeyRepositoryImpl hasSenderKey ${senderKeyName.serialize()}")
+        return@withContext senderKeyStore.hasSenderKey(senderKeyName)
+    }
+
+    override suspend fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) = withContext(Dispatchers.IO) {
+        printlnCK("SignalKeyRepositoryImpl storeSenderKey ${senderKeyName.serialize()}")
+        senderKeyStore.storeSenderKey(senderKeyName, record)
+    }
+
+    override suspend fun loadSenderKey(senderKeyName: SenderKeyName): SenderKeyRecord = withContext(Dispatchers.IO) {
+        return@withContext senderKeyStore.loadSenderKey(senderKeyName)
+    }
+
+    override suspend fun getUserKey(serverDomain: String, userId: String): UserKey = withContext(Dispatchers.IO) {
+        return@withContext userKeyDAO.getKey(serverDomain, serverDomain) ?: UserKey(
+            serverDomain,
+            serverDomain,
+            "",
+            ""
+        )
+    }
+
+    override suspend fun registerSenderKeyToGroup(
+        server: Server,
+        deviceId: Int,
+        groupId: Long,
+        clientKeyDistribution: SenderKeyDistributionMessage,
+        encryptedGroupPrivateKey: ByteArray?,
+        key: ECKeyPair,
+        senderKeyId: Int,
+        senderKey: ByteArray
+    ): Resource<Any> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = signalKeyDistributionService.registerClientKey(
+                    server,
+                    deviceId,
+                    groupId,
+                    clientKeyDistribution,
+                    encryptedGroupPrivateKey,
+                    key,
+                    senderKeyId,
+                    senderKey
+                )
+                if (response?.error.isNullOrEmpty()) {
+                    return@withContext Resource.success(null)
+                }
+                return@withContext Resource.error("", null)
+            } catch (e: StatusRuntimeException) {
+                printlnCK("registerSenderKeyToGroup: $e")
+
+                val parsedError = parseError(e)
+                return@withContext Resource.error(
+                    parsedError.message,
+                    null,
+                    parsedError.code,
+                    parsedError.cause
+                )
+            } catch (e: Exception) {
+                printlnCK("registerSenderKeyToGroup: $e")
+                return@withContext Resource.error("", null, error = e)
+            }
+        }
+
+    override suspend fun getGroupClientKey(server: Server, groupId: Long, fromClientId: String): Signal.GroupGetClientKeyResponse? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            signalKeyDistributionService.getGroupClientKey(server, groupId, fromClientId)
+        } catch (e: StatusRuntimeException) {
+            null
+        } catch (e: java.lang.Exception) {
+            printlnCK("initSessionUserInGroup:${fromClientId} ${e.message}")
+            null
+        }
+    }
 }

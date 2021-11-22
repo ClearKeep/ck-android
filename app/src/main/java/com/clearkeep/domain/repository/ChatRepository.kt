@@ -1,46 +1,30 @@
 package com.clearkeep.domain.repository
 
 import android.content.Context
+import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.Note
 import com.clearkeep.domain.model.Server
 import com.clearkeep.utilities.network.Resource
+import message.MessageOuterClass
 
 interface ChatRepository {
     fun setJoiningRoomId(roomId: Long)
     fun getJoiningRoomId(): Long
     suspend fun sendMessageInPeer(
         server: Server,
-        senderId: String,
-        ownerWorkSpace: String,
-        receiverId: String,
-        receiverWorkspaceDomain: String,
+        receiverClientId: String,
+        deviceId: String,
         groupId: Long,
-        plainMessage: String,
-        isForceProcessKey: Boolean = false,
-        cachedMessageId: Int = 0
-    ): Resource<Nothing>
-
-    suspend fun processPeerKey(
-        receiverId: String,
-        receiverWorkspaceDomain: String,
-        senderId: String,
-        ownerWorkSpace: String
-    ): Boolean
+        message: ByteArray,
+        messageSender: ByteArray
+    ): Resource<MessageOuterClass.MessageObjectResponse>
 
     suspend fun sendMessageToGroup(
-        senderId: String,
-        ownerWorkSpace: String,
+        server: Server,
+        deviceId: String,
         groupId: Long,
-        plainMessage: String,
-        cachedMessageId: Int = 0
-    ): Resource<Nothing>
+        message: ByteArray,
+    ): Resource<MessageOuterClass.MessageObjectResponse>
 
-    suspend fun uploadFile(
-        context: Context,
-        mimeType: String,
-        fileName: String,
-        fileUri: String
-    ): Resource<String>
-
-    fun downloadFile(fileName: String, url: String)
+    suspend fun updateMessage(message: Message)
 }

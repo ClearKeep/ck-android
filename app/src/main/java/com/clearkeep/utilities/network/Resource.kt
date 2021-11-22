@@ -24,4 +24,8 @@ data class Resource<out T>(
             return Resource(LOADING, data, null)
         }
     }
+
+    fun isSuccess() = status == SUCCESS
+    fun isError() = status == ERROR
+    fun isLoading() = status == LOADING
 }

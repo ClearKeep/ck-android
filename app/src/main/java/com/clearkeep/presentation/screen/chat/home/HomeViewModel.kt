@@ -14,7 +14,6 @@ import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
 import com.clearkeep.domain.usecase.group.GetAllRoomsAsStateUseCase
 import com.clearkeep.domain.usecase.message.ClearTempMessageUseCase
-import com.clearkeep.domain.usecase.message.ClearTempNotesUseCase
 import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
 import com.clearkeep.domain.usecase.people.SendPingUseCase
 import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
@@ -34,7 +33,6 @@ class HomeViewModel @Inject constructor(
     private val registerTokenUseCase: RegisterTokenUseCase,
     private val fetchGroupsUseCase: FetchGroupsUseCase,
     private val getAllPeerGroupByDomainUseCase: GetAllPeerGroupByDomainUseCase,
-    private val clearTempNotesUseCase: ClearTempNotesUseCase,
     private val clearTempMessageUseCase: ClearTempMessageUseCase,
     private val getServerByDomainUseCase: GetServerByDomainUseCase,
 
@@ -89,7 +87,6 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            clearTempNotesUseCase()
             clearTempMessageUseCase()
             val fetchGroupResponse = fetchGroupsUseCase()
             handleResponse(fetchGroupResponse)

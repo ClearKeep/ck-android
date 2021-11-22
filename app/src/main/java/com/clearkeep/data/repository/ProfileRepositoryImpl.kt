@@ -17,43 +17,15 @@ import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import user.UserOuterClass
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class ProfileRepositoryImpl @Inject constructor(
-    private val userManager: AppStorage,
-    private val pushNotificationService: PushNotificationService,
     private val userPreferenceDAO: UserPreferenceDAO,
-    private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val userService: UserService
 ) : ProfileRepository {
-    override suspend fun registerToken(token: String, servers: List<Server>) =
-        withContext(Dispatchers.IO) {
-            printlnCK("registerToken: token = $token")
-            servers.forEach { server ->
-                registerTokenByOwner(token, server)
-            }
-        }
-
-    private suspend fun registerTokenByOwner(token: String, server: Server): Boolean =
-        withContext(Dispatchers.IO) {
-            val deviceId = userManager.getUniqueDeviceID()
-            printlnCK("registerTokenByOwner: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, token = $token, deviceId = $deviceId")
-            try {
-                val response =
-                    pushNotificationService.registerPushNotificationToken(deviceId, token, server)
-                printlnCK("registerTokenByOwner success: domain = ${server.serverDomain}, clientId = ${server.profile.userId}")
-                return@withContext response.error.isNullOrEmpty()
-            } catch (e: StatusRuntimeException) {
-                return@withContext false
-            } catch (e: Exception) {
-                printlnCK("registerTokenByOwner error: domain = ${server.serverDomain}, clientId = ${server.profile.userId}, $e")
-                return@withContext false
-            }
-        }
-
     override suspend fun updateProfile(
         server: Server,
         profile: Profile
@@ -118,7 +90,6 @@ class ProfileRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 val response = userService.updateMfaSettings(server, enabled)
-                printlnCK("updateMfaSettings MFA change to $enabled success? ${response.success}")
                 if (response.success && !enabled) {
                     userPreferenceDAO.updateMfa(
                         server.serverDomain,
@@ -141,29 +112,23 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun sendMfaAuthChallenge(
+        server: Server,
+        aHex: String
+    ): UserOuterClass.MfaAuthChallengeResponse = withContext(Dispatchers.IO) {
+        return@withContext userService.mfaAuthChallenge(server, aHex)
+    }
+
     override suspend fun mfaValidatePassword(
         server: Server,
-        password: String
+        aHex: String,
+        mHex: String
     ): Resource<Pair<String, String>> = withContext(Dispatchers.IO) {
         try {
-            val nativeLib = NativeLib()
-            val a = nativeLib.getA(server.profile.email ?: "", password)
-            val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
-            val response = userService.mfaAuthChallenge(server, aHex)
-
-            val salt = response.salt
-            val b = response.publicChallengeB
-
-            val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
-            val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
-            nativeLib.freeMemoryAuthenticate()
-
             val validateResponse = userService.mfaValidatePassword(server, aHex, mHex)
             return@withContext if (validateResponse.success) Resource.success("" to "") else Resource.error(
                 "",
-                "" to response.toString()
+                "" to validateResponse.toString()
             )
         } catch (exception: StatusRuntimeException) {
             printlnCK("mfaValidatePassword: $exception")
@@ -225,71 +190,43 @@ class ProfileRepositoryImpl @Inject constructor(
                     1069 -> "Your account has been locked out due to too many attempts. Please try again later!"
                     else -> parsedError.message
                 }
-                return@withContext Resource.error("", parsedError.code to message, error = parsedError.cause)
+                return@withContext Resource.error(
+                    "",
+                    parsedError.code to message,
+                    error = parsedError.cause
+                )
             } catch (exception: Exception) {
                 printlnCK("mfaResendOtp: $exception")
                 return@withContext Resource.error("", 0 to exception.toString())
             }
         }
 
+    override suspend fun requestChangePassword(
+        server: Server,
+        aHex: String
+    ): UserOuterClass.RequestChangePasswordRes = withContext(Dispatchers.IO) {
+        return@withContext userService.requestChangePassword(server, aHex)
+    }
+
     override suspend fun changePassword(
         server: Server,
-        email: String,
-        oldPassword: String,
-        newPassword: String
+        aHex: String,
+        mHex: String,
+        verificatorHex: String,
+        newSaltHex: String,
+        ivParam: String,
+        identityKeyEncrypted: String?
     ): Resource<String> =
         withContext(Dispatchers.IO) {
             try {
-                val nativeLib = NativeLib()
-                val a = nativeLib.getA(email, oldPassword)
-
-                val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
-                val response = userService.requestChangePassword(server, aHex)
-
-                val salt = response.salt
-                val b = response.publicChallengeB
-
-                val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
-                val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-                nativeLib.freeMemoryAuthenticate()
-
-                val newPasswordNativeLib = NativeLib()
-
-                val newSalt = newPasswordNativeLib.getSalt(email, newPassword)
-                val newSaltHex =
-                    newSalt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
-                val verificator = newPasswordNativeLib.getVerificator()
-                val verificatorHex =
-                    verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
-                nativeLib.freeMemoryCreateAccount()
-
-                val decrypter = DecryptsPBKDF2(newPassword)
-
-                val oldIdentityKey = signalIdentityKeyDAO.getIdentityKey(
-                    server.profile.userId,
-                    server.serverDomain
-                )!!.identityKeyPair.privateKey.serialize()
-
-                val decryptResult = decrypter.encrypt(
-                    oldIdentityKey,
-                    newSaltHex,
-                )?.let {
-                    toHex(
-                        it
-                    )
-                }
-
                 val changePasswordResponse = userService.changePassword(
                     server,
                     aHex,
                     mHex,
                     verificatorHex,
                     newSaltHex,
-                    toHex(decrypter.getIv()),
-                    decryptResult
+                    ivParam,
+                    identityKeyEncrypted
                 )
                 return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(
                     null
