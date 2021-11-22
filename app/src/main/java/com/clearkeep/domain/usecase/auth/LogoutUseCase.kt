@@ -1,10 +1,16 @@
 package com.clearkeep.domain.usecase.auth
 
+import com.clearkeep.data.local.signal.CKSignalProtocolAddress
 import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.UserStateTypeInGroup
 import com.clearkeep.domain.repository.*
+import com.clearkeep.utilities.RECEIVER_DEVICE_ID
+import com.clearkeep.utilities.SENDER_DEVICE_ID
 import com.clearkeep.utilities.printlnCK
+import org.whispersystems.libsignal.groups.SenderKeyName
 import javax.inject.Inject
 
 class LogoutUseCase @Inject constructor(
@@ -50,11 +56,39 @@ class LogoutUseCase @Inject constructor(
                         && it.isGroup()
                         && it.clientList.firstOrNull { it.userId == profile.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
             }
-            signalKeyRepository.deleteKey(owner, server, groupsInServer)
+
+            deleteKey(owner, server, groupsInServer)
         } else {
             printlnCK("signOut error")
             return false
         }
         return false
+    }
+
+    private suspend fun deleteKey(owner: Owner, server: Server, chatGroups: List<ChatGroup>?) {
+        val (domain, clientId) = owner
+
+        signalKeyRepository.deleteIdentityKeyByOwnerDomain(domain, clientId)
+        val senderAddress = CKSignalProtocolAddress(
+            Owner(server.serverDomain, server.ownerClientId),
+            RECEIVER_DEVICE_ID
+        )
+
+        signalKeyRepository.deleteSenderPreKey(server.serverDomain, server.ownerClientId)
+
+        chatGroups?.forEach { group ->
+            val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)
+            signalKeyRepository.deleteGroupSenderKey(groupSender2)
+            group.clientList.forEach {
+                val senderAddress = CKSignalProtocolAddress(
+                    Owner(
+                        it.domain,
+                        it.userId
+                    ), SENDER_DEVICE_ID
+                )
+                val groupSender = SenderKeyName(group.groupId.toString(), senderAddress)
+                signalKeyRepository.deleteGroupSenderKey(groupSender.groupId, groupSender.sender.name)
+            }
+        }
     }
 }

@@ -11,37 +11,33 @@ import group.GroupOuterClass
 interface GroupRepository {
     fun getAllRoomsAsState(): LiveData<List<ChatGroup>>
     suspend fun getAllRooms(): List<ChatGroup>
-    suspend fun disableChatOfDeactivatedUser(clientId: String, domain: String, userId: String)
+    suspend fun setDeletedUserPeerGroup(peerRoomsId: List<Int>)
     suspend fun createGroup(
         createClientId: String,
         groupName: String,
         participants: MutableList<User>,
-        isGroup: Boolean
-    ): Resource<ChatGroup>?
-
-    suspend fun inviteToGroup(
-        invitedUsers: List<User>,
-        groupId: Long,
-        server: Server?,
-        owner: Owner
-    ): Resource<ChatGroup>
-
+        isGroup: Boolean,
+        domain: String,
+        clientId: String,
+        server: Server?
+    ): Resource<GroupOuterClass.GroupObjectResponse>
+    suspend fun updateGroup(group: ChatGroup)
     suspend fun removeMemberInGroup(removedUser: User, groupId: Long, owner: Owner): Boolean
-    suspend fun leaveGroup(groupId: Long, owner: Owner): Boolean
+    suspend fun leaveGroup(groupId: Long, owner: Owner): GroupOuterClass.BaseResponse?
     suspend fun getGroupByGroupId(groupId: Long): ChatGroup?
-    suspend fun fetchGroups(clientId: String): Resource<List<GroupOuterClass.GroupObjectResponse>>
+    suspend fun fetchGroups(server: Server): Resource<List<GroupOuterClass.GroupObjectResponse>>
     suspend fun convertGroupFromResponse(
         response: GroupOuterClass.GroupObjectResponse,
         serverDomain: String,
-        ownerId: String
+        ownerId: String,
+        server: Server?
     ): ChatGroup
     suspend fun insertGroup(group: ChatGroup)
-    suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String): Resource<ChatGroup>
+    suspend fun getGroupByID(groupId: Long, domain: String, ownerId: String, server: Server?, forceRefresh: Boolean): Resource<ChatGroup>
     suspend fun getGroupByID(groupId: Long, serverDomain: String): ChatGroup?
     suspend fun deleteGroup(groupId: Long, domain: String, ownerClientId: String)
     suspend fun deleteGroup(domain: String, ownerClientId: String)
     suspend fun getGroupPeerByClientId(friend: User, owner: Owner): ChatGroup?
-    suspend fun remarkGroupKeyRegistered(groupId: Long): ChatGroup
     fun getGroupsByGroupName(
         ownerDomain: String,
         ownerClientId: String,
@@ -60,4 +56,14 @@ interface GroupRepository {
         groupId: Long,
         domain: String
     ): List<String>?
+    suspend fun inviteUserToGroup(
+        invitedUser: User,
+        groupId: Long,
+        owner: Owner
+    ): GroupOuterClass.BaseResponse?
+    suspend fun getGroup(
+        groupId: Long,
+        owner: Owner,
+        server: Server?
+    ): Resource<ChatGroup>
 }

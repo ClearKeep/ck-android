@@ -20,13 +20,12 @@ import user.UserOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class PeopleRepositoryImpl @Inject constructor(
     private val peopleDao: UserDAO,
     private val environment: Environment,
     private val groupService: GroupService
 ): PeopleRepository {
-    override fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
+    override fun getFriendsAsState(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
         peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
             if (list.isNotEmpty()) {
                 val response = groupService.getUsersInServer()
@@ -42,7 +41,6 @@ class PeopleRepositoryImpl @Inject constructor(
 
     override suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner): User? =
         withContext(Dispatchers.IO) {
-            printlnCK("getFriend: $friendClientId + $friendDomain")
             val ret =
                 peopleDao.getFriend(friendClientId, friendDomain, owner.domain, owner.clientId)
             return@withContext if (ret != null) convertEntityToUser(ret) else null
@@ -54,45 +52,40 @@ class PeopleRepositoryImpl @Inject constructor(
         return@withContext if (ret != null) convertEntityToUser(ret) else null
     }
 
-    override suspend fun updatePeople(): Resource<Nothing> {
+    override suspend fun updatePeople(): Resource<Nothing> = withContext(Dispatchers.IO) {
         try {
             val friends = getFriendsFromAPI()
             if (friends.status == com.clearkeep.utilities.network.Status.SUCCESS) {
                 printlnCK("updatePeople: $friends")
                 peopleDao.insertPeopleList(friends.data ?: emptyList())
             } else {
-                return Resource.error(friends.message ?: "", null, friends.errorCode)
+                return@withContext Resource.error(friends.message ?: "", null, friends.errorCode)
             }
-            return Resource.success(null)
+            return@withContext Resource.success(null)
         } catch (exception: Exception) {
             printlnCK("updatePeople: $exception")
-            return Resource.error(exception.toString(), null)
+            return@withContext Resource.error(exception.toString(), null)
         }
     }
 
-    override suspend fun updateAvatarUserEntity(user: User, owner: Owner): UserEntity? {
+    override suspend fun updateAvatarUserEntity(user: User, owner: Owner): UserEntity? = withContext(Dispatchers.IO) {
         val userEntity = peopleDao.getFriend(user.userId, user.domain, owner.domain, owner.clientId)
         if (userEntity != null) {
             userEntity.avatar = user.avatar
             peopleDao.insert(userEntity)
         }
-        return userEntity
+        return@withContext userEntity
     }
 
-    override suspend fun deleteFriend(clientId: String) {
+    override suspend fun deleteFriend(clientId: String): Unit = withContext(Dispatchers.IO) {
         try {
-            val result = peopleDao.deleteFriend(clientId)
-            if (result > 0) {
-                printlnCK("deleteFriend: clientId: $clientId")
-            } else {
-                printlnCK("deleteFriend: clientId: $clientId fail")
-            }
+            peopleDao.deleteFriend(clientId)
         } catch (e: Exception) {
             printlnCK("updatePeople:Exception $e")
         }
     }
 
-    override suspend fun insertFriend(friend: User, owner: Owner) {
+    override suspend fun insertFriend(friend: User, owner: Owner) = withContext(Dispatchers.IO) {
         val oldUser = peopleDao.getFriend(
             friend.userId,
             friend.domain,
@@ -110,11 +103,9 @@ class PeopleRepositoryImpl @Inject constructor(
                     phoneNumber = friend.phoneNumber,
                     email = friend.email,
                     avatar = friend.avatar
-
                 )
             )
         }
-
     }
 
     private suspend fun getFriendsFromAPI(): Resource<List<UserEntity>> =
@@ -144,12 +135,12 @@ class PeopleRepositoryImpl @Inject constructor(
     private suspend fun convertUserResponse(
         userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder,
         owner: Owner
-    ): UserEntity {
+    ): UserEntity = withContext(Dispatchers.IO) {
         val oldUser = peopleDao.getFriend(
             userInfoResponse.id, userInfoResponse.workspaceDomain,
             ownerDomain = owner.domain, ownerClientId = owner.clientId
         )
-        return UserEntity(
+        return@withContext UserEntity(
             generateId = oldUser?.generateId ?: null,
             userId = userInfoResponse.id,
             userName = userInfoResponse.displayName,

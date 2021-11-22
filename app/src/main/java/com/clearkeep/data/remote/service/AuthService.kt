@@ -269,7 +269,22 @@ class AuthService @Inject constructor(
             ).resetPincode(request)
     }
 
-    suspend fun forgotPasswordUpdate(transitionID: Int, publicKey: ByteArray, preKey: ByteArray, preKeyId: Int, signedPreKeyId: Int, signedPreKey: ByteArray, identityKeyEncrypted: String?, signedPreKeySignature: ByteArray, preAccessToken: String, email: String, verificatorHex: String, saltHex: String, iv: String, domain: String): AuthOuterClass.AuthRes = withContext(Dispatchers.IO) {
+    suspend fun forgotPasswordUpdate(
+        transitionID: Int,
+        publicKey: ByteArray,
+        preKey: ByteArray,
+        preKeyId: Int,
+        signedPreKeyId: Int,
+        signedPreKey: ByteArray,
+        identityKeyEncrypted: String?,
+        signedPreKeySignature: ByteArray,
+        preAccessToken: String,
+        email: String,
+        verificatorHex: String,
+        saltHex: String,
+        iv: String,
+        domain: String
+    ): AuthOuterClass.AuthRes = withContext(Dispatchers.IO) {
         val clientKeyPeer = AuthOuterClass.PeerRegisterClientKeyRequest.newBuilder()
             .setDeviceId(SENDER_DEVICE_ID)
             .setRegistrationId(transitionID)
@@ -293,35 +308,44 @@ class AuthService @Inject constructor(
             .setClientKeyPeer(clientKeyPeer)
             .build()
 
-        return@withContext paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
+        return@withContext paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+            .withDeadlineAfter(
                 REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
             ).forgotPasswordUpdate(request)
     }
 
-    suspend fun forgotPassword(email: String, domain: String): AuthOuterClass.BaseResponse = withContext(Dispatchers.IO) {
-        val request = AuthOuterClass.ForgotPasswordReq.newBuilder()
-            .setEmail(email)
-            .build()
-        return@withContext paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
-                REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
-            ).forgotPassword(request)
-    }
+    suspend fun forgotPassword(email: String, domain: String): AuthOuterClass.BaseResponse =
+        withContext(Dispatchers.IO) {
+            val request = AuthOuterClass.ForgotPasswordReq.newBuilder()
+                .setEmail(email)
+                .build()
+            return@withContext paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain))
+                .withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).forgotPassword(request)
+        }
 
-    suspend fun logout(deviceID: String, server: Server): AuthOuterClass.BaseResponse = withContext(Dispatchers.IO) {
-        val request = AuthOuterClass.LogoutReq.newBuilder()
-            .setDeviceId(deviceID)
-            .setRefreshToken(server.refreshToken)
-            .build()
+    suspend fun logout(deviceID: String, server: Server): AuthOuterClass.BaseResponse =
+        withContext(Dispatchers.IO) {
+            val request = AuthOuterClass.LogoutReq.newBuilder()
+                .setDeviceId(deviceID)
+                .setRefreshToken(server.refreshToken)
+                .build()
 
-        val authBlockingWithHeader =
-            paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
-                .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
-                .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
+            val authBlockingWithHeader =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain))
+                    .withDeadlineAfter(10 * 1000, TimeUnit.MILLISECONDS)
+                    .withCallCredentials(CallCredentials(server.accessKey, server.hashKey))
 
-        return@withContext authBlockingWithHeader.logout(request)
-    }
+            return@withContext authBlockingWithHeader.logout(request)
+        }
 
-    suspend fun validateOtp(otp: String, otpHash: String, userId: String, domain: String): AuthOuterClass.AuthRes = withContext(Dispatchers.IO) {
+    suspend fun validateOtp(
+        otp: String,
+        otpHash: String,
+        userId: String,
+        domain: String
+    ): AuthOuterClass.AuthRes = withContext(Dispatchers.IO) {
         val request = AuthOuterClass.MfaValidateOtpRequest.newBuilder()
             .setOtpCode(otp)
             .setPreAccessToken(otpHash)
@@ -331,7 +355,11 @@ class AuthService @Inject constructor(
         return@withContext stub.validateOtp(request)
     }
 
-    suspend fun resendOtp(otpHash: String, userId: String, domain: String): AuthOuterClass.MfaResendOtpRes = withContext(Dispatchers.IO) {
+    suspend fun resendOtp(
+        otpHash: String,
+        userId: String,
+        domain: String
+    ): AuthOuterClass.MfaResendOtpRes = withContext(Dispatchers.IO) {
         val request = AuthOuterClass.MfaResendOtpReq.newBuilder()
             .setPreAccessToken(otpHash)
             .setUserId(userId)
@@ -340,7 +368,11 @@ class AuthService @Inject constructor(
         return@withContext stub.resendOtp(request)
     }
 
-    suspend fun getProfile(domain: String, accessToken: String, hashKey: String): UserOuterClass.UserProfileResponse = withContext(Dispatchers.IO) {
+    suspend fun getProfile(
+        domain: String,
+        accessToken: String,
+        hashKey: String
+    ): UserOuterClass.UserProfileResponse = withContext(Dispatchers.IO) {
         val userGrpc = paramAPIProvider.provideUserBlockingStub(
             ParamAPI(
                 domain,

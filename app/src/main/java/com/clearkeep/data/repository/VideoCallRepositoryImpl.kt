@@ -13,7 +13,6 @@ import video_call.VideoCallOuterClass
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class VideoCallRepositoryImpl @Inject constructor(
     private val videoCallService: VideoCallService
 ): VideoCallRepository {

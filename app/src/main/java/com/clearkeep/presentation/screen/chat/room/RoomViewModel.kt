@@ -56,8 +56,6 @@ class RoomViewModel @Inject constructor(
 
     private val getMessageAsStateUseCase: GetMessageAsStateUseCase,
     private val saveMessageUseCase: SaveMessageUseCase,
-    private val saveNoteUseCase: SaveNoteUseCase,
-    private val clearTempNotesUseCase: ClearTempNotesUseCase,
     private val clearTempMessageUseCase: ClearTempMessageUseCase,
     private val updateMessageFromApiUseCase: UpdateMessageFromApiUseCase,
     private val getServerByOwnerUseCase: GetServerByOwnerUseCase,
@@ -177,7 +175,6 @@ class RoomViewModel @Inject constructor(
     fun clearTempMessage() {
         viewModelScope.launch {
             clearTempMessageUseCase()
-            clearTempNotesUseCase()
         }
     }
 
@@ -454,9 +451,11 @@ class RoomViewModel @Inject constructor(
         cachedMessageId: Int = 0
     ) {
         val group = getGroupByGroupIdUseCase(groupId)
+        printlnCK("sendMessageToGroup group $group")
         group?.let {
             if (!group.isJoined) {
                 val result = registerSenderKeyToGroupUseCase(groupId, clientId, domain)
+                printlnCK("sendMessageToGroup register sender key $result")
                 if (result.status == Status.SUCCESS) {
                     _group.value = remarkGroupKeyRegisteredUseCase(groupId)
                     sendMessageResponse.value = sendMessageUseCase.toGroup(
@@ -685,19 +684,7 @@ class RoomViewModel @Inject constructor(
                 val tempMessageUris = urisList.joinToString(" ")
                 val tempMessageContent =
                     if (message != null) "$tempMessageUris $message" else tempMessageUris
-                val tempMessageId = if (isNote.value == true) {
-                    saveNoteUseCase(
-                        Note(
-                            null,
-                            tempMessageContent,
-                            Calendar.getInstance().timeInMillis,
-                            getOwner().domain,
-                            getOwner().clientId,
-                            true
-                        )
-                    )
-                } else {
-                    saveMessageUseCase(
+                val tempMessageId = saveMessageUseCase(
                         Message(
                             null,
                             "",
@@ -712,7 +699,6 @@ class RoomViewModel @Inject constructor(
                             getOwner().clientId
                         )
                     )
-                }
                 val fileUrls = mutableListOf<String>()
                 val filesSizeInBytes = mutableListOf<Long>()
                 urisList.forEach { uriString ->
@@ -755,14 +741,14 @@ class RoomViewModel @Inject constructor(
                         sendMessageToGroup(
                             groupId,
                             messageContent,
-                            tempMessageId.toInt()
+                            tempMessageId
                         )
                     } else {
                         sendMessageToUser(
                             receiverPeople!!,
                             groupId,
                             messageContent,
-                            tempMessageId.toInt()
+                            tempMessageId
                         )
                     }
                 }

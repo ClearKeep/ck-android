@@ -85,13 +85,12 @@ fun HomeScreen(
                         homeViewModel,
                         gotoSearch,
                         createGroupChat,
-                        gotoProfile = {
-                            rememberStateSiteMenu.value = true
-                        },
                         onItemClickListener = {
                             gotoRoomById(it)
                         },
-                        onNavigateNotes = onNavigateNotes
+                        gotoProfile = {
+                            rememberStateSiteMenu.value = true
+                        }
                     )
                 } else {
                     JoinServerComposable(
@@ -562,8 +561,7 @@ fun WorkSpaceView(
     gotoSearch: () -> Unit,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
     onItemClickListener: ((Long) -> Unit)?,
-    gotoProfile: () -> Unit,
-    onNavigateNotes: () -> Unit
+    gotoProfile: () -> Unit
 ) {
     val activeServer = homeViewModel.currentServer.observeAsState()
 

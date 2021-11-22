@@ -5,9 +5,9 @@ import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
 import com.clearkeep.utilities.network.Resource
 import com.google.protobuf.ByteString
+import user.UserOuterClass
 
 interface ProfileRepository {
-    suspend fun registerToken(token: String, servers: List<Server>)
     suspend fun updateProfile(server: Server, profile: Profile): Boolean
     suspend fun uploadAvatar(
         server: Server,
@@ -21,15 +21,25 @@ interface ProfileRepository {
     suspend fun updateMfaSettings(server: Server, enabled: Boolean): Resource<Pair<String, String>>
     suspend fun mfaValidatePassword(
         server: Server,
-        password: String
+        aHex: String,
+        mHex: String,
     ): Resource<Pair<String, String>>
 
     suspend fun mfaValidateOtp(server: Server, owner: Owner, otp: String): Resource<String>
     suspend fun mfaResendOtp(server: Server): Resource<Pair<Int, String>>
+    suspend fun sendMfaAuthChallenge(
+        server: Server,
+        aHex: String
+    ): UserOuterClass.MfaAuthChallengeResponse
+
+    suspend fun requestChangePassword(server: Server, aHex: String): UserOuterClass.RequestChangePasswordRes
     suspend fun changePassword(
         server: Server,
-        email: String,
-        oldPassword: String,
-        newPassword: String
+        aHex: String,
+        mHex: String,
+        verificatorHex: String,
+        newSaltHex: String,
+        ivParam: String,
+        identityKeyEncrypted: String?
     ): Resource<String>
 }

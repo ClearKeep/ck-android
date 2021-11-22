@@ -6,43 +6,64 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 interface RepositoryModule {
     @Binds
+    @Singleton
     fun bindChatRepository(chatRepositoryImpl: ChatRepositoryImpl): ChatRepository
 
     @Binds
+    @Singleton
     fun bindGroupRepository(groupRepositoryImpl: GroupRepositoryImpl): GroupRepository
 
     @Binds
+    @Singleton
     fun bindMessageRepository(messageRepositoryImpl: MessageRepositoryImpl): MessageRepository
 
     @Binds
+    @Singleton
     fun bindPeopleRepository(peopleRepositoryImpl: PeopleRepositoryImpl): PeopleRepository
 
     @Binds
+    @Singleton
     fun bindProfileRepository(profileRepositoryImpl: ProfileRepositoryImpl): ProfileRepository
 
     @Binds
+    @Singleton
     fun bindServerRepository(serverRepositoryImpl: ServerRepositoryImpl): ServerRepository
 
     @Binds
+    @Singleton
     fun bindSignalKeyRepository(signalKeyRepositoryImpl: SignalKeyRepositoryImpl): SignalKeyRepository
 
     @Binds
-    fun bindUserKeyRepository (userKeyRepositoryImpl: UserKeyRepositoryImpl): UserKeyRepository
+    @Singleton
+    fun bindUserKeyRepository(userKeyRepositoryImpl: UserKeyRepositoryImpl): UserKeyRepository
 
     @Binds
-    fun bindUserPreferenceRepository (userPreferenceRepositoryImpl: UserPreferenceRepositoryImpl): UserPreferenceRepository
+    @Singleton
+    fun bindUserPreferenceRepository(userPreferenceRepositoryImpl: UserPreferenceRepositoryImpl): UserPreferenceRepository
 
     @Binds
-    fun bindVideoCallRepository (videoCallRepositoryImpl: VideoCallRepositoryImpl): VideoCallRepository
+    @Singleton
+    fun bindVideoCallRepository(videoCallRepositoryImpl: VideoCallRepositoryImpl): VideoCallRepository
 
     @Binds
-    fun bindWorkSpaceRepository (workSpaceRepositoryImpl: WorkSpaceRepositoryImpl): WorkSpaceRepository
+    @Singleton
+    fun bindWorkSpaceRepository(workSpaceRepositoryImpl: WorkSpaceRepositoryImpl): WorkSpaceRepository
 
     @Binds
-    fun bindAuthRepository (authRepositoryImpl: AuthRepositoryImpl): AuthRepository
+    @Singleton
+    fun bindAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    fun bindFileRepository(fileRepositoryImpl: FileRepositoryImpl): FileRepository
+
+    @Binds
+    @Singleton
+    fun bindNotificationRepository(notificationRepository: NotificationRepositoryImpl): NotificationRepository
 }

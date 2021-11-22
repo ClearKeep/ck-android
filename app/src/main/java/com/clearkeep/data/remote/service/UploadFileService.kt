@@ -9,7 +9,7 @@ import javax.inject.Inject
 class UploadFileService @Inject constructor(
     private val dynamicAPIProvider: DynamicAPIProvider,
 ) {
-    suspend fun getUploadFileUrl(fileName: String, mimeType: String): UploadFileOuterClass.GetUploadFileLinkResponse = withContext(Dispatchers.Main) {
+    suspend fun getUploadFileUrl(fileName: String, mimeType: String): UploadFileOuterClass.GetUploadFileLinkResponse = withContext(Dispatchers.IO) {
         val request = UploadFileOuterClass.GetUploadFileLinkRequest.newBuilder()
             .setFileName(fileName)
             .setFileContentType(mimeType)

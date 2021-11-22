@@ -14,8 +14,6 @@ interface AuthRepository {
         domain: String
     ): Resource<AuthOuterClass.RegisterSRPRes>
 
-    suspend fun login(userName: String, password: String, domain: String): Resource<LoginResponse>
-    
     suspend fun loginByGoogle(
         token: String,
         domain: String
@@ -32,29 +30,60 @@ interface AuthRepository {
     ): Resource<AuthOuterClass.SocialLoginRes>
 
     suspend fun registerSocialPin(
-        domain: String,
-        rawPin: String,
-        userName: String
+        transitionID: Int,
+        identityKeyPublic: ByteArray,
+        preKey: ByteArray,
+        preKeyId: Int,
+        signedPreKeyId: Int,
+        signedPreKey: ByteArray,
+        identityKeyEncrypted: String?,
+        signedPreKeySignature: ByteArray,
+        userName: String,
+        saltHex: String,
+        verificatorHex: String,
+        iv: String,
+        domain: String
     ): Resource<AuthOuterClass.AuthRes>
 
     suspend fun verifySocialPin(
-        domain: String,
-        rawPin: String,
-        userName: String
+        userName: String,
+        aHex: String,
+        mHex: String,
+        domain: String
     ): Resource<AuthOuterClass.AuthRes>
 
     suspend fun resetSocialPin(
-        domain: String,
-        rawPin: String,
+        transitionID: Int,
+        publicKey: ByteArray,
+        preKey: ByteArray,
+        preKeyId: Int,
+        signedPreKey: ByteArray,
+        signedPreKeyId: Int,
+        identityKeyEncrypted: String?,
+        signedPreKeySignature: ByteArray,
         userName: String,
-        resetPincodeToken: String
+        resetPincodeToken: String,
+        verficatorHex: String,
+        saltHex: String,
+        iv: String,
+        domain: String
     ): Resource<AuthOuterClass.AuthRes>
 
     suspend fun resetPassword(
+        transitionID: Int,
+        publicKey: ByteArray,
+        preKey: ByteArray,
+        preKeyId: Int,
+        signedPreKeyId: Int,
+        signedPreKey: ByteArray,
+        identityKeyEncrypted: String?,
+        signedPreKeySignature: ByteArray,
         preAccessToken: String,
         email: String,
-        domain: String,
-        rawNewPassword: String
+        verificatorHex: String,
+        saltHex: String,
+        iv: String,
+        domain: String
     ): Resource<AuthOuterClass.AuthRes>
 
     suspend fun recoverPassword(
@@ -79,4 +108,23 @@ interface AuthRepository {
     ): Resource<Pair<Int, String>>
 
     suspend fun getProfile(domain: String, accessToken: String, hashKey: String): Profile?
+
+    suspend fun sendLoginChallenge(
+        username: String,
+        aHex: String,
+        domain: String
+    ): Resource<AuthOuterClass.AuthChallengeRes>
+
+    suspend fun sendLoginSocialChallenge(
+        userName: String,
+        aHex: String,
+        domain: String
+    ): Resource<AuthOuterClass.AuthChallengeRes>
+
+    suspend fun loginAuthenticate(
+        userName: String,
+        aHex: String,
+        mHex: String,
+        domain: String
+    ): Resource<AuthOuterClass.AuthRes>
 }

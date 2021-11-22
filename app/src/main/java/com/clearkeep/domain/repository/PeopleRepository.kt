@@ -7,7 +7,7 @@ import com.clearkeep.domain.model.UserEntity
 import com.clearkeep.utilities.network.Resource
 
 interface PeopleRepository {
-    fun getFriends(ownerDomain: String, ownerClientId: String): LiveData<List<User>>
+    fun getFriendsAsState(ownerDomain: String, ownerClientId: String): LiveData<List<User>>
     suspend fun getFriend(friendClientId: String, friendDomain: String, owner: Owner): User?
     suspend fun getFriendFromID(friendClientId: String): User?
     suspend fun updatePeople(): Resource<Nothing>
