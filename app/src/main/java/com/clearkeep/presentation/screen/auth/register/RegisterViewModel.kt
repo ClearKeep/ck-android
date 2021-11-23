@@ -6,10 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.domain.repository.AuthRepository
 import com.clearkeep.domain.usecase.auth.RegisterUseCase
 import com.clearkeep.utilities.isValidEmail
-import com.clearkeep.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -49,7 +48,7 @@ class RegisterViewModel @Inject constructor(
         displayName: String,
         password: String,
         confirmPassword: String
-    ): Resource<AuthOuterClass.RegisterSRPRes>? {
+    ): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.RegisterSRPRes>? {
         _isLoading.value = true
 
         _emailError.value = ""

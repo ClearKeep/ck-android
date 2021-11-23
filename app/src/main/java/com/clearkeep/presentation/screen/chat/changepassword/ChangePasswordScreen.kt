@@ -28,7 +28,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.presentation.screen.splash.SplashActivity
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -167,7 +167,7 @@ fun ChangePasswordScreen(
                 enabled = changePasswordButtonEnabled
             )
 
-            if (changePasswordResponse.value?.status == Status.SUCCESS) {
+            if (changePasswordResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 CKAlertDialog(
                     title = stringResource(R.string.password_change_success_title),
                     text = stringResource(R.string.password_change_success_text),
@@ -183,7 +183,7 @@ fun ChangePasswordScreen(
                         onBackPress()
                     }
                 )
-            } else if (changePasswordResponse.value?.status == Status.ERROR) {
+            } else if (changePasswordResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                 CKAlertDialog(
                     title = stringResource(R.string.error),
                     text = changePasswordResponse.value?.message ?: "",

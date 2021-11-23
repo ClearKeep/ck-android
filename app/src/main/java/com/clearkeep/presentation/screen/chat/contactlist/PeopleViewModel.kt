@@ -15,6 +15,6 @@ class PeopleViewModel @Inject constructor(
 ) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
 
-    val friends: LiveData<List<User>> =
+    val friends: LiveData<List<com.clearkeep.domain.model.User>> =
         getFriendsUseCase(environment.getServer().serverDomain, getClientId())
 }

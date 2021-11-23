@@ -8,8 +8,8 @@ import com.clearkeep.domain.model.LoginResponse
 import com.clearkeep.domain.usecase.auth.*
 import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import com.facebook.AccessToken
 import com.facebook.login.LoginManager
 import javax.inject.Inject
@@ -70,10 +70,10 @@ class LoginViewModel @Inject constructor(
     val isConfirmSecurityPhraseValid: LiveData<Boolean> get() = _isConfirmSecurityPhraseValid
 
     val loginErrorMess = MutableLiveData<LoginActivity.ErrorMessage>()
-    val verifyPassphraseResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
-    val registerSocialPinResponse = MutableLiveData<Resource<AuthOuterClass.AuthRes>>()
-    val verifyOtpResponse = MutableLiveData<Resource<String>>()
-    val serverUrlValidateResponse = MutableLiveData<Resource<String>>()
+    val verifyPassphraseResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<AuthOuterClass.AuthRes>>()
+    val registerSocialPinResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<AuthOuterClass.AuthRes>>()
+    val verifyOtpResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>()
+    val serverUrlValidateResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>()
 
     private var otpHash: String = ""
     private var userId: String = ""
@@ -141,10 +141,10 @@ class LoginViewModel @Inject constructor(
             })
     }
 
-    suspend fun loginByGoogle(token: String): Resource<AuthOuterClass.SocialLoginRes> {
+    suspend fun loginByGoogle(token: String): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = loginByGoogleUseCase(token, getDomain()).also {
-            if (it.status == Status.SUCCESS) {
+            if (it.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
             }
@@ -153,10 +153,10 @@ class LoginViewModel @Inject constructor(
         return result
     }
 
-    suspend fun loginByFacebook(token: String): Resource<AuthOuterClass.SocialLoginRes> {
+    suspend fun loginByFacebook(token: String): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = loginByFacebookUseCase(token, getDomain()).also {
-            if (it.status == Status.SUCCESS) {
+            if (it.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
             }
@@ -179,10 +179,10 @@ class LoginViewModel @Inject constructor(
         request.executeAsync()
     }
 
-    suspend fun loginByMicrosoft(accessToken: String): Resource<AuthOuterClass.SocialLoginRes> {
+    suspend fun loginByMicrosoft(accessToken: String): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.SocialLoginRes> {
         _isLoading.value = true
         val result = loginByMicrosoftUseCase(accessToken, getDomain()).also {
-            if (it.status == Status.SUCCESS) {
+            if (it.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
             }
@@ -191,7 +191,7 @@ class LoginViewModel @Inject constructor(
         return result
     }
 
-    suspend fun login(context: Context, email: String, password: String): Resource<LoginResponse>? {
+    suspend fun login(context: Context, email: String, password: String): com.clearkeep.common.utilities.network.Resource<LoginResponse>? {
         _emailError.value = ""
         _passError.value = ""
         _isLoading.value = true
@@ -265,19 +265,19 @@ class LoginViewModel @Inject constructor(
     fun validateOtp(otp: String) {
         if (otp.isBlank() || otp.length != 4) {
             verifyOtpResponse.value =
-                Resource.error("The code you’ve entered is incorrect. Please try again", null)
+                com.clearkeep.common.utilities.network.Resource.error("The code you’ve entered is incorrect. Please try again", null)
             return
         }
 
         viewModelScope.launch {
             val response = validateOtpUseCase(getDomain(), otp, otpHash, userId, hashKey)
-            if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(
+            if (response.status == com.clearkeep.common.utilities.network.Status.ERROR) {
+                verifyOtpResponse.value = com.clearkeep.common.utilities.network.Resource.error(
                     response.message ?: "The code you’ve entered is incorrect. Please try again",
                     null
                 )
             } else {
-                verifyOtpResponse.value = Resource.success(null)
+                verifyOtpResponse.value = com.clearkeep.common.utilities.network.Resource.success(null)
             }
         }
     }
@@ -287,8 +287,8 @@ class LoginViewModel @Inject constructor(
             val response = mfaResendOtpUseCase(getDomain(), otpHash, userId)
             val errorCode = response.data?.first
 
-            if (response.status == Status.ERROR) {
-                verifyOtpResponse.value = Resource.error(
+            if (response.status == com.clearkeep.common.utilities.network.Status.ERROR) {
+                verifyOtpResponse.value = com.clearkeep.common.utilities.network.Resource.error(
                     response.data?.second
                         ?: "The code you’ve entered is incorrect. Please try again", null
                 )
@@ -312,19 +312,19 @@ class LoginViewModel @Inject constructor(
         checkValidServerJob = viewModelScope.launch {
             if (!isValidServerUrl(url)) {
                 serverUrlValidateResponse.value =
-                    Resource.error("Wrong server URL. Please try again", null, 0)
+                    com.clearkeep.common.utilities.network.Resource.error("Wrong server URL. Please try again", null, 0)
                 _isLoading.value = false
                 return@launch
             }
 
             val workspaceInfoResponse = getWorkspaceInfoUseCase(domain = url)
             _isLoading.value = false
-            if (workspaceInfoResponse.status == Status.ERROR) {
+            if (workspaceInfoResponse.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                 serverUrlValidateResponse.value = workspaceInfoResponse
                 return@launch
             }
 
-            serverUrlValidateResponse.value = Resource.success(url)
+            serverUrlValidateResponse.value = com.clearkeep.common.utilities.network.Resource.success(url)
         }
     }
 

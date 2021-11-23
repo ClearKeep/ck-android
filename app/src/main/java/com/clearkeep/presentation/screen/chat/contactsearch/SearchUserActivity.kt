@@ -39,7 +39,7 @@ class SearchUserActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToRoomScreen(friend: User) {
+    private fun navigateToRoomScreen(friend: com.clearkeep.domain.model.User) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.DOMAIN, searchViewModel.getDomainOfActiveServer())
         intent.putExtra(RoomActivity.CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
@@ -48,7 +48,7 @@ class SearchUserActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun navigateToChatGroup(chatGroup: ChatGroup) {
+    private fun navigateToChatGroup(chatGroup: com.clearkeep.domain.model.ChatGroup) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
         intent.putExtra(RoomActivity.DOMAIN, searchViewModel.getDomainOfActiveServer())

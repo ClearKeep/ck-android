@@ -17,8 +17,8 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun SelectedFriendBox(
-    people: User,
-    onRemove: (User) -> Unit,
+    people: com.clearkeep.domain.model.User,
+    onRemove: (com.clearkeep.domain.model.User) -> Unit,
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,

@@ -18,17 +18,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.clearkeep.R
 import com.clearkeep.presentation.components.CKTheme
 import com.clearkeep.presentation.components.base.CKAlertDialog
 import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class RegisterActivity : AppCompatActivity() {
@@ -79,9 +77,9 @@ class RegisterActivity : AppCompatActivity() {
                         confirmPass
                     )
                         ?: return@launch
-                    if (res.status == Status.SUCCESS) {
+                    if (res.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                         setShowReminderDialog(true)
-                    } else if (res.status == Status.ERROR) {
+                    } else if (res.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                         setShowDialog(res.errorCode to (res.message ?: "unknown"))
                     }
                 }

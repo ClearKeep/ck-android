@@ -20,7 +20,7 @@ import com.clearkeep.utilities.sdp
 @Composable
 fun NewFriendListItem(
     modifier: Modifier = Modifier,
-    user: User,
+    user: com.clearkeep.domain.model.User,
     description: @Composable ColumnScope.() -> Unit = {},
     action: @Composable RowScope.() -> Unit = {},
     statusIcon: @Composable (BoxScope.() -> Unit) = { StatusIndicator(colorSuccessDefault) }
@@ -30,7 +30,7 @@ fun NewFriendListItem(
             user.avatar,
             user.userName,
             size = 64.sdp(),
-            user.userStatus ?: UserStatus.ONLINE.value,
+            user.userStatus ?: com.clearkeep.domain.model.UserStatus.ONLINE.value,
             16.sdp()
         )
         Column(
@@ -53,6 +53,6 @@ fun NewFriendListItem(
 }
 
 @Composable
-fun StatusText(user: User) {
+fun StatusText(user: com.clearkeep.domain.model.User) {
     //CKText("Online", color = colorSuccessDefault)
 }

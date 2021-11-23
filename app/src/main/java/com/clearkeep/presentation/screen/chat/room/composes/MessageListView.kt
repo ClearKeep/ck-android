@@ -31,9 +31,9 @@ var mIsNewMessage = true
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
-    messageList: List<Message>,
-    clients: List<User>,
-    listAvatar: List<User>,
+    messageList: List<com.clearkeep.domain.model.Message>,
+    clients: List<com.clearkeep.domain.model.User>,
+    listAvatar: List<com.clearkeep.domain.model.User>,
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -62,9 +62,9 @@ fun MessageListView(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MessageListView(
-    messageList: List<Message>,
-    clients: List<User>,
-    listAvatar: List<User>,
+    messageList: List<com.clearkeep.domain.model.Message>,
+    clients: List<com.clearkeep.domain.model.User>,
+    listAvatar: List<com.clearkeep.domain.model.User>,
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
@@ -83,7 +83,7 @@ private fun MessageListView(
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
-        val lastNewestItem = remember { mutableStateOf<Message?>(null) }
+        val lastNewestItem = remember { mutableStateOf<com.clearkeep.domain.model.Message?>(null) }
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
         LaunchedEffect(key1 = oldestVisibleItemIndex) {

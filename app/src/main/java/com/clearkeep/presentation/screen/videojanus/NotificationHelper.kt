@@ -33,9 +33,9 @@ const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 
 fun showMessagingStyleNotification(
     context: Context,
-    chatGroup: ChatGroup,
-    message: Message,
-    preference: UserPreference,
+    chatGroup: com.clearkeep.domain.model.ChatGroup,
+    message: com.clearkeep.domain.model.Message,
+    preference: com.clearkeep.domain.model.UserPreference,
     avatar: String? = ""
 ) {
     printlnCK("Notification showMessagingStyleNotification message $message")
@@ -86,8 +86,8 @@ fun showMessagingStyleNotification(
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
     sender: String,
-    message: Message,
-    preference: UserPreference,
+    message: com.clearkeep.domain.model.Message,
+    preference: com.clearkeep.domain.model.UserPreference,
     avatar: String? = "",
     groupSender: String = "",
 ) {
@@ -196,10 +196,10 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
 
 fun showMessageNotificationToSystemBar(
     context: Context,
-    me: User,
-    chatGroup: ChatGroup,
-    messages: List<Message>,
-    userPreference: UserPreference
+    me: com.clearkeep.domain.model.User,
+    chatGroup: com.clearkeep.domain.model.ChatGroup,
+    messages: List<com.clearkeep.domain.model.Message>,
+    userPreference: com.clearkeep.domain.model.UserPreference
 ) {
     if (!userPreference.doNotDisturb) {
         val channelId = MESSAGE_CHANNEL_ID

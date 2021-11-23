@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.core.content.ContextCompat
 import com.clearkeep.R
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.presentation.screen.splash.SplashActivity
 import com.google.gson.Gson
@@ -87,12 +88,6 @@ fun getDateAsString(timeMs: Long): String {
     val formatter = SimpleDateFormat("dd/MM")
 
     return formatter.format(Date(timeMs))
-}
-
-fun printlnCK(str: String) {
-    if (BuildConfig.DEBUG) {
-        println("CKLog_$str")
-    }
 }
 
 fun getUnableErrorMessage(message: String?): String {

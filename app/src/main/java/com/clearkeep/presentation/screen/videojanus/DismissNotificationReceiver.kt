@@ -29,7 +29,9 @@ class DismissNotificationReceiver : BroadcastReceiver() {
                 printlnCK("onReceive dismiss call notification, group id = $groupId")
                 if (!isGroup(groupType) && domain.isNotBlank() && clientId.isNotBlank()) {
                     GlobalScope.launch {
-                        cancelCallUseCase(groupId.toInt(), Owner(domain, clientId))
+                        cancelCallUseCase(groupId.toInt(),
+                            com.clearkeep.domain.model.Owner(domain, clientId)
+                        )
                     }
                 }
 

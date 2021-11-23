@@ -20,7 +20,7 @@ import com.clearkeep.presentation.components.LocalColorMapping
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.presentation.components.grayscaleOffWhite
 import com.clearkeep.presentation.screen.auth.login.LoginViewModel
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -39,7 +39,7 @@ fun ConfirmSocialLoginPhraseScreen(
         onBackPress()
     }
 
-    if (registerResponse.value?.status == Status.SUCCESS) {
+    if (registerResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
         onLoginSuccess()
     }
 

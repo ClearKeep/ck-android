@@ -32,13 +32,13 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun ForwardMessageBottomSheetDialog(
-    message: Message,
+    message: com.clearkeep.domain.model.Message,
     forwardMessageResponse: Long?,
-    allGroups: List<ChatGroup>,
-    peerUsersStatus: List<User>,
-    currentGroupUsersStatus: List<User>,
+    allGroups: List<com.clearkeep.domain.model.ChatGroup>,
+    peerUsersStatus: List<com.clearkeep.domain.model.User>,
+    currentGroupUsersStatus: List<com.clearkeep.domain.model.User>,
     onForwardMessageGroup: (groupId: Long) -> Unit,
-    onForwardMessagePeer: (receiver: User, groupId: Long) -> Unit
+    onForwardMessagePeer: (receiver: com.clearkeep.domain.model.User, groupId: Long) -> Unit
 ) {
     val query = rememberSaveable { mutableStateOf("") }
 
@@ -105,7 +105,7 @@ fun ForwardMessageBottomSheetDialog(
 }
 
 @Composable
-fun QuotedMessage(message: Message, user: User) {
+fun QuotedMessage(message: com.clearkeep.domain.model.Message, user: com.clearkeep.domain.model.User) {
     Row {
         CircleAvatar(
             arrayListOf(user.avatar ?: ""),
@@ -147,7 +147,7 @@ fun QuotedMessage(message: Message, user: User) {
 }
 
 @Composable
-private fun ForwardGroupItem(group: ChatGroup, sent: Boolean, onClick: () -> Unit) {
+private fun ForwardGroupItem(group: com.clearkeep.domain.model.ChatGroup, sent: Boolean, onClick: () -> Unit) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
@@ -184,9 +184,9 @@ private fun ForwardGroupItem(group: ChatGroup, sent: Boolean, onClick: () -> Uni
 }
 
 @Composable
-fun ForwardPeerItem(peer: ChatGroup, sent: Boolean, userInfo: User, onClick: () -> Unit) {
+fun ForwardPeerItem(peer: com.clearkeep.domain.model.ChatGroup, sent: Boolean, userInfo: com.clearkeep.domain.model.User, onClick: () -> Unit) {
     val user =
-        User(
+        com.clearkeep.domain.model.User(
             "",
             peer.groupName,
             peer.ownerDomain,

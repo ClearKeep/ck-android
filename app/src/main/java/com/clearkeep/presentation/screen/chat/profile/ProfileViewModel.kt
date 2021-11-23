@@ -3,10 +3,6 @@ package com.clearkeep.presentation.screen.chat.profile
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.*
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.Profile
-import com.clearkeep.domain.model.User
-import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.profile.GetMfaSettingsUseCase
@@ -16,8 +12,8 @@ import com.clearkeep.domain.usecase.profile.UploadAvatarUseCase
 import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
 import com.clearkeep.presentation.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.protobuf.ByteString
@@ -42,7 +38,7 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
     private val phoneUtil = PhoneNumberUtil.getInstance()
 
-    val profile: LiveData<Profile?> = getDefaultServerProfileAsStateUseCase().map {
+    val profile: LiveData<com.clearkeep.domain.model.Profile?> = getDefaultServerProfileAsStateUseCase().map {
         _username.postValue(it.userName)
         _email.postValue(it.email)
 
@@ -59,8 +55,8 @@ class ProfileViewModel @Inject constructor(
         it
     }
 
-    private lateinit var _userPreference: LiveData<UserPreference>
-    val userPreference: LiveData<UserPreference>
+    private lateinit var _userPreference: LiveData<com.clearkeep.domain.model.UserPreference>
+    val userPreference: LiveData<com.clearkeep.domain.model.UserPreference>
         get() = _userPreference
 
     private var _currentPhotoUri: Uri? = null
@@ -70,9 +66,9 @@ class ProfileViewModel @Inject constructor(
     val imageUriSelected: LiveData<String>
         get() = _imageUriSelected
 
-    val uploadAvatarResponse = MutableLiveData<Resource<String>>()
+    val uploadAvatarResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>()
 
-    val updateMfaSettingResponse = MutableLiveData<Resource<Pair<String, String>>>()
+    val updateMfaSettingResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<Pair<String, String>>>()
 
     private val _username = MutableLiveData<String>()
     val username: LiveData<String>
@@ -104,7 +100,7 @@ class ProfileViewModel @Inject constructor(
         val server = environment.getServer()
         viewModelScope.launch {
             getMfaSettingsUseCase(
-                Owner(
+                com.clearkeep.domain.model.Owner(
                     server.serverDomain,
                     server.profile.userId
                 )
@@ -119,7 +115,7 @@ class ProfileViewModel @Inject constructor(
     fun getProfileLink(): String {
         val server = environment.getServer()
         return getLinkFromPeople(
-            User(
+            com.clearkeep.domain.model.User(
                 userId = server.profile.userId,
                 userName = server.profile.userName ?: "",
                 domain = server.serverDomain
@@ -196,7 +192,7 @@ class ProfileViewModel @Inject constructor(
             //Update avatar case
             if (!isValidFileSizes(context, Uri.parse(avatarToUpload))) {
                 uploadAvatarResponse.value =
-                    Resource.error("Your Profile Picture cannot be larger than 5MB", null)
+                    com.clearkeep.common.utilities.network.Resource.error("Your Profile Picture cannot be larger than 5MB", null)
                 undoAvatarChange()
                 return
             }
@@ -205,7 +201,10 @@ class ProfileViewModel @Inject constructor(
                 val avatarUrl = uploadAvatarImage(avatarToUpload, context)
                 if (profile.value != null) {
                     updateProfileUseCase(
-                        Owner(server.serverDomain, server.profile.userId),
+                        com.clearkeep.domain.model.Owner(
+                            server.serverDomain,
+                            server.profile.userId
+                        ),
                         profile.value!!.copy(
                             userName = displayName.trim(),
                             phoneNumber = updatedPhoneNumber,
@@ -224,7 +223,10 @@ class ProfileViewModel @Inject constructor(
             viewModelScope.launch {
                 if (profile.value != null) {
                     updateProfileUseCase(
-                        Owner(server.serverDomain, server.profile.userId),
+                        com.clearkeep.domain.model.Owner(
+                            server.serverDomain,
+                            server.profile.userId
+                        ),
                         profile.value!!.copy(
                             userName = displayName.trim(),
                             phoneNumber = updatedPhoneNumber
@@ -232,7 +234,7 @@ class ProfileViewModel @Inject constructor(
                     )
                     if (shouldUpdateMfaSetting) {
                         val response = updateMfaSettingsUseCase(getOwner(), false)
-                        if (response.status == Status.ERROR) {
+                        if (response.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                             updateMfaSettingResponse.value = response
                         }
                     }
@@ -292,7 +294,7 @@ class ProfileViewModel @Inject constructor(
     fun updateMfaSettings(enabled: Boolean) {
         viewModelScope.launch {
             val response = updateMfaSettingsUseCase(getOwner(), enabled)
-            if (enabled || response.status == Status.ERROR) {
+            if (enabled || response.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                 //Don't send message to UI when disable success
                 updateMfaSettingResponse.value = response
             }
@@ -327,7 +329,7 @@ class ProfileViewModel @Inject constructor(
         val fileHashString = byteArrayToMd5HashString(fileHashByteArray)
         val server = environment.getServer()
         return uploadAvatarUseCase(
-            Owner(server.serverDomain, server.profile.userId),
+            com.clearkeep.domain.model.Owner(server.serverDomain, server.profile.userId),
             mimeType,
             fileName,
             byteStrings,
@@ -342,9 +344,9 @@ class ProfileViewModel @Inject constructor(
         return _currentPhotoUri!!
     }
 
-    private fun getOwner(): Owner {
+    private fun getOwner(): com.clearkeep.domain.model.Owner {
         val server = environment.getServer()
-        return Owner(server.serverDomain, server.profile.userId)
+        return com.clearkeep.domain.model.Owner(server.serverDomain, server.profile.userId)
     }
 
     private fun isValidFileSizes(

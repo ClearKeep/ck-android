@@ -35,8 +35,8 @@ import com.clearkeep.presentation.screen.chat.sociallogin.EnterSocialLoginPhrase
 import com.clearkeep.presentation.screen.chat.sociallogin.SetSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.splash.SplashActivity
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.restartToRoot
 import com.facebook.*
@@ -125,7 +125,7 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
                     ?: return@launch
-                if (res.status == Status.SUCCESS) {
+                if (res.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                     val shouldRequireOtp = res.data?.accessToken.isNullOrBlank()
                     if (shouldRequireOtp) {
                         loginViewModel.setOtpLoginInfo(
@@ -137,7 +137,7 @@ class LoginActivity : AppCompatActivity() {
                     } else {
                         onLoginSuccess()
                     }
-                } else if (res.status == Status.ERROR) {
+                } else if (res.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                     val title = when (res.data?.errorCode) {
                         1001, 1079 -> getString(R.string.login_info_incorrect)
                         1026 -> getString(R.string.error)
@@ -433,14 +433,14 @@ class LoginActivity : AppCompatActivity() {
 
     fun onSignInResult(
         navController: NavController,
-        res: Resource<AuthOuterClass.SocialLoginRes>?
+        res: com.clearkeep.common.utilities.network.Resource<AuthOuterClass.SocialLoginRes>?
     ) {
         //Third party result
         when (res?.status) {
-            Status.SUCCESS -> {
+            com.clearkeep.common.utilities.network.Status.SUCCESS -> {
                 onSocialLoginSuccess(navController, res.data?.requireAction ?: "")
             }
-            Status.ERROR -> {
+            com.clearkeep.common.utilities.network.Status.ERROR -> {
                 showErrorDiaLog?.invoke(
                     ErrorMessage(
                         getString(R.string.error),

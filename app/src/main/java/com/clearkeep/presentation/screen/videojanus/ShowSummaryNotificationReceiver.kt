@@ -56,7 +56,11 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
             val group = getGroupByIdUseCase(groupId, ownerDomain, ownerClientId)
             if (group?.data != null && unreadMessages.isNotEmpty()) {
                 val me = group.data.clientList.find { it.userId == ownerClientId }
-                    ?: User(userId = ownerClientId, userName = "me", domain = ownerDomain)
+                    ?: com.clearkeep.domain.model.User(
+                        userId = ownerClientId,
+                        userName = "me",
+                        domain = ownerDomain
+                    )
                 val userPreference =
                     getUserPreferenceUseCase(ownerDomain, ownerClientId)
                 showMessageNotificationToSystemBar(
@@ -64,7 +68,7 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
                     me,
                     group.data,
                     unreadMessages,
-                    userPreference ?: UserPreference.getDefaultUserPreference("", "", false)
+                    userPreference ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false)
                 )
             }
         }

@@ -27,15 +27,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.LiveData
 import com.clearkeep.R
-import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
-import com.clearkeep.domain.model.User
-import com.clearkeep.domain.model.UserStateTypeInGroup
 import com.clearkeep.presentation.screen.chat.composes.FriendListItem
 import com.clearkeep.presentation.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.presentation.screen.chat.utils.getPeopleFromLink
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
@@ -46,10 +43,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun InviteGroupScreen(
     managerMember: MemberUIType? = InviteMemberUIType,
     inviteGroupViewModel: InviteGroupViewModel,
-    selectedItem: SnapshotStateList<User>,
-    chatGroup: LiveData<ChatGroup>,
-    onFriendSelected: (List<User>) -> Unit,
-    onDirectFriendSelected: (User) -> Unit,
+    selectedItem: SnapshotStateList<com.clearkeep.domain.model.User>,
+    chatGroup: LiveData<com.clearkeep.domain.model.ChatGroup>,
+    onFriendSelected: (List<com.clearkeep.domain.model.User>) -> Unit,
+    onDirectFriendSelected: (com.clearkeep.domain.model.User) -> Unit,
     onBackPressed: () -> Unit,
     isCreateDirectGroup: Boolean = true
 ) {
@@ -122,7 +119,7 @@ fun InviteGroupScreen(
 
                     friends.value?.let { values ->
                         val membersId =
-                            group.value?.clientList?.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }
+                            group.value?.clientList?.filter { it.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value }
                                 ?.map { it.userId } ?: emptyList()
                         val listShow = values.filterNot { membersId.contains(it.userId) }
                         LazyColumn {
@@ -305,7 +302,7 @@ fun InviteGroupScreen(
         )
     }
 
-    if (checkUserUrlResponse.value?.status == Status.ERROR) {
+    if (checkUserUrlResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
         val error = checkUserUrlResponse.value!!.message?.split(",")
         val (errorTitle, errorText) = if (error?.size == 1) {
             stringResource(R.string.warning) to checkUserUrlResponse.value!!.message
@@ -320,7 +317,7 @@ fun InviteGroupScreen(
                 inviteGroupViewModel.checkUserUrlResponse.value = null
             }
         )
-    } else if (checkUserUrlResponse.value?.status == Status.SUCCESS) {
+    } else if (checkUserUrlResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
         val people = checkUserUrlResponse.value!!.data
         people?.let { user ->
             if (isCreateDirectGroup) {
@@ -336,7 +333,7 @@ fun InviteGroupScreen(
 }
 
 @Composable
-fun SelectedHorizontalBox(selectedItem: List<User>, unSelectItem: (people: User) -> Unit) {
+fun SelectedHorizontalBox(selectedItem: List<com.clearkeep.domain.model.User>, unSelectItem: (people: com.clearkeep.domain.model.User) -> Unit) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.sdp()),
     ) {

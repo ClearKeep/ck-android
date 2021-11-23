@@ -22,7 +22,7 @@ import com.clearkeep.domain.model.Server
 
 @Composable
 fun CircleAvatarWorkSpace(
-    item: Server,
+    item: com.clearkeep.domain.model.Server,
     isHighlight: Boolean,
     contentSize: Dp = dimensionResource(R.dimen._32sdp)
 ) {
@@ -30,7 +30,7 @@ fun CircleAvatarWorkSpace(
 }
 
 @Composable
-fun Highlight(item: Server, contentSize: Dp) {
+fun Highlight(item: com.clearkeep.domain.model.Server, contentSize: Dp) {
     Column(
         modifier = Modifier
             .size(contentSize.plus(dimensionResource(R.dimen._12sdp)))
@@ -48,7 +48,7 @@ fun Highlight(item: Server, contentSize: Dp) {
 }
 
 @Composable
-fun Content(item: Server, contentSize: Dp) {
+fun Content(item: com.clearkeep.domain.model.Server, contentSize: Dp) {
     val displayName =
         if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(
             0,

@@ -192,7 +192,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 stunUrl, currentUserName, currentUserAvatar
             )
         } else {
-            groupId?.let { busyCallUseCase(it.toInt(), Owner(clientDomain, clientId)) }
+            groupId?.let { busyCallUseCase(it.toInt(),
+                com.clearkeep.domain.model.Owner(clientDomain, clientId)
+            ) }
         }
     }
 
@@ -220,7 +222,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 fromClientID, fromDomain,
                 createdAt, createdAt,
                 messageContent,
-                Owner(clientDomain, clientId)
+                com.clearkeep.domain.model.Owner(clientDomain, clientId)
             )
             val isShowNotification = getOwnerClientIdsUseCase().contains(fromClientID)
             if (!isShowNotification) {
@@ -233,7 +235,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         context = applicationContext,
                         chatGroup = group.data,
                         decryptedMessage,
-                        userPreference ?: UserPreference.getDefaultUserPreference("", "", false),
+                        userPreference ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false),
                         avatar
                     )
                 }
@@ -262,13 +264,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
-                        Owner(
+                        com.clearkeep.domain.model.Owner(
                             clientDomain,
                             it
                         ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
-                        Owner(
+                        com.clearkeep.domain.model.Owner(
                             clientDomain,
                             it
                         ), SENDER_DEVICE_ID

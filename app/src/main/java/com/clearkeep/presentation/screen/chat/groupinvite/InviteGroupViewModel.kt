@@ -1,15 +1,13 @@
 package com.clearkeep.presentation.screen.chat.groupinvite
 
 import androidx.lifecycle.*
-import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.User
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.domain.usecase.people.GetFriendsUseCase
 import com.clearkeep.domain.usecase.people.GetUserInfoUseCase
 import com.clearkeep.domain.usecase.people.InsertFriendUseCase
 import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
-import com.clearkeep.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -30,17 +28,17 @@ class InviteGroupViewModel @Inject constructor(
 
     private var textSearch = MutableLiveData<String>()
 
-    val friends: LiveData<List<User>> = getFriendsUseCase(getDomain(), getClientId())
+    val friends: LiveData<List<com.clearkeep.domain.model.User>> = getFriendsUseCase(getDomain(), getClientId())
 
-    val checkUserUrlResponse = MutableLiveData<Resource<User>>()
+    val checkUserUrlResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<User>>()
 
     private var checkUserUrlJob: Job? = null
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 
-    val filterFriends = liveData<List<User>> {
-        val result = MediatorLiveData<List<User>>()
+    val filterFriends = liveData<List<com.clearkeep.domain.model.User>> {
+        val result = MediatorLiveData<List<com.clearkeep.domain.model.User>>()
         result.addSource(friends) { _ ->
         }
         result.addSource(textSearch) { text ->
@@ -49,12 +47,12 @@ class InviteGroupViewModel @Inject constructor(
         emitSource(result)
     }
 
-    private fun getFilterFriends(list: List<User>, search: String): List<User> {
+    private fun getFilterFriends(list: List<com.clearkeep.domain.model.User>, search: String): List<com.clearkeep.domain.model.User> {
         if (search.isEmpty()) return emptyList()
         return list.filter { search.isBlank() || it.userName.toLowerCase().contains(search) }
     }
 
-    fun insertFriend(people: User) {
+    fun insertFriend(people: com.clearkeep.domain.model.User) {
         viewModelScope.launch {
             _isLoading.value = true
             insertFriendUseCase(people, owner = getOwner())
@@ -62,8 +60,8 @@ class InviteGroupViewModel @Inject constructor(
         }
     }
 
-    private fun getOwner(): Owner {
-        return Owner(getDomain(), getClientId())
+    private fun getOwner(): com.clearkeep.domain.model.Owner {
+        return com.clearkeep.domain.model.Owner(getDomain(), getClientId())
     }
 
     fun search(text: String) {
