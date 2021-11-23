@@ -75,15 +75,15 @@ class CallViewModel @Inject constructor(
         peerConnectionClient.startVideoSource()
     }
 
-    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: Owner): VideoCallOuterClass.ServerResponse? {
+    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: com.clearkeep.domain.model.Owner): VideoCallOuterClass.ServerResponse? {
         return requestVideoCallUseCase(groupId, isAudioMode, owner)
     }
 
-    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner): Boolean {
+    suspend fun switchAudioToVideoCall(groupId: Int, owner: com.clearkeep.domain.model.Owner): Boolean {
         return switchAudioToVideoCallUseCase(groupId, owner)
     }
 
-    suspend fun cancelCall(groupId: Int, owner: Owner): Boolean {
+    suspend fun cancelCall(groupId: Int, owner: com.clearkeep.domain.model.Owner): Boolean {
         return cancelCallUseCase(groupId, owner)
     }
 

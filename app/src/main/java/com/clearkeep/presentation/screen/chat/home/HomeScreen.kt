@@ -234,8 +234,8 @@ fun LeftMenu(mainViewModel: HomeViewModel) {
 @Composable
 fun ItemListDirectMessage(
     modifier: Modifier,
-    chatGroup: ChatGroup,
-    listUserStatus: List<User>?,
+    chatGroup: com.clearkeep.domain.model.ChatGroup,
+    listUserStatus: List<com.clearkeep.domain.model.User>?,
     clintId: String,
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
@@ -280,7 +280,7 @@ fun ItemListDirectMessage(
 @Composable
 fun ChatGroupItemView(
     modifier: Modifier,
-    chatGroup: ChatGroup,
+    chatGroup: com.clearkeep.domain.model.ChatGroup,
     onItemClickListener: ((Long) -> Unit)? = null
 ) {
     Row(

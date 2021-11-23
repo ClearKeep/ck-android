@@ -532,7 +532,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun cancelCallAPI(groupId: Int) {
         GlobalScope.launch {
-            viewModel.cancelCall(groupId, Owner(mDomain, mOwnerId))
+            viewModel.cancelCall(groupId, com.clearkeep.domain.model.Owner(mDomain, mOwnerId))
         }
     }
 

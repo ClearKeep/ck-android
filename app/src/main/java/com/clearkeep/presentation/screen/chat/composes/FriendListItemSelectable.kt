@@ -16,9 +16,9 @@ import com.clearkeep.utilities.sdp
 @Composable
 fun FriendListItemSelectable(
     modifier: Modifier = Modifier,
-    friend: User,
+    friend: com.clearkeep.domain.model.User,
     isSelected: Boolean,
-    onFriendSelected: (people: User, isAdd: Boolean) -> Unit,
+    onFriendSelected: (people: com.clearkeep.domain.model.User, isAdd: Boolean) -> Unit,
 ) {
     Column(
         modifier = Modifier

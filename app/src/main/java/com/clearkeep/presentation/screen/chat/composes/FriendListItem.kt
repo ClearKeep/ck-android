@@ -22,8 +22,8 @@ import com.clearkeep.utilities.sdp
 @Composable
 fun FriendListItem(
     modifier: Modifier = Modifier,
-    friend: User,
-    onFriendSelected: ((people: User) -> Unit)? = null,
+    friend: com.clearkeep.domain.model.User,
+    onFriendSelected: ((people: com.clearkeep.domain.model.User) -> Unit)? = null,
 ) {
     Column(modifier = Modifier
         .clickable {
@@ -64,8 +64,8 @@ fun FriendListItem(
 
 @Composable
 fun FriendListItemInfo(
-    friend: User,
-    onFriendSelected: ((people: User) -> Unit)? = null,
+    friend: com.clearkeep.domain.model.User,
+    onFriendSelected: ((people: com.clearkeep.domain.model.User) -> Unit)? = null,
     paddingX: Int
 ) {
     Column(

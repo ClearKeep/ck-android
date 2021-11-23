@@ -47,7 +47,7 @@ fun GroupMemberScreen(
                         end = 16.dp
                     ),
                 ) {
-                    itemsIndexed(group.clientList.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
+                    itemsIndexed(group.clientList.filter { it.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
                         val newUser = listUserStatusState.value?.find {
                             it.userId == friend.userId
                         }

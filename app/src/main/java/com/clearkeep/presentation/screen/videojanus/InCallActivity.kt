@@ -117,7 +117,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private var switchVideoReceiver: BroadcastReceiver? = null
 
-    private var group: ChatGroup? = null
+    private var group: com.clearkeep.domain.model.ChatGroup? = null
 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
@@ -310,8 +310,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
     }
 
-    private fun getOwnerServer(): Owner {
-        return Owner(mOwnerDomain, mOwnerClientId)
+    private fun getOwnerServer(): com.clearkeep.domain.model.Owner {
+        return com.clearkeep.domain.model.Owner(mOwnerDomain, mOwnerClientId)
     }
 
     override fun onPermissionsDenied() {

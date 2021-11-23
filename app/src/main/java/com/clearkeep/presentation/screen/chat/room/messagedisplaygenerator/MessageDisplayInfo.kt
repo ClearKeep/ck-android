@@ -4,7 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.clearkeep.domain.model.Message
 
 data class MessageDisplayInfo(
-    val message: Message,
+    val message: com.clearkeep.domain.model.Message,
     val isOwner: Boolean,
     val showAvatarAndName: Boolean,
     val showSpacer: Boolean,

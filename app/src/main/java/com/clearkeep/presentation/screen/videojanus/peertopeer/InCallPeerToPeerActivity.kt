@@ -328,8 +328,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         handleBackPressed()
     }
 
-    private fun getOwnerServer(): Owner {
-        return Owner(mOwnerDomain, mOwnerClientId)
+    private fun getOwnerServer(): com.clearkeep.domain.model.Owner {
+        return com.clearkeep.domain.model.Owner(mOwnerDomain, mOwnerClientId)
     }
 
     private fun onClickControlCall() {

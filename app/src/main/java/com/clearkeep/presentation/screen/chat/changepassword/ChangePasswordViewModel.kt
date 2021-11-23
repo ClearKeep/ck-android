@@ -5,12 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.usecase.auth.LoginUseCase
 import com.clearkeep.domain.usecase.profile.ChangePasswordUseCase
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,7 +32,7 @@ class ChangePasswordViewModel @Inject constructor(
     private val _newPasswordConfirmError = MutableLiveData<String>()
     val newPasswordConfirmError: LiveData<String> get() = _newPasswordConfirmError
 
-    val changePasswordResponse = MutableLiveData<Resource<Any>>()
+    val changePasswordResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<Any>>()
 
     private val _isResetPassword = MutableLiveData<Boolean>()
     val isResetPassword: LiveData<Boolean> get() = _isResetPassword
@@ -95,7 +94,7 @@ class ChangePasswordViewModel @Inject constructor(
         val oldPassword = _oldPassword.value ?: ""
         val newPassword = _newPassword.value ?: ""
         val server = environment.getServer()
-        val owner = Owner(server.serverDomain, server.profile.userId)
+        val owner = com.clearkeep.domain.model.Owner(server.serverDomain, server.profile.userId)
 
         viewModelScope.launch {
             val response = changePasswordUseCase(
@@ -104,7 +103,7 @@ class ChangePasswordViewModel @Inject constructor(
                 oldPassword,
                 newPassword
             )
-            if (response.status == Status.ERROR) {
+            if (response.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                 _oldPasswordError.value = response.message
             } else {
                 changePasswordResponse.value = response

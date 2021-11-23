@@ -20,8 +20,8 @@ import com.clearkeep.utilities.sdp
 @Composable
 fun FriendListItemAction(
     actionLabel: String,
-    friend: User,
-    onAction: (profile: User) -> Unit,
+    friend: com.clearkeep.domain.model.User,
+    onAction: (profile: com.clearkeep.domain.model.User) -> Unit,
 ) {
     Column(
         modifier = Modifier

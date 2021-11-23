@@ -47,7 +47,7 @@ import com.clearkeep.utilities.toNonScalableTextSize
 @Composable
 fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
-    profile: Profile,
+    profile: com.clearkeep.domain.model.Profile,
     closeSiteMenu: (() -> Unit),
     onLeaveServer: (() -> Unit),
     onNavigateServerSetting: () -> Unit,
@@ -170,7 +170,7 @@ fun SiteMenuScreen(
 }
 
 @Composable
-fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
+fun HeaderSite(profile: com.clearkeep.domain.model.Profile, homeViewModel: HomeViewModel) {
     val context = LocalContext.current
     var expanded by rememberSaveable { mutableStateOf(false) }
     val statusUse = homeViewModel.currentStatus.observeAsState()
@@ -193,18 +193,18 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 when (statusUse.value) {
-                    UserStatus.ONLINE.value -> {
+                    com.clearkeep.domain.model.UserStatus.ONLINE.value -> {
                         Text(
-                            text = UserStatus.ONLINE.value,
+                            text = com.clearkeep.domain.model.UserStatus.ONLINE.value,
                             style = TextStyle(
                                 color = colorSuccessDefault,
                                 fontSize = defaultNonScalableTextSize()
                             )
                         )
                     }
-                    UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
+                    com.clearkeep.domain.model.UserStatus.OFFLINE.value, com.clearkeep.domain.model.UserStatus.UNDEFINED.value -> {
                         Text(
-                            text = UserStatus.OFFLINE.value,
+                            text = com.clearkeep.domain.model.UserStatus.OFFLINE.value,
                             style = TextStyle(
                                 color = grayscale3,
                                 fontSize = defaultNonScalableTextSize()
@@ -213,7 +213,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                     }
                     else -> {
                         Text(
-                            text = UserStatus.BUSY.value,
+                            text = com.clearkeep.domain.model.UserStatus.BUSY.value,
                             style = TextStyle(
                                 color = errorDefault,
                                 fontSize = defaultNonScalableTextSize()
@@ -333,7 +333,7 @@ fun ItemSiteSetting(
 }
 
 @Composable
-fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (UserStatus) -> Unit) {
+fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (com.clearkeep.domain.model.UserStatus) -> Unit) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
@@ -342,14 +342,14 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (User
             .background(LocalColorMapping.current.surfaceDialog, RoundedCornerShape(8.sdp()))
     ) {
         StatusItem(
-            onClick = { statusChoose.invoke(UserStatus.ONLINE) },
+            onClick = { statusChoose.invoke(com.clearkeep.domain.model.UserStatus.ONLINE) },
             colorSuccessDefault,
-            UserStatus.ONLINE.value
+            com.clearkeep.domain.model.UserStatus.ONLINE.value
         )
         StatusItem(
-            onClick = { statusChoose.invoke(UserStatus.BUSY) },
+            onClick = { statusChoose.invoke(com.clearkeep.domain.model.UserStatus.BUSY) },
             errorDefault,
-            UserStatus.BUSY.value
+            com.clearkeep.domain.model.UserStatus.BUSY.value
         )
     }
 }

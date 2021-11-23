@@ -12,5 +12,5 @@ import javax.inject.Inject
 class ServerSettingViewModel @Inject constructor(
     private val getDefaultServerAsStateUseCase: GetDefaultServerAsStateUseCase
 ) : ViewModel() {
-    val server: LiveData<Server?> = getDefaultServerAsStateUseCase()
+    val server: LiveData<com.clearkeep.domain.model.Server?> = getDefaultServerAsStateUseCase()
 }

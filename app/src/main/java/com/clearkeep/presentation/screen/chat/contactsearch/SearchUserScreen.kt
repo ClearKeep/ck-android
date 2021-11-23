@@ -27,20 +27,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.clearkeep.R
-import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
-import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 
 @Composable
 fun SearchUserScreen(
     searchViewModel: SearchViewModel,
-    navigateToPeerChat: (people: User?) -> Unit,
-    navigateToChatGroup: (chatGroup: ChatGroup) -> Unit,
+    navigateToPeerChat: (people: com.clearkeep.domain.model.User?) -> Unit,
+    navigateToChatGroup: (chatGroup: com.clearkeep.domain.model.ChatGroup) -> Unit,
     onClose: () -> Unit
 ) {
     val friends = searchViewModel.friends.observeAsState()
@@ -183,9 +180,13 @@ fun SearchUserScreen(
                             itemsIndexed(it) { _, messageWithUser ->
                                 Spacer(Modifier.height(18.sdp()))
                                 MessageResultItem(
-                                    user = messageWithUser.user ?: User("", "", ""),
+                                    user = messageWithUser.user ?: com.clearkeep.domain.model.User(
+                                        "",
+                                        "",
+                                        ""
+                                    ),
                                     message = messageWithUser.message,
-                                    group = messageWithUser.group ?: ChatGroup(
+                                    group = messageWithUser.group ?: com.clearkeep.domain.model.ChatGroup(
                                         null,
                                         0L,
                                         "",
@@ -209,7 +210,7 @@ fun SearchUserScreen(
                                 ) {
                                     val message = messageWithUser.message
                                     navigateToChatGroup(
-                                        ChatGroup(
+                                        com.clearkeep.domain.model.ChatGroup(
                                             null,
                                             message.groupId,
                                             "",
@@ -244,7 +245,7 @@ fun SearchUserScreen(
             }
         }
 
-        if (getPeopleResponse.value?.status == Status.ERROR) {
+        if (getPeopleResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
             CKAlertDialog(
                 title = stringResource(R.string.network_error_dialog_title),
                 text = stringResource(R.string.network_error_dialog_text),
@@ -290,7 +291,7 @@ private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () 
 @Composable
 fun PeopleResultItem(
     modifier: Modifier = Modifier,
-    user: User,
+    user: com.clearkeep.domain.model.User,
     query: String,
     onClick: () -> Unit
 ) {
@@ -336,9 +337,9 @@ fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
 
 @Composable
 fun MessageResultItem(
-    user: User,
-    message: Message,
-    group: ChatGroup,
+    user: com.clearkeep.domain.model.User,
+    message: com.clearkeep.domain.model.Message,
+    group: com.clearkeep.domain.model.ChatGroup,
     query: String,
     onClick: () -> Unit
 ) {

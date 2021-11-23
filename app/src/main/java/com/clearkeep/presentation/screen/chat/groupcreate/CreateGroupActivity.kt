@@ -34,7 +34,7 @@ class CreateGroupActivity : AppCompatActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val selectedItem = remember { mutableStateListOf<User>() }
+            val selectedItem = remember { mutableStateListOf<com.clearkeep.domain.model.User>() }
             CKSimpleTheme {
                 NavHost(navController, startDestination = "invite_group") {
                     composable("invite_group") {
@@ -86,7 +86,7 @@ class CreateGroupActivity : AppCompatActivity() {
         subscribe()
     }
 
-    private fun handleDirectChat(people: User) {
+    private fun handleDirectChat(people: com.clearkeep.domain.model.User) {
         val intent = Intent()
         intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
         intent.putExtra(EXTRA_PEOPLE_DOMAIN, people.domain)

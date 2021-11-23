@@ -30,10 +30,10 @@ fun CircleAvatarStatus(
 ) {
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
     val color = when (status) {
-        UserStatus.ONLINE.value -> {
+        com.clearkeep.domain.model.UserStatus.ONLINE.value -> {
             colorSuccessDefault
         }
-        UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
+        com.clearkeep.domain.model.UserStatus.OFFLINE.value, com.clearkeep.domain.model.UserStatus.UNDEFINED.value -> {
             grayscale3
         }
         else -> {

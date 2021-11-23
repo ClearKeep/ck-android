@@ -11,6 +11,12 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ClearKeep"
-include ':app'
-include ':januswrapper'
-include ':srp'
+include ':app',
+        ':januswrapper',
+        ':srp',
+        ':data:local',
+        ':data:remote',
+        ':features',
+        ':domain',
+        ':data:repository',
+        ':common'

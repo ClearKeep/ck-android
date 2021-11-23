@@ -5,7 +5,7 @@ import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.data.local.preference.UserPreferencesStorage
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
@@ -54,7 +54,7 @@ class HomeViewModel @Inject constructor(
     private val setActiveServerUseCase: SetActiveServerUseCase
 ) : BaseViewModel(logoutUseCase) {
     val currentServer = getActiveServerUseCase()
-    val servers: LiveData<List<Server>> = getServersAsStateUseCase()
+    val servers: LiveData<List<com.clearkeep.domain.model.Server>> = getServersAsStateUseCase()
 
     var profile = getDefaultServerProfileAsStateUseCase()
 
@@ -66,15 +66,15 @@ class HomeViewModel @Inject constructor(
     val prepareState: LiveData<PrepareViewState>
         get() = _prepareState
 
-    val groups: LiveData<List<ChatGroup>> = getAllRoomsAsStateUseCase()
+    val groups: LiveData<List<com.clearkeep.domain.model.ChatGroup>> = getAllRoomsAsStateUseCase()
 
     val isRefreshing = MutableLiveData(false)
 
-    private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+    private val _currentStatus = MutableLiveData(com.clearkeep.domain.model.UserStatus.ONLINE.value)
     val currentStatus: LiveData<String>
         get() = _currentStatus
-    private val _listUserStatus = MutableLiveData<List<User>>()
-    val listUserInfo: LiveData<List<User>>
+    private val _listUserStatus = MutableLiveData<List<com.clearkeep.domain.model.User>>()
+    val listUserInfo: LiveData<List<com.clearkeep.domain.model.User>>
         get() = _listUserStatus
 
     val serverUrlValidateResponse = MutableLiveData<String>()
@@ -106,15 +106,15 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    val chatGroups = liveData<List<ChatGroup>> {
-        val result = MediatorLiveData<List<ChatGroup>>()
+    val chatGroups = liveData<List<com.clearkeep.domain.model.ChatGroup>> {
+        val result = MediatorLiveData<List<com.clearkeep.domain.model.ChatGroup>>()
         result.addSource(groups) { groupList ->
             val server = environment.getServer()
             result.value = groupList.filter {
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
                         && it.isGroup()
-                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
+                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
             }
         }
 
@@ -129,8 +129,8 @@ class HomeViewModel @Inject constructor(
         emitSource(result)
     }
 
-    val directGroups = liveData<List<ChatGroup>> {
-        val result = MediatorLiveData<List<ChatGroup>>()
+    val directGroups = liveData<List<com.clearkeep.domain.model.ChatGroup>> {
+        val result = MediatorLiveData<List<com.clearkeep.domain.model.ChatGroup>>()
 
         result.addSource(groups) { groupList ->
             val server = environment.getServer()
@@ -154,9 +154,9 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun getStatusUserInDirectGroup() {
         try {
-            val listUserRequest = arrayListOf<User>()
+            val listUserRequest = arrayListOf<com.clearkeep.domain.model.User>()
             getAllPeerGroupByDomainUseCase(
-                owner = Owner(
+                owner = com.clearkeep.domain.model.Owner(
                     getDomainOfActiveServer(),
                     getClientIdOfActiveServer()
                 )
@@ -176,7 +176,7 @@ class HomeViewModel @Inject constructor(
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
-                        Owner(it1, it2)
+                        com.clearkeep.domain.model.Owner(it1, it2)
                     }
                 }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
@@ -196,7 +196,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun setUserStatus(status: UserStatus) {
+    fun setUserStatus(status: com.clearkeep.domain.model.UserStatus) {
         viewModelScope.launch {
             val result = updateStatusUseCase(status.value)
             if (result) _currentStatus.postValue(status.value)
@@ -211,7 +211,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun selectChannel(server: Server) {
+    fun selectChannel(server: com.clearkeep.domain.model.Server) {
         viewModelScope.launch {
             setActiveServerUseCase(server)
             selectingJoinServer.value = false
@@ -258,7 +258,7 @@ class HomeViewModel @Inject constructor(
     fun getProfileLink(): String {
         val server = environment.getServer()
         return getLinkFromPeople(
-            User(
+            com.clearkeep.domain.model.User(
                 userId = server.profile.userId,
                 userName = server.profile.userName ?: "",
                 domain = server.serverDomain
@@ -288,7 +288,7 @@ class HomeViewModel @Inject constructor(
             val workspaceInfoResponse =
                 getWorkspaceInfoUseCase(server.serverDomain, url)
             _isServerUrlValidateLoading.value = false
-            if (workspaceInfoResponse.status == Status.ERROR) {
+            if (workspaceInfoResponse.status == com.clearkeep.common.utilities.network.Status.ERROR) {
                 printlnCK("checkValidServerUrl invalid server from remote")
                 serverUrlValidateResponse.value = ""
                 return@launch

@@ -33,7 +33,7 @@ import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.presentation.screen.chat.room.UploadPhotoDialog
 import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -292,7 +292,7 @@ fun ProfileScreen(
                 }
             )
         }
-        if (uploadAvatarResponse.value != null && uploadAvatarResponse.value?.status == Status.ERROR) {
+        if (uploadAvatarResponse.value != null && uploadAvatarResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
             CKAlertDialog(
                 title = stringResource(R.string.warning),
                 text = uploadAvatarResponse.value!!.message ?: "",
@@ -318,11 +318,11 @@ fun ProfileScreen(
                 }
             )
         }
-        if (updateMfaResponse.value?.status == Status.SUCCESS) {
+        if (updateMfaResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
             onNavigateToOtp()
             profileViewModel.updateMfaSettingResponse.value =
                 null //Prevent response from being handled again
-        } else if (updateMfaResponse.value?.status == Status.ERROR) {
+        } else if (updateMfaResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
             CKAlertDialog(
                 title = updateMfaResponse.value?.data?.first ?: "",
                 text = updateMfaResponse.value?.data?.second ?: "",

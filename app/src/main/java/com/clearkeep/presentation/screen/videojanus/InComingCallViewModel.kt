@@ -10,7 +10,7 @@ import javax.inject.Inject
 class InComingCallViewModel @Inject constructor(
     private val cancelCallUseCase: CancelCallUseCase
 ): ViewModel() {
-    suspend fun cancelCall(groupId: Int, owner: Owner) {
+    suspend fun cancelCall(groupId: Int, owner: com.clearkeep.domain.model.Owner) {
         cancelCallUseCase(groupId, owner)
     }
 }

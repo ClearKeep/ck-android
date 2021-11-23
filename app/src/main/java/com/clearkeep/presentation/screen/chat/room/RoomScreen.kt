@@ -18,11 +18,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.domain.model.GROUP_ID_TEMPO
 import com.clearkeep.presentation.screen.chat.room.composes.MessageListView
 import com.clearkeep.presentation.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.presentation.screen.chat.room.composes.ToolbarMessage
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -45,7 +44,7 @@ import com.clearkeep.presentation.screen.chat.room.forwardmessage.ForwardMessage
 import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
-import com.clearkeep.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -104,7 +103,7 @@ fun RoomScreen(
 
     val group = groupState.value
 
-    if (group != null && group.groupId != GROUP_ID_TEMPO) {
+    if (group != null && group.groupId != com.clearkeep.domain.model.GROUP_ID_TEMPO) {
         roomViewModel.setJoiningRoomId(group.groupId)
     }
 
@@ -147,12 +146,12 @@ fun RoomScreen(
                                         roomViewModel.uploadFile(context, group.groupId, null, friend)
                                     } else {
                                         roomViewModel.sendMessageResponse.value =
-                                            Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                            com.clearkeep.common.utilities.network.Resource.error("", null, ERROR_CODE_TIMEOUT)
                                     }
                                 }
                             } else {
                                 roomViewModel.sendMessageResponse.value =
-                                    Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                    com.clearkeep.common.utilities.network.Resource.error("", null, ERROR_CODE_TIMEOUT)
                             }
                         }
                     }
@@ -303,7 +302,7 @@ fun RoomScreen(
                                     )
                                 } else {
                                     roomViewModel.sendMessageResponse.value =
-                                        Resource.error("", null, ERROR_CODE_TIMEOUT)
+                                        com.clearkeep.common.utilities.network.Resource.error("", null, ERROR_CODE_TIMEOUT)
                                 }
                             }
                         },
@@ -333,7 +332,7 @@ fun RoomScreen(
     }
     requestCallViewState.value?.let {
         printlnCK("status = ${it.status}")
-        if (Status.LOADING == it.status) {
+        if (com.clearkeep.common.utilities.network.Status.LOADING == it.status) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -350,7 +349,7 @@ fun RoomScreen(
                     )
                 }
             }
-        } else if (it.status == Status.ERROR) {
+        } else if (it.status == com.clearkeep.common.utilities.network.Status.ERROR) {
             CKAlertDialog(
                 title = stringResource(R.string.network_error_dialog_title),
                 text = stringResource(R.string.network_error_dialog_text),
@@ -388,7 +387,7 @@ fun RoomScreen(
         }
     )
     val response = uploadFileResponse.value
-    if (response?.status == Status.ERROR) {
+    if (response?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
         CKAlertDialog(
             onDismissButtonClick = {
                 roomViewModel.uploadFileResponse.value = null
@@ -407,10 +406,10 @@ fun RoomScreen(
             }
         )
     }
-    if ((getGroupResponse.value?.status == Status.ERROR && getGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
-        || (createGroupResponse.value?.status == Status.ERROR && createGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
-        || (inviteToGroupResponse.value?.status == Status.ERROR && inviteToGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
-        || (sendMessageResponse.value?.status == Status.ERROR && sendMessageResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+    if ((getGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && getGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (createGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && createGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (inviteToGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && inviteToGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (sendMessageResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && sendMessageResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
     ) {
         CKAlertDialog(
             title = stringResource(R.string.network_error_dialog_title),

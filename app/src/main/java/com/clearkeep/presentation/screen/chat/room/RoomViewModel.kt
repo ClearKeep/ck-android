@@ -25,8 +25,8 @@ import com.clearkeep.domain.usecase.signalkey.RegisterSenderKeyToGroupUseCase
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.*
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import java.lang.IllegalArgumentException
@@ -85,17 +85,17 @@ class RoomViewModel @Inject constructor(
 
     private var isLatestPeerSignalKeyProcessed = false
 
-    private val _group = MutableLiveData<ChatGroup>()
+    private val _group = MutableLiveData<com.clearkeep.domain.model.ChatGroup>()
 
-    val requestCallState = MutableLiveData<Resource<RequestInfo>>()
+    val requestCallState = MutableLiveData<com.clearkeep.common.utilities.network.Resource<RequestInfo>>()
 
-    val group: LiveData<ChatGroup>
+    val group: LiveData<com.clearkeep.domain.model.ChatGroup>
         get() = _group
 
     var clientId: String = ""
     var domain: String = ""
 
-    val groups: LiveData<List<ChatGroup>> = getAllRoomsAsStateUseCase()
+    val groups: LiveData<List<com.clearkeep.domain.model.ChatGroup>> = getAllRoomsAsStateUseCase()
 
     private val _imageUriSelected = MutableLiveData<List<String>>()
     val imageUriSelected: LiveData<List<String>>
@@ -105,7 +105,7 @@ class RoomViewModel @Inject constructor(
     val fileUriStaged: LiveData<Map<Uri, Boolean>>
         get() = _fileUriStaged
 
-    val uploadFileResponse = MutableLiveData<Resource<String>>()
+    val uploadFileResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>()
 
     private val _message = MutableLiveData<String>()
     val message: LiveData<String>
@@ -125,12 +125,12 @@ class RoomViewModel @Inject constructor(
     val imageDetailSenderName: LiveData<String>
         get() = _imageDetailSenderName
 
-    private val _listGroupUserStatus = MutableLiveData<List<User>>()
-    val listGroupUserStatus: LiveData<List<User>>
+    private val _listGroupUserStatus = MutableLiveData<List<com.clearkeep.domain.model.User>>()
+    val listGroupUserStatus: LiveData<List<com.clearkeep.domain.model.User>>
         get() = _listGroupUserStatus
 
-    private val _listUserStatus = MutableLiveData<List<User>>()
-    val listUserStatus: LiveData<List<User>> get() = _listUserStatus
+    private val _listUserStatus = MutableLiveData<List<com.clearkeep.domain.model.User>>()
+    val listUserStatus: LiveData<List<com.clearkeep.domain.model.User>> get() = _listUserStatus
 
     val listPeerAvatars = MutableLiveData<List<String>>()
 
@@ -140,10 +140,10 @@ class RoomViewModel @Inject constructor(
 
     val quotedMessage = MutableLiveData<MessageDisplayInfo>()
 
-    val getGroupResponse = MutableLiveData<Resource<ChatGroup>>()
-    val createGroupResponse = MutableLiveData<Resource<ChatGroup>>()
-    val inviteToGroupResponse = MutableLiveData<Resource<ChatGroup>>()
-    val sendMessageResponse = MutableLiveData<Resource<Any>>()
+    val getGroupResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<ChatGroup>>()
+    val createGroupResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<ChatGroup>>()
+    val inviteToGroupResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<ChatGroup>>()
+    val sendMessageResponse = MutableLiveData<com.clearkeep.common.utilities.network.Resource<Any>>()
     val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
@@ -199,7 +199,12 @@ class RoomViewModel @Inject constructor(
 
         viewModelScope.launch {
             val selectedServer =
-                getServerByOwnerUseCase(Owner(ownerDomain, ownerClientId))
+                getServerByOwnerUseCase(
+                    com.clearkeep.domain.model.Owner(
+                        ownerDomain,
+                        ownerClientId
+                    )
+                )
             if (selectedServer == null) {
                 printlnCK("default server must be not NULL")
                 return@launch
@@ -243,9 +248,9 @@ class RoomViewModel @Inject constructor(
         try {
             val currentUser = getUser()
 
-            val listUserRequest = arrayListOf<User>()
+            val listUserRequest = arrayListOf<com.clearkeep.domain.model.User>()
             getAllPeerGroupByDomainUseCase(
-                owner = Owner(
+                owner = com.clearkeep.domain.model.Owner(
                     currentUser.domain,
                     currentUser.userId
                 )
@@ -265,7 +270,7 @@ class RoomViewModel @Inject constructor(
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
-                        Owner(it1, it2)
+                        com.clearkeep.domain.model.Owner(it1, it2)
                     }
                 }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
@@ -292,8 +297,8 @@ class RoomViewModel @Inject constructor(
         setJoiningRoomUseCase(roomId)
     }
 
-    fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<Message>> {
-        return getMessageAsStateUseCase(groupId, Owner(domain, clientId))
+    fun getMessages(groupId: Long, domain: String, clientId: String): LiveData<List<com.clearkeep.domain.model.Message>> {
+        return getMessageAsStateUseCase(groupId, com.clearkeep.domain.model.Owner(domain, clientId))
     }
 
     private suspend fun updateGroupWithId(groupId: Long) {
@@ -310,14 +315,18 @@ class RoomViewModel @Inject constructor(
     private suspend fun updateGroupWithFriendId(friendId: String, friendDomain: String) {
         printlnCK("updateGroupWithFriendId: friendId $friendId")
         val friend = getFriendUseCase(friendId, friendDomain, getOwner())
-            ?: User(userId = friendId, userName = "", domain = friendDomain)
+            ?: com.clearkeep.domain.model.User(
+                userId = friendId,
+                userName = "",
+                domain = friendDomain
+            )
         if (friend == null) {
             printlnCK("updateGroupWithFriendId: can not find friend with id $friendId")
             return
         }
         var existingGroup = getGroupPeerByClientIdUseCase(
             friend,
-            Owner(domain = domain, clientId = clientId)
+            com.clearkeep.domain.model.Owner(domain = domain, clientId = clientId)
         )
         if (existingGroup == null) {
             existingGroup = getTemporaryGroupUseCase(getUser(), friend)
@@ -327,8 +336,8 @@ class RoomViewModel @Inject constructor(
         setJoiningGroup(existingGroup)
     }
 
-    private fun getOwner(): Owner {
-        return Owner(domain, clientId)
+    private fun getOwner(): com.clearkeep.domain.model.Owner {
+        return com.clearkeep.domain.model.Owner(domain, clientId)
     }
 
     private fun updateMessagesFromRemote(lastMessageAt: Long) {
@@ -337,7 +346,7 @@ class RoomViewModel @Inject constructor(
 
     fun sendMessageToUser(
         context: Context,
-        receiverPeople: User,
+        receiverPeople: com.clearkeep.domain.model.User,
         groupId: Long,
         message: String,
         isForwardMessage: Boolean = false
@@ -364,14 +373,14 @@ class RoomViewModel @Inject constructor(
     }
 
     private fun sendMessageToUser(
-        receiverPeople: User,
+        receiverPeople: com.clearkeep.domain.model.User,
         groupId: Long,
         message: String,
         tempMessageId: Int = 0
     ) {
         viewModelScope.launch {
             var lastGroupId: Long = groupId
-            if (lastGroupId == GROUP_ID_TEMPO) {
+            if (lastGroupId == com.clearkeep.domain.model.GROUP_ID_TEMPO) {
                 val user = environment.getServer().profile
                 user.avatar = ""
                 createGroupResponse.value = createGroupUseCase(
@@ -386,7 +395,7 @@ class RoomViewModel @Inject constructor(
                 }
             }
 
-            if (lastGroupId != GROUP_ID_TEMPO) {
+            if (lastGroupId != com.clearkeep.domain.model.GROUP_ID_TEMPO) {
                 if (!isLatestPeerSignalKeyProcessed) {
                     // work around: always load user signal key for first open room
                     val response = sendMessageUseCase.toPeer(
@@ -399,7 +408,7 @@ class RoomViewModel @Inject constructor(
                         isForceProcessKey = true,
                         cachedMessageId = tempMessageId
                     )
-                    isLatestPeerSignalKeyProcessed = response.status == Status.SUCCESS
+                    isLatestPeerSignalKeyProcessed = response.status == com.clearkeep.common.utilities.network.Status.SUCCESS
                     sendMessageResponse.value = response
                 } else {
                     sendMessageResponse.value = sendMessageUseCase.toPeer(
@@ -456,7 +465,7 @@ class RoomViewModel @Inject constructor(
             if (!group.isJoined) {
                 val result = registerSenderKeyToGroupUseCase(groupId, clientId, domain)
                 printlnCK("sendMessageToGroup register sender key $result")
-                if (result.status == Status.SUCCESS) {
+                if (result.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                     _group.value = remarkGroupKeyRegisteredUseCase(groupId)
                     sendMessageResponse.value = sendMessageUseCase.toGroup(
                         clientId,
@@ -466,7 +475,7 @@ class RoomViewModel @Inject constructor(
                         cachedMessageId
                     )
                 } else {
-                    if (result.status == Status.ERROR && result.error is TokenExpiredException) {
+                    if (result.status == com.clearkeep.common.utilities.network.Status.ERROR && result.error is TokenExpiredException) {
                         logoutUseCase()
                     }
                     sendMessageResponse.value = result
@@ -483,7 +492,7 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun inviteToGroup(invitedUsers: List<User>, groupId: Long) {
+    fun inviteToGroup(invitedUsers: List<com.clearkeep.domain.model.User>, groupId: Long) {
         viewModelScope.launch {
             inviteToGroupResponse.value =
                 inviteToGroupUseCase(invitedUsers, groupId, getOwner())
@@ -494,7 +503,7 @@ class RoomViewModel @Inject constructor(
     }
 
     fun removeMember(
-        user: User,
+        user: com.clearkeep.domain.model.User,
         groupId: Long,
         onSuccess: (() -> Unit)? = null,
         onError: (() -> Unit)?
@@ -534,10 +543,10 @@ class RoomViewModel @Inject constructor(
 
     fun requestCall(groupId: Long, isAudioMode: Boolean) {
         viewModelScope.launch {
-            requestCallState.value = Resource.loading(null)
+            requestCallState.value = com.clearkeep.common.utilities.network.Resource.loading(null)
 
             var lastGroupId: Long = groupId
-            if (lastGroupId == GROUP_ID_TEMPO) {
+            if (lastGroupId == com.clearkeep.domain.model.GROUP_ID_TEMPO) {
                 val user = getUser()
                 printlnCK("requestCall $domain")
                 val friend = getFriendUseCase(friendId!!, friendDomain!!, getOwner())!!
@@ -553,11 +562,11 @@ class RoomViewModel @Inject constructor(
                 }
             }
 
-            if (lastGroupId != GROUP_ID_TEMPO && lastGroupId != 0L) {
+            if (lastGroupId != com.clearkeep.domain.model.GROUP_ID_TEMPO && lastGroupId != 0L) {
                 requestCallState.value =
-                    Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
+                    com.clearkeep.common.utilities.network.Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
             } else {
-                requestCallState.value = Resource.error("error",
+                requestCallState.value = com.clearkeep.common.utilities.network.Resource.error("error",
                     _group.value?.let { RequestInfo(it, isAudioMode) })
             }
         }
@@ -571,23 +580,23 @@ class RoomViewModel @Inject constructor(
         clipboard.setPrimaryClip(clip)
     }
 
-    private fun setJoiningGroup(group: ChatGroup) {
+    private fun setJoiningGroup(group: com.clearkeep.domain.model.ChatGroup) {
         _group.value = group
         setJoiningRoomUseCase(group.groupId)
         endOfPaginationReached = false
         lastLoadRequestTimestamp = 0L
     }
 
-    private fun getUser(): User {
+    private fun getUser(): com.clearkeep.domain.model.User {
         val server = environment.getServer()
-        return User(
+        return com.clearkeep.domain.model.User(
             userId = server.profile.userId,
             userName = server.profile.userName ?: "",
             domain = server.serverDomain
         )
     }
 
-    fun getCurrentUser(): User {
+    fun getCurrentUser(): com.clearkeep.domain.model.User {
         return getUser()
     }
 
@@ -615,7 +624,7 @@ class RoomViewModel @Inject constructor(
         groupId: Long = 0L,
         message: String,
         isRegisteredGroup: Boolean? = null,
-        receiverPeople: User? = null
+        receiverPeople: com.clearkeep.domain.model.User? = null
     ) {
         val imageUris = _imageUriSelected.value
         _imageUriSelected.value = emptyList()
@@ -636,7 +645,7 @@ class RoomViewModel @Inject constructor(
         context: Context,
         groupId: Long,
         isRegisteredGroup: Boolean? = null,
-        receiverPeople: User? = null
+        receiverPeople: com.clearkeep.domain.model.User? = null
     ) {
         val files = _fileUriStaged.value?.filter { it.value }?.keys?.map { it.toString() }?.toList()
         _fileUriStaged.value = emptyMap()
@@ -659,14 +668,14 @@ class RoomViewModel @Inject constructor(
         groupId: Long,
         message: String?,
         isRegisteredGroup: Boolean?,
-        receiverPeople: User?,
+        receiverPeople: com.clearkeep.domain.model.User?,
         appendFileSize: Boolean = false,
         persistablePermission: Boolean = true
     ) {
         if (!urisList.isNullOrEmpty()) {
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
-                    Resource.error(
+                    com.clearkeep.common.utilities.network.Resource.error(
                         context.getString(R.string.upload_file_error_too_many),
                         null
                     )
@@ -676,7 +685,7 @@ class RoomViewModel @Inject constructor(
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    Resource.error(context.getString(R.string.upload_file_error_too_large), null)
+                    com.clearkeep.common.utilities.network.Resource.error(context.getString(R.string.upload_file_error_too_large), null)
                 return
             }
 
@@ -685,19 +694,19 @@ class RoomViewModel @Inject constructor(
                 val tempMessageContent =
                     if (message != null) "$tempMessageUris $message" else tempMessageUris
                 val tempMessageId = saveMessageUseCase(
-                        Message(
-                            null,
-                            "",
-                            groupId,
-                            getOwner().domain,
-                            getOwner().clientId,
-                            getOwner().clientId,
-                            tempMessageContent,
-                            Calendar.getInstance().timeInMillis,
-                            Calendar.getInstance().timeInMillis,
-                            getOwner().domain,
-                            getOwner().clientId
-                        )
+                    com.clearkeep.domain.model.Message(
+                        null,
+                        "",
+                        groupId,
+                        getOwner().domain,
+                        getOwner().clientId,
+                        getOwner().clientId,
+                        tempMessageContent,
+                        Calendar.getInstance().timeInMillis,
+                        Calendar.getInstance().timeInMillis,
+                        getOwner().domain,
+                        getOwner().clientId
+                    )
                     )
                 val fileUrls = mutableListOf<String>()
                 val filesSizeInBytes = mutableListOf<Long>()
@@ -714,12 +723,11 @@ class RoomViewModel @Inject constructor(
                     val mimeType = getFileMimeType(context, uri, persistablePermission)
                     val fileName = uri.getFileName(context, persistablePermission)
                     val urlResponse = uploadFileUseCase(
-                        context,
                         mimeType,
                         fileName.replace(" ", "_"),
                         uriString
                     )
-                    if (urlResponse.status == Status.SUCCESS) {
+                    if (urlResponse.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                         fileUrls.add(urlResponse.data ?: "")
                         filesSizeInBytes.add(fileSize)
                     } else {
@@ -835,7 +843,7 @@ class RoomViewModel @Inject constructor(
                 val server = environment.getServer()
                 val loadResponse = updateMessageFromApiUseCase(
                     group.value?.groupId ?: 0,
-                    Owner(server.serverDomain, server.profile.userId),
+                    com.clearkeep.domain.model.Owner(server.serverDomain, server.profile.userId),
                     if (isRefresh) 0 else lastMessageAt
                 )
                 val endOfPagination = loadResponse.endOfPaginationReached
@@ -844,7 +852,10 @@ class RoomViewModel @Inject constructor(
                 while (isRefresh && newestMessageTimestamp > lastMessageAt) {
                     val response = updateMessageFromApiUseCase(
                         group.value?.groupId ?: 0,
-                        Owner(server.serverDomain, server.profile.userId),
+                        com.clearkeep.domain.model.Owner(
+                            server.serverDomain,
+                            server.profile.userId
+                        ),
                         newestMessageTimestamp
                     )
                     newestMessageTimestamp = response.newestMessageLoadedTimestamp
@@ -857,7 +868,10 @@ class RoomViewModel @Inject constructor(
                     lastLoadRequestTimestamp = 0L
                     endOfPaginationReached = updateMessageFromApiUseCase(
                         group.value?.groupId ?: 0,
-                        Owner(server.serverDomain, server.profile.userId),
+                        com.clearkeep.domain.model.Owner(
+                            server.serverDomain,
+                            server.profile.userId
+                        ),
                         temp
                     ).endOfPaginationReached
                 }
@@ -875,4 +889,4 @@ class RoomViewModel @Inject constructor(
     }
 }
 
-class RequestInfo(val chatGroup: ChatGroup, val isAudioMode: Boolean)
+class RequestInfo(val chatGroup: com.clearkeep.domain.model.ChatGroup, val isAudioMode: Boolean)

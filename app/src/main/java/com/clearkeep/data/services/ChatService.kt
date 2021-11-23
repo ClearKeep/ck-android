@@ -7,6 +7,7 @@ import android.net.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.repository.*
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -206,7 +207,7 @@ class ChatService : Service(),
         scope.launch {
             printlnCK("chatService raw message ${value.message.toStringUtf8()}")
             environment.setUpTempDomain(
-                Server(
+                com.clearkeep.domain.model.Server(
                     null,
                     "",
                     domain,
@@ -217,7 +218,7 @@ class ChatService : Service(),
                     "",
                     "",
                     false,
-                    Profile(null, value.clientId, "", "", "", 0L, "")
+                    com.clearkeep.domain.model.Profile(null, value.clientId, "", "", "", 0L, "")
                 )
             )
             val res = decryptMessageUseCase(
@@ -225,7 +226,7 @@ class ChatService : Service(),
                 value.fromClientId, value.fromClientWorkspaceDomain,
                 value.createdAt, value.updatedAt,
                 value.message,
-                Owner(domain, value.clientId)
+                com.clearkeep.domain.model.Owner(domain, value.clientId)
             )
             val isShowNotification =
                 getOwnerClientIdsUseCase().contains(value.fromClientId)
@@ -312,7 +313,7 @@ class ChatService : Service(),
     private fun handleShowNotification(
         joiningRoomId: Long,
         groupId: Long,
-        message: Message,
+        message: com.clearkeep.domain.model.Message,
         domain: String,
         ownerClientId: String
     ) {
@@ -324,7 +325,7 @@ class ChatService : Service(),
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
                     val userPreference =
                         getUserPreferenceUseCase(domain, ownerClientId)
-                            ?: UserPreference.getDefaultUserPreference("", "", false)
+                            ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false)
                     val senderUser = getFriendUseCase(
                         message.senderId
                     )
@@ -358,7 +359,10 @@ class ChatService : Service(),
             group?.data?.let {
                 updateMessageFromApiUseCase(
                     it.groupId,
-                    Owner(currentServer.serverDomain, currentServer.profile.userId),
+                    com.clearkeep.domain.model.Owner(
+                        currentServer.serverDomain,
+                        currentServer.profile.userId
+                    ),
                     it.lastMessageSyncTimestamp
                 )
 

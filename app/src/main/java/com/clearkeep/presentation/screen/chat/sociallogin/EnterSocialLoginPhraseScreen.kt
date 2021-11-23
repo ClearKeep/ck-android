@@ -19,7 +19,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.LocalColorMapping
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.presentation.screen.auth.login.LoginViewModel
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -36,13 +36,13 @@ fun EnterSocialLoginPhraseScreen(
     val verifyResponse = viewModel.verifyPassphraseResponse.observeAsState()
     val isLoading = viewModel.isLoading.observeAsState()
 
-    val error = if (verifyResponse.value?.status == Status.ERROR) {
+    val error = if (verifyResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
         stringResource(R.string.social_pin_incorrect)
     } else {
         null
     }
 
-    if (verifyResponse.value?.status == Status.SUCCESS) {
+    if (verifyResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
         onVerifySuccess()
     }
 

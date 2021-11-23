@@ -13,8 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
 import com.clearkeep.presentation.components.CKInsetTheme
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupViewModel
 import com.clearkeep.presentation.screen.chat.groupcreate.EnterGroupNameScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.AddMemberUIType
@@ -26,7 +24,7 @@ import com.clearkeep.presentation.screen.chat.room.imagepicker.ImagePickerScreen
 import com.clearkeep.presentation.screen.chat.room.roomdetail.GroupMemberScreen
 import com.clearkeep.presentation.screen.chat.room.roomdetail.RoomInfoScreen
 import com.clearkeep.data.services.ChatService
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import android.app.ActivityManager
 import androidx.compose.material.ExperimentalMaterialApi
@@ -108,7 +106,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         setContent {
             CKInsetTheme {
                 val navController = rememberNavController()
-                val selectedItem = remember { mutableStateListOf<User>() }
+                val selectedItem = remember { mutableStateListOf<com.clearkeep.domain.model.User>() }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         RoomScreen(
@@ -229,7 +227,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun subscriber() {
         roomViewModel.requestCallState.observe(this, Observer {
-            if (it != null && it.status == Status.SUCCESS) {
+            if (it != null && it.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 it.data?.let { requestInfo ->
                     NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
                     navigateToInComingCallActivity(
@@ -250,7 +248,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             })
     }
 
-    private fun navigateToInComingCallActivity(group: ChatGroup, isAudioMode: Boolean) {
+    private fun navigateToInComingCallActivity(group: com.clearkeep.domain.model.ChatGroup, isAudioMode: Boolean) {
         val roomName = if (group.isGroup()) group.groupName else {
             group.clientList.firstOrNull { client ->
                 client.userId != clientId

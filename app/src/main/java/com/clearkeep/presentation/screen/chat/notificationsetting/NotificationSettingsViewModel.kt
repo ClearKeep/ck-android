@@ -20,8 +20,8 @@ class NotificationSettingsViewModel @Inject constructor(
     private val updateShowNotificationPreviewUseCase: UpdateShowNotificationPreviewUseCase,
     private val updateDoNotDisturbUseCase: UpdateDoNotDisturbUseCase
 ) : ViewModel() {
-    private lateinit var _userPreference: LiveData<UserPreference>
-    val userPreference: LiveData<UserPreference>
+    private lateinit var _userPreference: LiveData<com.clearkeep.domain.model.UserPreference>
+    val userPreference: LiveData<com.clearkeep.domain.model.UserPreference>
         get() = _userPreference
 
     init {

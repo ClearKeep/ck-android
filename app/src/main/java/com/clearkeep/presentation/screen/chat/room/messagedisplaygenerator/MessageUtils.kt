@@ -12,9 +12,9 @@ val roundSizeLarge = 18.dp
 val roundSizeSmall = 4.dp
 
 fun convertMessageList(
-    messages: List<Message>,
-    clients: List<User>,
-    listAvatar: List<User>,
+    messages: List<com.clearkeep.domain.model.Message>,
+    clients: List<com.clearkeep.domain.model.User>,
+    listAvatar: List<com.clearkeep.domain.model.User>,
     myClientId: String,
     isGroup: Boolean,
 ): List<MessageDisplayInfo> {
@@ -79,10 +79,10 @@ fun convertMessageList(
     }
 }
 
-fun separateMessageList(messages: List<Message>): List<List<Message>> {
-    val result: MutableList<MutableList<Message>> = ArrayList()
+fun separateMessageList(messages: List<com.clearkeep.domain.model.Message>): List<List<com.clearkeep.domain.model.Message>> {
+    val result: MutableList<MutableList<com.clearkeep.domain.model.Message>> = ArrayList()
 
-    var cache: MutableList<Message> = ArrayList()
+    var cache: MutableList<com.clearkeep.domain.model.Message> = ArrayList()
     var currentSenderId = ""
     for (message in messages) {
         if (currentSenderId.isEmpty() || currentSenderId != message.senderId) {

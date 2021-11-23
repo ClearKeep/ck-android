@@ -21,7 +21,7 @@ import com.clearkeep.utilities.sdp
 
 @Composable
 fun ServerSettingScreen(
-    server: Server,
+    server: com.clearkeep.domain.model.Server,
     onCopiedServerDomain: (url: String) -> Unit,
     onBackPressed: () -> Unit,
 ) {

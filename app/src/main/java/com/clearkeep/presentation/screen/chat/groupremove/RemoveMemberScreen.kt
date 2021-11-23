@@ -38,7 +38,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
     val groupState = roomViewModel.group.observeAsState()
     val context = LocalContext.current
     val removeMemberDialogVisible = rememberSaveable { mutableStateOf(false) }
-    val confirmRemoveMemberData = remember { mutableStateOf<Pair<User, Long>?>(null) }
+    val confirmRemoveMemberData = remember { mutableStateOf<Pair<com.clearkeep.domain.model.User, Long>?>(null) }
 
     groupState.value?.let { group ->
         CKSimpleTheme {
@@ -64,7 +64,7 @@ fun RemoveMemberScreen(roomViewModel: RoomViewModel, navController: NavControlle
 
                         val itemModifier = Modifier.padding(vertical = 8.sdp())
                         val usersList = group.clientList.filter {
-                            it.userState == UserStateTypeInGroup.ACTIVE.value
+                            it.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
                                     && it.userId != roomViewModel.getCurrentUser().userId
                                     && it.userName.toLowerCase(Locale.ROOT).contains(text.value)
                         }.sortedBy { it.userName.toLowerCase(Locale.ROOT) }
@@ -155,8 +155,8 @@ fun HeaderRemoveMember(onCloseView: () -> Unit) {
 @Composable
 fun RemoveMemberItem(
     modifier: Modifier = Modifier,
-    user: User,
-    onAction: (user: User) -> Unit
+    user: com.clearkeep.domain.model.User,
+    onAction: (user: com.clearkeep.domain.model.User) -> Unit
 ) {
     NewFriendListItem(modifier, user, { StatusText(user) }, {
         Icon(

@@ -29,7 +29,7 @@ import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.presentation.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Status
 
 
 @ExperimentalAnimationApi
@@ -177,12 +177,12 @@ fun CustomServerScreen(
         ErrorDialog(showDialog, setShowDialog)
     }
 
-    if (serverUrlValidateResponse.value?.status == Status.SUCCESS) {
+    if (serverUrlValidateResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
         loginViewModel.isCustomServer = useCustomServerChecked.value
         loginViewModel.customDomain = rememberServerUrl.value
         loginViewModel.serverUrlValidateResponse.value = null
         onBackPress()
-    } else if (serverUrlValidateResponse.value?.status == Status.ERROR) {
+    } else if (serverUrlValidateResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
         val (title, text, dismissText) = if (serverUrlValidateResponse.value!!.errorCode == ERROR_CODE_TIMEOUT) {
             Triple(
                 stringResource(R.string.network_error_dialog_title),

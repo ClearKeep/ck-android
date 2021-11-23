@@ -24,7 +24,7 @@ import com.clearkeep.utilities.sdp
 @Composable
 fun PeopleScreen(
     peopleViewModel: PeopleViewModel,
-    onFriendSelected: (User) -> Unit,
+    onFriendSelected: (com.clearkeep.domain.model.User) -> Unit,
     onNavigateToSearch: () -> Unit
 ) {
     val friends = peopleViewModel.friends.observeAsState()
@@ -62,8 +62,8 @@ fun PeopleScreen(
 
 @Composable
 fun FriendItem(
-    friend: User,
-    onFriendSelected: (User) -> Unit,
+    friend: com.clearkeep.domain.model.User,
+    onFriendSelected: (com.clearkeep.domain.model.User) -> Unit,
 ) {
     Column(
         modifier = Modifier

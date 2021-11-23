@@ -47,15 +47,15 @@ fun BannedUserScreen(onCloseView: () -> Unit) {
             item {
                 BannedUserItem(
                     Modifier.padding(vertical = 8.sdp()),
-                    User("", "Alex Mendes", "", "", "", "", "", ""),
+                    com.clearkeep.domain.model.User("", "Alex Mendes", "", "", "", "", "", ""),
                     {})
                 BannedUserItem(
                     Modifier.padding(vertical = 8.sdp()),
-                    User("", "Alissa Baker", "", "", "", "", "", ""),
+                    com.clearkeep.domain.model.User("", "Alissa Baker", "", "", "", "", "", ""),
                     {})
                 BannedUserItem(
                     Modifier.padding(vertical = 8.sdp()),
-                    User("", "Barbara Johnson", "", "", "", "", "", ""),
+                    com.clearkeep.domain.model.User("", "Barbara Johnson", "", "", "", "", "", ""),
                     {})
             }
         }
@@ -89,7 +89,7 @@ fun HeaderBannedUser(onCloseView: () -> Unit) {
 }
 
 @Composable
-fun BannedUserItem(modifier: Modifier = Modifier, user: User, onAction: (user: User) -> Unit) {
+fun BannedUserItem(modifier: Modifier = Modifier, user: com.clearkeep.domain.model.User, onAction: (user: com.clearkeep.domain.model.User) -> Unit) {
     NewFriendListItem(modifier,
         user,
         { StatusText(user) },

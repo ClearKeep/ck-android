@@ -25,7 +25,7 @@ import com.clearkeep.utilities.toNonScalableTextSize
 fun InsertFriendScreen(
     inviteGroupViewModel: InviteGroupViewModel,
     navController: NavHostController,
-    onInsertFriend: (people: User) -> Unit,
+    onInsertFriend: (people: com.clearkeep.domain.model.User) -> Unit,
 ) {
     val link = rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current

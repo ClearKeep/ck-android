@@ -36,15 +36,15 @@ import com.clearkeep.presentation.components.base.ButtonType
 import com.clearkeep.presentation.components.base.CKAlertDialog
 import com.clearkeep.presentation.components.base.CKButton
 import com.clearkeep.presentation.components.base.CKTopAppBarSample
-import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun EnterOtpScreen(
-    otpResponse: MutableLiveData<Resource<String>>,
+    otpResponse: MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>,
     onDismissMessage: () -> Unit,
     onClickResend: () -> Unit,
     onClickSubmit: (String) -> Unit,
@@ -115,7 +115,7 @@ fun EnterOtpScreen(
         }
 
         when (verifyOtpResponse.value?.status) {
-            Status.ERROR -> {
+            com.clearkeep.common.utilities.network.Status.ERROR -> {
                 input[0] = " "
                 input[1] = " "
                 input[2] = " "
@@ -130,7 +130,7 @@ fun EnterOtpScreen(
                     dismissTitle = stringResource(R.string.close)
                 )
             }
-            Status.SUCCESS -> {
+            com.clearkeep.common.utilities.network.Status.SUCCESS -> {
                 onClickSave()
             }
             else -> {
