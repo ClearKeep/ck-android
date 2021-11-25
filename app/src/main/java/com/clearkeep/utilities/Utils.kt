@@ -15,7 +15,6 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.format.DateFormat
 import android.view.View
-import com.clearkeep.domain.model.ProtoResponse
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
@@ -26,10 +25,7 @@ import androidx.compose.ui.unit.em
 import androidx.core.content.ContextCompat
 import com.clearkeep.R
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.data.remote.utils.TokenExpiredException
 import com.clearkeep.presentation.screen.splash.SplashActivity
-import com.google.gson.Gson
-import io.grpc.StatusRuntimeException
 import kotlin.system.exitProcess
 
 fun restartToRoot(context: Context) {
@@ -38,10 +34,6 @@ fun restartToRoot(context: Context) {
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
     context.startActivity(intent)
     exitProcess(2)
-}
-
-fun getCurrentDateTime(): Date {
-    return Calendar.getInstance().time
 }
 
 fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
@@ -88,14 +80,6 @@ fun getDateAsString(timeMs: Long): String {
     val formatter = SimpleDateFormat("dd/MM")
 
     return formatter.format(Date(timeMs))
-}
-
-fun getUnableErrorMessage(message: String?): String {
-    return if (BuildConfig.FLAVOR == "dev") {
-        message ?: ""
-    } else {
-        ""
-    }
 }
 
 fun CharSequence?.isValidEmail() =
@@ -187,28 +171,6 @@ fun isOdd(num: Int): Boolean {
     return num % 2 != 0
 }
 
-fun parseError(e: StatusRuntimeException): ProtoResponse {
-    if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED || e.status.code == io.grpc.Status.Code.UNAVAILABLE) {
-        return ProtoResponse(
-            ERROR_CODE_TIMEOUT,
-            "We are unable to detect an internet connection. Please try again when you have a stronger connection."
-        )
-    }
-
-    val rawError = errorRegex.find(e.message ?: "")?.value ?: ""
-    return try {
-        val response = Gson().fromJson(rawError, ProtoResponse::class.java)
-        if (e.status.code == io.grpc.Status.Code.DEADLINE_EXCEEDED && response.code == 1000 || response.code == 1077) {
-            response.copy(cause = TokenExpiredException())
-        } else {
-            response
-        }
-    } catch (e: Exception) {
-        printlnCK("parseError exception rawError $rawError, exception ${e.message}")
-        ProtoResponse(0, rawError)
-    }
-}
-
 fun isValidServerUrl(url: String): Boolean {
     val matcher = Patterns.WEB_URL.matcher(url.trim())
     matcher.find()
@@ -241,8 +203,6 @@ fun isWriteFilePermissionGranted(context: Context): Boolean {
         return isPermissionGranted(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     return true
 }
-
-val errorRegex = "\\{.+\\}".toRegex()
 
 @Composable
 fun Int.toNonScalableTextSize(): TextUnit {
@@ -337,14 +297,4 @@ fun Int.sdp(): Dp {
         70 -> dimensionResource(R.dimen._70sdp)
         else -> this.dp
     }
-}
-
-fun String.decodeHex(): ByteArray {
-    check(length % 2 == 0) { "Must have an even length" }
-
-    val byteIterator = chunkedSequence(2)
-        .map { it.toInt(16).toByte() }
-        .iterator()
-
-    return ByteArray(length / 2) { byteIterator.next() }
 }

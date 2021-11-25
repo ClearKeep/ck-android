@@ -16,9 +16,8 @@ import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
-import com.clearkeep.presentation.screen.chat.utils.isGroup
+import com.clearkeep.common.utilities.*
 import com.clearkeep.presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity
-import com.clearkeep.utilities.*
 
 object AppCall {
     var listenerCallingState = MutableLiveData<CallingStateData>()

@@ -19,12 +19,12 @@ class InCallViewModel @Inject constructor(
     private val getDefaultServerUseCase: GetDefaultServerUseCase,
 ) :
     ViewModel() {
-    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: com.clearkeep.domain.model.Owner) =
+    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: Owner) =
         requestVideoCallUseCase(groupId, isAudioMode, owner)
 
-    suspend fun cancelCall(groupId: Int, owner: com.clearkeep.domain.model.Owner) = cancelCallUseCase(groupId, owner)
+    suspend fun cancelCall(groupId: Int, owner: Owner) = cancelCallUseCase(groupId, owner)
 
-    suspend fun switchAudioToVideoCall(groupId: Int, owner: com.clearkeep.domain.model.Owner) = switchAudioToVideoCallUseCase(groupId, owner)
+    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner) = switchAudioToVideoCallUseCase(groupId, owner)
 
     suspend fun getGroupById(groupId: Long, domain: String, ownerId: String) = getGroupByIdUseCase(groupId, domain, ownerId)
 

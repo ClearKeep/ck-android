@@ -26,12 +26,11 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
-import com.clearkeep.domain.model.Owner
+import com.clearkeep.common.utilities.*
 import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
-import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.videojanus.*
 import com.clearkeep.presentation.screen.videojanus.common.CallState
 import com.clearkeep.presentation.screen.videojanus.common.CallStateView

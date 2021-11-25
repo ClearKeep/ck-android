@@ -7,7 +7,7 @@ import com.clearkeep.common.utilities.network.Resource
 import javax.inject.Inject
 
 class MfaResendOtpUseCase @Inject constructor(private val profileRepository: ProfileRepository, private val serverRepository: ServerRepository) {
-    suspend operator fun invoke(owner: com.clearkeep.domain.model.Owner): Resource<Pair<Int, String>> {
+    suspend operator fun invoke(owner: Owner): Resource<Pair<Int, String>> {
         val server = serverRepository.getServerByOwner(owner) ?: return Resource.error("", 0 to "")
 
         return profileRepository.mfaResendOtp(server)

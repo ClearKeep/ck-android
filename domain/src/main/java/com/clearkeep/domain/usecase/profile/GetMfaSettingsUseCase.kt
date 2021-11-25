@@ -6,7 +6,7 @@ import com.clearkeep.domain.repository.ServerRepository
 import javax.inject.Inject
 
 class GetMfaSettingsUseCase @Inject constructor(private val profileRepository: ProfileRepository, private val serverRepository: ServerRepository) {
-    suspend operator fun invoke(owner: com.clearkeep.domain.model.Owner) {
+    suspend operator fun invoke(owner: Owner) {
         val server = serverRepository.getServerByOwner(owner) ?: return
         profileRepository.getMfaSettings(server)
     }

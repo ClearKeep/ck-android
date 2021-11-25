@@ -1,10 +1,9 @@
 package com.clearkeep.domain.usecase.group
 
-import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.domain.repository.Environment
 import javax.inject.Inject
 
 class RemarkGroupKeyRegisteredUseCase @Inject constructor(
@@ -12,11 +11,11 @@ class RemarkGroupKeyRegisteredUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val environment: Environment
 ) {
-    suspend operator fun invoke(groupId: Long): com.clearkeep.domain.model.ChatGroup {
+    suspend operator fun invoke(groupId: Long): ChatGroup {
         val server = serverRepository.getServer(getDomain(), getClientId())
         val group = groupRepository.getGroupByID(groupId, getDomain(), getClientId(), server, false)
         group.data?.let {
-            val updateGroup = com.clearkeep.domain.model.ChatGroup(
+            val updateGroup = ChatGroup(
                 generateId = it.generateId,
                 groupId = it.groupId,
                 groupName = it.groupName,
@@ -42,7 +41,7 @@ class RemarkGroupKeyRegisteredUseCase @Inject constructor(
             groupRepository.updateGroup(updateGroup)
             return updateGroup
         }
-        return com.clearkeep.domain.model.ChatGroup(
+        return ChatGroup(
             null,
             0,
             "",

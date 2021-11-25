@@ -3,9 +3,14 @@ package com.clearkeep.data.repository
 import com.clearkeep.data.local.clearkeep.dao.MessageDAO
 import com.clearkeep.data.remote.service.*
 import com.clearkeep.domain.repository.ChatRepository
-import com.clearkeep.presentation.screen.chat.utils.*
-import com.clearkeep.utilities.*
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.data.local.model.toLocal
+import com.clearkeep.data.remote.utils.toEntity
+import com.clearkeep.data.repository.utils.parseError
+import com.clearkeep.domain.model.Message
+import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.Server
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.*
 import message.MessageOuterClass
@@ -32,38 +37,38 @@ class ChatRepositoryImpl @Inject constructor(
         groupId: Long,
         message: ByteArray,
         messageSender: ByteArray
-    ): com.clearkeep.common.utilities.network.Resource<MessageOuterClass.MessageObjectResponse> = withContext(Dispatchers.IO) {
+    ): Resource<MessageObjectResponse> = withContext(Dispatchers.IO) {
         try {
             val response = messageService.sendMessagePeer(server, receiverClientId, deviceId, groupId, message, messageSender)
-            return@withContext com.clearkeep.common.utilities.network.Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-            return@withContext com.clearkeep.common.utilities.network.Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
         } catch (e: java.lang.Exception) {
             printlnCK("sendMessage: $e")
-            return@withContext com.clearkeep.common.utilities.network.Resource.error(e.toString(), null)
+            return@withContext Resource.error(e.toString(), null)
         }
     }
 
     override suspend fun sendMessageToGroup(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         deviceId: String,
         groupId: Long,
         message: ByteArray,
-    ): com.clearkeep.common.utilities.network.Resource<MessageOuterClass.MessageObjectResponse> = withContext(Dispatchers.IO) {
+    ): Resource<MessageObjectResponse> = withContext(Dispatchers.IO) {
         try {
             val response = messageService.sendMessageGroup(server, deviceId, groupId, message)
-            return@withContext com.clearkeep.common.utilities.network.Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
-            return@withContext com.clearkeep.common.utilities.network.Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
+            return@withContext Resource.error(parsedError.message, null, parsedError.code, parsedError.cause)
         } catch (e: Exception) {
             printlnCK("sendMessage: $e")
-            return@withContext com.clearkeep.common.utilities.network.Resource.error(e.toString(), null)
+            return@withContext Resource.error(e.toString(), null)
         }
     }
 
-    override suspend fun updateMessage(message: com.clearkeep.domain.model.Message) = withContext(Dispatchers.IO) {
-        messageDAO.updateMessage(message)
+    override suspend fun updateMessage(message: Message) = withContext(Dispatchers.IO) {
+        messageDAO.updateMessage(message.toLocal())
     }
 }

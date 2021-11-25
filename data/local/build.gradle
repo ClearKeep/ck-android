@@ -23,6 +23,37 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    flavorDimensions "version"
+    productFlavors {
+        prod {
+            dimension "version"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "8188"
+        }
+        staging {
+            dimension "version"
+            versionNameSuffix "-staging"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "18188"
+        }
+        dev {
+            dimension "version"
+            versionNameSuffix "-dev"
+            resValue 'string', 'app_name', "CK Dev"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "28188"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -47,4 +78,21 @@ dependencies {
     implementation "androidx.room:room-ktx:2.3.0-alpha02"
     kapt "androidx.room:room-compiler:2.3.0-alpha02"
     androidTestImplementation "androidx.room:room-testing:2.3.0-alpha02"
+
+    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
+    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
+    implementation "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
+    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
+    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:$rootProject.assistedInjectVersion"
+    kapt "com.squareup.inject:assisted-inject-processor-dagger2:$rootProject.assistedInjectVersion"
+    implementation "com.google.dagger:hilt-android:$rootProject.hiltVersion"
+    kapt "com.google.dagger:hilt-android-compiler:$rootProject.hiltVersion"
+    kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
+
+    //Signal
+    implementation("org.whispersystems:signal-protocol-android:$signal_version") {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+
+    implementation 'com.google.code.gson:gson:2.8.8'
 }

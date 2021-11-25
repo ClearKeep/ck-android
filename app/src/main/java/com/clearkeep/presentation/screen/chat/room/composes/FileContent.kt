@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.clearkeep.R
+import com.clearkeep.common.utilities.fileSizeRegex
+import com.clearkeep.common.utilities.getFileNameFromUrl
 import com.clearkeep.presentation.components.grayscale2
 import com.clearkeep.presentation.components.grayscale4
 import com.clearkeep.presentation.components.grayscaleOffWhite

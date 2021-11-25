@@ -40,12 +40,6 @@ fun getFileUriStrings(content: String): List<String> {
     return temp.flatten()
 }
 
-fun getFileNameFromUrl(url: String): String {
-    val fileNameRegex = "(?:.(?!\\/))+\$".toRegex()
-    val fileName = fileNameRegex.find(url)?.value?.replace(fileSizeRegex, "")
-    return fileName?.substring(1 until fileName.length) ?: ""
-}
-
 fun getMessageContent(content: String): String {
     val temp = remoteImageRegex.replace(content, "")
     val temp2 = remoteFileRegex.replace(temp, "")
@@ -67,5 +61,3 @@ val tempFileRegex =
 
 val tempImageRegex2 =
     "content://.+/external_files/Pictures/.+".toRegex()
-
-val fileSizeRegex = "\\|.+".toRegex()

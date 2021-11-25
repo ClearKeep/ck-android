@@ -6,27 +6,28 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
 import androidx.room.Update
+import com.clearkeep.data.local.model.ChatGroupLocal
 import com.clearkeep.domain.model.ChatGroup
 
 @Dao
 interface GroupDAO {
     @Insert(onConflict = REPLACE)
-    suspend fun insert(group: ChatGroup): Long
+    suspend fun insert(group: ChatGroupLocal): Long
 
     @Update
-    suspend fun updateGroup(vararg group: ChatGroup)
+    suspend fun updateGroup(vararg group: ChatGroupLocal)
 
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId LIMIT 1")
-    suspend fun getGroupById(groupId: Long, domain: String, ownerId: String): ChatGroup?
+    suspend fun getGroupById(groupId: Long, domain: String, ownerId: String): ChatGroupLocal?
 
     @Query("SELECT * FROM chatgroup WHERE group_type = \"peer\" AND owner_domain = :domain AND owner_client_id = :ownerId")
-    suspend fun getPeerGroups(domain: String, ownerId: String): List<ChatGroup>
+    suspend fun getPeerGroups(domain: String, ownerId: String): List<ChatGroupLocal>
 
     @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
-    fun getRoomsAsState(): LiveData<List<ChatGroup>>
+    fun getRoomsAsState(): LiveData<List<ChatGroupLocal>>
 
     @Query("SELECT * FROM chatgroup ORDER BY updated_at DESC")
-    fun getRooms(): List<ChatGroup>
+    fun getRooms(): List<ChatGroupLocal>
 
     @Query("DELETE  FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain AND owner_client_id = :ownerId")
     suspend fun deleteGroupById(groupId: Long, domain: String, ownerId: String): Int
@@ -42,18 +43,18 @@ interface GroupDAO {
         ownerDomain: String,
         ownerClientId: String,
         query: String
-    ): LiveData<List<ChatGroup>>
+    ): LiveData<List<ChatGroupLocal>>
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"peer\" AND group_name LIKE :query")
     fun getPeerRoomsByPeerName(
         ownerDomain: String,
         ownerClientId: String,
         query: String
-    ): LiveData<List<ChatGroup>>
+    ): LiveData<List<ChatGroupLocal>>
 
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" ")
-    fun getGroupsByDomain(ownerDomain: String, ownerClientId: String): LiveData<List<ChatGroup>>
+    fun getGroupsByDomain(ownerDomain: String, ownerClientId: String): LiveData<List<ChatGroupLocal>>
 
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain LIMIT 1")
-    suspend fun getGroupById(groupId: Long, domain: String): ChatGroup?
+    suspend fun getGroupById(groupId: Long, domain: String): ChatGroupLocal?
 }

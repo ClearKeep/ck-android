@@ -5,7 +5,7 @@ import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.usecase.server.GetDefaultServerUseCase
 import com.clearkeep.domain.usecase.server.SetActiveServerUseCase
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

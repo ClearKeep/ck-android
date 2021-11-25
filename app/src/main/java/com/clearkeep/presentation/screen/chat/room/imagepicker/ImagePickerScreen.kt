@@ -28,7 +28,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.CKText
 import com.clearkeep.presentation.components.base.CKTopAppBar
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight

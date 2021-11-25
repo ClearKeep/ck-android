@@ -1,11 +1,11 @@
 package com.clearkeep.domain.usecase.group
 
-import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.repository.Environment
 import javax.inject.Inject
 
 class FetchGroupsUseCase @Inject constructor(

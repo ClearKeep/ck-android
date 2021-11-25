@@ -1,20 +1,8 @@
 package com.clearkeep.domain.usecase.message
 
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
-import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.repository.GroupRepository
-import com.clearkeep.domain.repository.MessageRepository
-import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.presentation.screen.chat.utils.isGroup
-import com.clearkeep.utilities.RECEIVER_DEVICE_ID
-import com.clearkeep.utilities.getCurrentDateTime
-import com.clearkeep.utilities.getUnableErrorMessage
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.*
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.repository.*
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,10 +21,10 @@ import javax.inject.Inject
 class DecryptMessageUseCase @Inject constructor(
     private val messageRepository: MessageRepository,
     private val groupRepository: GroupRepository,
-    private val senderKeyStore: InMemorySenderKeyStore,
+    private val senderKeyStore: SenderKeyStore,
     private val serverRepository: ServerRepository,
     private val signalKeyRepository: SignalKeyRepository,
-    private val signalProtocolStore: InMemorySignalProtocolStore,
+    private val signalProtocolStore: SignalProtocolStore,
 ) {
     suspend operator fun invoke(
         messageId: String,
@@ -201,7 +189,7 @@ class DecryptMessageUseCase @Inject constructor(
     private suspend fun initSessionUserInGroup(
         groupId: Long, fromClientId: String,
         groupSender: SenderKeyName,
-        senderKeyStore: InMemorySenderKeyStore,
+        senderKeyStore: SenderKeyStore,
         isForceProcess: Boolean,
         owner: com.clearkeep.domain.model.Owner
     ): Boolean {
@@ -218,7 +206,7 @@ class DecryptMessageUseCase @Inject constructor(
             if (senderKeyDistribution != null) {
                 printlnCK("")
                 val receivedAliceDistributionMessage =
-                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey?.clientKeyDistribution?.toByteArray())
+                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution)
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } else {

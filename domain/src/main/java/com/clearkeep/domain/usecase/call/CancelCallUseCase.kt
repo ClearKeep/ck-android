@@ -3,7 +3,6 @@ package com.clearkeep.domain.usecase.call
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
-import video_call.VideoCallOuterClass
 import javax.inject.Inject
 
 class CancelCallUseCase @Inject constructor(

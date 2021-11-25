@@ -9,14 +9,14 @@ class GetUserPreferenceUseCase @Inject constructor(private val userPreferenceRep
     suspend operator fun invoke(
         serverDomain: String,
         userId: String
-    ): com.clearkeep.domain.model.UserPreference? {
+    ): UserPreference? {
         return userPreferenceRepository.getUserPreference(serverDomain, userId)
     }
 
     fun asState(
         serverDomain: String,
         userId: String,
-    ): LiveData<com.clearkeep.domain.model.UserPreference> {
+    ): LiveData<UserPreference> {
         return userPreferenceRepository.getUserPreferenceState(serverDomain, userId)
     }
 }

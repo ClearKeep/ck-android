@@ -1,25 +1,19 @@
 package com.clearkeep.domain.usecase.chat
 
 import android.text.TextUtils
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.utilities.SENDER_DEVICE_ID
+import com.clearkeep.common.utilities.SENDER_DEVICE_ID
+import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.protocol.CiphertextMessage
-import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.data.remote.service.SignalKeyDistributionService
-import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Message
+import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.*
-import com.clearkeep.utilities.AppStorage
-import com.clearkeep.utilities.getCurrentDateTime
-import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import message.MessageOuterClass
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.SessionBuilder
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -34,11 +28,11 @@ class SendMessageUseCase @Inject constructor(
     private val chatRepository: ChatRepository,
     private val messageRepository: MessageRepository,
     private val serverRepository: ServerRepository,
-    private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val senderKeyStore: InMemorySenderKeyStore,
-    private val signalKeyDistributionService: SignalKeyDistributionService,
+    private val signalProtocolStore: SignalProtocolStore,
+    private val senderKeyStore: SenderKeyStore,
+    private val signalKeyRepository: SignalKeyRepository,
     private val groupRepository: GroupRepository,
-    private val userManager: AppStorage
+    private val userRepository: UserRepository,
 ) {
     suspend fun toPeer(
         senderId: String,
@@ -51,7 +45,7 @@ class SendMessageUseCase @Inject constructor(
         cachedMessageId: Int = 0
     ): Resource<Nothing> {
         val server = serverRepository.getServerByOwner(
-            com.clearkeep.domain.model.Owner(
+            Owner(
                 ownerWorkSpace,
                 senderId
             )
@@ -63,7 +57,7 @@ class SendMessageUseCase @Inject constructor(
 
         val signalProtocolAddress =
             CKSignalProtocolAddress(
-                com.clearkeep.domain.model.Owner(receiverWorkspaceDomain, receiverId),
+                Owner(receiverWorkspaceDomain, receiverId),
                 SENDER_DEVICE_ID
             )
 
@@ -76,7 +70,7 @@ class SendMessageUseCase @Inject constructor(
             }
         }
         val signalProtocolAddressPublishRequest =
-            CKSignalProtocolAddress(com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
         val message: CiphertextMessage =
             sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
@@ -86,13 +80,13 @@ class SendMessageUseCase @Inject constructor(
         val messageSender: CiphertextMessage =
             sessionCipherSender.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
-        val response = chatRepository.sendMessageInPeer(server, receiverId, userManager.getUniqueDeviceID(), groupId, message.serialize(), messageSender.serialize())
+        val response = chatRepository.sendMessageInPeer(server, receiverId, userRepository.getUniqueDeviceID(), groupId, message.serialize(), messageSender.serialize())
 
         if (response.isSuccess() && response.data != null) {
             val responseMessage = convertMessageResponse(
-                response.data,
+                response.data!!,
                 plainMessage,
-                com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+                Owner(ownerWorkSpace, senderId)
             )
             if (cachedMessageId == 0) {
                 saveNewMessage(responseMessage)
@@ -113,7 +107,7 @@ class SendMessageUseCase @Inject constructor(
     ): Resource<Nothing> =
         withContext(Dispatchers.IO) {
             val senderAddress =
-                CKSignalProtocolAddress(com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(groupId.toString(), senderAddress)
             printlnCK("sendMessageToGroup: senderAddress : $senderAddress  groupSender: $groupSender")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
@@ -121,7 +115,7 @@ class SendMessageUseCase @Inject constructor(
                 aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
             val server = serverRepository.getServerByOwner(
-                com.clearkeep.domain.model.Owner(
+                Owner(
                     ownerWorkSpace,
                     senderId
                 )
@@ -133,16 +127,16 @@ class SendMessageUseCase @Inject constructor(
 
             val response = chatRepository.sendMessageToGroup(
                 server,
-                userManager.getUniqueDeviceID(),
+                userRepository.getUniqueDeviceID(),
                 groupId,
                 ciphertextFromAlice
             )
 
             if (response.isSuccess() && response.data != null) {
                 val message = convertMessageResponse(
-                    response.data,
+                    response.data!!,
                     plainMessage,
-                    com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+                    Owner(ownerWorkSpace, senderId)
                 )
 
                 if (cachedMessageId == 0) {
@@ -156,11 +150,11 @@ class SendMessageUseCase @Inject constructor(
         }
 
     private fun convertMessageResponse(
-        value: MessageOuterClass.MessageObjectResponse,
+        value: MessageObjectResponse,
         decryptedMessage: String,
-        owner: com.clearkeep.domain.model.Owner
-    ): com.clearkeep.domain.model.Message {
-        return com.clearkeep.domain.model.Message(
+        owner: Owner
+    ): Message {
+        return Message(
             messageId = value.id,
             groupId = value.groupId,
             groupType = value.groupType,
@@ -182,28 +176,29 @@ class SendMessageUseCase @Inject constructor(
     ): Boolean {
         val signalProtocolAddress =
             CKSignalProtocolAddress(
-                com.clearkeep.domain.model.Owner(
+                Owner(
                     receiverWorkspaceDomain,
                     receiverId
-                ), SENDER_DEVICE_ID)
+                ), SENDER_DEVICE_ID
+            )
         val signalProtocolAddress2 =
-            CKSignalProtocolAddress(com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
         initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,
-            owner = com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
         return initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,
-            owner = com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
     }
 
     private suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
-        signalProtocolStore: InMemorySignalProtocolStore,
-        owner: com.clearkeep.domain.model.Owner
+        signalProtocolStore: SignalProtocolStore,
+        owner: Owner
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
         printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
@@ -217,11 +212,13 @@ class SendMessageUseCase @Inject constructor(
                 return@withContext false
             }
 
-            val remoteKeyBundle = signalKeyDistributionService.getPeerClientKey(server, remoteClientId, signalProtocolAddress.owner.domain)
+            val remoteKeyBundle =
+                signalKeyRepository.getPeerClientKey(server, remoteClientId, signalProtocolAddress.owner.domain)
+                    ?: return@withContext false
 
-            val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
-            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
-            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic.toByteArray(), 0)
+            val preKey = PreKeyRecord(remoteKeyBundle.preKey)
+            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey)
+            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic, 0)
 
             val retrievedPreKey = PreKeyBundle(
                 remoteKeyBundle.registrationId,
@@ -240,8 +237,6 @@ class SendMessageUseCase @Inject constructor(
             sessionBuilder.process(retrievedPreKey)
             printlnCK("initSessionUserPeer: success")
             return@withContext true
-        } catch (e: StatusRuntimeException) {
-            printlnCK("initSessionUserPeer: $e")
         } catch (e: Exception) {
             e.printStackTrace()
             printlnCK("initSessionUserPeer: $e")
@@ -250,7 +245,7 @@ class SendMessageUseCase @Inject constructor(
         return@withContext false
     }
 
-    private suspend fun saveNewMessage(message: com.clearkeep.domain.model.Message): com.clearkeep.domain.model.Message {
+    private suspend fun saveNewMessage(message: Message): Message {
         messageRepository.saveMessage(message)
 
         val groupId = message.groupId

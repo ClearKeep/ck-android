@@ -13,7 +13,8 @@ import com.clearkeep.domain.usecase.call.SwitchAudioToVideoCallUseCase
 import com.clearkeep.januswrapper.*
 import com.clearkeep.presentation.screen.videojanus.common.CallState
 import com.clearkeep.presentation.screen.videojanus.common.createVideoCapture
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.ServerResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import org.json.JSONObject
@@ -75,15 +76,15 @@ class CallViewModel @Inject constructor(
         peerConnectionClient.startVideoSource()
     }
 
-    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: com.clearkeep.domain.model.Owner): VideoCallOuterClass.ServerResponse? {
+    suspend fun requestVideoCall(groupId: Int, isAudioMode: Boolean, owner: Owner): ServerResponse? {
         return requestVideoCallUseCase(groupId, isAudioMode, owner)
     }
 
-    suspend fun switchAudioToVideoCall(groupId: Int, owner: com.clearkeep.domain.model.Owner): Boolean {
+    suspend fun switchAudioToVideoCall(groupId: Int, owner: Owner): Boolean {
         return switchAudioToVideoCallUseCase(groupId, owner)
     }
 
-    suspend fun cancelCall(groupId: Int, owner: com.clearkeep.domain.model.Owner): Boolean {
+    suspend fun cancelCall(groupId: Int, owner: Owner): Boolean {
         return cancelCallUseCase(groupId, owner)
     }
 

@@ -1,12 +1,11 @@
 package com.clearkeep.data.remote.service
 
-import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.model.User
 import com.clearkeep.data.remote.dynamicapi.DynamicAPIProvider
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.presentation.screen.chat.utils.getGroupType
-import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
+import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
+import com.clearkeep.common.utilities.getGroupType
+import com.clearkeep.domain.model.User
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,7 +41,7 @@ class GroupService @Inject constructor(
     suspend fun createGroup(
         groupName: String,
         createdByClientId: String,
-        users: List<com.clearkeep.domain.model.User>,
+        users: List<User>,
         isGroup: Boolean
     ): GroupOuterClass.GroupObjectResponse = withContext(
         Dispatchers.IO
@@ -82,7 +81,7 @@ class GroupService @Inject constructor(
         return@withContext dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
     }
 
-    suspend fun removeMember(groupId: Long, removedUser: com.clearkeep.domain.model.User, clientId: String, domain: String, userName: String?): GroupOuterClass.BaseResponse = withContext(Dispatchers.IO) {
+    suspend fun removeMember(groupId: Long, removedUser: User, clientId: String, domain: String, userName: String?): GroupOuterClass.BaseResponse = withContext(Dispatchers.IO) {
         val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
             .setId(removedUser.userId)
             .setWorkspaceDomain(removedUser.domain)
@@ -104,7 +103,7 @@ class GroupService @Inject constructor(
         return@withContext dynamicAPIProvider.provideGroupBlockingStub().leaveGroup(request)
     }
 
-    suspend fun addMember(groupId: Long, invitedUser: com.clearkeep.domain.model.User, clientId: String, domain: String, userName: String?): GroupOuterClass.BaseResponse = withContext(Dispatchers.IO) {
+    suspend fun addMember(groupId: Long, invitedUser: User, clientId: String, domain: String, userName: String?): GroupOuterClass.BaseResponse = withContext(Dispatchers.IO) {
         val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
             .setId(invitedUser.userId)
             .setWorkspaceDomain(invitedUser.domain)
@@ -143,7 +142,7 @@ class GroupService @Inject constructor(
         return@withContext dynamicAPIProvider.provideUserBlockingStub().updateStatus(request)
     }
 
-    suspend fun getListClientStatus(users: List<com.clearkeep.domain.model.User>): UserOuterClass.GetClientsStatusResponse = withContext(Dispatchers.IO) {
+    suspend fun getListClientStatus(users: List<User>): UserOuterClass.GetClientsStatusResponse = withContext(Dispatchers.IO) {
         val listMemberInfoRequest = users.map {
             UserOuterClass.MemberInfoRequest.newBuilder().setClientId(it.userId)
                 .setWorkspaceDomain(it.domain).build()

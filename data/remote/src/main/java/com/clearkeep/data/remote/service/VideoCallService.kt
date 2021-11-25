@@ -1,12 +1,11 @@
 package com.clearkeep.data.remote.service
 
-import com.clearkeep.domain.model.Server
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.utilities.CALL_TYPE_AUDIO
-import com.clearkeep.utilities.CALL_TYPE_VIDEO
-import com.clearkeep.utilities.CALL_UPDATE_TYPE_BUSY
-import com.clearkeep.utilities.CALL_UPDATE_TYPE_CANCEL
+import com.clearkeep.common.utilities.CALL_TYPE_AUDIO
+import com.clearkeep.common.utilities.CALL_TYPE_VIDEO
+import com.clearkeep.common.utilities.CALL_UPDATE_TYPE_BUSY
+import com.clearkeep.common.utilities.CALL_UPDATE_TYPE_CANCEL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video_call.VideoCallOuterClass

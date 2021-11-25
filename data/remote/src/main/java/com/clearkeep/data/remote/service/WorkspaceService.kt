@@ -2,7 +2,7 @@ package com.clearkeep.data.remote.service
 
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
+import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import workspace.WorkspaceOuterClass

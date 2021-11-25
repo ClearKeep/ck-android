@@ -1,16 +1,11 @@
-package com.clearkeep.utilities
+package com.clearkeep.common.utilities
 
-import com.clearkeep.BuildConfig
+import com.clearkeep.common.BuildConfig
 
 const val FIREBASE_TOKEN = "ck_firebase_token"
 
-//const val BASE_URL = "172.16.6.34"
-//const val BASE_URL = "172.16.6.232"
-//const val BASE_URL = "10.0.255.71"
 const val BASE_URL = BuildConfig.BASE_URL
 const val PORT = BuildConfig.PORT
-//54.235.68.160:15000
-//54.235.68.160:25000
 
 // janus
 const val EXTRA_OWNER_CLIENT = "to"

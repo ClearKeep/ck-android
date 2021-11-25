@@ -1,5 +1,8 @@
 package com.clearkeep.data.di
 
+import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
+import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
+import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
 import dagger.Binds
@@ -66,4 +69,20 @@ interface RepositoryModule {
     @Binds
     @Singleton
     fun bindNotificationRepository(notificationRepository: NotificationRepositoryImpl): NotificationRepository
+
+    @Binds
+    @Singleton
+    fun bindUserRepository(userRepositoryImpl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    fun bindSenderKeyStore(inMemorySenderKeyStore: InMemorySenderKeyStore): SenderKeyStore
+
+    @Binds
+    @Singleton
+    fun bindSignalProtocolStore(inMemorySignalProtocolStore: InMemorySignalProtocolStore): SignalProtocolStore
+
+    @Binds
+    @Singleton
+    fun bindEnvironment(environment: Environment): com.clearkeep.domain.repository.Environment
 }

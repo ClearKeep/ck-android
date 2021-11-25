@@ -1,8 +1,7 @@
 package com.clearkeep.domain.repository
 
-import android.content.Context
 import com.clearkeep.common.utilities.network.Resource
-import upload_file.UploadFileOuterClass
+import com.clearkeep.domain.model.response.GetUploadFileLinkResponse
 
 interface FileRepository {
     suspend fun uploadFile(
@@ -14,7 +13,7 @@ interface FileRepository {
     suspend fun getUploadedFileUrl(
         fileName: String,
         mimeType: String
-    ): UploadFileOuterClass.GetUploadFileLinkResponse
+    ): GetUploadFileLinkResponse
 
     fun downloadFile(fileName: String, url: String)
 }

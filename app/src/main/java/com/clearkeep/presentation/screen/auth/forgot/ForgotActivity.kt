@@ -19,8 +19,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.CKTheme
 import com.clearkeep.presentation.components.base.CKAlertDialog
 import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
-import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

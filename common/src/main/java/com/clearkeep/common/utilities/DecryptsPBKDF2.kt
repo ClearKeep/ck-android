@@ -1,13 +1,10 @@
-package com.clearkeep.utilities
+package com.clearkeep.common.utilities
 
-import com.clearkeep.common.utilities.printlnCK
 import java.math.BigInteger
 import javax.crypto.spec.IvParameterSpec
 
 import java.security.AlgorithmParameters
-import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
-import java.security.SecureRandom
 
 import javax.crypto.spec.SecretKeySpec
 

@@ -4,10 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.domain.model.Owner
+import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.usecase.call.CancelCallUseCase
-import com.clearkeep.presentation.screen.chat.utils.isGroup
-import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

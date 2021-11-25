@@ -2,11 +2,12 @@ package com.clearkeep.data.local.signal.model
 
 import android.util.Base64
 import androidx.room.*
+import com.clearkeep.domain.model.SignalIdentityKey
 import org.whispersystems.libsignal.IdentityKeyPair
 
-@Entity
+@Entity(tableName = "SignalIdentityKey")
 @TypeConverters(SignalIdentityKeyPairConverter::class)
-data class SignalIdentityKey(
+data class SignalIdentityKeyLocal(
     @ColumnInfo(name = "identity_key_pair") val identityKeyPair: IdentityKeyPair,
     @ColumnInfo(name = "registration_id") val registrationId: Int,
     @ColumnInfo(name = "domain") val domain: String,
@@ -21,7 +22,7 @@ data class SignalIdentityKey(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as SignalIdentityKey
+        other as SignalIdentityKeyLocal
 
         if (identityKeyPair == other.identityKeyPair) return false
         if (registrationId != other.registrationId) return false
@@ -39,7 +40,11 @@ data class SignalIdentityKey(
         val keyPair = identityKeyPair.serialize()
         return "key ${keyPair[0]} ${keyPair[1]} ${keyPair[2]} ${keyPair[keyPair.size - 1]} ${keyPair[keyPair.size - 2]} ${keyPair[keyPair.size - 3]} domain $domain userId $userId regId $registrationId"
     }
+
+    fun toEntity() = SignalIdentityKey(identityKeyPair, registrationId, domain, userId, iv, salt, id)
 }
+
+fun SignalIdentityKey.toLocal() = SignalIdentityKeyLocal(identityKeyPair, registrationId, domain, userId, iv, salt)
 
 class SignalIdentityKeyPairConverter {
     @TypeConverter

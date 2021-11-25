@@ -1,4 +1,4 @@
-package com.clearkeep.data.local.signal
+package com.clearkeep.domain.model
 
 import com.clearkeep.domain.model.Owner
 import org.whispersystems.libsignal.SignalProtocolAddress

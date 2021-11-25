@@ -1,18 +1,15 @@
 package com.clearkeep.domain.usecase.auth
 
-import auth.AuthOuterClass
-import com.clearkeep.data.local.signal.model.SignalIdentityKey
-import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.common.utilities.DecryptsPBKDF2
+import com.clearkeep.common.utilities.decodeHex
+import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.srp.NativeLib
-import com.clearkeep.utilities.DecryptsPBKDF2
-import com.clearkeep.utilities.decodeHex
-import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.response.AuthRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.IdentityKey
@@ -34,13 +31,13 @@ class LoginUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
-    private val inMemorySignalProtocolStore: InMemorySignalProtocolStore,
+    private val inMemorySignalProtocolStore: SignalProtocolStore,
 ) {
     suspend fun byEmail(
         userName: String,
         password: String,
         domain: String
-    ): Resource<com.clearkeep.domain.model.LoginResponse> {
+    ): Resource<LoginResponse> {
         val userName = userName.trim()
 
         val nativeLib = NativeLib()
@@ -52,7 +49,7 @@ class LoginUseCase @Inject constructor(
         if (response.isError() || response.data == null) {
             return Resource.error(
                 "",
-                com.clearkeep.domain.model.LoginResponse(
+                LoginResponse(
                     "",
                     "",
                     "",
@@ -63,8 +60,8 @@ class LoginUseCase @Inject constructor(
             )
         }
 
-        val salt = response.data.salt
-        val b = response.data.publicChallengeB
+        val salt = response.data!!.salt
+        val b = response.data!!.publicChallengeB
 
         val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
         val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -73,10 +70,10 @@ class LoginUseCase @Inject constructor(
 
         val authResponse = authRepository.loginAuthenticate(userName, aHex, mHex, domain)
 
-        if (authResponse.isError() || authResponse.data == null || authResponse.data.error.isNotBlank()) {
+        if (authResponse.isError() || authResponse.data == null || authResponse.data!!.error.isNotBlank()) {
             return Resource.error(
                 "",
-                com.clearkeep.domain.model.LoginResponse(
+                LoginResponse(
                     "",
                     "",
                     "",
@@ -87,11 +84,11 @@ class LoginUseCase @Inject constructor(
             )
         }
 
-        authResponse.data.run {
+        authResponse.data!!.run {
             val requireOtp = accessToken.isNullOrBlank()
             if (requireOtp) {
                 return Resource.success(
-                    com.clearkeep.domain.model.LoginResponse(
+                    LoginResponse(
                         accessToken,
                         preAccessToken,
                         sub,
@@ -106,7 +103,7 @@ class LoginUseCase @Inject constructor(
                     return Resource.error(profileResponse.message ?: "", null)
                 }
                 return Resource.success(
-                    com.clearkeep.domain.model.LoginResponse(
+                    LoginResponse(
                         accessToken,
                         requireAction,
                         sub,
@@ -124,7 +121,7 @@ class LoginUseCase @Inject constructor(
         email: String,
         domain: String,
         rawNewPassword: String
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         val (saltHex, verificatorHex) = createAccountSrp(email, rawNewPassword)
 
         val decrypter = DecryptsPBKDF2(rawNewPassword)
@@ -151,7 +148,7 @@ class LoginUseCase @Inject constructor(
             domain
         )
         if (response.isSuccess() && response.data != null) {
-            val profileResponse = onLoginSuccess(domain, rawNewPassword, response.data, "")
+            val profileResponse = onLoginSuccess(domain, rawNewPassword, response.data!!, "")
             if (profileResponse.status == Status.ERROR) {
                 return Resource.error(profileResponse.message ?: "", null)
             }
@@ -163,7 +160,7 @@ class LoginUseCase @Inject constructor(
         domain: String,
         rawPin: String,
         userName: String
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         val (saltHex, verificatorHex) = createAccountSrp(userName, rawPin)
 
         val decrypter = DecryptsPBKDF2(rawPin)
@@ -196,7 +193,7 @@ class LoginUseCase @Inject constructor(
             domain
         )
         if (response.isSuccess() && response.data != null) {
-            return onLoginSuccess(domain, rawPin, response.data, isSocialAccount = true)
+            return onLoginSuccess(domain, rawPin, response.data!!, isSocialAccount = true)
         }
         return Resource.error("", null, error = response.error)
     }
@@ -205,7 +202,7 @@ class LoginUseCase @Inject constructor(
         domain: String,
         rawPin: String,
         userName: String
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         val nativeLib = NativeLib()
         val a = nativeLib.getA(userName, rawPin)
         val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -221,8 +218,8 @@ class LoginUseCase @Inject constructor(
             )
         }
 
-        val salt = challengeRes.data.salt
-        val b = challengeRes.data.publicChallengeB
+        val salt = challengeRes.data!!.salt
+        val b = challengeRes.data!!.publicChallengeB
 
         val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
         val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -234,7 +231,7 @@ class LoginUseCase @Inject constructor(
             return onLoginSuccess(
                 domain,
                 rawPin,
-                response.data,
+                response.data!!,
                 isSocialAccount = true
             )
         }
@@ -246,7 +243,7 @@ class LoginUseCase @Inject constructor(
         rawPin: String,
         userName: String,
         resetPincodeToken: String
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         val nativeLib = NativeLib()
 
         val salt = nativeLib.getSalt(userName, rawPin)
@@ -289,7 +286,7 @@ class LoginUseCase @Inject constructor(
             return onLoginSuccess(
                 domain,
                 rawPin,
-                response.data,
+                response.data!!,
                 isSocialAccount = true,
                 clearOldUserData = true
             )
@@ -300,11 +297,11 @@ class LoginUseCase @Inject constructor(
     private suspend fun onLoginSuccess(
         domain: String,
         password: String,
-        response: AuthOuterClass.AuthRes,
+        response: AuthRes,
         hashKey: String = response.hashKey,
         isSocialAccount: Boolean = false,
         clearOldUserData: Boolean = false
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         try {
             val accessToken = response.accessToken
             val salt = response.salt
@@ -318,15 +315,15 @@ class LoginUseCase @Inject constructor(
             )
             val preKey = response.clientKeyPeer.preKey
             val preKeyID = response.clientKeyPeer.preKeyId
-            val preKeyRecord = PreKeyRecord(preKey.toByteArray())
+            val preKeyRecord = PreKeyRecord(preKey)
             val signedPreKeyId = response.clientKeyPeer.signedPreKeyId
             val signedPreKey = response.clientKeyPeer.signedPreKey
-            val signedPreKeyRecord = SignedPreKeyRecord(signedPreKey.toByteArray())
+            val signedPreKeyRecord = SignedPreKeyRecord(signedPreKey)
             val registrationID = response.clientKeyPeer.registrationId
             val clientId = response.clientKeyPeer.clientId
 
             val eCPublicKey: ECPublicKey =
-                Curve.decodePoint(publicKey.toByteArray(), 0)
+                Curve.decodePoint(publicKey, 0)
             val eCPrivateKey: ECPrivateKey =
                 Curve.decodePrivatePoint(privateKeyDecrypt)
             val identityKeyPair = IdentityKeyPair(IdentityKey(eCPublicKey), eCPrivateKey)
@@ -346,7 +343,7 @@ class LoginUseCase @Inject constructor(
             signalKeyRepository.saveIdentityKey(signalIdentityKey)
 
             environment.setUpTempDomain(
-                com.clearkeep.domain.model.Server(
+                Server(
                     null,
                     "",
                     domain,
@@ -357,7 +354,7 @@ class LoginUseCase @Inject constructor(
                     "",
                     "",
                     false,
-                    com.clearkeep.domain.model.Profile(null, profile.userId, "", "", "", 0L, "")
+                    Profile(null, profile.userId, "", "", "", 0L, "")
                 )
             )
             withContext(Dispatchers.IO) {
@@ -374,7 +371,7 @@ class LoginUseCase @Inject constructor(
             }
 
             serverRepository.insertServer(
-                com.clearkeep.domain.model.Server(
+                Server(
                     serverName = response.workspaceName,
                     serverDomain = domain,
                     ownerClientId = profile.userId,
@@ -392,7 +389,7 @@ class LoginUseCase @Inject constructor(
                 isSocialAccount
             )
             userKeyRepository.insert(
-                com.clearkeep.domain.model.UserKey(
+                UserKey(
                     domain,
                     profile.userId,
                     salt,
@@ -407,7 +404,7 @@ class LoginUseCase @Inject constructor(
         }
     }
 
-    private fun createAccountSrp(username: String, password: String): com.clearkeep.domain.model.SrpCreateAccountResponse {
+    private fun createAccountSrp(username: String, password: String): SrpCreateAccountResponse {
         val nativeLib = NativeLib()
 
         val salt = nativeLib.getSalt(username, password)
@@ -419,6 +416,6 @@ class LoginUseCase @Inject constructor(
 
         nativeLib.freeMemoryCreateAccount()
 
-        return com.clearkeep.domain.model.SrpCreateAccountResponse(saltHex, verificatorHex)
+        return SrpCreateAccountResponse(saltHex, verificatorHex)
     }
 }

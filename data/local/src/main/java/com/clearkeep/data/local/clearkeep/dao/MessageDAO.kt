@@ -39,7 +39,7 @@ interface MessageDAO {
         groupId: Long,
         domain: String,
         ownerClientId: String
-    ): LiveData<List<Message>>
+    ): LiveData<List<MessageLocal>>
 
     @Query("DELETE FROM message WHERE message_id = ''")
     suspend fun deleteTempMessages()
@@ -49,7 +49,7 @@ interface MessageDAO {
         ownerDomain: String,
         ownerClientId: String,
         query: String
-    ): LiveData<List<Message>>
+    ): LiveData<List<MessageLocal>>
 
     @Query("DELETE FROM message WHERE owner_domain = :domain AND owner_client_id = :ownerClientId")
     suspend fun deleteMessageByDomain(domain: String, ownerClientId: String)

@@ -1,9 +1,8 @@
 package com.clearkeep.domain.usecase.chat
 
-import com.clearkeep.domain.repository.ChatRepository
+import com.clearkeep.common.utilities.fileSizeRegex
+import com.clearkeep.common.utilities.getFileNameFromUrl
 import com.clearkeep.domain.repository.FileRepository
-import com.clearkeep.utilities.fileSizeRegex
-import com.clearkeep.utilities.getFileNameFromUrl
 import javax.inject.Inject
 
 class DownloadFileUseCase @Inject constructor(private val fileRepository: FileRepository) {

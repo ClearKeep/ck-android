@@ -1,7 +1,7 @@
 package com.clearkeep.data.services.utils
 
-import com.clearkeep.utilities.AppStorage
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.repository.UserRepository
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,7 +13,7 @@ class MessageChannelSubscriber(
     private val messageBlockingStub: MessageGrpc.MessageBlockingStub,
     private val messageGrpc: MessageGrpc.MessageStub,
     private val onMessageSubscriberListener: MessageSubscriberListener,
-    private val userManager: AppStorage
+    private val userManager: UserRepository
 ) : ChannelSubscriber {
 
     interface MessageSubscriberListener {

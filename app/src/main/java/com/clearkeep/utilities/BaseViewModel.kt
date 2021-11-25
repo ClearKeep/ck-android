@@ -4,10 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.clearkeep.data.remote.utils.TokenExpiredException
+import com.clearkeep.common.utilities.network.TokenExpiredException
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
-import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.common.utilities.network.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

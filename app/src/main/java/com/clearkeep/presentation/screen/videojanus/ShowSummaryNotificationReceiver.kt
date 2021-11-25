@@ -3,15 +3,14 @@ package com.clearkeep.presentation.screen.videojanus
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.clearkeep.domain.model.User
-import com.clearkeep.domain.model.UserPreference
+import com.clearkeep.common.utilities.EXTRA_GROUP_ID
+import com.clearkeep.common.utilities.EXTRA_OWNER_CLIENT
+import com.clearkeep.common.utilities.EXTRA_OWNER_DOMAIN
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
-import com.clearkeep.domain.repository.UserPreferenceRepository
 import com.clearkeep.domain.usecase.group.GetGroupByIdUseCase
 import com.clearkeep.domain.usecase.message.GetUnreadMessageUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
-import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -55,7 +54,7 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
                 getUnreadMessageUseCase(groupId, ownerDomain, ownerClientId)
             val group = getGroupByIdUseCase(groupId, ownerDomain, ownerClientId)
             if (group?.data != null && unreadMessages.isNotEmpty()) {
-                val me = group.data.clientList.find { it.userId == ownerClientId }
+                val me = group.data!!.clientList.find { it.userId == ownerClientId }
                     ?: com.clearkeep.domain.model.User(
                         userId = ownerClientId,
                         userName = "me",
@@ -66,7 +65,7 @@ class ShowSummaryNotificationReceiver : BroadcastReceiver() {
                 showMessageNotificationToSystemBar(
                     context,
                     me,
-                    group.data,
+                    group.data!!,
                     unreadMessages,
                     userPreference ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false)
                 )

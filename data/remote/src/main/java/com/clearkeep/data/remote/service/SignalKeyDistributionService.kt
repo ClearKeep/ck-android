@@ -1,9 +1,9 @@
 package com.clearkeep.data.remote.service
 
+import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.domain.model.Server
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.utilities.DecryptsPBKDF2
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class SignalKeyDistributionService @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
 ) {
-    suspend fun registerClientKey(server: com.clearkeep.domain.model.Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?, key: ECKeyPair, senderKeyId: Int, senderKey: ByteArray) = withContext(Dispatchers.IO) {
+    suspend fun registerClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?, key: ECKeyPair, senderKeyId: Int, senderKey: ByteArray) = withContext(Dispatchers.IO) {
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
@@ -32,7 +32,7 @@ class SignalKeyDistributionService @Inject constructor(
             .groupRegisterClientKey(request)
     }
 
-    suspend fun getPeerClientKey(server: com.clearkeep.domain.model.Server, clientId: String, domain: String): Signal.PeerGetClientKeyResponse = withContext(Dispatchers.IO) {
+    suspend fun getPeerClientKey(server: Server, clientId: String, domain: String): Signal.PeerGetClientKeyResponse = withContext(Dispatchers.IO) {
         val requestUser = Signal.PeerGetClientKeyRequest.newBuilder()
             .setClientId(clientId)
             .setWorkspaceDomain(domain)
@@ -47,7 +47,7 @@ class SignalKeyDistributionService @Inject constructor(
         ).peerGetClientKey(requestUser)
     }
 
-    suspend fun getGroupClientKey(server: com.clearkeep.domain.model.Server, groupId: Long, clientId: String): Signal.GroupGetClientKeyResponse = withContext(Dispatchers.IO) {
+    suspend fun getGroupClientKey(server: Server, groupId: Long, clientId: String): Signal.GroupGetClientKeyResponse = withContext(Dispatchers.IO) {
         val signalGrpc = paramAPIProvider.provideSignalKeyDistributionBlockingStub(
             ParamAPI(
                 server.serverDomain,

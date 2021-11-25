@@ -3,7 +3,7 @@ package com.clearkeep.presentation.screen.videojanus.surfacegenerator.impl
 import android.content.Context
 import com.clearkeep.presentation.screen.videojanus.surfacegenerator.SurfacePosition
 import com.clearkeep.utilities.isOdd
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.roundToInt

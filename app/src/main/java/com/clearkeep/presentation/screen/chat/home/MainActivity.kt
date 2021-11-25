@@ -13,8 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.*
 import com.clearkeep.presentation.components.CKSimpleTheme
 import com.clearkeep.presentation.screen.chat.contactsearch.SearchUserActivity
@@ -22,7 +20,7 @@ import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity
 import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
 import com.clearkeep.presentation.screen.chat.room.RoomActivity
 import com.clearkeep.data.services.ChatService
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import com.clearkeep.presentation.components.base.CKButton
 import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
@@ -105,14 +103,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 },
                                 onNavigateInvite = {
                                     navigateToInviteScreen()
-                                },
-                                onNavigateBannedUser = {
-                                    navigateToBannedUserScreen()
-                                },
-                                onNavigateNotes = {
-                                    navigateToNotesScreen()
                                 }
-                            )
+                            ) {
+                                navigateToBannedUserScreen()
+                            }
                         }
                         PrepareProcessing -> {
                             LoadingComposable()

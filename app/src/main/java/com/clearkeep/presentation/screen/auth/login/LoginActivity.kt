@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
-import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.presentation.components.CKTheme
 import com.clearkeep.presentation.components.base.CKAlertDialog
@@ -34,10 +33,11 @@ import com.clearkeep.presentation.screen.chat.sociallogin.ConfirmSocialLoginPhra
 import com.clearkeep.presentation.screen.chat.sociallogin.EnterSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.chat.sociallogin.SetSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.splash.SplashActivity
-import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
+import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.response.SocialLoginRes
 import com.clearkeep.utilities.restartToRoot
 import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -125,7 +125,7 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val res = loginViewModel.login(this@LoginActivity, email, password)
                     ?: return@launch
-                if (res.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
+                if (res.status == Status.SUCCESS) {
                     val shouldRequireOtp = res.data?.accessToken.isNullOrBlank()
                     if (shouldRequireOtp) {
                         loginViewModel.setOtpLoginInfo(
@@ -137,7 +137,7 @@ class LoginActivity : AppCompatActivity() {
                     } else {
                         onLoginSuccess()
                     }
-                } else if (res.status == com.clearkeep.common.utilities.network.Status.ERROR) {
+                } else if (res.status == Status.ERROR) {
                     val title = when (res.data?.errorCode) {
                         1001, 1079 -> getString(R.string.login_info_incorrect)
                         1026 -> getString(R.string.error)
@@ -433,14 +433,14 @@ class LoginActivity : AppCompatActivity() {
 
     fun onSignInResult(
         navController: NavController,
-        res: com.clearkeep.common.utilities.network.Resource<AuthOuterClass.SocialLoginRes>?
+        res: Resource<SocialLoginRes>?
     ) {
         //Third party result
         when (res?.status) {
-            com.clearkeep.common.utilities.network.Status.SUCCESS -> {
+            Status.SUCCESS -> {
                 onSocialLoginSuccess(navController, res.data?.requireAction ?: "")
             }
-            com.clearkeep.common.utilities.network.Status.ERROR -> {
+            Status.ERROR -> {
                 showErrorDiaLog?.invoke(
                     ErrorMessage(
                         getString(R.string.error),

@@ -14,10 +14,11 @@ import com.clearkeep.domain.usecase.server.GetActiveServerUseCase
 import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
-import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collect
 import java.lang.Exception
 import javax.inject.Inject
 
@@ -39,12 +40,12 @@ class SearchViewModel @Inject constructor(
     val isShowLoading: MutableLiveData<Boolean> = MutableLiveData()
     var profile = getDefaultServerProfileAsStateUseCase()
 
-    private val _friends: MutableLiveData<List<com.clearkeep.domain.model.User>> = MutableLiveData()
-    val friends: LiveData<List<com.clearkeep.domain.model.User>> get() = _friends
+    private val _friends: MutableLiveData<List<User>> = MutableLiveData()
+    val friends: LiveData<List<User>> get() = _friends
 
-    private val _groups = MediatorLiveData<List<com.clearkeep.domain.model.ChatGroup>>()
-    val groups: LiveData<List<com.clearkeep.domain.model.ChatGroup>> get() = _groups
-    private var groupSource: LiveData<List<com.clearkeep.domain.model.ChatGroup>> = MutableLiveData()
+    private val _groups = MediatorLiveData<List<ChatGroup>>()
+    val groups: LiveData<List<ChatGroup>> get() = _groups
+    private var groupSource: LiveData<List<ChatGroup>> = MutableLiveData()
 
     private val _messages = MediatorLiveData<List<MessageSearchResult>>()
     val messages: LiveData<List<MessageSearchResult>> get() = _messages
@@ -115,7 +116,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchGroups(server: com.clearkeep.domain.model.Server, query: String) {
+    private suspend fun searchGroups(server: Server, query: String) {
         withContext(Dispatchers.Main) {
             _groups.removeSource(groupSource)
             withContext(Dispatchers.IO) {
@@ -128,7 +129,7 @@ class SearchViewModel @Inject constructor(
             try {
                 _groups.addSource(groupSource) {
                     _groups.value =
-                        it.filter { it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value }
+                        it.filter { it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value }
                             .sortedByDescending { it.lastMessageAt }
                 }
             } catch (e: Exception) {
@@ -137,7 +138,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchUsers(server: com.clearkeep.domain.model.Server, query: String) {
+    private suspend fun searchUsers(server: Server, query: String) {
         val allPeopleInGroupChats =
             getGroupsByDomainUseCase(server.serverDomain, server.profile.userId).asFlow()
         val allPeopleInServer =
@@ -149,7 +150,7 @@ class SearchViewModel @Inject constructor(
         )
 
         val allUnchattedPeople =
-            allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<com.clearkeep.domain.model.ChatGroup>, b: List<com.clearkeep.domain.model.User> ->
+            allPeopleInGroupChats.combine(allPeopleInServer.asFlow()) { a: List<ChatGroup>, b: List<User> ->
                 val usersFromGroupChatFiltered =
                     a.map { it.clientList }.flatten().filter {
                         it.userId != server.profile.userId && it.userName.contains(
@@ -172,10 +173,10 @@ class SearchViewModel @Inject constructor(
                 )
             }
 
-        allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<com.clearkeep.domain.model.ChatGroup>, b: List<com.clearkeep.domain.model.User> ->
+        allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
             val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
                 val user = it.clientList.find { it.userId != server.profile.userId }
-                com.clearkeep.domain.model.User(
+                User(
                     user?.userId ?: it.ownerClientId,
                     user?.userName ?: it.groupName,
                     user?.domain ?: it.ownerDomain,
@@ -192,7 +193,7 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchMessages(server: com.clearkeep.domain.model.Server, query: String) {
+    private suspend fun searchMessages(server: Server, query: String) {
         withContext(Dispatchers.Main) {
             _messages.removeSource(messagesSource)
             withContext(Dispatchers.IO) {
@@ -215,11 +216,11 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun insertFriend(people: com.clearkeep.domain.model.User) {
+    fun insertFriend(people: User) {
         viewModelScope.launch {
             insertFriendUseCase(
                 people,
-                owner = com.clearkeep.domain.model.Owner(
+                owner = Owner(
                     getDomainOfActiveServer(),
                     getClientIdOfActiveServer()
                 )
@@ -234,8 +235,6 @@ enum class SearchMode {
     GROUPS,
     MESSAGES
 }
-
-data class MessageSearchResult(val message: com.clearkeep.domain.model.Message, val user: com.clearkeep.domain.model.User?, val group: com.clearkeep.domain.model.ChatGroup?)
 
 enum class StatusRequest() {
     REQUESTING,

@@ -6,5 +6,5 @@ import com.clearkeep.domain.repository.PeopleRepository
 import javax.inject.Inject
 
 class InsertFriendUseCase @Inject constructor(private val peopleRepository: PeopleRepository) {
-    suspend operator fun invoke(friend: com.clearkeep.domain.model.User, owner: com.clearkeep.domain.model.Owner) = peopleRepository.insertFriend(friend, owner)
+    suspend operator fun invoke(friend: User, owner: Owner) = peopleRepository.insertFriend(friend, owner)
 }

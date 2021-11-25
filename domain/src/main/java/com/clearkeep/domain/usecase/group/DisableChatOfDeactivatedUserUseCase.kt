@@ -1,14 +1,14 @@
 package com.clearkeep.domain.usecase.group
 
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.GroupRepository
-import com.clearkeep.utilities.printlnCK
 import javax.inject.Inject
 
 class DisableChatOfDeactivatedUserUseCase @Inject constructor(private val groupRepository: GroupRepository) {
     suspend operator fun invoke(clientId: String, domain: String, userId: String) {
         val peerRooms = groupRepository.getAllPeerGroupByDomain(
-            com.clearkeep.domain.model.Owner(
+            Owner(
                 domain,
                 clientId
             )

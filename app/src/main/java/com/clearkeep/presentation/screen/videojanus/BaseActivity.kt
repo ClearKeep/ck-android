@@ -14,7 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 
 abstract class BaseActivity : AppCompatActivity() {
     private var isOpenSettingScreen = false

@@ -26,15 +26,13 @@ import androidx.core.view.iterator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.R
+import com.clearkeep.common.utilities.*
 import com.clearkeep.databinding.ActivityInCallBinding
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Owner
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
-import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.videojanus.common.CallState
 import com.clearkeep.presentation.screen.videojanus.common.createVideoCapture
 import com.clearkeep.presentation.screen.videojanus.surfacegenerator.SurfacePosition
@@ -144,7 +142,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (environment.getServerCanNull() == null) {
             GlobalScope.launch(context = Dispatchers.Main) {
                 val selectedServer = viewModel.getDefaultServer()
-                environment.setUpDomain(selectedServer)
+                selectedServer?.let { environment.setUpDomain(it) }
             }
         }
         mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!

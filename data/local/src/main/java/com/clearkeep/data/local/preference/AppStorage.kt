@@ -1,7 +1,7 @@
-package com.clearkeep.utilities
+package com.clearkeep.data.local.preference
 
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.preference.PersistPreferencesStorage
-import com.clearkeep.data.local.preference.UserPreferencesStorage
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,7 +10,6 @@ private const val DEVICE_ID = "device_id"
 
 @Singleton
 class AppStorage @Inject constructor(
-    private val userStorage: UserPreferencesStorage,
     private val persistStorage: PersistPreferencesStorage,
 ) {
     fun getUniqueDeviceID(): String {

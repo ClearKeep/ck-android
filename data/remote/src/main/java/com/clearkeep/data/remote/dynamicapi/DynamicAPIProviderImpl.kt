@@ -1,10 +1,8 @@
 package com.clearkeep.data.remote.dynamicapi
 
 import auth.AuthGrpc
-import com.clearkeep.domain.model.Server
 import com.clearkeep.data.remote.dynamicapi.channel.ChannelSelector
-import com.clearkeep.data.remote.utils.ServiceExceptionHandler
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import group.GroupGrpc
 import message.MessageGrpc
 import note.NoteGrpc
@@ -37,7 +35,7 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return SignalKeyDistributionGrpc.newStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return SignalKeyDistributionGrpc.newStub(managedChannel)
     }
 
     override fun provideSignalKeyDistributionBlockingStub(): SignalKeyDistributionGrpc.SignalKeyDistributionBlockingStub {
@@ -50,7 +48,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                 server!!.accessKey,
                 server!!.hashKey
             )
-        ).withInterceptors(ServiceExceptionHandler())
+        )
     }
 
     override fun provideNotifyStub(): NotifyGrpc.NotifyStub {
@@ -58,7 +56,7 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return NotifyGrpc.newStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return NotifyGrpc.newStub(managedChannel)
     }
 
     override fun provideNotifyBlockingStub(): NotifyGrpc.NotifyBlockingStub {
@@ -66,7 +64,7 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return NotifyGrpc.newBlockingStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return NotifyGrpc.newBlockingStub(managedChannel)
     }
 
     override fun provideAuthBlockingStub(): AuthGrpc.AuthBlockingStub {
@@ -74,7 +72,7 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return AuthGrpc.newBlockingStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return AuthGrpc.newBlockingStub(managedChannel)
     }
 
     override fun provideUserBlockingStub(): UserGrpc.UserBlockingStub {
@@ -88,7 +86,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideGroupBlockingStub(): GroupGrpc.GroupBlockingStub {
@@ -102,7 +100,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideMessageBlockingStub(): MessageGrpc.MessageBlockingStub {
@@ -111,7 +109,7 @@ class DynamicAPIProviderImpl @Inject constructor(
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
         printlnCK("provideMessageBlockingStub: ${managedChannel.authority()}")
-        return MessageGrpc.newBlockingStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return MessageGrpc.newBlockingStub(managedChannel)
     }
 
     override fun provideMessageStub(): MessageGrpc.MessageStub {
@@ -119,7 +117,7 @@ class DynamicAPIProviderImpl @Inject constructor(
             throw IllegalArgumentException("server must be not null")
         }
         val managedChannel = channelSelector.getChannel(server!!.serverDomain)
-        return MessageGrpc.newStub(managedChannel).withInterceptors(ServiceExceptionHandler())
+        return MessageGrpc.newStub(managedChannel)
     }
 
     override fun provideNoteBlockingStub(): NoteGrpc.NoteBlockingStub {
@@ -134,7 +132,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideNotifyPushBlockingStub(): NotifyPushGrpc.NotifyPushBlockingStub {
@@ -148,7 +146,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideVideoCallBlockingStub(): VideoCallGrpc.VideoCallBlockingStub {
@@ -162,7 +160,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub {
@@ -176,7 +174,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub {
@@ -190,7 +188,7 @@ class DynamicAPIProviderImpl @Inject constructor(
                     server!!.accessKey,
                     server!!.hashKey
                 )
-            ).withInterceptors(ServiceExceptionHandler())
+            )
     }
 
     override fun provideWorkSpaceBlockingStub(): WorkspaceGrpc.WorkspaceBlockingStub {
@@ -203,6 +201,6 @@ class DynamicAPIProviderImpl @Inject constructor(
                 server!!.accessKey,
                 server!!.hashKey
             )
-        ).withInterceptors(ServiceExceptionHandler())
+        )
     }
 }

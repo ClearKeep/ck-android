@@ -1,20 +1,17 @@
 package com.clearkeep.domain.usecase.signalkey
 
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
+import com.clearkeep.common.utilities.DecryptsPBKDF2
+import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.utilities.DecryptsPBKDF2
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.printlnCK
-import jdk.internal.loader.Resource
+import com.clearkeep.domain.model.CKSignalProtocolAddress
 import org.whispersystems.libsignal.ecc.ECPrivateKey
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.util.KeyHelper
-import java.security.interfaces.ECPrivateKey
 import javax.inject.Inject
 
 class RegisterSenderKeyToGroupUseCase @Inject constructor(
@@ -23,7 +20,7 @@ class RegisterSenderKeyToGroupUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(groupID: Long, clientId: String, domain: String): Resource<Any> {
         val privateKey = getIdentityPrivateKey(clientId, domain)
-        printlnCK("RegisterSenderKeyToGroupUseCase PK ${toHex(privateKey?.serialize()!!)}")
+        printlnCK("RegisterSenderKeyToGroupUseCase PK ${toHex(privateKey.serialize()!!)}")
 
         val senderAddress = CKSignalProtocolAddress(
             Owner(
@@ -82,8 +79,8 @@ class RegisterSenderKeyToGroupUseCase @Inject constructor(
     private suspend fun getIdentityPrivateKey(
         clientId: String,
         domain: String
-    ): ECPrivateKey? {
+    ): ECPrivateKey {
         val identityKey = signalKeyRepository.getIdentityKey(clientId, domain)
-        return identityKey?.identityKeyPair?.privateKey
+        return identityKey?.identityKeyPair?.privateKey!!
     }
 }

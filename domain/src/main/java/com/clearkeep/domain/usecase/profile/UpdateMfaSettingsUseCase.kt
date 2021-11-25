@@ -10,7 +10,7 @@ class UpdateMfaSettingsUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val serverRepository: ServerRepository
 ) {
-    suspend operator fun invoke(owner: com.clearkeep.domain.model.Owner, enabled: Boolean): Resource<Pair<String, String>> {
+    suspend operator fun invoke(owner: Owner, enabled: Boolean): Resource<Pair<String, String>> {
         val server =
             serverRepository.getServerByOwner(owner)
                 ?: return Resource.error("", null)

@@ -24,7 +24,7 @@ class ForgotViewModel @Inject constructor(
         _domain = domain
     }
 
-    suspend fun recoverPassword(email: String): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.BaseResponse> {
+    suspend fun recoverPassword(email: String): Resource<String> {
         _isLoading.value = true
         val res = recoverPasswordUseCase(email, domain)
         _isLoading.value = false

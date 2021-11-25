@@ -1,14 +1,12 @@
 package com.clearkeep.domain.usecase.auth
 
-import auth.AuthOuterClass
-import com.clearkeep.domain.model.Server
+import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.domain.repository.AuthRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.UserPreferenceRepository
-import com.clearkeep.utilities.getCurrentDateTime
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.network.Status
-import java.lang.RuntimeException
+import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.domain.model.response.AuthRes
 import javax.inject.Inject
 
 class ValidateOtpUseCase @Inject constructor(
@@ -22,7 +20,7 @@ class ValidateOtpUseCase @Inject constructor(
         otpHash: String,
         userId: String,
         hashKey: String
-    ): Resource<AuthOuterClass.AuthRes> {
+    ): Resource<AuthRes> {
         val validateOtpResponse = authRepository.validateOtp(domain, otp, otpHash, userId, hashKey)
         if (validateOtpResponse.status == Status.SUCCESS) {
             val accessToken = validateOtpResponse.data?.accessToken ?: ""

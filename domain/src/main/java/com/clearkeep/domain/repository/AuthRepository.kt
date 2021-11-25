@@ -1,7 +1,11 @@
 package com.clearkeep.domain.repository
 
-import auth.AuthOuterClass
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.model.Profile
+import com.clearkeep.domain.model.Server
+import com.clearkeep.domain.model.response.AuthChallengeRes
+import com.clearkeep.domain.model.response.AuthRes
+import com.clearkeep.domain.model.response.SocialLoginRes
 
 interface AuthRepository {
     suspend fun register(
@@ -9,22 +13,22 @@ interface AuthRepository {
         password: String,
         email: String,
         domain: String
-    ): Resource<AuthOuterClass.RegisterSRPRes>
+    ): Resource<Any>
 
     suspend fun loginByGoogle(
         token: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes>
+    ): Resource<SocialLoginRes>
 
     suspend fun loginByFacebook(
         token: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes>
+    ): Resource<SocialLoginRes>
 
     suspend fun loginByMicrosoft(
         accessToken: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes>
+    ): Resource<SocialLoginRes>
 
     suspend fun registerSocialPin(
         transitionID: Int,
@@ -40,14 +44,14 @@ interface AuthRepository {
         verificatorHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 
     suspend fun verifySocialPin(
         userName: String,
         aHex: String,
         mHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 
     suspend fun resetSocialPin(
         transitionID: Int,
@@ -64,7 +68,7 @@ interface AuthRepository {
         saltHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 
     suspend fun resetPassword(
         transitionID: Int,
@@ -81,14 +85,14 @@ interface AuthRepository {
         saltHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 
     suspend fun recoverPassword(
         email: String,
         domain: String
-    ): Resource<AuthOuterClass.BaseResponse>
+    ): Resource<String>
 
-    suspend fun logoutFromAPI(server: com.clearkeep.domain.model.Server): Resource<AuthOuterClass.BaseResponse>
+    suspend fun logoutFromAPI(server: Server): Resource<String>
 
     suspend fun validateOtp(
         domain: String,
@@ -96,7 +100,7 @@ interface AuthRepository {
         otpHash: String,
         userId: String,
         hashKey: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 
     suspend fun mfaResendOtp(
         domain: String,
@@ -104,24 +108,24 @@ interface AuthRepository {
         userId: String
     ): Resource<Pair<Int, String>>
 
-    suspend fun getProfile(domain: String, accessToken: String, hashKey: String): com.clearkeep.domain.model.Profile?
+    suspend fun getProfile(domain: String, accessToken: String, hashKey: String): Profile?
 
     suspend fun sendLoginChallenge(
         username: String,
         aHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthChallengeRes>
+    ): Resource<AuthChallengeRes>
 
     suspend fun sendLoginSocialChallenge(
         userName: String,
         aHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthChallengeRes>
+    ): Resource<AuthChallengeRes>
 
     suspend fun loginAuthenticate(
         userName: String,
         aHex: String,
         mHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes>
+    ): Resource<AuthRes>
 }

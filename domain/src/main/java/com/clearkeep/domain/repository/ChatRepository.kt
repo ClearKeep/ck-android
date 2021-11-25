@@ -1,11 +1,9 @@
 package com.clearkeep.domain.repository
 
-import android.content.Context
 import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.Note
 import com.clearkeep.domain.model.Server
 import com.clearkeep.common.utilities.network.Resource
-import message.MessageOuterClass
+import com.clearkeep.domain.model.MessageObjectResponse
 
 interface ChatRepository {
     fun setJoiningRoomId(roomId: Long)
@@ -17,14 +15,14 @@ interface ChatRepository {
         groupId: Long,
         message: ByteArray,
         messageSender: ByteArray
-    ): Resource<MessageOuterClass.MessageObjectResponse>
+    ): Resource<MessageObjectResponse>
 
     suspend fun sendMessageToGroup(
         server: Server,
         deviceId: String,
         groupId: Long,
         message: ByteArray,
-    ): Resource<MessageOuterClass.MessageObjectResponse>
+    ): Resource<MessageObjectResponse>
 
     suspend fun updateMessage(message: Message)
 }
