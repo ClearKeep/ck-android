@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.room.RoomActivity
 import dagger.hilt.android.AndroidEntryPoint

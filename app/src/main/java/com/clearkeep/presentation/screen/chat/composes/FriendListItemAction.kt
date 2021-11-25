@@ -11,11 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.ButtonType
-import com.clearkeep.presentation.components.base.CKButton
-import com.clearkeep.presentation.components.colorSuccessDefault
+import com.clearkeep.common.presentation.components.base.ButtonType
+import com.clearkeep.common.presentation.components.base.CKButton
+import com.clearkeep.common.presentation.components.colorSuccessDefault
 import com.clearkeep.domain.model.User
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun FriendListItemAction(

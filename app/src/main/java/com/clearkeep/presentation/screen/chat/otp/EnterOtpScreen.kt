@@ -31,20 +31,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.MutableLiveData
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.ButtonType
-import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.presentation.components.base.CKButton
-import com.clearkeep.presentation.components.base.CKTopAppBarSample
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.ButtonType
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.base.CKButton
+import com.clearkeep.common.presentation.components.base.CKTopAppBarSample
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun EnterOtpScreen(
-    otpResponse: MutableLiveData<com.clearkeep.common.utilities.network.Resource<String>>,
+    otpResponse: MutableLiveData<Resource<String>>,
     onDismissMessage: () -> Unit,
     onClickResend: () -> Unit,
     onClickSubmit: (String) -> Unit,
@@ -115,7 +115,7 @@ fun EnterOtpScreen(
         }
 
         when (verifyOtpResponse.value?.status) {
-            com.clearkeep.common.utilities.network.Status.ERROR -> {
+            Status.ERROR -> {
                 input[0] = " "
                 input[1] = " "
                 input[2] = " "
@@ -130,7 +130,7 @@ fun EnterOtpScreen(
                     dismissTitle = stringResource(R.string.close)
                 )
             }
-            com.clearkeep.common.utilities.network.Status.SUCCESS -> {
+            Status.SUCCESS -> {
                 onClickSave()
             }
             else -> {

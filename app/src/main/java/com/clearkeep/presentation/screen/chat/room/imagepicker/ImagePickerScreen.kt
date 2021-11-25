@@ -25,11 +25,11 @@ import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKText
-import com.clearkeep.presentation.components.base.CKTopAppBar
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.base.CKTopAppBar
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight
 

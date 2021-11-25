@@ -25,12 +25,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.presentation.screen.splash.SplashActivity
-import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.features.splash.presentation.SplashActivity
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -173,7 +172,7 @@ fun ChangePasswordScreen(
                     text = stringResource(R.string.password_change_success_text),
                     onDismissButtonClick = {
                         if (isResetPassword.value == true) {
-                            val intent = Intent(context, SplashActivity::class.java)
+                            val intent = Intent(context, com.clearkeep.features.splash.presentation.SplashActivity::class.java)
                             intent.flags =
                                 Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                             context.startActivity(intent)

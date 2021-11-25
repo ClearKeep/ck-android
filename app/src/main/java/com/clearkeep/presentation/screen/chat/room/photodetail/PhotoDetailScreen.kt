@@ -37,11 +37,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.presentation.components.colorDialogScrim
-import com.clearkeep.presentation.components.colorLightBlue
+import com.clearkeep.common.presentation.components.colorDialogScrim
+import com.clearkeep.common.presentation.components.colorLightBlue
 import com.clearkeep.presentation.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.isWriteFilePermissionGranted
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 

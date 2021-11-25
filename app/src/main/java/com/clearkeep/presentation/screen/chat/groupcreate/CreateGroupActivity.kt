@@ -14,7 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.groupinvite.InsertFriendScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteMemberUIType

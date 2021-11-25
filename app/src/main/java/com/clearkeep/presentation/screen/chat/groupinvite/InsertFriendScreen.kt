@@ -15,11 +15,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.utils.getPeopleFromLink
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun InsertFriendScreen(

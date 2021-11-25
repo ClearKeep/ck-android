@@ -15,11 +15,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.CKDivider
-import com.clearkeep.presentation.components.base.CKTopAppBar
+import com.clearkeep.common.presentation.components.base.CKDivider
+import com.clearkeep.common.presentation.components.base.CKTopAppBar
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun PeopleScreen(

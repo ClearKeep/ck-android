@@ -16,8 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.presentation.screen.chat.room.composes.MessageListView
 import com.clearkeep.presentation.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.presentation.screen.chat.room.composes.ToolbarMessage
@@ -37,13 +37,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.os.postDelayed
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.presentation.screen.chat.room.filepicker.FilePickerBottomSheetDialog
 import com.clearkeep.presentation.screen.chat.room.forwardmessage.ForwardMessageBottomSheetDialog
 import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.utilities.isWriteFilePermissionGranted
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay

@@ -11,13 +11,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.backgroundGradientEnd
-import com.clearkeep.presentation.components.backgroundGradientStart
-import com.clearkeep.presentation.components.grayscaleOffWhite
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.backgroundGradientEnd
+import com.clearkeep.common.presentation.components.backgroundGradientStart
+import com.clearkeep.common.presentation.components.grayscaleOffWhite
 import com.clearkeep.domain.model.User
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun FriendListItem(

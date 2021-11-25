@@ -19,11 +19,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun RegisterScreen(

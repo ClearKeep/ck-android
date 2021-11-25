@@ -11,9 +11,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.clearkeep.presentation.components.*
+import com.clearkeep.common.presentation.components.*
 import com.clearkeep.domain.model.User
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun SelectedFriendBox(

@@ -27,14 +27,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.LiveData
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.presentation.screen.chat.composes.FriendListItem
 import com.clearkeep.presentation.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.presentation.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 

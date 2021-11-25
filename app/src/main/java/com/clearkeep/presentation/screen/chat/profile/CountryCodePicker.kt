@@ -18,13 +18,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.*
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.CKSearchBox
-import com.clearkeep.presentation.components.base.CKText
-import com.clearkeep.presentation.components.separatorDarkNonOpaque
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKSearchBox
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.separatorDarkNonOpaque
 import com.clearkeep.utilities.countryCodesToNames
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 

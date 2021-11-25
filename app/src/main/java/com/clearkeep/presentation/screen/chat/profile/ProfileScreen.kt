@@ -27,15 +27,15 @@ import androidx.compose.ui.text.input.*
 import androidx.navigation.NavController
 import com.clearkeep.BuildConfig
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.presentation.screen.chat.room.UploadPhotoDialog
-import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @ExperimentalMaterialApi
 @Composable

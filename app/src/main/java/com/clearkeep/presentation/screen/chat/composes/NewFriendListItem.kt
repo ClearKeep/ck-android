@@ -8,14 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.presentation.components.colorSuccessDefault
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.presentation.components.colorSuccessDefault
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserStatus
 import com.clearkeep.presentation.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.presentation.screen.chat.home.composes.StatusIndicator
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun NewFriendListItem(

@@ -19,10 +19,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import coil.compose.rememberImagePainter
 import coil.imageLoader
-import com.clearkeep.presentation.components.backgroundGradientEnd
-import com.clearkeep.presentation.components.backgroundGradientStart
-import com.clearkeep.presentation.components.colorTest
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.presentation.components.backgroundGradientEnd
+import com.clearkeep.common.presentation.components.backgroundGradientStart
+import com.clearkeep.common.presentation.components.colorTest
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun CircleAvatar(

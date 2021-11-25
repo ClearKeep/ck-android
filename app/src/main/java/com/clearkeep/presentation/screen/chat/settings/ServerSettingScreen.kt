@@ -13,11 +13,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.domain.model.Server
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun ServerSettingScreen(

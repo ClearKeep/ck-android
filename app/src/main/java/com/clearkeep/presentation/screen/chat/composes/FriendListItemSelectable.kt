@@ -8,10 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.CKRadioButton
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKRadioButton
 import com.clearkeep.domain.model.User
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun FriendListItemSelectable(

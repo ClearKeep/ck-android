@@ -6,7 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import android.content.ClipData
 import android.content.ClipboardManager

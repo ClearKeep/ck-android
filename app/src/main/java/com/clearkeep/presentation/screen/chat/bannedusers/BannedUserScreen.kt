@@ -15,14 +15,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.presentation.components.grayscale1
-import com.clearkeep.presentation.components.grayscale2
-import com.clearkeep.presentation.components.grayscale5
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.presentation.components.grayscale1
+import com.clearkeep.common.presentation.components.grayscale2
+import com.clearkeep.common.presentation.components.grayscale5
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.composes.NewFriendListItem
 import com.clearkeep.presentation.screen.chat.composes.StatusText
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun BannedUserScreen(onCloseView: () -> Unit) {

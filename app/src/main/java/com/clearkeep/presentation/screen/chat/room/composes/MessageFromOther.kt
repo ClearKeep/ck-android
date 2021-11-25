@@ -18,8 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.clearkeep.R
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.utilities.getHourTimeAsString

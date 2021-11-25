@@ -12,11 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.grayscaleDarkModeDarkGrey2
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.grayscaleDarkModeDarkGrey2
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 import com.google.accompanist.insets.statusBarsHeight
 import com.google.accompanist.insets.statusBarsPadding
 
