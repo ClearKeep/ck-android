@@ -2,8 +2,8 @@ package com.clearkeep.data.local.clearkeep.converter
 
 import androidx.room.TypeConverter
 import com.clearkeep.domain.model.User
-import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
 class PeopleListConverter {

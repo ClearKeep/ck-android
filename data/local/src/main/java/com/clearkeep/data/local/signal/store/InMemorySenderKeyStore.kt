@@ -4,11 +4,12 @@ import com.clearkeep.data.local.signal.dao.SignalKeyDAO
 import com.clearkeep.data.local.signal.model.SignalSenderKey
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
-import org.whispersystems.libsignal.groups.state.SenderKeyStore
 import java.io.IOException
 import java.util.*
+import com.clearkeep.domain.repository.SenderKeyStore
+import javax.inject.Inject
 
-class InMemorySenderKeyStore(
+class InMemorySenderKeyStore @Inject constructor(
     private val signalKeyDAO: SignalKeyDAO,
 ) : SenderKeyStore {
 
@@ -54,7 +55,7 @@ class InMemorySenderKeyStore(
         }
     }
 
-    fun hasSenderKey(senderKeyName: SenderKeyName): Boolean {
+    override fun hasSenderKey(senderKeyName: SenderKeyName): Boolean {
         try {
             val senderKey = signalKeyDAO.getSignalSenderKey(
                 senderKeyName.groupId,
@@ -68,7 +69,7 @@ class InMemorySenderKeyStore(
         }
     }
 
-    suspend fun deleteSenderKey(senderKeyName: SenderKeyName) {
+    override suspend fun deleteSenderKey(senderKeyName: SenderKeyName) {
         signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId, senderKeyName.sender.name)
     }
 }

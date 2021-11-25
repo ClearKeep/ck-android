@@ -7,8 +7,8 @@ package com.clearkeep.data.local.signal.store
 
 import androidx.annotation.WorkerThread
 import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
-import com.clearkeep.data.local.signal.model.SignalIdentityKey
-import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.data.local.signal.model.SignalIdentityKeyLocal
+import com.clearkeep.domain.repository.Environment
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.state.IdentityKeyStore
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -22,7 +22,7 @@ class InMemoryIdentityKeyStore(
 ) : IdentityKeyStore, Closeable {
     private val trustedKeys: MutableMap<SignalProtocolAddress, IdentityKey> = HashMap()
 
-    private var identityKey: SignalIdentityKey? = null
+    private var identityKey: SignalIdentityKeyLocal? = null
 
     @WorkerThread
     override fun getIdentityKeyPair(): IdentityKeyPair {
@@ -71,15 +71,15 @@ class InMemoryIdentityKeyStore(
         return trustedKeys[address]
     }
 
-    fun generateIdentityKeyPair(clientId: String, domain: String): SignalIdentityKey {
+    fun generateIdentityKeyPair(clientId: String, domain: String): SignalIdentityKeyLocal {
         val identityKeyPair = KeyHelper.generateIdentityKeyPair()
         val registrationID = KeyHelper.generateRegistrationId(false)
-        return SignalIdentityKey(identityKeyPair, registrationID, domain, clientId)
+        return SignalIdentityKeyLocal(identityKeyPair, registrationID, domain, clientId)
     }
 
 
     @WorkerThread
-    private fun getOrGenerateIdentityKey(clientId: String, domain: String): SignalIdentityKey {
+    private fun getOrGenerateIdentityKey(clientId: String, domain: String): SignalIdentityKeyLocal {
         var signalIdentityKey = signalIdentityKeyDAO.getIdentityKey(clientId, domain)
 
         if (signalIdentityKey == null) {

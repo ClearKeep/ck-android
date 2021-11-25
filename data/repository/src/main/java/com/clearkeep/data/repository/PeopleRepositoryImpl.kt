@@ -2,15 +2,16 @@ package com.clearkeep.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
+import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.data.remote.service.GroupService
 import com.clearkeep.data.local.clearkeep.dao.UserDAO
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserEntity
 import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.data.local.model.toLocal
+import com.clearkeep.data.repository.utils.parseError
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -23,56 +24,56 @@ class PeopleRepositoryImpl @Inject constructor(
     private val environment: Environment,
     private val groupService: GroupService
 ): PeopleRepository {
-    override fun getFriendsAsState(ownerDomain: String, ownerClientId: String): LiveData<List<com.clearkeep.domain.model.User>> =
+    override fun getFriendsAsState(ownerDomain: String, ownerClientId: String): LiveData<List<User>> =
         peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
             if (list.isNotEmpty()) {
                 val response = groupService.getUsersInServer()
                 val activeUserIds = response.lstUserOrBuilderList.map { it.id }
 
                 list.filter { it.userId in activeUserIds }
-                    .map { userEntity -> convertEntityToUser(userEntity) }
+                    .map { userEntity -> convertEntityToUser(userEntity.toEntity()) }
                     .sortedBy { it.userName.toLowerCase() }
             } else {
                 emptyList()
             }
         }
 
-    override suspend fun getFriend(friendClientId: String, friendDomain: String, owner: com.clearkeep.domain.model.Owner): com.clearkeep.domain.model.User? =
+    override suspend fun getFriend(friendClientId: String, friendDomain: String, owner: com.clearkeep.domain.model.Owner): User? =
         withContext(Dispatchers.IO) {
             val ret =
                 peopleDao.getFriend(friendClientId, friendDomain, owner.domain, owner.clientId)
-            return@withContext if (ret != null) convertEntityToUser(ret) else null
+            return@withContext if (ret != null) convertEntityToUser(ret.toEntity()) else null
         }
 
-    override suspend fun getFriendFromID(friendClientId: String): com.clearkeep.domain.model.User? = withContext(Dispatchers.IO) {
+    override suspend fun getFriendFromID(friendClientId: String): User? = withContext(Dispatchers.IO) {
         val ret = peopleDao.getFriendFromUserId(friendClientId)
         printlnCK("getFriendFromID: $ret id: $friendClientId")
-        return@withContext if (ret != null) convertEntityToUser(ret) else null
+        return@withContext if (ret != null) convertEntityToUser(ret.toEntity()) else null
     }
 
-    override suspend fun updatePeople(): com.clearkeep.common.utilities.network.Resource<Nothing> = withContext(Dispatchers.IO) {
+    override suspend fun updatePeople(): Resource<Nothing> = withContext(Dispatchers.IO) {
         try {
             val friends = getFriendsFromAPI()
             if (friends.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
                 printlnCK("updatePeople: $friends")
-                peopleDao.insertPeopleList(friends.data ?: emptyList())
+                peopleDao.insertPeopleList(friends.data?.map { it.toLocal() } ?: emptyList())
             } else {
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(friends.message ?: "", null, friends.errorCode)
+                return@withContext Resource.error(friends.message ?: "", null, friends.errorCode)
             }
-            return@withContext com.clearkeep.common.utilities.network.Resource.success(null)
+            return@withContext Resource.success(null)
         } catch (exception: Exception) {
             printlnCK("updatePeople: $exception")
-            return@withContext com.clearkeep.common.utilities.network.Resource.error(exception.toString(), null)
+            return@withContext Resource.error(exception.toString(), null)
         }
     }
 
-    override suspend fun updateAvatarUserEntity(user: com.clearkeep.domain.model.User, owner: com.clearkeep.domain.model.Owner): com.clearkeep.domain.model.UserEntity? = withContext(Dispatchers.IO) {
+    override suspend fun updateAvatarUserEntity(user: User, owner: com.clearkeep.domain.model.Owner): UserEntity? = withContext(Dispatchers.IO) {
         val userEntity = peopleDao.getFriend(user.userId, user.domain, owner.domain, owner.clientId)
         if (userEntity != null) {
             userEntity.avatar = user.avatar
             peopleDao.insert(userEntity)
         }
-        return@withContext userEntity
+        return@withContext userEntity?.toEntity()
     }
 
     override suspend fun deleteFriend(clientId: String): Unit = withContext(Dispatchers.IO) {
@@ -83,7 +84,7 @@ class PeopleRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun insertFriend(friend: com.clearkeep.domain.model.User, owner: com.clearkeep.domain.model.Owner) = withContext(Dispatchers.IO) {
+    override suspend fun insertFriend(friend: User, owner: com.clearkeep.domain.model.Owner) = withContext(Dispatchers.IO) {
         val oldUser = peopleDao.getFriend(
             friend.userId,
             friend.domain,
@@ -92,7 +93,7 @@ class PeopleRepositoryImpl @Inject constructor(
         )
         if (oldUser == null) {
             peopleDao.insert(
-                com.clearkeep.domain.model.UserEntity(
+                UserEntity(
                     userId = friend.userId,
                     userName = friend.userName,
                     domain = friend.domain,
@@ -101,17 +102,17 @@ class PeopleRepositoryImpl @Inject constructor(
                     phoneNumber = friend.phoneNumber,
                     email = friend.email,
                     avatar = friend.avatar
-                )
+                ).toLocal()
             )
         }
     }
 
-    private suspend fun getFriendsFromAPI(): com.clearkeep.common.utilities.network.Resource<List<UserEntity>> =
+    private suspend fun getFriendsFromAPI(): Resource<List<UserEntity>> =
         withContext(Dispatchers.IO) {
             printlnCK("getFriendsFromAPI")
             try {
                 val response = groupService.getUsersInServer()
-                return@withContext com.clearkeep.common.utilities.network.Resource.success(response.lstUserOrBuilderList
+                return@withContext Resource.success(response.lstUserOrBuilderList
                     .map { userInfoResponse ->
                         convertUserResponse(
                             userInfoResponse,
@@ -123,22 +124,22 @@ class PeopleRepositoryImpl @Inject constructor(
                     })
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(parsedError.message, emptyList(), parsedError.code)
+                return@withContext Resource.error(parsedError.message, emptyList(), parsedError.code)
             } catch (e: Exception) {
                 printlnCK("getFriendsFromAPI: $e")
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(e.toString(), emptyList())
+                return@withContext Resource.error(e.toString(), emptyList())
             }
         }
 
     private suspend fun convertUserResponse(
         userInfoResponse: UserOuterClass.UserInfoResponseOrBuilder,
         owner: com.clearkeep.domain.model.Owner
-    ): com.clearkeep.domain.model.UserEntity = withContext(Dispatchers.IO) {
+    ): UserEntity = withContext(Dispatchers.IO) {
         val oldUser = peopleDao.getFriend(
             userInfoResponse.id, userInfoResponse.workspaceDomain,
             ownerDomain = owner.domain, ownerClientId = owner.clientId
         )
-        return@withContext com.clearkeep.domain.model.UserEntity(
+        return@withContext UserEntity(
             generateId = oldUser?.generateId ?: null,
             userId = userInfoResponse.id,
             userName = userInfoResponse.displayName,
@@ -149,8 +150,8 @@ class PeopleRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun convertEntityToUser(userEntity: com.clearkeep.domain.model.UserEntity): com.clearkeep.domain.model.User {
-        return com.clearkeep.domain.model.User(
+    private fun convertEntityToUser(userEntity: UserEntity): User {
+        return User(
             userId = userEntity.userId,
             userName = userEntity.userName,
             domain = userEntity.domain,
@@ -183,7 +184,7 @@ class PeopleRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getListClientStatus(list: List<com.clearkeep.domain.model.User>): List<com.clearkeep.domain.model.User>? = withContext(Dispatchers.IO) {
+    override suspend fun getListClientStatus(list: List<User>): List<User>? = withContext(Dispatchers.IO) {
         try {
             val response = groupService.getListClientStatus(list)
             list.map { user ->
@@ -208,8 +209,8 @@ class PeopleRepositoryImpl @Inject constructor(
             try {
                 val response = groupService.getUserInfo(userId, userDomain)
 
-                return@withContext com.clearkeep.common.utilities.network.Resource.success(
-                    com.clearkeep.domain.model.User(
+                return@withContext Resource.success(
+                    User(
                         response.id,
                         response.displayName,
                         response.workspaceDomain
@@ -229,10 +230,10 @@ class PeopleRepositoryImpl @Inject constructor(
                     }
                 }
                 printlnCK("getUserInfo exception: $e")
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(errorMessage, null)
+                return@withContext Resource.error(errorMessage, null)
             } catch (e: Exception) {
                 printlnCK("getUserInfo exception: $e")
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(e.toString(), null)
+                return@withContext Resource.error(e.toString(), null)
             }
         }
 }

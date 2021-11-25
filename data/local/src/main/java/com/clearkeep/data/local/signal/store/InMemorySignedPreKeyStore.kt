@@ -7,7 +7,7 @@ package com.clearkeep.data.local.signal.store
 
 import com.clearkeep.data.local.signal.dao.SignalPreKeyDAO
 import com.clearkeep.data.local.signal.model.SignalPreKey
-import com.clearkeep.data.remote.dynamicapi.Environment
+import com.clearkeep.domain.repository.Environment
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore

@@ -1,17 +1,11 @@
 package com.clearkeep.domain.repository
 
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.Server
-import com.clearkeep.data.local.signal.model.SignalIdentityKey
-import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.UserKey
-import jdk.internal.loader.Resource
+import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.model.*
 import org.whispersystems.libsignal.ecc.ECKeyPair
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
-import signal.Signal
 
 interface SignalKeyRepository {
     suspend fun getIdentityKey(clientId: String, domain: String): SignalIdentityKey?
@@ -36,5 +30,6 @@ interface SignalKeyRepository {
     suspend fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord)
     suspend fun loadSenderKey(senderKeyName: SenderKeyName): SenderKeyRecord
     suspend fun getUserKey(serverDomain: String, userId: String): UserKey
-    suspend fun getGroupClientKey(server: Server, groupId: Long, fromClientId: String): Signal.GroupGetClientKeyResponse?
+    suspend fun getGroupClientKey(server: Server, groupId: Long, fromClientId: String): GroupGetClientKeyResponse?
+    suspend fun getPeerClientKey(server: Server, clientId: String, domain: String): PeerGetClientKeyResponse?
 }

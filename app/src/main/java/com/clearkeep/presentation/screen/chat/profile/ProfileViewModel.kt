@@ -14,7 +14,7 @@ import com.clearkeep.presentation.screen.chat.utils.getLinkFromPeople
 import com.clearkeep.utilities.files.*
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.GlobalScope

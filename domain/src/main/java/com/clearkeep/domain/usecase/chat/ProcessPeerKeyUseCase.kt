@@ -1,15 +1,13 @@
 package com.clearkeep.domain.usecase.chat
 
 import android.text.TextUtils
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.data.remote.service.SignalKeyDistributionService
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.repository.ChatRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.utilities.SENDER_DEVICE_ID
-import com.clearkeep.utilities.printlnCK
-import io.grpc.StatusRuntimeException
+import com.clearkeep.common.utilities.SENDER_DEVICE_ID
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.repository.SignalKeyRepository
+import com.clearkeep.domain.repository.SignalProtocolStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.IdentityKey
@@ -22,8 +20,8 @@ import javax.inject.Inject
 
 class ProcessPeerKeyUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
-    private val signalProtocolStore: InMemorySignalProtocolStore,
-    private val signalKeyDistributionService: SignalKeyDistributionService
+    private val signalProtocolStore: SignalProtocolStore,
+    private val signalKeyRepository: SignalKeyRepository,
 ) {
     suspend operator fun invoke(
         receiverId: String,
@@ -33,28 +31,29 @@ class ProcessPeerKeyUseCase @Inject constructor(
     ): Boolean {
         val signalProtocolAddress =
             CKSignalProtocolAddress(
-                com.clearkeep.domain.model.Owner(
+                Owner(
                     receiverWorkspaceDomain,
                     receiverId
-                ), SENDER_DEVICE_ID)
+                ), SENDER_DEVICE_ID
+            )
         val signalProtocolAddress2 =
-            CKSignalProtocolAddress(com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
         initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,
-            owner = com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
         return initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,
-            owner = com.clearkeep.domain.model.Owner(ownerWorkSpace, senderId)
+            owner = Owner(ownerWorkSpace, senderId)
         )
     }
 
     private suspend fun initSessionUserPeer(
         signalProtocolAddress: CKSignalProtocolAddress,
-        signalProtocolStore: InMemorySignalProtocolStore,
-        owner: com.clearkeep.domain.model.Owner
+        signalProtocolStore: SignalProtocolStore,
+        owner: Owner
     ): Boolean = withContext(Dispatchers.IO) {
         val remoteClientId = signalProtocolAddress.owner.clientId
         printlnCK("initSessionUserPeer with $remoteClientId, domain = ${signalProtocolAddress.owner.domain}")
@@ -68,15 +67,15 @@ class ProcessPeerKeyUseCase @Inject constructor(
                 return@withContext false
             }
 
-            val remoteKeyBundle = signalKeyDistributionService.getPeerClientKey(
+            val remoteKeyBundle = signalKeyRepository.getPeerClientKey(
                 server,
                 remoteClientId,
                 signalProtocolAddress.owner.domain
-            )
+            ) ?: return@withContext false
 
-            val preKey = PreKeyRecord(remoteKeyBundle.preKey.toByteArray())
-            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey.toByteArray())
-            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic.toByteArray(), 0)
+            val preKey = PreKeyRecord(remoteKeyBundle.preKey)
+            val signedPreKey = SignedPreKeyRecord(remoteKeyBundle.signedPreKey)
+            val identityKeyPublic = IdentityKey(remoteKeyBundle.identityKeyPublic, 0)
 
             val retrievedPreKey = PreKeyBundle(
                 remoteKeyBundle.registrationId,
@@ -95,8 +94,6 @@ class ProcessPeerKeyUseCase @Inject constructor(
             sessionBuilder.process(retrievedPreKey)
             printlnCK("initSessionUserPeer: success")
             return@withContext true
-        } catch (e: StatusRuntimeException) {
-            printlnCK("initSessionUserPeer: $e")
         } catch (e: Exception) {
             e.printStackTrace()
             printlnCK("initSessionUserPeer: $e")

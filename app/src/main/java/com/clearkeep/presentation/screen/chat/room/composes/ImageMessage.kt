@@ -23,7 +23,7 @@ import coil.imageLoader
 import coil.memory.MemoryCache
 import com.clearkeep.presentation.components.grayscaleOffWhite
 import com.clearkeep.utilities.isTempMessage
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 

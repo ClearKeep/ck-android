@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.presentation.components.CKSimpleTheme
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

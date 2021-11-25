@@ -1,14 +1,14 @@
 package com.clearkeep.domain.repository
 
 import com.clearkeep.domain.model.Server
-import video_call.VideoCallOuterClass
+import com.clearkeep.domain.model.ServerResponse
 
 interface VideoCallRepository {
     suspend fun requestVideoCall(
         groupId: Int,
         isAudioMode: Boolean,
         server: Server
-    ): VideoCallOuterClass.ServerResponse?
+    ): ServerResponse?
 
     suspend fun cancelCall(groupId: Int, server: Server): Boolean
     suspend fun busyCall(groupId: Int, server: Server): Boolean

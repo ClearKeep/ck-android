@@ -9,12 +9,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.clearkeep.utilities.FILE_UPLOAD_CHANNEL_ID
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.FILE_UPLOAD_CHANNEL_ID
 import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import net.gotev.uploadservice.UploadService
 import net.gotev.uploadservice.UploadServiceConfig
 

@@ -1,29 +1,33 @@
 package com.clearkeep.data.remote.dynamicapi
 
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.domain.repository.Environment
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class Environment @Inject constructor(
     private val dynamicAPIProvider: DynamicAPIProvider
-) {
-    private var server: com.clearkeep.domain.model.Server? = null
+) : Environment {
+    private var server: Server? = null
 
     //Temp server info - to get key for received messages
-    private var tempServer: com.clearkeep.domain.model.Server? = null
+    private var tempServer: Server? = null
 
-    fun setUpDomain(server: com.clearkeep.domain.model.Server) {
+    override fun setUpDomain(server: Server) {
         printlnCK("setUpDomain: $server")
         this.server = server
         dynamicAPIProvider.setUpDomain(server)
     }
 
-    fun setUpTempDomain(server: com.clearkeep.domain.model.Server) {
+    override fun setUpTempDomain(server: Server) {
         this.tempServer = server
     }
 
-    fun getServer(): com.clearkeep.domain.model.Server {
+    override fun getServer(): Server {
         if (server == null) {
             printlnCK("getServer: server must be not NULL")
             throw IllegalArgumentException("getServer: server must be not NULL")
@@ -31,14 +35,14 @@ class Environment @Inject constructor(
         return server!!
     }
 
-    fun getTempServer(): com.clearkeep.domain.model.Server {
+    override fun getTempServer(): Server {
         if (tempServer == null) {
             printlnCK("getTempServer null")
         }
         return tempServer ?: getServer()
     }
 
-    fun getServerCanNull(): com.clearkeep.domain.model.Server? {
+    override fun getServerCanNull(): Server? {
         return server
     }
 }

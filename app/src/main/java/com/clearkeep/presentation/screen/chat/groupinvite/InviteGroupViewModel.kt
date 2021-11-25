@@ -8,7 +8,7 @@ import com.clearkeep.domain.usecase.people.GetUserInfoUseCase
 import com.clearkeep.domain.usecase.people.InsertFriendUseCase
 import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

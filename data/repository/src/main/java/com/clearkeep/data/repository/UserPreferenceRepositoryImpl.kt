@@ -1,6 +1,8 @@
 package com.clearkeep.data.repository
 
+import androidx.lifecycle.map
 import com.clearkeep.data.local.clearkeep.dao.UserPreferenceDAO
+import com.clearkeep.data.local.model.toLocal
 import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.UserPreferenceRepository
 import kotlinx.coroutines.Dispatchers
@@ -17,14 +19,14 @@ class UserPreferenceRepositoryImpl @Inject constructor(
     ) = withContext(Dispatchers.IO) {
         val defaultSettings =
             UserPreference.getDefaultUserPreference(serverDomain, userId, isSocialAccount)
-        userPreferenceDAO.insert(defaultSettings)
+        userPreferenceDAO.insert(defaultSettings.toLocal())
     }
 
     override fun getUserPreferenceState(serverDomain: String, userId: String) =
-        userPreferenceDAO.getPreferenceLiveData(serverDomain, userId)
+        userPreferenceDAO.getPreferenceLiveData(serverDomain, userId).map { it.toEntity() }
 
     override suspend fun getUserPreference(serverDomain: String, userId: String) = withContext(Dispatchers.IO) {
-        userPreferenceDAO.getPreference(serverDomain, userId)
+        userPreferenceDAO.getPreference(serverDomain, userId)?.toEntity()
     }
 
     override suspend fun updateShowNotificationPreview(

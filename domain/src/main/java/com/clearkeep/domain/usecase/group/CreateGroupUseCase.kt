@@ -1,11 +1,9 @@
 package com.clearkeep.domain.usecase.group
 
-import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.User
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.repository.Environment
 import javax.inject.Inject
 
 class CreateGroupUseCase @Inject constructor(
@@ -22,7 +20,7 @@ class CreateGroupUseCase @Inject constructor(
         val server = serverRepository.getServer(getDomain(), getClientId())
         val response = groupRepository.createGroup(createClientId, groupName, participants, isGroup, getDomain(), getClientId(), server)
         if (response.data != null) {
-            val group = groupRepository.convertGroupFromResponse(response.data, getDomain(), getClientId(), server)
+            val group = groupRepository.convertGroupFromResponse(response.data!!, getDomain(), getClientId(), server)
             groupRepository.insertGroup(group)
             return Resource.success(group)
         }

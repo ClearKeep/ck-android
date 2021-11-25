@@ -4,9 +4,8 @@ import auth.AuthOuterClass
 import com.clearkeep.data.remote.dynamicapi.CallCredentials
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.domain.model.Server
-import com.clearkeep.utilities.REQUEST_DEADLINE_SECONDS
-import com.clearkeep.utilities.SENDER_DEVICE_ID
+import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
+import com.clearkeep.common.utilities.SENDER_DEVICE_ID
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

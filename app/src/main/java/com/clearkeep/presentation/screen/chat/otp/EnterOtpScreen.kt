@@ -38,7 +38,7 @@ import com.clearkeep.presentation.components.base.CKButton
 import com.clearkeep.presentation.components.base.CKTopAppBarSample
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 

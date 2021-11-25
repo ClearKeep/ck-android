@@ -11,7 +11,7 @@ import javax.inject.Inject
 class PushNotificationService @Inject constructor(
     private val apiProvider: ParamAPIProvider,
 ) {
-    suspend fun registerPushNotificationToken(deviceId: String, token: String, server: com.clearkeep.domain.model.Server): NotifyPushOuterClass.BaseResponse = withContext(Dispatchers.IO) {
+    suspend fun registerPushNotificationToken(deviceId: String, token: String, server: Server): NotifyPushOuterClass.BaseResponse = withContext(Dispatchers.IO) {
         val request = NotifyPushOuterClass.RegisterTokenRequest.newBuilder()
             .setDeviceId(deviceId)
             .setDeviceType("android")

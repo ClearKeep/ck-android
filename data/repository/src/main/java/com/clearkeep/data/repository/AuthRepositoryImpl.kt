@@ -1,14 +1,23 @@
 package com.clearkeep.data.repository
 
 import auth.AuthOuterClass
+import com.clearkeep.common.utilities.DecryptsPBKDF2
+import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
-import com.clearkeep.srp.NativeLib
 import com.clearkeep.data.remote.service.AuthService
-import com.clearkeep.utilities.*
-import com.clearkeep.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.data.local.preference.AppStorage
+import com.clearkeep.data.remote.utils.toEntity
+import com.clearkeep.data.repository.utils.parseError
+import com.clearkeep.domain.model.PeerGetClientKeyResponse
+import com.clearkeep.domain.model.Profile
+import com.clearkeep.domain.model.Server
+import com.clearkeep.domain.model.response.AuthChallengeRes
+import com.clearkeep.domain.model.response.AuthRes
+import com.clearkeep.domain.model.response.SocialLoginRes
+import com.clearkeep.srp.NativeLib
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,7 +34,7 @@ class AuthRepositoryImpl @Inject constructor(
         password: String,
         email: String,
         domain: String
-    ): Resource<AuthOuterClass.RegisterSRPRes> = withContext(Dispatchers.IO) {
+    ): Resource<Any> = withContext(Dispatchers.IO) {
         val nativeLib = NativeLib()
 
         val salt = nativeLib.getSalt(email, password)
@@ -90,11 +99,11 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun loginByGoogle(
         token: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
+    ): Resource<SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginByGoogle(token, domain)
 
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
@@ -112,10 +121,10 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun loginByFacebook(
         token: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
+    ): Resource<SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginByFacebook(token, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
@@ -132,10 +141,10 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun loginByMicrosoft(
         accessToken: String,
         domain: String
-    ): Resource<AuthOuterClass.SocialLoginRes> = withContext(Dispatchers.IO) {
+    ): Resource<SocialLoginRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginByMicrosoft(accessToken, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
@@ -164,7 +173,7 @@ class AuthRepositoryImpl @Inject constructor(
         verificatorHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.registerPincode(
                 transitionID,
@@ -182,7 +191,7 @@ class AuthRepositoryImpl @Inject constructor(
                 domain
             )
             if (response.error.isEmpty()) {
-                return@withContext Resource.success(response)
+                return@withContext Resource.success(response.toEntity())
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -203,12 +212,12 @@ class AuthRepositoryImpl @Inject constructor(
         aHex: String,
         mHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes> =
+    ): Resource<AuthRes> =
         withContext(Dispatchers.IO) {
             try {
                 val response = authService.verifyPinCode(userName, aHex, mHex, domain)
                 if (response.error.isEmpty()) {
-                    return@withContext Resource.success(response)
+                    return@withContext Resource.success(response.toEntity())
                 }
                 return@withContext Resource.error(response.error, null)
             } catch (e: StatusRuntimeException) {
@@ -239,7 +248,7 @@ class AuthRepositoryImpl @Inject constructor(
         saltHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.resetPinCode(
                 transitionID,
@@ -259,7 +268,7 @@ class AuthRepositoryImpl @Inject constructor(
             )
 
             if (response.error.isEmpty()) {
-                return@withContext Resource.success(response)
+                return@withContext Resource.success(response.toEntity())
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -290,7 +299,7 @@ class AuthRepositoryImpl @Inject constructor(
         saltHex: String,
         iv: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.forgotPasswordUpdate(
                 transitionID,
@@ -309,7 +318,7 @@ class AuthRepositoryImpl @Inject constructor(
                 domain
             )
             if (response.error.isEmpty()) {
-                return@withContext Resource.success(response)
+                return@withContext Resource.success(response.toEntity())
             }
             return@withContext Resource.error(response.error, null)
         } catch (e: StatusRuntimeException) {
@@ -328,13 +337,13 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun recoverPassword(
         email: String,
         domain: String
-    ): Resource<AuthOuterClass.BaseResponse> = withContext(Dispatchers.IO) {
+    ): Resource<String> = withContext(Dispatchers.IO) {
         printlnCK("recoverPassword: $email")
         try {
             val response = authService.forgotPassword(email, domain)
 
             if (response.error?.isEmpty() == true) {
-                return@withContext Resource.success(response)
+                return@withContext Resource.success(response.error)
             } else {
                 return@withContext Resource.error(response.error, null)
             }
@@ -348,7 +357,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun logoutFromAPI(server: com.clearkeep.domain.model.Server): Resource<AuthOuterClass.BaseResponse> =
+    override suspend fun logoutFromAPI(server: Server): Resource<String> =
         withContext(Dispatchers.IO) {
             printlnCK("logoutFromAPI")
             try {
@@ -357,7 +366,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 if (response.error?.isEmpty() == true) {
                     printlnCK("logoutFromAPI successed")
-                    return@withContext Resource.success(response)
+                    return@withContext Resource.success(response.error)
                 } else {
                     printlnCK("logoutFromAPI failed: ${response.error}")
                     return@withContext Resource.error(response.error, null)
@@ -374,10 +383,10 @@ class AuthRepositoryImpl @Inject constructor(
         otpHash: String,
         userId: String,
         hashKey: String
-    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.validateOtp(otp, otpHash, userId, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (exception: StatusRuntimeException) {
             val parsedError = parseError(exception)
             val message = when (parsedError.code) {
@@ -421,12 +430,12 @@ class AuthRepositoryImpl @Inject constructor(
         domain: String,
         accessToken: String,
         hashKey: String
-    ): com.clearkeep.domain.model.Profile? =
+    ): Profile? =
         withContext(Dispatchers.IO) {
             try {
                 val response = authService.getProfile(domain, accessToken, hashKey)
                 printlnCK("getProfileWithGrpc: $response")
-                return@withContext com.clearkeep.domain.model.Profile(
+                return@withContext Profile(
                     userId = response.id,
                     userName = response.displayName,
                     email = response.email,
@@ -444,10 +453,10 @@ class AuthRepositoryImpl @Inject constructor(
         username: String,
         aHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthChallengeRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthChallengeRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginChallenge(username, aHex, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             printlnCK("login error: ${e.message}")
@@ -470,10 +479,10 @@ class AuthRepositoryImpl @Inject constructor(
         userName: String,
         aHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthChallengeRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthChallengeRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginSocialChallenge(userName, aHex, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             printlnCK("login error: ${e.message}")
@@ -497,10 +506,10 @@ class AuthRepositoryImpl @Inject constructor(
         aHex: String,
         mHex: String,
         domain: String
-    ): Resource<AuthOuterClass.AuthRes> = withContext(Dispatchers.IO) {
+    ): Resource<AuthRes> = withContext(Dispatchers.IO) {
         try {
             val response = authService.loginAuthenticate(userName, aHex, mHex, domain)
-            return@withContext Resource.success(response)
+            return@withContext Resource.success(response.toEntity())
         } catch (e: StatusRuntimeException) {
             val parsedError = parseError(e)
             printlnCK("login error: ${e.message}")

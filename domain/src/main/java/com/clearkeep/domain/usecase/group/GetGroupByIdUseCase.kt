@@ -1,10 +1,9 @@
 package com.clearkeep.domain.usecase.group
 
-import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import javax.inject.Inject
 
 class GetGroupByIdUseCase @Inject constructor(private val groupRepository: GroupRepository, private val serverRepository: ServerRepository) {

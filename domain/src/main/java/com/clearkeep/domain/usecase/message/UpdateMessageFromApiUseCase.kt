@@ -1,26 +1,11 @@
 package com.clearkeep.domain.usecase.message
 
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
-import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
-import com.clearkeep.data.repository.MessagePagingResponse
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.repository.GroupRepository
-import com.clearkeep.domain.repository.MessageRepository
-import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.presentation.screen.chat.utils.isGroup
-import com.clearkeep.utilities.RECEIVER_DEVICE_ID
-import com.clearkeep.utilities.getCurrentDateTime
-import com.clearkeep.utilities.getUnableErrorMessage
-import com.clearkeep.utilities.printlnCK
-import com.google.protobuf.ByteString
+import com.clearkeep.common.utilities.*
+import com.clearkeep.domain.model.*
+import com.clearkeep.domain.repository.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import message.MessageOuterClass
 import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -36,13 +21,13 @@ class UpdateMessageFromApiUseCase @Inject constructor(
     private val messageRepository: MessageRepository,
     private val serverRepository: ServerRepository,
     private val groupRepository: GroupRepository,
-    private val senderKeyStore: InMemorySenderKeyStore,
-    private val signalProtocolStore: InMemorySignalProtocolStore,
+    private val senderKeyStore: SenderKeyStore,
+    private val signalProtocolStore: SignalProtocolStore,
     private val signalKeyRepository: SignalKeyRepository,
 ) {
     suspend operator fun invoke(
         groupId: Long,
-        owner: com.clearkeep.domain.model.Owner,
+        owner: Owner,
         lastMessageAt: Long = 0,
         loadSize: Int = 20
     ): MessagePagingResponse {
@@ -54,9 +39,9 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         val responses =
             messageRepository.updateMessageFromAPI(server, groupId, owner, lastMessageAt, loadSize)
         if (responses != null) {
-            val listMessage = arrayListOf<com.clearkeep.domain.model.Message>()
-            responses.lstMessageList
-                .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
+            val listMessage = arrayListOf<Message>()
+            responses.lstMessage
+                .sortedWith(compareBy(MessageObjectResponse::createdAt))
                 .forEachIndexed { _, data ->
                     listMessage.add(parseMessageResponse(data, owner))
                 }
@@ -88,9 +73,9 @@ class UpdateMessageFromApiUseCase @Inject constructor(
     }
 
     private suspend fun parseMessageResponse(
-        response: MessageOuterClass.MessageObjectResponse,
-        owner: com.clearkeep.domain.model.Owner
-    ): com.clearkeep.domain.model.Message {
+        response: MessageObjectResponse,
+        owner: Owner
+    ): Message {
         val oldMessage = messageRepository.getGroupMessage(response.id, response.groupId)
         if (oldMessage != null) {
             return oldMessage
@@ -121,12 +106,12 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         fromDomain: String,
         createdTime: Long,
         updatedTime: Long,
-        encryptedMessage: ByteString,
-        owner: com.clearkeep.domain.model.Owner,
-    ): com.clearkeep.domain.model.Message {
+        encryptedMessage: ByteArray,
+        owner: Owner,
+    ): Message {
         var messageText: String
         try {
-            val sender = com.clearkeep.domain.model.Owner(fromDomain, fromClientId)
+            val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage)
@@ -162,7 +147,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
         printlnCK("decryptMessage done: $messageText")
         return saveNewMessage(
-            com.clearkeep.domain.model.Message(
+            Message(
                 messageId = messageId, groupId = groupId, groupType = groupType,
                 senderId = fromClientId, receiverId = owner.clientId, message = messageText,
                 createdTime = createdTime, updatedTime = updatedTime,
@@ -173,13 +158,13 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
     private suspend fun updateLastSyncMessageTime(
         groupId: Long,
-        owner: com.clearkeep.domain.model.Owner,
-        lastMessage: com.clearkeep.domain.model.Message
+        owner: Owner,
+        lastMessage: Message
     ) {
         val server = serverRepository.getServer(owner.domain, owner.clientId,)
         val group = groupRepository.getGroupByID(groupId, owner.domain, owner.clientId, server, false).data
         group?.let {
-            val updateGroup = com.clearkeep.domain.model.ChatGroup(
+            val updateGroup = ChatGroup(
                 generateId = it.generateId,
                 groupId = it.groupId,
                 groupName = it.groupName,
@@ -206,10 +191,10 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
     private suspend fun decryptGroupMessage(
-        sender: com.clearkeep.domain.model.Owner, groupId: Long, message: ByteString,
-        owner: com.clearkeep.domain.model.Owner,
+        sender: Owner, groupId: Long, message: ByteArray,
+        owner: Owner,
     ): String = withContext(Dispatchers.IO) {
-        if (message.isEmpty) {
+        if (message.isEmpty()) {
             return@withContext ""
         }
 
@@ -230,7 +215,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         )
 
         val plaintextFromAlice = try {
-            bobGroupCipher.decrypt(message.toByteArray())
+            bobGroupCipher.decrypt(message)
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx
         } catch (ex: Exception) {
@@ -241,7 +226,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
             if (!initSessionAgain) {
                 throw java.lang.Exception("can not init session in group $groupId")
             }
-            bobGroupCipher.decrypt(message.toByteArray())
+            bobGroupCipher.decrypt(message)
         }
 
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
@@ -249,26 +234,26 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
     private suspend fun decryptPeerMessage(
-        sender: com.clearkeep.domain.model.Owner, message: ByteString,
+        sender: Owner, message: ByteArray,
     ): String = withContext(Dispatchers.IO) {
-        if (message.isEmpty) {
+        if (message.isEmpty()) {
             return@withContext ""
         }
 
         val signalProtocolAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
-        val preKeyMessage = PreKeySignalMessage(message.toByteArray())
+        val preKeyMessage = PreKeySignalMessage(message)
 
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
         val message = sessionCipher.decrypt(preKeyMessage)
         return@withContext String(message, StandardCharsets.UTF_8)
     }
 
-    private suspend fun saveNewMessage(message: com.clearkeep.domain.model.Message): com.clearkeep.domain.model.Message {
+    private suspend fun saveNewMessage(message: Message): Message {
         messageRepository.saveMessage(message)
 
         val groupId = message.groupId
         val server = serverRepository.getServer(message.ownerDomain, message.ownerClientId)
-        val room: com.clearkeep.domain.model.ChatGroup? =
+        val room: ChatGroup? =
             groupRepository.getGroupByID(
                 groupId,
                 message.ownerDomain,
@@ -281,7 +266,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
         if (room != null) {
             // update last message in room
-            val updateRoom = com.clearkeep.domain.model.ChatGroup(
+            val updateRoom = ChatGroup(
                 generateId = room.generateId,
                 groupId = room.groupId,
                 groupName = room.groupName,
@@ -315,9 +300,9 @@ class UpdateMessageFromApiUseCase @Inject constructor(
     private suspend fun initSessionUserInGroup(
         groupId: Long, fromClientId: String,
         groupSender: SenderKeyName,
-        senderKeyStore: InMemorySenderKeyStore,
+        senderKeyStore: SenderKeyStore,
         isForceProcess: Boolean,
-        owner: com.clearkeep.domain.model.Owner
+        owner: Owner
     ): Boolean {
         val senderKeyRecord: SenderKeyRecord = signalKeyRepository.loadSenderKey(groupSender)
         if (senderKeyRecord.isEmpty || isForceProcess) {
@@ -332,7 +317,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
             if (senderKeyDistribution != null) {
                 printlnCK("")
                 val receivedAliceDistributionMessage =
-                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey?.clientKeyDistribution?.toByteArray())
+                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey?.clientKeyDistribution)
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } else {

@@ -25,11 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import com.clearkeep.R
+import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.presentation.screen.auth.login.LoginViewModel
 import com.clearkeep.utilities.*
-import com.clearkeep.common.utilities.network.Status
 
 
 @ExperimentalAnimationApi

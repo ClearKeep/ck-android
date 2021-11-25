@@ -1,12 +1,11 @@
 package com.clearkeep.domain.usecase.group
 
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.utilities.RECEIVER_DEVICE_ID
-import com.clearkeep.utilities.SENDER_DEVICE_ID
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.RECEIVER_DEVICE_ID
+import com.clearkeep.common.utilities.SENDER_DEVICE_ID
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.model.Owner
 import org.whispersystems.libsignal.groups.SenderKeyName
 import javax.inject.Inject
 
@@ -14,19 +13,19 @@ class LeaveGroupUseCase @Inject constructor(
     private val groupRepository: GroupRepository,
     private val signalKeyRepository: SignalKeyRepository,
 ) {
-    suspend operator fun invoke(groupId: Long, owner: com.clearkeep.domain.model.Owner): Boolean {
+    suspend operator fun invoke(groupId: Long, owner: Owner): Boolean {
         val response = groupRepository.leaveGroup(groupId, owner) ?: return false
 
-        if (response.error.isNullOrEmpty()) {
+        if (response.isEmpty()) {
             groupRepository.getListClientInGroup(groupId, owner.domain)?.forEach {
                 val senderAddress2 = CKSignalProtocolAddress(
-                    com.clearkeep.domain.model.Owner(
+                    Owner(
                         owner.domain,
                         it
                     ), RECEIVER_DEVICE_ID
                 )
                 val senderAddress1 = CKSignalProtocolAddress(
-                    com.clearkeep.domain.model.Owner(
+                    Owner(
                         owner.domain,
                         it
                     ), SENDER_DEVICE_ID

@@ -10,7 +10,7 @@ class UpdateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val serverRepository: ServerRepository
 ) {
-    suspend operator fun invoke(owner: com.clearkeep.domain.model.Owner, profile: com.clearkeep.domain.model.Profile): Boolean {
+    suspend operator fun invoke(owner: Owner, profile: Profile): Boolean {
         val validatedProfile = profile.copy(
             phoneNumber = profile.phoneNumber?.trim(),
             userName = profile.userName?.trim()

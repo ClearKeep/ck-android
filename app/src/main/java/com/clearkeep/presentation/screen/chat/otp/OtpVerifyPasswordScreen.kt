@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -16,7 +17,7 @@ import com.clearkeep.R
 import com.clearkeep.presentation.components.LocalColorMapping
 import com.clearkeep.presentation.components.base.*
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.clearkeep.utilities.toNonScalableTextSize
 
@@ -83,7 +84,7 @@ fun OtpVerifyPasswordScreen(
             )
         }
         when (verifyPasswordResponse.value?.status) {
-            com.clearkeep.common.utilities.network.Status.ERROR -> {
+            Status.ERROR -> {
                 CKAlertDialog(
                     title = verifyPasswordResponse.value!!.data?.first
                         ?: stringResource(R.string.error),
@@ -95,7 +96,7 @@ fun OtpVerifyPasswordScreen(
                     dismissTitle = stringResource(R.string.close)
                 )
             }
-            com.clearkeep.common.utilities.network.Status.SUCCESS -> {
+            Status.SUCCESS -> {
                 otpViewModel.verifyPasswordResponse.value = null
                 onClickNext()
             }

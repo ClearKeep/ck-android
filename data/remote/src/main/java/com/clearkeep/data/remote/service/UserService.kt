@@ -12,7 +12,7 @@ import javax.inject.Inject
 class UserService @Inject constructor(
     private val apiProvider: ParamAPIProvider
 ) {
-    suspend fun getMfaSettings(server: com.clearkeep.domain.model.Server): UserOuterClass.MfaStateResponse =
+    suspend fun getMfaSettings(server: Server): UserOuterClass.MfaStateResponse =
         withContext(Dispatchers.IO) {
             val request = UserOuterClass.MfaGetStateRequest.newBuilder().build()
 
@@ -26,7 +26,7 @@ class UserService @Inject constructor(
         }
 
     suspend fun updateMfaSettings(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         enabled: Boolean
     ): UserOuterClass.MfaBaseResponse = withContext(Dispatchers.IO) {
         val request = UserOuterClass.MfaChangingStateRequest.newBuilder().build()
@@ -45,7 +45,7 @@ class UserService @Inject constructor(
     }
 
     suspend fun mfaAuthChallenge(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         aHex: String
     ): UserOuterClass.MfaAuthChallengeResponse = withContext(Dispatchers.IO) {
         val request = UserOuterClass.MfaAuthChallengeRequest.newBuilder()
@@ -63,7 +63,7 @@ class UserService @Inject constructor(
     }
 
     suspend fun mfaValidatePassword(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         aHex: String,
         mHex: String
     ): UserOuterClass.MfaBaseResponse = withContext(Dispatchers.IO) {
@@ -82,7 +82,7 @@ class UserService @Inject constructor(
         return@withContext stub.mfaValidatePassword(validateRequest)
     }
 
-    suspend fun mfaValidateOtp(server: com.clearkeep.domain.model.Server, otp: String): UserOuterClass.MfaBaseResponse =
+    suspend fun mfaValidateOtp(server: Server, otp: String): UserOuterClass.MfaBaseResponse =
         withContext(Dispatchers.IO) {
             val request = UserOuterClass.MfaValidateOtpRequest.newBuilder()
                 .setOtp(otp)
@@ -98,7 +98,7 @@ class UserService @Inject constructor(
             return@withContext stub.mfaValidateOtp(request)
         }
 
-    suspend fun mfaRequestResendOtp(server: com.clearkeep.domain.model.Server): UserOuterClass.MfaBaseResponse =
+    suspend fun mfaRequestResendOtp(server: Server): UserOuterClass.MfaBaseResponse =
         withContext(Dispatchers.IO) {
             val request = UserOuterClass.MfaResendOtpRequest.newBuilder().build()
             val stub = apiProvider.provideUserBlockingStub(
@@ -113,7 +113,7 @@ class UserService @Inject constructor(
         }
 
     suspend fun requestChangePassword(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         aHex: String
     ): UserOuterClass.RequestChangePasswordRes = withContext(Dispatchers.IO) {
         val request = UserOuterClass.RequestChangePasswordReq.newBuilder()
@@ -129,7 +129,7 @@ class UserService @Inject constructor(
     }
 
     suspend fun changePassword(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         aHex: String,
         mHex: String,
         verificatorHex: String,
@@ -156,7 +156,7 @@ class UserService @Inject constructor(
     }
 
     suspend fun uploadAvatar(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         fileName: String,
         mimeType: String,
         byteStrings: List<ByteString>,
@@ -179,7 +179,7 @@ class UserService @Inject constructor(
     }
 
     suspend fun updateProfile(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         phoneNumber: String?,
         displayName: String?,
         avatar: String?

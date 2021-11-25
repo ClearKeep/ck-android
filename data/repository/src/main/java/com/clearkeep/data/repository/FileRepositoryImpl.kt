@@ -1,14 +1,16 @@
 package com.clearkeep.data.repository
 
 import android.content.Context
+import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.data.remote.service.DownloadService
 import com.clearkeep.data.remote.service.UploadFileService
 import com.clearkeep.domain.repository.FileRepository
-import com.clearkeep.utilities.parseError
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.data.remote.utils.toEntity
+import com.clearkeep.data.repository.utils.parseError
+import com.clearkeep.domain.model.response.GetUploadFileLinkResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.grpc.StatusRuntimeException
-import jdk.internal.loader.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.gotev.uploadservice.data.UploadInfo
@@ -17,6 +19,7 @@ import net.gotev.uploadservice.observer.request.BaseRequestObserver
 import net.gotev.uploadservice.observer.request.RequestObserverDelegate
 import net.gotev.uploadservice.protocols.binary.BinaryUploadRequest
 import upload_file.UploadFileOuterClass
+import video_call.VideoCallOuterClass
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -83,13 +86,13 @@ class FileRepositoryImpl @Inject constructor(
                 }
 
                 return@withContext if (isSuccessful) {
-                    com.clearkeep.common.utilities.network.Resource.success(uploadFileLink.downloadFileUrl)
+                    Resource.success(uploadFileLink.downloadFileUrl)
                 } else {
-                    com.clearkeep.common.utilities.network.Resource.error("Error uploading files!", null, 0)
+                    Resource.error("Error uploading files!", null, 0)
                 }
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(
+                return@withContext Resource.error(
                     parsedError.message,
                     null,
                     parsedError.code,
@@ -97,7 +100,7 @@ class FileRepositoryImpl @Inject constructor(
                 )
             } catch (e: Exception) {
                 printlnCK("uploadFile exception $e")
-                return@withContext com.clearkeep.common.utilities.network.Resource.error(e.toString(), null)
+                return@withContext Resource.error(e.toString(), null)
             }
         }
     }
@@ -105,8 +108,8 @@ class FileRepositoryImpl @Inject constructor(
     override suspend fun getUploadedFileUrl(
         fileName: String,
         mimeType: String
-    ): UploadFileOuterClass.GetUploadFileLinkResponse = withContext(Dispatchers.IO) {
-        uploadFileService.getUploadFileUrl(fileName, mimeType)
+    ): GetUploadFileLinkResponse = withContext(Dispatchers.IO) {
+        uploadFileService.getUploadFileUrl(fileName, mimeType).toEntity()
     }
 
     override fun downloadFile(fileName: String, url: String) {

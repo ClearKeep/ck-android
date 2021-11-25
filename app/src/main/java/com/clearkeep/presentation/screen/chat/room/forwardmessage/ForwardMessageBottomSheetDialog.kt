@@ -27,7 +27,7 @@ import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.composes.NewFriendListItem
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.isImageMessage
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 
 @Composable

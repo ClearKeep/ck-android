@@ -1,10 +1,8 @@
 package com.clearkeep.domain.repository
 
-import com.clearkeep.domain.model.Profile
-import com.clearkeep.domain.model.Server
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.model.*
 import com.google.protobuf.ByteString
-import user.UserOuterClass
 
 interface ProfileRepository {
     suspend fun updateProfile(server: Server, profile: Profile): Boolean
@@ -24,14 +22,14 @@ interface ProfileRepository {
         mHex: String,
     ): Resource<Pair<String, String>>
 
-    suspend fun mfaValidateOtp(server: Server, owner: com.clearkeep.domain.model.Owner, otp: String): Resource<String>
+    suspend fun mfaValidateOtp(server: Server, owner: Owner, otp: String): Resource<String>
     suspend fun mfaResendOtp(server: Server): Resource<Pair<Int, String>>
     suspend fun sendMfaAuthChallenge(
         server: Server,
         aHex: String
-    ): UserOuterClass.MfaAuthChallengeResponse
+    ): MfaAuthChallengeResponse
 
-    suspend fun requestChangePassword(server: Server, aHex: String): UserOuterClass.RequestChangePasswordRes
+    suspend fun requestChangePassword(server: Server, aHex: String): RequestChangePasswordRes
     suspend fun changePassword(
         server: Server,
         aHex: String,

@@ -18,7 +18,7 @@ import com.clearkeep.presentation.components.CKSimpleTheme
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.groupinvite.InsertFriendScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteMemberUIType
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 
 @AndroidEntryPoint
 class CreateGroupActivity : AppCompatActivity() {

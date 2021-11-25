@@ -20,7 +20,7 @@ import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.convertMessageList
 import com.clearkeep.utilities.getTimeAsString
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.launch
 import kotlin.math.max

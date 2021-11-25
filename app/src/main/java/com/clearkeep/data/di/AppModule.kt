@@ -36,10 +36,4 @@ class AppModule {
     fun provideDynamicSubscriberAPIProvider(): DynamicSubscriberAPIProvider {
         return DynamicSubscriberAPIProviderImpl()
     }
-
-    @Singleton
-    @Provides
-    fun provideEnvironment(dynamicAPIProvider: DynamicAPIProvider): Environment {
-        return Environment(dynamicAPIProvider)
-    }
 }

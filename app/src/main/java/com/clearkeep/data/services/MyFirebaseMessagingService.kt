@@ -3,12 +3,11 @@ package com.clearkeep.data.services
 import android.content.Intent
 import android.util.Base64
 import androidx.core.app.NotificationManagerCompat
-import com.clearkeep.data.local.signal.CKSignalProtocolAddress
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.UserPreference
+import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
 import com.clearkeep.domain.usecase.group.*
 import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
@@ -18,10 +17,8 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
-import com.clearkeep.presentation.screen.chat.utils.isGroup
 import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
-import com.clearkeep.utilities.*
 import com.google.common.reflect.TypeToken
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -94,7 +91,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var environment: Environment
 
     @Inject
-    lateinit var senderKeyStore: InMemorySenderKeyStore
+    lateinit var senderKeyStore: SenderKeyStore
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -233,7 +230,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     val avatar = getFriendUseCase(fromClientID)?.avatar
                     showMessagingStyleNotification(
                         context = applicationContext,
-                        chatGroup = group.data,
+                        chatGroup = group.data!!,
                         decryptedMessage,
                         userPreference ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false),
                         avatar
@@ -264,7 +261,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
                     val senderAddress2 = CKSignalProtocolAddress(
-                        com.clearkeep.domain.model.Owner(
+                        Owner(
                             clientDomain,
                             it
                         ), RECEIVER_DEVICE_ID

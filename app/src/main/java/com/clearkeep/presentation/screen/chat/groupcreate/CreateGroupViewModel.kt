@@ -16,14 +16,14 @@ class CreateGroupViewModel @Inject constructor(
 ) : ViewModel() {
     var groupId: Long = -1
 
-    val invitedFriends: MutableList<com.clearkeep.domain.model.User> = mutableListOf()
+    val invitedFriends: MutableList<User> = mutableListOf()
 
     private val _createGroupState = MutableLiveData<CreateGroupState>()
 
     val createGroupState: LiveData<CreateGroupState>
         get() = _createGroupState
 
-    fun setFriendsList(friends: List<com.clearkeep.domain.model.User>) {
+    fun setFriendsList(friends: List<User>) {
         invitedFriends.clear()
         invitedFriends.addAll(friends)
     }
@@ -33,10 +33,10 @@ class CreateGroupViewModel @Inject constructor(
             _createGroupState.value = CreateGroupProcessing
             val server = environment.getServer()
             // clone invited list and add me to list
-            val list = mutableListOf<com.clearkeep.domain.model.User>()
+            val list = mutableListOf<User>()
             list.addAll(invitedFriends)
             list.add(
-                com.clearkeep.domain.model.User(
+                User(
                     userId = server.profile.userId,
                     userName = server.profile.userName ?: "",
                     domain = server.serverDomain,
@@ -48,7 +48,7 @@ class CreateGroupViewModel @Inject constructor(
             )
             val res = createGroupUseCase(server.profile.userId, groupName, list, true)
             if (res?.data != null) {
-                groupId = res.data.groupId
+                groupId = res.data!!.groupId
                 _createGroupState.value = CreateGroupSuccess
             } else {
                 onError?.invoke()

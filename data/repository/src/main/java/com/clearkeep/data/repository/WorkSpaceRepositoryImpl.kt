@@ -2,8 +2,8 @@ package com.clearkeep.data.repository
 
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.data.remote.service.WorkspaceService
+import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.repository.WorkSpaceRepository
-import com.clearkeep.utilities.parseError
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -28,15 +28,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.presentation.components.*
 import com.clearkeep.presentation.components.base.*
-import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.presentation.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.presentation.screen.chat.home.composes.SiteMenuScreen
 import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.utilities.sdp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -46,8 +44,8 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     gotoSearch: () -> Unit,
-    createGroupChat: ((isDirectGroup: Boolean) -> Unit),
-    gotoRoomById: ((idRoom: Long) -> Unit),
+    createGroupChat: (isDirectGroup: Boolean) -> Unit,
+    gotoRoomById: (idRoom: Long) -> Unit,
     onSignOut: () -> Unit,
     onJoinServer: (serverUrl: String) -> Unit,
     onNavigateServerSetting: () -> Unit,
@@ -55,7 +53,6 @@ fun HomeScreen(
     onNavigateNotificationSetting: () -> Unit,
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit,
-    onNavigateNotes: () -> Unit,
 ) {
     val showJoinServer = homeViewModel.selectingJoinServer.observeAsState()
     val rememberStateSiteMenu = rememberSaveable { mutableStateOf(false) }

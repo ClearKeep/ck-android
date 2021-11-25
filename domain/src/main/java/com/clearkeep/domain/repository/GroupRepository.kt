@@ -1,12 +1,8 @@
 package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.model.User
-import group.GroupOuterClass
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.model.*
 
 interface GroupRepository {
     fun getAllRoomsAsState(): LiveData<List<ChatGroup>>
@@ -20,14 +16,15 @@ interface GroupRepository {
         domain: String,
         clientId: String,
         server: Server?
-    ): Resource<GroupOuterClass.GroupObjectResponse>
+    ): Resource<GroupObjectResponse>
+
     suspend fun updateGroup(group: ChatGroup)
     suspend fun removeMemberInGroup(removedUser: User, groupId: Long, owner: Owner): Boolean
-    suspend fun leaveGroup(groupId: Long, owner: Owner): GroupOuterClass.BaseResponse?
+    suspend fun leaveGroup(groupId: Long, owner: Owner): String?
     suspend fun getGroupByGroupId(groupId: Long): ChatGroup?
-    suspend fun fetchGroups(server: Server): Resource<List<GroupOuterClass.GroupObjectResponse>>
+    suspend fun fetchGroups(server: Server): Resource<List<GroupObjectResponse>>
     suspend fun convertGroupFromResponse(
-        response: GroupOuterClass.GroupObjectResponse,
+        response: GroupObjectResponse,
         serverDomain: String,
         ownerId: String,
         server: Server?
@@ -60,7 +57,7 @@ interface GroupRepository {
         invitedUser: User,
         groupId: Long,
         owner: Owner
-    ): GroupOuterClass.BaseResponse?
+    ): String?
     suspend fun getGroup(
         groupId: Long,
         owner: Owner,

@@ -11,7 +11,7 @@ class GetUnreadMessageUseCase @Inject constructor(private val messageRepository:
         groupId: Long,
         domain: String,
         ourClientId: String
-    ): List<com.clearkeep.domain.model.Message> {
+    ): List<Message> {
         val server = serverRepository.getServer(domain, ourClientId)
         val group = groupRepository.getGroupByID(groupId, domain, ourClientId, server, false)
         return messageRepository.getUnreadMessage(groupId, group.data?.lastMessageSyncTimestamp ?: 0L, domain, ourClientId).dropWhile { it.senderId == ourClientId }

@@ -48,7 +48,7 @@ class RegisterViewModel @Inject constructor(
         displayName: String,
         password: String,
         confirmPassword: String
-    ): com.clearkeep.common.utilities.network.Resource<AuthOuterClass.RegisterSRPRes>? {
+    ): Resource<Any>? {
         _isLoading.value = true
 
         _emailError.value = ""

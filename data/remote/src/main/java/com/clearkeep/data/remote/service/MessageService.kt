@@ -12,7 +12,7 @@ import javax.inject.Inject
 class MessageService @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
 ) {
-    suspend fun sendMessagePeer(server: com.clearkeep.domain.model.Server, receiverClientId: String, deviceId: String, groupId: Long, message: ByteArray, messageSender: ByteArray) = withContext(Dispatchers.IO) {
+    suspend fun sendMessagePeer(server: Server, receiverClientId: String, deviceId: String, groupId: Long, message: ByteArray, messageSender: ByteArray) = withContext(Dispatchers.IO) {
         val request = MessageOuterClass.PublishRequest.newBuilder()
             .setGroupId(groupId)
             .setFromClientDeviceId(deviceId)
@@ -26,7 +26,7 @@ class MessageService @Inject constructor(
     }
     
     suspend fun sendMessageGroup(
-        server: com.clearkeep.domain.model.Server,
+        server: Server,
         deviceId: String,
         groupId: Long,
         message: ByteArray,
@@ -42,7 +42,7 @@ class MessageService @Inject constructor(
         return@withContext paramAPIProvider.provideMessageBlockingStub(paramAPI).publish(request)
     }
     
-    suspend fun getMessage(server: com.clearkeep.domain.model.Server, groupId: Long, loadSize: Int, lastMessageAt: Long): MessageOuterClass.GetMessagesInGroupResponse = withContext(Dispatchers.IO) {
+    suspend fun getMessage(server: Server, groupId: Long, loadSize: Int, lastMessageAt: Long): MessageOuterClass.GetMessagesInGroupResponse = withContext(Dispatchers.IO) {
         val messageGrpc = paramAPIProvider.provideMessageBlockingStub(ParamAPI(server.serverDomain, server.accessKey, server.hashKey))
         val request = MessageOuterClass.GetMessagesInGroupRequest.newBuilder()
             .setGroupId(groupId)

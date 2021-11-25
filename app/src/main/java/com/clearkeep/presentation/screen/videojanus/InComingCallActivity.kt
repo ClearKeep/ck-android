@@ -25,8 +25,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.clearkeep.presentation.screen.chat.utils.isGroup
-import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.activity_in_coming_call.*
@@ -37,7 +35,7 @@ import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.R
-import com.clearkeep.domain.model.Owner
+import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity

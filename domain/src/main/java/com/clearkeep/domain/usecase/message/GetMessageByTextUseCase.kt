@@ -4,11 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
 import com.clearkeep.domain.model.Message
+import com.clearkeep.domain.model.MessageSearchResult
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.presentation.screen.chat.contactsearch.MessageSearchResult
-import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 

@@ -1,18 +1,19 @@
 package com.clearkeep.domain.usecase.profile
 
+import com.clearkeep.common.utilities.decodeHex
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.srp.NativeLib
-import com.clearkeep.utilities.decodeHex
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.toHexString
 import javax.inject.Inject
 
 class MfaValidatePasswordUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val serverRepository: ServerRepository
 ) {
-    suspend operator fun invoke(owner: com.clearkeep.domain.model.Owner, password: String): Resource<Pair<String, String>> {
+    suspend operator fun invoke(owner: Owner, password: String): Resource<Pair<String, String>> {
         val server =
             serverRepository.getServerByOwner(owner) ?: return Resource.error(
                 "",
@@ -21,7 +22,7 @@ class MfaValidatePasswordUseCase @Inject constructor(
 
         val nativeLib = NativeLib()
         val a = nativeLib.getA(server.profile.email ?: "", password)
-        val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        val aHex = a.toHexString()
 
         val response = profileRepository.sendMfaAuthChallenge(server, aHex)
 
@@ -29,7 +30,7 @@ class MfaValidatePasswordUseCase @Inject constructor(
         val b = response.publicChallengeB
 
         val m = nativeLib.getM(salt.decodeHex(), b.decodeHex())
-        val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
+        val mHex = m.toHexString()
 
         nativeLib.freeMemoryAuthenticate()
 

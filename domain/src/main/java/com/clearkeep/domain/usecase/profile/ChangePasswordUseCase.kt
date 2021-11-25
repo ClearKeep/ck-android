@@ -1,13 +1,12 @@
 package com.clearkeep.domain.usecase.profile
 
-import com.clearkeep.data.repository.SignalKeyRepositoryImpl
+import com.clearkeep.common.utilities.DecryptsPBKDF2
+import com.clearkeep.common.utilities.decodeHex
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.srp.NativeLib
-import com.clearkeep.utilities.DecryptsPBKDF2
-import com.clearkeep.utilities.decodeHex
 import com.clearkeep.common.utilities.network.Resource
 import javax.inject.Inject
 

@@ -4,7 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import kotlin.collections.ArrayList
 
 

@@ -1,9 +1,10 @@
 package com.clearkeep.domain.repository
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
-
 
 interface ServerRepository {
     val isLogout: MutableLiveData<Boolean>
@@ -14,7 +15,7 @@ interface ServerRepository {
     suspend fun getServer(domain: String, ownerId: String): Server?
     suspend fun getServerByOwner(owner: Owner): Server?
     suspend fun insertServer(server: Server)
-    suspend fun getDefaultServer(): Server
+    suspend fun getDefaultServer(): Server?
     suspend fun setActiveServer(server: Server)
     fun getDefaultServerAsState(): LiveData<Server?>
     suspend fun deleteServer(serverId: Int): Int

@@ -1,7 +1,7 @@
 package com.clearkeep.presentation.screen.videojanus.common
 
 import android.content.Context
-import com.clearkeep.utilities.printlnCK
+import com.clearkeep.common.utilities.printlnCK
 import org.webrtc.Camera1Enumerator
 import org.webrtc.Camera2Enumerator
 import org.webrtc.CameraEnumerator

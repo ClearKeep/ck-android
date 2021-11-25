@@ -5,18 +5,19 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.clearkeep.data.local.model.UserPreferenceLocal
 import com.clearkeep.domain.model.UserPreference
 
 @Dao
 interface UserPreferenceDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(userPreference: UserPreference)
+    suspend fun insert(userPreference: UserPreferenceLocal)
 
     @Query("SELECT * FROM userpreference WHERE server_domain = :serverDomain AND user_id = :userId")
-    suspend fun getPreference(serverDomain: String, userId: String): UserPreference?
+    suspend fun getPreference(serverDomain: String, userId: String): UserPreferenceLocal?
 
     @Query("SELECT * FROM userpreference WHERE server_domain = :serverDomain AND user_id = :userId")
-    fun getPreferenceLiveData(serverDomain: String, userId: String): LiveData<UserPreference>
+    fun getPreferenceLiveData(serverDomain: String, userId: String): LiveData<UserPreferenceLocal>
 
     @Query("UPDATE userpreference SET show_notification_preview = :value WHERE server_domain = :serverDomain AND user_id = :userId")
     suspend fun updateNotificationPreview(serverDomain: String, userId: String, value: Boolean)

@@ -6,5 +6,5 @@ import com.clearkeep.domain.repository.PeopleRepository
 import javax.inject.Inject
 
 class UpdateAvatarUserEntityUseCase @Inject constructor(private val peopleRepository: PeopleRepository) {
-    suspend operator fun invoke(user: com.clearkeep.domain.model.User, owner: com.clearkeep.domain.model.Owner) = peopleRepository.updateAvatarUserEntity(user, owner)
+    suspend operator fun invoke(user: User, owner: Owner) = peopleRepository.updateAvatarUserEntity(user, owner)
 }

@@ -1,5 +1,7 @@
 package com.clearkeep.data.services.utils
 
+import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.repository.UserRepository
 import com.clearkeep.utilities.*
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +14,7 @@ class NotificationChannelSubscriber(
     private val notifyBlockingStub: NotifyGrpc.NotifyBlockingStub,
     private val notifyStub: NotifyGrpc.NotifyStub,
     private val notificationChannelListener: NotificationSubscriberListener,
-    private val userManager: AppStorage
+    private val userManager: UserRepository
 ) {
 
     interface NotificationSubscriberListener {

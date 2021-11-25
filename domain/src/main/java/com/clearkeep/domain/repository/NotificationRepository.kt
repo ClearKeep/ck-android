@@ -6,6 +6,6 @@ interface NotificationRepository {
     suspend fun registerPushNotificationTokenByOwner(
         token: String,
         deviceId: String,
-        server: com.clearkeep.domain.model.Server
+        server: Server
     ): Boolean
 }

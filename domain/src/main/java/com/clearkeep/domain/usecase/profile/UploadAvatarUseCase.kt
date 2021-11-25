@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class UploadAvatarUseCase @Inject constructor(private val profileRepository: ProfileRepository, private val serverRepository: ServerRepository) {
     suspend operator fun invoke(
-        owner: com.clearkeep.domain.model.Owner,
+        owner: Owner,
         mimeType: String,
         fileName: String,
         byteStrings: List<ByteString>,

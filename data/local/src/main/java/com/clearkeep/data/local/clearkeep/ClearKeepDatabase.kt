@@ -6,25 +6,24 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.clearkeep.data.local.clearkeep.converter.ProfileConverter
 import com.clearkeep.data.local.clearkeep.dao.*
+import com.clearkeep.data.local.model.*
 import com.clearkeep.domain.model.*
 
 @Database(
     entities = [
-        ContactsContract.Profile::class,
-        Message::class,
-        ChatGroup::class,
-        UserEntity::class,
-        Server::class,
-        ContactsContract.CommonDataKinds.Note::class,
-        UserPreference::class,
-        UserKey::class
-    ], version = 15, exportSchema = false
+        ProfileLocal::class,
+        MessageLocal::class,
+        ChatGroupLocal::class,
+        UserEntityLocal::class,
+        ServerLocal::class,
+        UserPreferenceLocal::class,
+        UserKeyLocal::class
+    ], version = 16, exportSchema = false
 )
 @TypeConverters(ProfileConverter::class)
 abstract class ClearKeepDatabase : RoomDatabase() {
     abstract fun serverDao(): ServerDAO
     abstract fun messageDao(): MessageDAO
-    abstract fun noteDao(): NoteDAO
     abstract fun groupDao(): GroupDAO
     abstract fun userDao(): UserDAO
     abstract fun userPreferenceDao(): UserPreferenceDAO
