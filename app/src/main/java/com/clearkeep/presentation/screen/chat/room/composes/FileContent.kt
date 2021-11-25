@@ -13,10 +13,11 @@ import androidx.compose.ui.res.painterResource
 import com.clearkeep.R
 import com.clearkeep.common.utilities.fileSizeRegex
 import com.clearkeep.common.utilities.getFileNameFromUrl
-import com.clearkeep.presentation.components.grayscale2
-import com.clearkeep.presentation.components.grayscale4
-import com.clearkeep.presentation.components.grayscaleOffWhite
-import com.clearkeep.utilities.*
+import com.clearkeep.common.presentation.components.grayscale2
+import com.clearkeep.common.presentation.components.grayscale4
+import com.clearkeep.common.presentation.components.grayscaleOffWhite
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
 

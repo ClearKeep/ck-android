@@ -20,16 +20,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.presentation.components.base.CKHeaderText
-import com.clearkeep.presentation.components.base.HeaderTextType
-import com.clearkeep.presentation.components.primaryDefault
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.base.CKHeaderText
+import com.clearkeep.common.presentation.components.base.HeaderTextType
+import com.clearkeep.common.presentation.components.primaryDefault
 import com.clearkeep.presentation.screen.chat.composes.FriendListItemInfo
 import com.clearkeep.presentation.screen.chat.composes.FriendListMoreItem
 import com.clearkeep.presentation.screen.chat.home.composes.SideBarLabel
 import com.clearkeep.presentation.screen.chat.room.RoomViewModel
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun RoomInfoScreen(

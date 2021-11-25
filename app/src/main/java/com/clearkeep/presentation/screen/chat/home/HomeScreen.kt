@@ -28,14 +28,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.presentation.screen.chat.home.composes.CircleAvatarStatus
 import com.clearkeep.presentation.screen.chat.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.presentation.screen.chat.home.composes.SiteMenuScreen
-import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 

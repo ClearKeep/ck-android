@@ -19,13 +19,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.CKText
-import com.clearkeep.presentation.components.colorDialogScrim
-import com.clearkeep.presentation.components.colorLightBlue
-import com.clearkeep.presentation.components.separatorDarkNonOpaque
-import com.clearkeep.presentation.components.tintsRedLight
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.colorDialogScrim
+import com.clearkeep.common.presentation.components.colorLightBlue
+import com.clearkeep.common.presentation.components.separatorDarkNonOpaque
+import com.clearkeep.common.presentation.components.tintsRedLight
 import com.clearkeep.utilities.isPermissionGranted
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun UploadPhotoDialog(

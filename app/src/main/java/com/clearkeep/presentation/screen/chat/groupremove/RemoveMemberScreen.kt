@@ -20,16 +20,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.presentation.components.base.CKHeaderText
-import com.clearkeep.presentation.components.base.CKSearchBox
-import com.clearkeep.presentation.components.base.HeaderTextType
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.base.CKHeaderText
+import com.clearkeep.common.presentation.components.base.CKSearchBox
+import com.clearkeep.common.presentation.components.base.HeaderTextType
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserStateTypeInGroup
 import com.clearkeep.presentation.screen.chat.composes.*
 import com.clearkeep.presentation.screen.chat.room.RoomViewModel
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import java.util.*
 
 @Composable

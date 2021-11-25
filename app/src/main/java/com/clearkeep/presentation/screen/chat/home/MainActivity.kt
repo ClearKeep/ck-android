@@ -14,7 +14,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.*
-import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import com.clearkeep.presentation.screen.chat.contactsearch.SearchUserActivity
 import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity
 import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
@@ -22,8 +22,8 @@ import com.clearkeep.presentation.screen.chat.room.RoomActivity
 import com.clearkeep.data.services.ChatService
 import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
-import com.clearkeep.presentation.components.base.CKButton
-import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.presentation.components.base.CKButton
+import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.presentation.screen.auth.login.LoginActivity
 import com.clearkeep.presentation.screen.chat.bannedusers.BannedUserActivity
 import com.clearkeep.presentation.screen.chat.invite.InviteActivity
@@ -31,7 +31,7 @@ import com.clearkeep.presentation.screen.chat.notificationsetting.NotificationSe
 import com.clearkeep.presentation.screen.chat.profile.ProfileActivity
 import com.clearkeep.presentation.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 
 @AndroidEntryPoint

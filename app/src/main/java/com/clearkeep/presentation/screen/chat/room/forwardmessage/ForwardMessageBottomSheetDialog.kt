@@ -15,20 +15,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.ButtonType
-import com.clearkeep.presentation.components.base.CKButton
-import com.clearkeep.presentation.components.base.CKSearchBox
-import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.ButtonType
+import com.clearkeep.common.presentation.components.base.CKButton
+import com.clearkeep.common.presentation.components.base.CKSearchBox
+import com.clearkeep.common.presentation.components.base.CKText
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.composes.NewFriendListItem
-import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun ForwardMessageBottomSheetDialog(

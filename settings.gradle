@@ -16,7 +16,8 @@ include ':app',
         ':srp',
         ':data:local',
         ':data:remote',
-        ':features',
         ':domain',
         ':data:repository',
-        ':common'
+        ':common',
+        ':features:splash',
+        ':navigation'

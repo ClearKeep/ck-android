@@ -12,7 +12,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
-import com.clearkeep.presentation.components.CKInsetTheme
+import com.clearkeep.common.presentation.components.CKInsetTheme
 import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupViewModel
 import com.clearkeep.presentation.screen.chat.groupcreate.EnterGroupNameScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.AddMemberUIType

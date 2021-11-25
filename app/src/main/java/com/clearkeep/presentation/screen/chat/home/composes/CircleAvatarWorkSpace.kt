@@ -14,15 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.CKText
-import com.clearkeep.presentation.components.primaryDefault
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.primaryDefault
 import com.clearkeep.domain.model.Server
-
 
 @Composable
 fun CircleAvatarWorkSpace(
-    item: com.clearkeep.domain.model.Server,
+    item: Server,
     isHighlight: Boolean,
     contentSize: Dp = dimensionResource(R.dimen._32sdp)
 ) {
@@ -30,7 +29,7 @@ fun CircleAvatarWorkSpace(
 }
 
 @Composable
-fun Highlight(item: com.clearkeep.domain.model.Server, contentSize: Dp) {
+fun Highlight(item: Server, contentSize: Dp) {
     Column(
         modifier = Modifier
             .size(contentSize.plus(dimensionResource(R.dimen._12sdp)))
@@ -48,7 +47,7 @@ fun Highlight(item: com.clearkeep.domain.model.Server, contentSize: Dp) {
 }
 
 @Composable
-fun Content(item: com.clearkeep.domain.model.Server, contentSize: Dp) {
+fun Content(item: Server, contentSize: Dp) {
     val displayName =
         if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(
             0,

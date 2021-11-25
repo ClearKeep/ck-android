@@ -33,21 +33,21 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.presentation.components.base.CKHeaderText
-import com.clearkeep.presentation.components.base.HeaderTextType
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.base.CKHeaderText
+import com.clearkeep.common.presentation.components.base.HeaderTextType
 import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.UserStatus
 import com.clearkeep.presentation.screen.chat.home.HomeViewModel
-import com.clearkeep.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.common.utilities.defaultNonScalableTextSize
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
-    profile: com.clearkeep.domain.model.Profile,
+    profile: Profile,
     closeSiteMenu: (() -> Unit),
     onLeaveServer: (() -> Unit),
     onNavigateServerSetting: () -> Unit,
@@ -170,7 +170,7 @@ fun SiteMenuScreen(
 }
 
 @Composable
-fun HeaderSite(profile: com.clearkeep.domain.model.Profile, homeViewModel: HomeViewModel) {
+fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val context = LocalContext.current
     var expanded by rememberSaveable { mutableStateOf(false) }
     val statusUse = homeViewModel.currentStatus.observeAsState()
@@ -193,18 +193,18 @@ fun HeaderSite(profile: com.clearkeep.domain.model.Profile, homeViewModel: HomeV
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 when (statusUse.value) {
-                    com.clearkeep.domain.model.UserStatus.ONLINE.value -> {
+                    UserStatus.ONLINE.value -> {
                         Text(
-                            text = com.clearkeep.domain.model.UserStatus.ONLINE.value,
+                            text = UserStatus.ONLINE.value,
                             style = TextStyle(
                                 color = colorSuccessDefault,
                                 fontSize = defaultNonScalableTextSize()
                             )
                         )
                     }
-                    com.clearkeep.domain.model.UserStatus.OFFLINE.value, com.clearkeep.domain.model.UserStatus.UNDEFINED.value -> {
+                    UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
-                            text = com.clearkeep.domain.model.UserStatus.OFFLINE.value,
+                            text = UserStatus.OFFLINE.value,
                             style = TextStyle(
                                 color = grayscale3,
                                 fontSize = defaultNonScalableTextSize()
@@ -213,7 +213,7 @@ fun HeaderSite(profile: com.clearkeep.domain.model.Profile, homeViewModel: HomeV
                     }
                     else -> {
                         Text(
-                            text = com.clearkeep.domain.model.UserStatus.BUSY.value,
+                            text = UserStatus.BUSY.value,
                             style = TextStyle(
                                 color = errorDefault,
                                 fontSize = defaultNonScalableTextSize()
@@ -344,12 +344,12 @@ fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (com.
         StatusItem(
             onClick = { statusChoose.invoke(com.clearkeep.domain.model.UserStatus.ONLINE) },
             colorSuccessDefault,
-            com.clearkeep.domain.model.UserStatus.ONLINE.value
+            UserStatus.ONLINE.value
         )
         StatusItem(
             onClick = { statusChoose.invoke(com.clearkeep.domain.model.UserStatus.BUSY) },
             errorDefault,
-            com.clearkeep.domain.model.UserStatus.BUSY.value
+            UserStatus.BUSY.value
         )
     }
 }

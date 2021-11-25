@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.clearkeep.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

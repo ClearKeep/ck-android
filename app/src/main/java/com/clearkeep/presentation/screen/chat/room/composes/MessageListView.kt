@@ -13,15 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
-import com.clearkeep.presentation.components.grayscale3
+import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.presentation.components.grayscale3
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.convertMessageList
 import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import kotlinx.coroutines.launch
 import kotlin.math.max
 

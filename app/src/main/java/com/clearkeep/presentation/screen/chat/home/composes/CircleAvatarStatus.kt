@@ -15,10 +15,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.CKText
 import com.clearkeep.domain.model.UserStatus
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun CircleAvatarStatus(

@@ -19,9 +19,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.core.content.ContextCompat
-import com.clearkeep.presentation.components.grayscale2
-import com.clearkeep.presentation.components.grayscaleOffWhite
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.presentation.components.grayscale2
+import com.clearkeep.common.presentation.components.grayscaleOffWhite
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun ClickableLinkContent(message: String, isQuoteMessage: Boolean, longClickKey: Int, onLongClick: () -> Unit) {

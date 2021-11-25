@@ -27,14 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.ButtonType
-import com.clearkeep.presentation.components.base.CKButton
-import com.clearkeep.presentation.components.base.CKText
-import com.clearkeep.presentation.components.separatorDarkNonOpaque
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.ButtonType
+import com.clearkeep.common.presentation.components.base.CKButton
+import com.clearkeep.common.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.separatorDarkNonOpaque
 import com.clearkeep.presentation.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.files.getFileName
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 
 @ExperimentalMaterialApi
 @Composable

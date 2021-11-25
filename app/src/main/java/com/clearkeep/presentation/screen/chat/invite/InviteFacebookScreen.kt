@@ -14,9 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import com.clearkeep.R
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.presentation.components.grayscale5
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.presentation.components.grayscale5
+import com.clearkeep.common.utilities.sdp
 
 @Composable
 fun InviteFacebookScreen() {

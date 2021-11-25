@@ -27,11 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.clearkeep.R
-import com.clearkeep.presentation.components.*
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.utilities.*
 import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun SearchUserScreen(

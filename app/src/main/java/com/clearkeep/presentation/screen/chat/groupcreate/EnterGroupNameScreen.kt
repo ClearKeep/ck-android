@@ -16,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.utilities.sdp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.*
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.presentation.screen.chat.composes.FriendListItem
 
 @Composable

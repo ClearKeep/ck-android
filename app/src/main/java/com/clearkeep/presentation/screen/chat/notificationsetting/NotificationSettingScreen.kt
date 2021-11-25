@@ -13,11 +13,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.CKHeaderText
-import com.clearkeep.presentation.components.base.CKSetting
-import com.clearkeep.presentation.components.base.HeaderTextType
-import com.clearkeep.utilities.sdp
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKHeaderText
+import com.clearkeep.common.presentation.components.base.CKSetting
+import com.clearkeep.common.presentation.components.base.HeaderTextType
+import com.clearkeep.common.utilities.sdp
 
 
 @Composable

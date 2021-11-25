@@ -22,9 +22,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.clearkeep.R
-import com.clearkeep.presentation.components.CKTheme
-import com.clearkeep.presentation.components.base.CKAlertDialog
-import com.clearkeep.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.presentation.components.CKTheme
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
+import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.presentation.screen.auth.advancedsettings.CustomServerScreen
 import com.clearkeep.presentation.screen.auth.forgot.ForgotActivity
 import com.clearkeep.presentation.screen.auth.register.RegisterActivity
@@ -32,8 +33,7 @@ import com.clearkeep.presentation.screen.chat.otp.EnterOtpScreen
 import com.clearkeep.presentation.screen.chat.sociallogin.ConfirmSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.chat.sociallogin.EnterSocialLoginPhraseScreen
 import com.clearkeep.presentation.screen.chat.sociallogin.SetSocialLoginPhraseScreen
-import com.clearkeep.presentation.screen.splash.SplashActivity
-import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
+import com.clearkeep.features.splash.presentation.SplashActivity
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
@@ -334,7 +334,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHomeActivity() {
-        val intent = Intent(this, SplashActivity::class.java)
+        val intent = Intent(this, com.clearkeep.features.splash.presentation.SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()

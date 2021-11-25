@@ -17,9 +17,9 @@ import androidx.compose.ui.unit.Dp
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import com.clearkeep.R
-import com.clearkeep.presentation.components.backgroundGradientEnd
-import com.clearkeep.presentation.components.backgroundGradientStart
-import com.clearkeep.presentation.components.base.CKText
+import com.clearkeep.common.presentation.components.backgroundGradientEnd
+import com.clearkeep.common.presentation.components.backgroundGradientStart
+import com.clearkeep.common.presentation.components.base.CKText
 
 @Composable
 fun CircleAvatarSite(

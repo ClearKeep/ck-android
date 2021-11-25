@@ -16,13 +16,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.R
-import com.clearkeep.presentation.components.LocalColorMapping
-import com.clearkeep.presentation.components.base.*
-import com.clearkeep.presentation.components.grayscaleOffWhite
-import com.clearkeep.presentation.screen.auth.login.LoginViewModel
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.ButtonType
+import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.presentation.components.grayscaleOffWhite
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.utilities.sdp
-import com.clearkeep.utilities.toNonScalableTextSize
+import com.clearkeep.presentation.screen.auth.login.LoginViewModel
+import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 
 @Composable
 fun ConfirmSocialLoginPhraseScreen(
@@ -39,7 +40,7 @@ fun ConfirmSocialLoginPhraseScreen(
         onBackPress()
     }
 
-    if (registerResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
+    if (registerResponse.value?.status == Status.SUCCESS) {
         onLoginSuccess()
     }
 
