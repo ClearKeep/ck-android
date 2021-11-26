@@ -8,10 +8,10 @@ import com.clearkeep.data.local.model.toLocal
 import com.clearkeep.data.remote.utils.toEntity
 import com.clearkeep.domain.repository.MessageRepository
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.GetMessagesInGroupResponse
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import message.MessageOuterClass
 import org.whispersystems.libsignal.*
 import java.util.*
 import javax.inject.Inject

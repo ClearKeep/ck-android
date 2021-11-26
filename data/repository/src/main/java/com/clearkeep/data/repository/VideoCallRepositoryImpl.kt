@@ -3,9 +3,9 @@ package com.clearkeep.data.repository
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.remote.service.VideoCallService
 import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.model.ServerResponse
-import com.clearkeep.domain.model.StunServer
-import com.clearkeep.domain.model.TurnServer
+import com.clearkeep.domain.model.response.ServerResponse
+import com.clearkeep.domain.model.response.StunServer
+import com.clearkeep.domain.model.response.TurnServer
 import com.clearkeep.domain.repository.VideoCallRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

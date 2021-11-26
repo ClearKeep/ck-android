@@ -3,6 +3,7 @@ package com.clearkeep.domain.repository
 import androidx.lifecycle.LiveData
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.GroupObjectResponse
 
 interface GroupRepository {
     fun getAllRoomsAsState(): LiveData<List<ChatGroup>>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    Firebase config, for multi module project https://medium.com/@samstern_58566/how-to-use-firebase-on-android-without-the-google-services-plugin-93ecc7dc6c4-->
+    <string name="default_web_client_id" translatable="false">1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">1092685949059</string>
+    <string name="google_app_id" translatable="false">1:1092685949059:android:5adfd9c86038144527d3b6</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDb9Ef0REPsMcKJH5sBaiVfcVi78YsbMIM</string>
+    <string name="google_storage_bucket" translatable="false">ck-3-test.appspot.com</string>
+    <string name="project_id" translatable="false">ck-3-test</string>
+</resources>

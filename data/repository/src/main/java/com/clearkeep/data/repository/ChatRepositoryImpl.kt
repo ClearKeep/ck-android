@@ -9,11 +9,10 @@ import com.clearkeep.data.local.model.toLocal
 import com.clearkeep.data.remote.utils.toEntity
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.model.Server
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.*
-import message.MessageOuterClass
 import javax.inject.Inject
 
 class ChatRepositoryImpl @Inject constructor(

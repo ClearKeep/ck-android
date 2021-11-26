@@ -3,7 +3,7 @@ package com.clearkeep.domain.repository
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.Server
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.response.MessageObjectResponse
 
 interface ChatRepository {
     fun setJoiningRoomId(roomId: Long)

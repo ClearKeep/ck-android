@@ -75,17 +75,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".presentation.screen.auth.login.LoginActivity"
+            android:name="com.clearkeep.features.auth.presentation.login.LoginActivity"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/btn_login"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
-            android:name=".presentation.screen.auth.register.RegisterActivity"
+            android:name="com.clearkeep.features.auth.presentation.register.RegisterActivity"
             android:label="@string/btn_register"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".presentation.screen.auth.forgot.ForgotActivity"
+            android:name="com.clearkeep.features.auth.presentation.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity

@@ -1,7 +1,7 @@
 package com.clearkeep.domain.usecase.call
 
 import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.ServerResponse
+import com.clearkeep.domain.model.response.ServerResponse
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import javax.inject.Inject

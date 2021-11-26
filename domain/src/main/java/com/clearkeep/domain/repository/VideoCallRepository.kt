@@ -1,7 +1,7 @@
 package com.clearkeep.domain.repository
 
 import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.model.ServerResponse
+import com.clearkeep.domain.model.response.ServerResponse
 
 interface VideoCallRepository {
     suspend fun requestVideoCall(

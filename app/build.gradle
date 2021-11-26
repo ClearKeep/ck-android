@@ -20,10 +20,10 @@ android {
 
     defaultConfig {
         applicationId "com.clearkeep.ck"
-        minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 1
-        versionName "1.0.0"
+        minSdkVersion ConfigData.minSdk
+        targetSdkVersion ConfigData.targetSdk
+        versionCode ConfigData.versionCode
+        versionName ConfigData.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
@@ -31,8 +31,6 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments["dagger.hilt.disableModulesHaveInstallInCheck"] = "true"
-                /*arguments += ["room.schemaLocation":
-                                     "$projectDir/schemas".toString()]*/
             }
         }
     }
@@ -129,114 +127,98 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 }
 
 dependencies {
-    implementation project(':data:local')
-    implementation project(':data:remote')
-    implementation project(':domain')
-    implementation project(':common')
-    implementation project(':data:repository')
-    implementation project(':features:splash')
-    implementation project(':features:calls')
-    implementation project(':features:shared')
-    implementation project(':features:chat')
-    implementation project(':navigation')
+    implementation project(Modules.local)
+    implementation project(Modules.remote)
+    implementation project(Modules.domain)
+    implementation project(Modules.common)
+    implementation project(Modules.repository)
+    implementation project(Modules.featureSplash)
+    implementation project(Modules.featureCall)
+    implementation project(Modules.featureShared)
+    implementation project(Modules.featureChat)
+    implementation project(Modules.featureAuth)
+    implementation project(Modules.navigation)
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.activity:activity-ktx:1.1.0'
+    implementation Dependencies.jdk8
+    implementation Dependencies.androidCore
+    implementation Dependencies.appCompat
+    implementation Dependencies.materialDesign
+    implementation Dependencies.activity
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+    implementation Dependencies.coroutinesCore
+    implementation Dependencies.coroutinesAndroid
 
-    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation Dependencies.gson
 
-    // architect components
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+    //Architecture components
+    implementation Dependencies.lifecycleLiveData
+    implementation Dependencies.lifecycleExtensions
 
     // Jetpack Compose
-    implementation "androidx.activity:activity-compose:1.3.1"
-    implementation "androidx.compose.compiler:compiler:$jetpack_compose_version"
-    implementation("androidx.compose.runtime:runtime:$jetpack_compose_version")
-    implementation "androidx.navigation:navigation-compose:$navComposeVersion"
-    implementation "androidx.compose.runtime:runtime-livedata:$jetpack_compose_version"
-    implementation("androidx.compose.ui:ui:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-core:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-extended:$jetpack_compose_version")
-    implementation("androidx.compose.material:material:$jetpack_compose_version")
-    implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
-    implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
-    implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01"
-    implementation "androidx.compose.ui:ui-tooling:$jetpack_compose_version"
+    implementation Dependencies.composeActivity
+    implementation Dependencies.composeCompiler
+    implementation Dependencies.composeRuntime
+    implementation Dependencies.composeRuntimeLiveData
+    implementation Dependencies.composeNavigation
+    implementation Dependencies.composeUi
+    implementation Dependencies.composeMaterialIcons
+    implementation Dependencies.composeMaterialIconsExtended
+    implementation Dependencies.composeMaterial
+    implementation Dependencies.composeFoundation
+    implementation Dependencies.composeFoundationLayout
+    implementation Dependencies.composeAnimation
+    implementation Dependencies.composeConstraintLayout
+    implementation Dependencies.composeUiTooling
 
     // gRPC
-    implementation 'com.squareup.okhttp:okhttp:2.7.5'
-    implementation "io.grpc:grpc-stub:$grpcVersion"
-    implementation "io.grpc:grpc-okhttp:$grpcVersion"
-    implementation("io.grpc:grpc-protobuf-lite:$grpcVersion") {
+    implementation Dependencies.okhttp
+    implementation Dependencies.grpcStub
+    implementation Dependencies.grpcOkhttp
+    implementation(Dependencies.grpcProtoBufUtil) {
         exclude module: "protobuf-lite"
     }
+    implementation Dependencies.javaxAnnotations
+
     //Signal
-    implementation("org.whispersystems:signal-protocol-android:$signal_version") {
+    implementation(Dependencies.signal) {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+
     // Room components
-    implementation "androidx.room:room-runtime:$room_db_version"
-    implementation "androidx.room:room-ktx:$room_db_version"
-    kapt "androidx.room:room-compiler:$room_db_version"
-    androidTestImplementation "androidx.room:room-testing:$room_db_version"
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation Dependencies.roomRuntime
+    implementation Dependencies.roomKtx
+    kapt Dependencies.roomCompiler
+    androidTestImplementation Dependencies.roomTesting
+
+    implementation Dependencies.constraintLayout
 
     // dagger
-    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
-    implementation "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
-    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:$rootProject.assistedInjectVersion"
-    kapt "com.squareup.inject:assisted-inject-processor-dagger2:$rootProject.assistedInjectVersion"
-    implementation "com.google.dagger:hilt-android:$rootProject.hiltVersion"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$rootProject.hiltViewModelVersion"
-    kapt "com.google.dagger:hilt-android-compiler:$rootProject.hiltVersion"
-    kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
+    implementation Dependencies.hilt
+    kapt Dependencies.hiltCompiler
 
     // firebase
-    implementation 'com.google.firebase:firebase-messaging-ktx:21.0.0'
-    implementation 'com.google.firebase:firebase-analytics-ktx:18.0.0'
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation Dependencies.firebaseMessaging
+    implementation Dependencies.firebaseAnalytics
 
     // Test
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.junitExt
+    androidTestImplementation Dependencies.espresso
 
-    // janus
-    implementation project(':januswrapper')
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation files('../januswrapper/libs/libwebrtc.aar')
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
-
-    implementation 'com.microsoft.identity.client:msal:2.0.8'
-    implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
-
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'jp.wasabeef:glide-transformations:4.0.0'
-    implementation 'net.colindodd:toggleimagebutton:1.2'
+    //Glide
+    implementation Dependencies.glide
+    annotationProcessor Dependencies.glideCompiler
+    implementation Dependencies.glideTransformations
+    implementation Dependencies.toggleImageButton
 
     //Coil
-    implementation "io.coil-kt:coil:1.3.2"
-    implementation "io.coil-kt:coil-compose:1.3.2"
+    implementation Dependencies.coil
+    implementation Dependencies.coilCompose
 
     //Jetpack Accompanist
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
 
-    implementation "net.gotev:uploadservice:4.6.0"
-
-    implementation project(':srp')
-
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
+    implementation Dependencies.androidUploadService
 }

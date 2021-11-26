@@ -9,7 +9,7 @@ import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.*
 import kotlinx.coroutines.Dispatchers

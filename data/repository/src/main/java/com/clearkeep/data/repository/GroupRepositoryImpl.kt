@@ -18,8 +18,8 @@ import com.clearkeep.data.local.model.toLocal
 import com.clearkeep.data.remote.utils.toEntity
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.GroupObjectResponse
 import com.clearkeep.domain.repository.SignalKeyRepository
-import group.GroupOuterClass
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

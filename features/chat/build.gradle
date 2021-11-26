@@ -1,139 +1,28 @@
 plugins {
     id 'com.android.library'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'dagger.hilt.android.plugin'
 }
 
-android {
-    compileSdk 31
-
-    defaultConfig {
-        minSdk 21
-        targetSdk 31
-        versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    buildFeatures {
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerVersion "$kotlin_version"
-        kotlinCompilerExtensionVersion "$jetpack_compose_version"
-    }
-
-    flavorDimensions "version"
-    productFlavors {
-        prod {
-            dimension "version"
-            resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "5000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "8188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-prod\""
-        }
-        staging {
-            dimension "version"
-            versionNameSuffix "-staging"
-            resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "25000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "18188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-staging\""
-        }
-        dev {
-            dimension "version"
-            versionNameSuffix "-dev"
-            resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "25000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "28188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-dev\""
-        }
-    }
-}
+apply from: '../../android_commons.gradle'
+apply from: '../../android_feature_dependencies.gradle'
 
 dependencies {
-    implementation project(":common")
-    implementation project(":domain")
-    implementation project(":navigation")
-    implementation project(":features:shared")
-
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'com.google.android.material:material:1.4.0'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-
-    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
-    implementation "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
-    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:$rootProject.assistedInjectVersion"
-    kapt "com.squareup.inject:assisted-inject-processor-dagger2:$rootProject.assistedInjectVersion"
-    implementation "com.google.dagger:hilt-android:$rootProject.hiltVersion"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$rootProject.hiltViewModelVersion"
-    kapt "com.google.dagger:hilt-android-compiler:$rootProject.hiltVersion"
-    kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
-
-    // Jetpack Compose
-    implementation "androidx.activity:activity-compose:1.3.1"
-    implementation "androidx.compose.compiler:compiler:$jetpack_compose_version"
-    implementation("androidx.compose.runtime:runtime:$jetpack_compose_version")
-    implementation "androidx.navigation:navigation-compose:$navComposeVersion"
-    implementation "androidx.compose.runtime:runtime-livedata:$jetpack_compose_version"
-    implementation("androidx.compose.ui:ui:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-core:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-extended:$jetpack_compose_version")
-    implementation("androidx.compose.material:material:$jetpack_compose_version")
-    implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
-    implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
-    implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01"
-    implementation "androidx.compose.ui:ui-tooling:$jetpack_compose_version"
-
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'jp.wasabeef:glide-transformations:4.0.0'
-    implementation 'net.colindodd:toggleimagebutton:1.2'
+    //Glide
+    implementation Dependencies.glide
+    annotationProcessor Dependencies.glideCompiler
+    implementation Dependencies.glideTransformations
+    implementation Dependencies.toggleImageButton
 
     //Coil
-    implementation "io.coil-kt:coil:1.3.2"
-    implementation "io.coil-kt:coil-compose:1.3.2"
+    implementation Dependencies.coil
+    implementation Dependencies.coilCompose
 
     //Jetpack Accompanist
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
 
-    // architect components
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+    //FCM
+    implementation Dependencies.firebaseMessaging
 
-    // firebase
-    implementation 'com.google.firebase:firebase-messaging-ktx:21.0.0'
-
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.2.0'
+    implementation Dependencies.libPhoneNumber
 }

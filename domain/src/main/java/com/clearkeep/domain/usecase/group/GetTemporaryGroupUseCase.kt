@@ -6,9 +6,9 @@ import com.clearkeep.domain.model.User
 import javax.inject.Inject
 
 class GetTemporaryGroupUseCase @Inject constructor() {
-    operator fun invoke(createPeople: com.clearkeep.domain.model.User, receiverPeople: com.clearkeep.domain.model.User): com.clearkeep.domain.model.ChatGroup {
-        return com.clearkeep.domain.model.ChatGroup(
-            groupId = com.clearkeep.domain.model.GROUP_ID_TEMPO,
+    operator fun invoke(createPeople: User, receiverPeople: User): ChatGroup {
+        return ChatGroup(
+            groupId = GROUP_ID_TEMPO,
             groupName = receiverPeople.userName,
             groupAvatar = "",
             groupType = "peer",

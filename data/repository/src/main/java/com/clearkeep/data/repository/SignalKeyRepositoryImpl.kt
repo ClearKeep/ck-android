@@ -12,6 +12,7 @@ import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.signal.model.toLocal
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.PeerGetClientKeyResponse
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -1,67 +1,10 @@
 plugins {
     id 'com.android.library'
-    id 'kotlin-android'
 }
 
+apply from: '../android_commons.gradle'
+
 android {
-    compileSdk 31
-
-    defaultConfig {
-        minSdk 21
-        targetSdk 31
-        versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    flavorDimensions "version"
-    productFlavors {
-        prod {
-            dimension "version"
-            resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "5000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "8188"
-        }
-        staging {
-            dimension "version"
-            versionNameSuffix "-staging"
-            resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "25000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "18188"
-        }
-        dev {
-            dimension "version"
-            versionNameSuffix "-dev"
-            resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "25000"
-            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'JANUS_PORT', "28188"
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
     buildFeatures {
         compose true
     }
@@ -81,23 +24,23 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // Jetpack Compose
-    implementation "androidx.activity:activity-compose:1.3.1"
-    implementation "androidx.compose.compiler:compiler:$jetpack_compose_version"
-    implementation("androidx.compose.runtime:runtime:$jetpack_compose_version")
-    implementation "androidx.navigation:navigation-compose:$navComposeVersion"
-    implementation "androidx.compose.runtime:runtime-livedata:$jetpack_compose_version"
-    implementation("androidx.compose.ui:ui:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-core:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-extended:$jetpack_compose_version")
-    implementation("androidx.compose.material:material:$jetpack_compose_version")
-    implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
-    implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
-    implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01"
-    implementation "androidx.compose.ui:ui-tooling:$jetpack_compose_version"
+    implementation Dependencies.composeActivity
+    implementation Dependencies.composeCompiler
+    implementation Dependencies.composeRuntime
+    implementation Dependencies.composeRuntimeLiveData
+    implementation Dependencies.composeNavigation
+    implementation Dependencies.composeUi
+    implementation Dependencies.composeMaterialIcons
+    implementation Dependencies.composeMaterialIconsExtended
+    implementation Dependencies.composeMaterial
+    implementation Dependencies.composeFoundation
+    implementation Dependencies.composeFoundationLayout
+    implementation Dependencies.composeAnimation
+    implementation Dependencies.composeConstraintLayout
+    implementation Dependencies.composeUiTooling
 
     //Jetpack Accompanist
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
 }

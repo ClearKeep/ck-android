@@ -1,6 +1,5 @@
 package com.clearkeep.data.repository
 
-import auth.AuthOuterClass
 import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.data.repository.*
@@ -11,7 +10,6 @@ import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.preference.AppStorage
 import com.clearkeep.data.remote.utils.toEntity
 import com.clearkeep.data.repository.utils.parseError
-import com.clearkeep.domain.model.PeerGetClientKeyResponse
 import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.response.AuthChallengeRes

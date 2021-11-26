@@ -6,8 +6,8 @@ import com.clearkeep.data.remote.service.UserService
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.repository.utils.parseError
-import com.clearkeep.domain.model.MfaAuthChallengeResponse
-import com.clearkeep.domain.model.RequestChangePasswordRes
+import com.clearkeep.domain.model.response.MfaAuthChallengeResponse
+import com.clearkeep.domain.model.response.RequestChangePasswordRes
 import com.clearkeep.domain.model.Server
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException

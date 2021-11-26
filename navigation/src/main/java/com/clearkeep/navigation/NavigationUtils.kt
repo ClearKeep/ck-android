@@ -18,7 +18,7 @@ object NavigationUtils {
     fun navigateToStartActivity(context: Context) {
         val intent = Intent(
             context,
-            Class.forName("com.clearkeep.presentation.screen.auth.login.LoginActivity")
+            Class.forName("com.clearkeep.features.auth.presentation.login.LoginActivity")
         )
         context.startActivity(intent)
     }

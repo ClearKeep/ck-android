@@ -1,7 +1,7 @@
 package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
-import com.clearkeep.domain.model.GetMessagesInGroupResponse
+import com.clearkeep.domain.model.response.GetMessagesInGroupResponse
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Server

@@ -1,11 +1,7 @@
 package com.clearkeep.data.remote.utils
 
 import auth.AuthOuterClass
-import com.clearkeep.domain.model.*
-import com.clearkeep.domain.model.response.AuthChallengeRes
-import com.clearkeep.domain.model.response.AuthRes
-import com.clearkeep.domain.model.response.GetUploadFileLinkResponse
-import com.clearkeep.domain.model.response.SocialLoginRes
+import com.clearkeep.domain.model.response.*
 import group.GroupOuterClass
 import message.MessageOuterClass
 import upload_file.UploadFileOuterClass
