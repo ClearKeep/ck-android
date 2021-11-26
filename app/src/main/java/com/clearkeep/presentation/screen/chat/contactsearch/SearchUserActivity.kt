@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.common.presentation.components.CKSimpleTheme
 import com.clearkeep.domain.model.User
+import com.clearkeep.navigation.NavigationUtils
 import com.clearkeep.presentation.screen.chat.room.RoomActivity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,20 +40,20 @@ class SearchUserActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToRoomScreen(friend: com.clearkeep.domain.model.User) {
+    private fun navigateToRoomScreen(friend: User) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.DOMAIN, searchViewModel.getDomainOfActiveServer())
-        intent.putExtra(RoomActivity.CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
-        intent.putExtra(RoomActivity.FRIEND_ID, friend.userId)
-        intent.putExtra(RoomActivity.FRIEND_DOMAIN, friend.domain)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, searchViewModel.getDomainOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_ID, friend.userId)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_DOMAIN, friend.domain)
         startActivity(intent)
     }
 
-    private fun navigateToChatGroup(chatGroup: com.clearkeep.domain.model.ChatGroup) {
+    private fun navigateToChatGroup(chatGroup: ChatGroup) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.GROUP_ID, chatGroup.groupId)
-        intent.putExtra(RoomActivity.DOMAIN, searchViewModel.getDomainOfActiveServer())
-        intent.putExtra(RoomActivity.CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, chatGroup.groupId)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, searchViewModel.getDomainOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, searchViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 }

@@ -8,7 +8,9 @@ import android.net.Uri
 import android.text.TextUtils
 import androidx.lifecycle.*
 import com.clearkeep.R
+import com.clearkeep.common.utilities.getMessageContent
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
@@ -408,7 +410,7 @@ class RoomViewModel @Inject constructor(
                         isForceProcessKey = true,
                         cachedMessageId = tempMessageId
                     )
-                    isLatestPeerSignalKeyProcessed = response.status == com.clearkeep.common.utilities.network.Status.SUCCESS
+                    isLatestPeerSignalKeyProcessed = response.status == Status.SUCCESS
                     sendMessageResponse.value = response
                 } else {
                     sendMessageResponse.value = sendMessageUseCase.toPeer(
@@ -465,7 +467,7 @@ class RoomViewModel @Inject constructor(
             if (!group.isJoined) {
                 val result = registerSenderKeyToGroupUseCase(groupId, clientId, domain)
                 printlnCK("sendMessageToGroup register sender key $result")
-                if (result.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
+                if (result.status == Status.SUCCESS) {
                     _group.value = remarkGroupKeyRegisteredUseCase(groupId)
                     sendMessageResponse.value = sendMessageUseCase.toGroup(
                         clientId,
@@ -475,7 +477,7 @@ class RoomViewModel @Inject constructor(
                         cachedMessageId
                     )
                 } else {
-                    if (result.status == com.clearkeep.common.utilities.network.Status.ERROR && result.error is TokenExpiredException) {
+                    if (result.status == Status.ERROR && result.error is TokenExpiredException) {
                         logoutUseCase()
                     }
                     sendMessageResponse.value = result
@@ -543,7 +545,7 @@ class RoomViewModel @Inject constructor(
 
     fun requestCall(groupId: Long, isAudioMode: Boolean) {
         viewModelScope.launch {
-            requestCallState.value = com.clearkeep.common.utilities.network.Resource.loading(null)
+            requestCallState.value = Resource.loading(null)
 
             var lastGroupId: Long = groupId
             if (lastGroupId == GROUP_ID_TEMPO) {
@@ -564,9 +566,9 @@ class RoomViewModel @Inject constructor(
 
             if (lastGroupId != GROUP_ID_TEMPO && lastGroupId != 0L) {
                 requestCallState.value =
-                    com.clearkeep.common.utilities.network.Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
+                    Resource.success(_group.value?.let { RequestInfo(it, isAudioMode) })
             } else {
-                requestCallState.value = com.clearkeep.common.utilities.network.Resource.error("error",
+                requestCallState.value = Resource.error("error",
                     _group.value?.let { RequestInfo(it, isAudioMode) })
             }
         }
@@ -675,7 +677,7 @@ class RoomViewModel @Inject constructor(
         if (!urisList.isNullOrEmpty()) {
             if (!isValidFilesCount(urisList)) {
                 uploadFileResponse.postValue(
-                    com.clearkeep.common.utilities.network.Resource.error(
+                    Resource.error(
                         context.getString(R.string.upload_file_error_too_many),
                         null
                     )
@@ -685,7 +687,7 @@ class RoomViewModel @Inject constructor(
 
             if (!isValidFileSizes(context, urisList, persistablePermission)) {
                 uploadFileResponse.value =
-                    com.clearkeep.common.utilities.network.Resource.error(context.getString(R.string.upload_file_error_too_large), null)
+                    Resource.error(context.getString(R.string.upload_file_error_too_large), null)
                 return
             }
 
@@ -727,7 +729,7 @@ class RoomViewModel @Inject constructor(
                         fileName.replace(" ", "_"),
                         uriString
                     )
-                    if (urlResponse.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
+                    if (urlResponse.status == Status.SUCCESS) {
                         fileUrls.add(urlResponse.data ?: "")
                         filesSizeInBytes.add(fileSize)
                     } else {

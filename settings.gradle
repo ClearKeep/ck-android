@@ -12,12 +12,14 @@ dependencyResolutionManagement {
 
 rootProject.name = "ClearKeep"
 include ':app',
-        ':januswrapper',
-        ':srp',
+        ':domain',
+        ':common',
         ':data:local',
         ':data:remote',
-        ':domain',
         ':data:repository',
-        ':common',
         ':features:splash',
-        ':navigation'
+        ':features:calls',
+        ':features:shared',
+        ':navigation',
+        ':januswrapper',
+        ':srp'

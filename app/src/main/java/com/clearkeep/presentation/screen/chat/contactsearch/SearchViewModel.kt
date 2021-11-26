@@ -1,6 +1,8 @@
 package com.clearkeep.presentation.screen.chat.contactsearch
 
 import androidx.lifecycle.*
+import com.clearkeep.common.utilities.isFileMessage
+import com.clearkeep.common.utilities.isImageMessage
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.usecase.group.GetGroupsByDomainUseCase
@@ -12,8 +14,6 @@ import com.clearkeep.domain.usecase.people.InsertFriendUseCase
 import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
 import com.clearkeep.domain.usecase.server.GetActiveServerUseCase
 import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
-import com.clearkeep.utilities.isFileMessage
-import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.common.utilities.printlnCK
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*

@@ -17,7 +17,6 @@ import com.clearkeep.presentation.screen.chat.groupcreate.CreateGroupViewModel
 import com.clearkeep.presentation.screen.chat.groupcreate.EnterGroupNameScreen
 import com.clearkeep.presentation.screen.chat.groupinvite.AddMemberUIType
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupScreen
-import com.clearkeep.presentation.screen.videojanus.AppCall
 import com.clearkeep.presentation.screen.chat.groupinvite.InviteGroupViewModel
 import com.clearkeep.presentation.screen.chat.groupremove.RemoveMemberScreen
 import com.clearkeep.presentation.screen.chat.room.imagepicker.ImagePickerScreen
@@ -38,6 +37,7 @@ import com.clearkeep.common.utilities.ACTION_ADD_REMOVE_MEMBER
 import com.clearkeep.common.utilities.EXTRA_GROUP_ID
 import com.clearkeep.common.utilities.INCOMING_NOTIFICATION_ID
 import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.navigation.NavigationUtils
 import com.clearkeep.presentation.screen.chat.room.photodetail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
@@ -87,16 +87,16 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerAddMemberReceiver()
-        roomId = intent.getLongExtra(GROUP_ID, 0)
-        domain = intent.getStringExtra(DOMAIN) ?: ""
-        clientId = intent.getStringExtra(CLIENT_ID) ?: ""
-        isNote = intent.getBooleanExtra(IS_NOTE, false)
-        val clearTempMessage = intent.getBooleanExtra(CLEAR_TEMP_MESSAGE, false)
+        roomId = intent.getLongExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, 0)
+        domain = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN) ?: ""
+        clientId = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID) ?: ""
+        isNote = intent.getBooleanExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_IS_NOTE, false)
+        val clearTempMessage = intent.getBooleanExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLEAR_TEMP_MESSAGE, false)
         if (clearTempMessage) {
             roomViewModel.clearTempMessage()
         }
-        val friendId = intent.getStringExtra(FRIEND_ID) ?: ""
-        val friendDomain = intent.getStringExtra(FRIEND_DOMAIN) ?: ""
+        val friendId = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_ID) ?: ""
+        val friendDomain = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_DOMAIN) ?: ""
 
         if (roomId > 0) {
             val notificationManagerCompat =
@@ -119,7 +119,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                                 finish()
                             },
                             onCallingClick = { isPeer ->
-                                AppCall.openCallAvailable(this@RoomActivity, isPeer)
+                                NavigationUtils.navigateToAvailableCall(this@RoomActivity, isPeer)
                             }
                         )
                     }
@@ -214,7 +214,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val newRoomId = intent.getLongExtra(GROUP_ID, 0)
+        val newRoomId = intent.getLongExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, 0)
         printlnCK("onNewIntent, $newRoomId")
         if (newRoomId > 0 && newRoomId != roomId) {
             finish()
@@ -257,7 +257,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 client.userId != clientId
             }?.userName ?: ""
         }
-        AppCall.call(
+        NavigationUtils.navigateToCall(
             this,
             isAudioMode,
             null,
@@ -318,16 +318,5 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
         return false
-    }
-
-
-    companion object {
-        const val GROUP_ID = "room_id"
-        const val DOMAIN = "domain"
-        const val CLIENT_ID = "client_id"
-        const val FRIEND_ID = "remote_id"
-        const val FRIEND_DOMAIN = "remote_domain"
-        const val IS_NOTE = "is_note"
-        const val CLEAR_TEMP_MESSAGE = "clear_temp_message"
     }
 }

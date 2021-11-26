@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
-import com.clearkeep.data.local.preference.AppStorage
 import com.clearkeep.domain.repository.*
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,7 +33,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServersUseCase
-import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
+import com.clearkeep.features.shared.showMessagingStyleNotification
 
 @AndroidEntryPoint
 class ChatService : Service(),

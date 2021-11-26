@@ -32,6 +32,7 @@ import com.clearkeep.presentation.screen.chat.profile.ProfileActivity
 import com.clearkeep.presentation.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
 import com.clearkeep.common.utilities.sdp
+import com.clearkeep.navigation.NavigationUtils
 
 
 @AndroidEntryPoint
@@ -204,18 +205,18 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun navigateToRoomScreen(groupId: Long) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.GROUP_ID, groupId)
-        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
-        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, groupId)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 
     private fun navigateToRoomScreenWithFriendId(friendId: String, friendDomain: String) {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.FRIEND_ID, friendId)
-        intent.putExtra(RoomActivity.FRIEND_DOMAIN, friendDomain)
-        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
-        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_ID, friendId)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_FRIEND_DOMAIN, friendDomain)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)
     }
 
@@ -255,9 +256,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun navigateToNotesScreen() {
         val intent = Intent(this, RoomActivity::class.java)
-        intent.putExtra(RoomActivity.DOMAIN, homeViewModel.getDomainOfActiveServer())
-        intent.putExtra(RoomActivity.CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
-        intent.putExtra(RoomActivity.IS_NOTE, true)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, homeViewModel.getDomainOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_IS_NOTE, true)
         startActivity(intent)
     }
 }

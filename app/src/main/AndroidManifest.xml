@@ -125,7 +125,7 @@
             android:foregroundServiceType="camera|microphone" />
         -->
         <activity
-            android:name=".presentation.screen.videojanus.InCallActivity"
+            android:name=".features.calls.presentation.InCallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -134,7 +134,7 @@
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".presentation.screen.videojanus.peertopeer.InCallPeerToPeerActivity"
+            android:name=".features.calls.presentation.peertopeer.InCallPeerToPeerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleInstance"
@@ -143,13 +143,13 @@
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
-            android:name=".presentation.screen.videojanus.InComingCallActivity"
+            android:name=".features.calls.presentation.InComingCallActivity"
             android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
 
-        <receiver android:name=".presentation.screen.videojanus.DismissNotificationReceiver" />
-        <receiver android:name=".presentation.screen.videojanus.ShowSummaryNotificationReceiver" />
+        <receiver android:name=".features.calls.presentation.DismissNotificationReceiver" />
+        <receiver android:name=".features.calls.presentation.ShowSummaryNotificationReceiver" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

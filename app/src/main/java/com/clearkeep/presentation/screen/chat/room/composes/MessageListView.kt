@@ -15,11 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.common.presentation.components.grayscale3
+import com.clearkeep.common.utilities.getTimeAsString
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.convertMessageList
-import com.clearkeep.utilities.getTimeAsString
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
 import kotlinx.coroutines.launch
@@ -31,9 +31,9 @@ var mIsNewMessage = true
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MessageListView(
-    messageList: List<com.clearkeep.domain.model.Message>,
-    clients: List<com.clearkeep.domain.model.User>,
-    listAvatar: List<com.clearkeep.domain.model.User>,
+    messageList: List<Message>,
+    clients: List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -62,9 +62,9 @@ fun MessageListView(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MessageListView(
-    messageList: List<com.clearkeep.domain.model.Message>,
-    clients: List<com.clearkeep.domain.model.User>,
-    listAvatar: List<com.clearkeep.domain.model.User>,
+    messageList: List<Message>,
+    clients: List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
@@ -83,7 +83,7 @@ private fun MessageListView(
     ) {
         val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
-        val lastNewestItem = remember { mutableStateOf<com.clearkeep.domain.model.Message?>(null) }
+        val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
         LaunchedEffect(key1 = oldestVisibleItemIndex) {

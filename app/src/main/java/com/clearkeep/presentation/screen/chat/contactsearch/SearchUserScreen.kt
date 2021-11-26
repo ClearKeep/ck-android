@@ -29,9 +29,8 @@ import androidx.compose.ui.text.withStyle
 import com.clearkeep.R
 import com.clearkeep.common.presentation.components.*
 import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.utilities.getTimeAsString
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
-import com.clearkeep.utilities.*
-import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize
 

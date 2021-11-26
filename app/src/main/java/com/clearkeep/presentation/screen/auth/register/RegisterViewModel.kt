@@ -4,10 +4,9 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import auth.AuthOuterClass
 import com.clearkeep.R
+import com.clearkeep.common.utilities.isValidEmail
 import com.clearkeep.domain.usecase.auth.RegisterUseCase
-import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.common.utilities.network.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

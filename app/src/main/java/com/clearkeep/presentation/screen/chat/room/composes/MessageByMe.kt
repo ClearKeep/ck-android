@@ -20,14 +20,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.presentation.components.grayscale1
 import com.clearkeep.common.presentation.components.grayscale2
 import com.clearkeep.common.presentation.components.grayscale3
-import com.clearkeep.common.utilities.defaultNonScalableTextSize
-import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.*
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
-import com.clearkeep.utilities.*
 
 @ExperimentalFoundationApi
 @Composable

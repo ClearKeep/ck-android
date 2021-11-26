@@ -18,7 +18,7 @@ import com.clearkeep.R
 import com.clearkeep.common.presentation.components.LocalColorMapping
 import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.common.presentation.components.grayscaleOffWhite
-import com.clearkeep.utilities.isValidEmail
+import com.clearkeep.common.utilities.isValidEmail
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize
 

@@ -2,6 +2,7 @@ package com.clearkeep.presentation.screen.chat.home
 
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.FIREBASE_TOKEN
+import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.repository.*
 import com.clearkeep.domain.repository.*

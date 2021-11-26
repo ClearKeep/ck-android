@@ -135,6 +135,8 @@ dependencies {
     implementation project(':common')
     implementation project(':data:repository')
     implementation project(':features:splash')
+    implementation project(':features:calls')
+    implementation project(':features:shared')
     implementation project(':navigation')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"

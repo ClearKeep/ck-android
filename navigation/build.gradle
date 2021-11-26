@@ -29,9 +29,39 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    flavorDimensions "version"
+    productFlavors {
+        prod {
+            dimension "version"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "8188"
+        }
+        staging {
+            dimension "version"
+            versionNameSuffix "-staging"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "18188"
+        }
+        dev {
+            dimension "version"
+            versionNameSuffix "-dev"
+            resValue 'string', 'app_name', "CK Dev"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "28188"
+        }
+    }
 }
 
 dependencies {
+    implementation project(":common")
 
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.4.0'
