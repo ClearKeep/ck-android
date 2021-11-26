@@ -137,6 +137,7 @@ dependencies {
     implementation project(':features:splash')
     implementation project(':features:calls')
     implementation project(':features:shared')
+    implementation project(':features:chat')
     implementation project(':navigation')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -232,8 +233,6 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
-
-    implementation 'com.googlecode.libphonenumber:libphonenumber:8.2.0'
 
     implementation "net.gotev:uploadservice:4.6.0"
 
