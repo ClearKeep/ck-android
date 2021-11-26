@@ -24,7 +24,7 @@ import com.clearkeep.common.presentation.components.colorDialogScrim
 import com.clearkeep.common.presentation.components.colorLightBlue
 import com.clearkeep.common.presentation.components.separatorDarkNonOpaque
 import com.clearkeep.common.presentation.components.tintsRedLight
-import com.clearkeep.utilities.isPermissionGranted
+import com.clearkeep.common.utilities.isPermissionGranted
 import com.clearkeep.common.utilities.sdp
 
 @Composable

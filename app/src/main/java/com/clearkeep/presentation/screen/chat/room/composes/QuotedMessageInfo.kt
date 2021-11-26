@@ -12,9 +12,8 @@ import com.clearkeep.common.presentation.components.LocalColorMapping
 import com.clearkeep.common.presentation.components.base.CKText
 import com.clearkeep.common.presentation.components.grayscale2
 import com.clearkeep.common.presentation.components.grayscale3
-import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.*
 import com.clearkeep.presentation.screen.chat.room.messagedisplaygenerator.MessageDisplayInfo
-import com.clearkeep.utilities.*
 
 @Composable
 fun QuotedMessageView(message: MessageDisplayInfo) {

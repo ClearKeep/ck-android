@@ -4,10 +4,8 @@ import android.content.Context
 import androidx.lifecycle.*
 import auth.AuthOuterClass
 import com.clearkeep.R
-import com.clearkeep.common.utilities.BASE_URL
-import com.clearkeep.common.utilities.PORT
+import com.clearkeep.common.utilities.*
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.LoginResponse
 import com.clearkeep.domain.model.response.AuthRes
 import com.clearkeep.domain.model.response.SocialLoginRes

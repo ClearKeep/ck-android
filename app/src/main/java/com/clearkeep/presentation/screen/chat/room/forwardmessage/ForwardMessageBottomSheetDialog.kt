@@ -20,25 +20,25 @@ import com.clearkeep.common.presentation.components.base.ButtonType
 import com.clearkeep.common.presentation.components.base.CKButton
 import com.clearkeep.common.presentation.components.base.CKSearchBox
 import com.clearkeep.common.presentation.components.base.CKText
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.User
 import com.clearkeep.presentation.screen.chat.composes.CircleAvatar
 import com.clearkeep.presentation.screen.chat.composes.NewFriendListItem
 import com.clearkeep.common.utilities.defaultNonScalableTextSize
-import com.clearkeep.utilities.isImageMessage
+import com.clearkeep.common.utilities.isImageMessage
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
+import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.Message
+import com.clearkeep.domain.model.User
 
 @Composable
 fun ForwardMessageBottomSheetDialog(
-    message: com.clearkeep.domain.model.Message,
+    message: Message,
     forwardMessageResponse: Long?,
-    allGroups: List<com.clearkeep.domain.model.ChatGroup>,
-    peerUsersStatus: List<com.clearkeep.domain.model.User>,
-    currentGroupUsersStatus: List<com.clearkeep.domain.model.User>,
+    allGroups: List<ChatGroup>,
+    peerUsersStatus: List<User>,
+    currentGroupUsersStatus: List<User>,
     onForwardMessageGroup: (groupId: Long) -> Unit,
-    onForwardMessagePeer: (receiver: com.clearkeep.domain.model.User, groupId: Long) -> Unit
+    onForwardMessagePeer: (receiver: User, groupId: Long) -> Unit
 ) {
     val query = rememberSaveable { mutableStateOf("") }
 
@@ -105,7 +105,7 @@ fun ForwardMessageBottomSheetDialog(
 }
 
 @Composable
-fun QuotedMessage(message: com.clearkeep.domain.model.Message, user: com.clearkeep.domain.model.User) {
+fun QuotedMessage(message: Message, user: User) {
     Row {
         CircleAvatar(
             arrayListOf(user.avatar ?: ""),
@@ -147,7 +147,7 @@ fun QuotedMessage(message: com.clearkeep.domain.model.Message, user: com.clearke
 }
 
 @Composable
-private fun ForwardGroupItem(group: com.clearkeep.domain.model.ChatGroup, sent: Boolean, onClick: () -> Unit) {
+private fun ForwardGroupItem(group: ChatGroup, sent: Boolean, onClick: () -> Unit) {
     ConstraintLayout(
         Modifier
             .fillMaxWidth()
@@ -184,9 +184,9 @@ private fun ForwardGroupItem(group: com.clearkeep.domain.model.ChatGroup, sent: 
 }
 
 @Composable
-fun ForwardPeerItem(peer: com.clearkeep.domain.model.ChatGroup, sent: Boolean, userInfo: com.clearkeep.domain.model.User, onClick: () -> Unit) {
+fun ForwardPeerItem(peer: ChatGroup, sent: Boolean, userInfo: User, onClick: () -> Unit) {
     val user =
-        com.clearkeep.domain.model.User(
+        User(
             "",
             peer.groupName,
             peer.ownerDomain,

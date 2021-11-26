@@ -22,7 +22,7 @@ import coil.compose.rememberImagePainter
 import coil.imageLoader
 import coil.memory.MemoryCache
 import com.clearkeep.common.presentation.components.grayscaleOffWhite
-import com.clearkeep.utilities.isTempMessage
+import com.clearkeep.common.utilities.isTempMessage
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize

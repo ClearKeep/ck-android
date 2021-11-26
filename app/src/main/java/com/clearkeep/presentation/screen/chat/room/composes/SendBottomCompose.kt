@@ -30,9 +30,9 @@ import com.clearkeep.R
 import com.clearkeep.common.presentation.components.*
 import com.clearkeep.common.presentation.components.base.CKText
 import com.clearkeep.common.presentation.components.base.CKTextInputFieldChat
+import com.clearkeep.common.utilities.isFileMessage
+import com.clearkeep.common.utilities.isImageMessage
 import com.clearkeep.presentation.screen.chat.room.RoomViewModel
-import com.clearkeep.utilities.isFileMessage
-import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.common.utilities.sdp
 
 @Composable

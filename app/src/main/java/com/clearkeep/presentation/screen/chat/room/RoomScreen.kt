@@ -40,9 +40,9 @@ import com.clearkeep.R
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.presentation.screen.chat.room.filepicker.FilePickerBottomSheetDialog
 import com.clearkeep.presentation.screen.chat.room.forwardmessage.ForwardMessageBottomSheetDialog
-import com.clearkeep.presentation.screen.videojanus.AppCall
+import com.clearkeep.features.calls.presentation.AppCall
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.utilities.isWriteFilePermissionGranted
+import com.clearkeep.common.utilities.isWriteFilePermissionGranted
 import com.clearkeep.common.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
@@ -198,14 +198,14 @@ fun RoomScreen(
                         }
                     },
                     onAudioClick = {
-                        if (AppCall.listenerCallingState.value?.isCalling != true) {
+                        if (com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling != true) {
                             roomViewModel.requestCall(group?.groupId ?: 0L, true)
                         } else {
                             isShowDialogCalling.value = true
                         }
                     }
                 ) {
-                    if (AppCall.listenerCallingState.value?.isCalling != true) {
+                    if (com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling != true) {
                         roomViewModel.requestCall(group?.groupId ?: 0L, false)
                     } else {
                         isShowDialogCalling.value = true

@@ -8,6 +8,7 @@ import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
 import com.clearkeep.domain.usecase.group.*
 import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
@@ -17,8 +18,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
-import com.clearkeep.presentation.screen.videojanus.AppCall
-import com.clearkeep.presentation.screen.videojanus.showMessagingStyleNotification
+import com.clearkeep.features.shared.showMessagingStyleNotification
 import com.google.common.reflect.TypeToken
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -178,9 +178,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val server = getServerUseCase(clientDomain, clientId)
             server?.profile?.avatar ?: ""
         }
-        if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
+        if (com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling == false || com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-            AppCall.inComingCall(
+            com.clearkeep.features.calls.presentation.AppCall.inComingCall(
                 this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?: "",
                 clientDomain, clientId,
                 fromClientName, avatar,
@@ -190,7 +190,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             )
         } else {
             groupId?.let { busyCallUseCase(it.toInt(),
-                com.clearkeep.domain.model.Owner(clientDomain, clientId)
+                Owner(clientDomain, clientId)
             ) }
         }
     }
@@ -219,7 +219,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 fromClientID, fromDomain,
                 createdAt, createdAt,
                 messageContent,
-                com.clearkeep.domain.model.Owner(clientDomain, clientId)
+                Owner(clientDomain, clientId)
             )
             val isShowNotification = getOwnerClientIdsUseCase().contains(fromClientID)
             if (!isShowNotification) {
@@ -232,7 +232,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         context = applicationContext,
                         chatGroup = group.data!!,
                         decryptedMessage,
-                        userPreference ?: com.clearkeep.domain.model.UserPreference.getDefaultUserPreference("", "", false),
+                        userPreference ?: UserPreference.getDefaultUserPreference("", "", false),
                         avatar
                     )
                 }
@@ -267,7 +267,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
-                        com.clearkeep.domain.model.Owner(
+                        Owner(
                             clientDomain,
                             it
                         ), SENDER_DEVICE_ID
