@@ -23,3 +23,5 @@ include ':app',
         ':navigation',
         ':januswrapper',
         ':srp'
+include ':features:chat'
+include ':features:profile'

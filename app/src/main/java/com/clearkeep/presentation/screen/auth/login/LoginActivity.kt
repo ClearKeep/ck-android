@@ -29,16 +29,15 @@ import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.presentation.screen.auth.advancedsettings.CustomServerScreen
 import com.clearkeep.presentation.screen.auth.forgot.ForgotActivity
 import com.clearkeep.presentation.screen.auth.register.RegisterActivity
-import com.clearkeep.presentation.screen.chat.otp.EnterOtpScreen
-import com.clearkeep.presentation.screen.chat.sociallogin.ConfirmSocialLoginPhraseScreen
-import com.clearkeep.presentation.screen.chat.sociallogin.EnterSocialLoginPhraseScreen
-import com.clearkeep.presentation.screen.chat.sociallogin.SetSocialLoginPhraseScreen
-import com.clearkeep.features.splash.presentation.SplashActivity
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.response.SocialLoginRes
-import com.clearkeep.utilities.restartToRoot
+import com.clearkeep.features.chat.presentation.otp.EnterOtpScreen
+import com.clearkeep.navigation.NavigationUtils
+import com.clearkeep.presentation.screen.auth.sociallogin.ConfirmSocialLoginPhraseScreen
+import com.clearkeep.presentation.screen.auth.sociallogin.EnterSocialLoginPhraseScreen
+import com.clearkeep.presentation.screen.auth.sociallogin.SetSocialLoginPhraseScreen
 import com.facebook.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import dagger.hilt.android.AndroidEntryPoint
@@ -83,10 +82,10 @@ class LoginActivity : AppCompatActivity() {
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isJoinServer = intent.getBooleanExtra(IS_JOIN_SERVER, false)
+        isJoinServer = intent.getBooleanExtra(NavigationUtils.NAVIGATE_LOGIN_ACTIVITY_IS_JOIN_SERVER, false)
 
         if (isJoinServer) {
-            val domain = intent.getStringExtra(SERVER_DOMAIN)
+            val domain = intent.getStringExtra(NavigationUtils.NAVIGATE_LOGIN_ACTIVITY_SERVER_DOMAIN)
             if (domain.isNullOrBlank()) {
                 throw IllegalArgumentException("join server with domain must be not null")
             }
@@ -312,7 +311,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onLoginSuccess() {
         if (isJoinServer) {
-            restartToRoot(this)
+            NavigationUtils.restartToRoot(this)
         } else {
             navigateToHomeActivity()
         }
@@ -493,9 +492,4 @@ class LoginActivity : AppCompatActivity() {
         val message: String,
         val dismissButtonText: String = "OK"
     )
-
-    companion object {
-        const val IS_JOIN_SERVER = "is_join_server"
-        const val SERVER_DOMAIN = "server_url_join"
-    }
 }

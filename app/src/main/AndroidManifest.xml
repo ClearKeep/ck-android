@@ -55,13 +55,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".presentation.screen.chat.contactsearch.SearchUserActivity"
+            android:name=".features.chat.presentation.contactsearch.SearchUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name=".presentation.screen.chat.groupcreate.CreateGroupActivity"
+            android:name=".features.chat.presentation.groupcreate.CreateGroupActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.room.RoomActivity"
+            android:name="com.clearkeep.features.chat.presentation.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
@@ -89,27 +89,27 @@
             android:label="@string/btn_forgot_password"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.home.MainActivity"
+            android:name="com.clearkeep.features.chat.presentation.home.MainActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.profile.ProfileActivity"
+            android:name="com.clearkeep.features.chat.presentation.profile.ProfileActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.settings.ServerSettingActivity"
+            android:name="com.clearkeep.features.chat.presentation.settings.ServerSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.notificationsetting.NotificationSettingActivity"
+            android:name="com.clearkeep.features.chat.presentation.notificationsetting.NotificationSettingActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.invite.InviteActivity"
+            android:name="com.clearkeep.features.chat.presentation.invite.InviteActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <activity
-            android:name="com.clearkeep.presentation.screen.chat.bannedusers.BannedUserActivity"
+            android:name="com.clearkeep.features.chat.presentation.bannedusers.BannedUserActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <service
@@ -148,8 +148,8 @@
             android:theme="@style/Theme.FastGo.Call" />
 
 
-        <receiver android:name=".features.calls.presentation.DismissNotificationReceiver" />
-        <receiver android:name=".features.calls.presentation.ShowSummaryNotificationReceiver" />
+        <receiver android:name=".features.shared.DismissNotificationReceiver" />
+        <receiver android:name=".features.shared.ShowSummaryNotificationReceiver" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -183,7 +183,7 @@
         </activity>
 
         <activity
-            android:name=".presentation.screen.chat.changepassword.ChangePasswordActivity"
+            android:name=".features.chat.presentation.changepassword.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:launchMode="singleTop"
             android:exported="true">
@@ -201,7 +201,7 @@
         </activity>
 
         <activity
-            android:name=".presentation.screen.chat.otp.OtpActivity"
+            android:name=".features.chat.presentation.otp.OtpActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
 
         <provider

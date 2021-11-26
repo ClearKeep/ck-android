@@ -10,12 +10,15 @@ class RegisterTokenUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val userRepository: UserRepository,
 ) {
-    suspend operator fun invoke(token: String) {
-        val servers = serverRepository.getServers()
+    suspend operator fun invoke() {
+        val token = userRepository.getFirebaseToken()
+        if (!token.isNullOrEmpty()) {
+            val servers = serverRepository.getServers()
 
-        servers.forEach { server ->
-            val deviceId = userRepository.getUniqueDeviceID()
-            notificationRepository.registerPushNotificationTokenByOwner(token, deviceId, server)
+            servers.forEach { server ->
+                val deviceId = userRepository.getUniqueDeviceID()
+                notificationRepository.registerPushNotificationTokenByOwner(token, deviceId, server)
+            }
         }
     }
 }

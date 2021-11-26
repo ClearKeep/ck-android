@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.usecase.call.CancelCallUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
@@ -28,7 +29,7 @@ class DismissNotificationReceiver : BroadcastReceiver() {
                 if (!isGroup(groupType) && domain.isNotBlank() && clientId.isNotBlank()) {
                     GlobalScope.launch {
                         cancelCallUseCase(groupId.toInt(),
-                            com.clearkeep.domain.model.Owner(domain, clientId)
+                            Owner(domain, clientId)
                         )
                     }
                 }
