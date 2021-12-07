@@ -6,7 +6,7 @@
 package com.clearkeep.data.local.signal.store
 
 import androidx.annotation.WorkerThread
-import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
 import com.clearkeep.data.local.signal.model.SignalIdentityKeyLocal
 import com.clearkeep.domain.repository.Environment
 import org.whispersystems.libsignal.IdentityKeyPair
@@ -15,7 +15,9 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.util.KeyHelper
 import java.util.HashMap
+import javax.inject.Singleton
 
+@Singleton
 class InMemoryIdentityKeyStore(
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val environment: Environment

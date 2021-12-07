@@ -2,6 +2,8 @@ package com.clearkeep.domain.usecase.message
 
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.MessagePagingResponse
+import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.repository.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -30,8 +32,8 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         owner: Owner,
         lastMessageAt: Long = 0,
         loadSize: Int = 20
-    ): MessagePagingResponse {
-        val server = serverRepository.getServerByOwner(owner) ?: return MessagePagingResponse(
+    ): MessagePagingResponse = withContext(Dispatchers.IO) {
+        val server = serverRepository.getServerByOwner(owner) ?: return@withContext MessagePagingResponse(
             isSuccess = false,
             endOfPaginationReached = true,
             newestMessageLoadedTimestamp = 0L
@@ -53,19 +55,19 @@ class UpdateMessageFromApiUseCase @Inject constructor(
                 if (lastMessage != null) {
                     updateLastSyncMessageTime(groupId, owner, lastMessage)
                 }
-                return MessagePagingResponse(
+                return@withContext MessagePagingResponse(
                     isSuccess = true,
                     endOfPaginationReached = false,
                     newestMessageLoadedTimestamp = lastMessageOther?.createdTime ?: 0L
                 )
             }
-            return MessagePagingResponse(
+            return@withContext MessagePagingResponse(
                 isSuccess = true,
                 endOfPaginationReached = true,
                 newestMessageLoadedTimestamp = lastMessageAt
             )
         }
-        return MessagePagingResponse(
+        return@withContext MessagePagingResponse(
             isSuccess = false,
             endOfPaginationReached = true,
             newestMessageLoadedTimestamp = lastMessageAt
@@ -201,7 +203,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         val bobGroupCipher: GroupCipher
         val groupSender: SenderKeyName
         if (sender.clientId == owner.clientId) {
-            val senderAddress = CKSignalProtocolAddress(sender, 111)
+            val senderAddress = CKSignalProtocolAddress(sender, SENDER_DEVICE_ID)
             groupSender = SenderKeyName(groupId.toString(), senderAddress)
             bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
         } else {
@@ -317,7 +319,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
             if (senderKeyDistribution != null) {
                 printlnCK("")
                 val receivedAliceDistributionMessage =
-                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey?.clientKeyDistribution)
+                    SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution)
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } else {

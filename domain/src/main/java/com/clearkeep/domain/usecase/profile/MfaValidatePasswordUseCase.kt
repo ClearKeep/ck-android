@@ -4,9 +4,9 @@ import com.clearkeep.common.utilities.decodeHex
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
-import com.clearkeep.srp.NativeLib
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.toHexString
+import com.clearkeep.srp.NativeLibWrapper
 import javax.inject.Inject
 
 class MfaValidatePasswordUseCase @Inject constructor(
@@ -20,7 +20,7 @@ class MfaValidatePasswordUseCase @Inject constructor(
                 "" to ""
             )
 
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
         val a = nativeLib.getA(server.profile.email ?: "", password)
         val aHex = a.toHexString()
 

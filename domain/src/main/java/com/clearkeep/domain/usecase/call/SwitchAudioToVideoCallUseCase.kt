@@ -11,7 +11,7 @@ class SwitchAudioToVideoCallUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         groupId: Int,
-        owner: com.clearkeep.domain.model.Owner
+        owner: Owner
     ): Boolean {
         val server = serverRepository.getServer(owner.domain, owner.clientId) ?: return false
         return videoCallRepository.switchAudioToVideoCall(groupId, server)

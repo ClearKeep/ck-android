@@ -3,7 +3,20 @@ package com.clearkeep.data.di
 import com.clearkeep.data.local.signal.store.InMemorySenderKeyStore
 import com.clearkeep.data.local.signal.store.InMemorySignalProtocolStore
 import com.clearkeep.data.remote.dynamicapi.Environment
-import com.clearkeep.data.repository.*
+import com.clearkeep.data.repository.auth.AuthRepositoryImpl
+import com.clearkeep.data.repository.file.FileRepositoryImpl
+import com.clearkeep.data.repository.group.GroupRepositoryImpl
+import com.clearkeep.data.repository.message.MessageRepositoryImpl
+import com.clearkeep.data.repository.notification.NotificationRepositoryImpl
+import com.clearkeep.data.repository.people.PeopleRepositoryImpl
+import com.clearkeep.data.repository.profile.ProfileRepositoryImpl
+import com.clearkeep.data.repository.server.ServerRepositoryImpl
+import com.clearkeep.data.repository.signal.SignalKeyRepositoryImpl
+import com.clearkeep.data.repository.user.UserRepositoryImpl
+import com.clearkeep.data.repository.userkey.UserKeyRepositoryImpl
+import com.clearkeep.data.repository.userpreference.UserPreferenceRepositoryImpl
+import com.clearkeep.data.repository.videocall.VideoCallRepositoryImpl
+import com.clearkeep.data.repository.workspace.WorkSpaceRepositoryImpl
 import com.clearkeep.domain.repository.*
 import dagger.Binds
 import dagger.Module
@@ -14,10 +27,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 interface RepositoryModule {
-    @Binds
-    @Singleton
-    fun bindChatRepository(chatRepositoryImpl: ChatRepositoryImpl): ChatRepository
-
     @Binds
     @Singleton
     fun bindGroupRepository(groupRepositoryImpl: GroupRepositoryImpl): GroupRepository

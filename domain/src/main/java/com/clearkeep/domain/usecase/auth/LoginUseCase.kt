@@ -5,11 +5,13 @@ import com.clearkeep.common.utilities.decodeHex
 import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.repository.*
-import com.clearkeep.srp.NativeLib
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.response.AuthRes
+import com.clearkeep.domain.model.response.LoginResponse
+import com.clearkeep.domain.model.response.SrpCreateAccountResponse
+import com.clearkeep.srp.NativeLibWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.IdentityKey
@@ -37,17 +39,17 @@ class LoginUseCase @Inject constructor(
         userName: String,
         password: String,
         domain: String
-    ): Resource<LoginResponse> {
+    ): Resource<LoginResponse> = withContext(Dispatchers.IO) {
         val userName = userName.trim()
 
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
         val a = nativeLib.getA(userName, password)
         val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
         val response = authRepository.sendLoginChallenge(userName, aHex, domain)
 
         if (response.isError() || response.data == null) {
-            return Resource.error(
+            return@withContext Resource.error(
                 "",
                 LoginResponse(
                     "",
@@ -71,7 +73,7 @@ class LoginUseCase @Inject constructor(
         val authResponse = authRepository.loginAuthenticate(userName, aHex, mHex, domain)
 
         if (authResponse.isError() || authResponse.data == null || authResponse.data!!.error.isNotBlank()) {
-            return Resource.error(
+            return@withContext Resource.error(
                 "",
                 LoginResponse(
                     "",
@@ -87,7 +89,7 @@ class LoginUseCase @Inject constructor(
         authResponse.data!!.run {
             val requireOtp = accessToken.isNullOrBlank()
             if (requireOtp) {
-                return Resource.success(
+                return@withContext Resource.success(
                     LoginResponse(
                         accessToken,
                         preAccessToken,
@@ -100,9 +102,9 @@ class LoginUseCase @Inject constructor(
             } else {
                 val profileResponse = onLoginSuccess(domain, password, this, "")
                 if (profileResponse.status == Status.ERROR) {
-                    return Resource.error(profileResponse.message ?: "", null)
+                    return@withContext Resource.error(profileResponse.message ?: "", null)
                 }
-                return Resource.success(
+                return@withContext Resource.success(
                     LoginResponse(
                         accessToken,
                         requireAction,
@@ -203,7 +205,7 @@ class LoginUseCase @Inject constructor(
         rawPin: String,
         userName: String
     ): Resource<AuthRes> {
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
         val a = nativeLib.getA(userName, rawPin)
         val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
 
@@ -244,7 +246,7 @@ class LoginUseCase @Inject constructor(
         userName: String,
         resetPincodeToken: String
     ): Resource<AuthRes> {
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
 
         val salt = nativeLib.getSalt(userName, rawPin)
         val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -388,6 +390,9 @@ class LoginUseCase @Inject constructor(
                 profile.userId,
                 isSocialAccount
             )
+
+            printlnCK("LoginUseCase insert UserKey domain $domain userId ${profile.userId} salt $salt iv $iv")
+
             userKeyRepository.insert(
                 UserKey(
                     domain,
@@ -405,7 +410,7 @@ class LoginUseCase @Inject constructor(
     }
 
     private fun createAccountSrp(username: String, password: String): SrpCreateAccountResponse {
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
 
         val salt = nativeLib.getSalt(username, password)
         val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

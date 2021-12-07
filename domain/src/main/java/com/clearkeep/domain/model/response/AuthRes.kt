@@ -1,7 +1,5 @@
 package com.clearkeep.domain.model.response
 
-import com.clearkeep.domain.model.PeerGetClientKeyResponse
-
 data class AuthRes(
     val workspaceDomain: String,
     val workspaceName: String,

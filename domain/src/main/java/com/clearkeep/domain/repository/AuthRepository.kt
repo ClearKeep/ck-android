@@ -9,10 +9,20 @@ import com.clearkeep.domain.model.response.SocialLoginRes
 
 interface AuthRepository {
     suspend fun register(
-        displayName: String,
-        password: String,
+        domain: String,
         email: String,
-        domain: String
+        verificatorHex: String,
+        saltHex: String,
+        displayName: String,
+        iv: String,
+        transitionID: Int,
+        identityKeyPublic: ByteArray,
+        preKeyId: Int,
+        preKey: ByteArray,
+        signedPreKeyId: Int,
+        signedPreKey: ByteArray,
+        identityKeyEncrypted: String?,
+        signedPreKeySignature: ByteArray
     ): Resource<Any>
 
     suspend fun loginByGoogle(

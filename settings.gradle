@@ -22,6 +22,6 @@ include ':app',
         ':features:shared',
         ':navigation',
         ':januswrapper',
-        ':srp'
-include ':features:chat'
-include ':features:profile'
+        ':srp',
+        ':features:chat',
+        ':features:auth'

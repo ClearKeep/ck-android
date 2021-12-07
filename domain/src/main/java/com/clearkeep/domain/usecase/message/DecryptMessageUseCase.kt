@@ -2,6 +2,7 @@ package com.clearkeep.domain.usecase.message
 
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.*
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
@@ -35,11 +36,11 @@ class DecryptMessageUseCase @Inject constructor(
         createdTime: Long,
         updatedTime: Long,
         encryptedMessage: ByteString,
-        owner: com.clearkeep.domain.model.Owner,
-    ): com.clearkeep.domain.model.Message {
+        owner: Owner,
+    ) = withContext(Dispatchers.IO) {
         var messageText: String
         try {
-            val sender = com.clearkeep.domain.model.Owner(fromDomain, fromClientId)
+            val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage)
@@ -64,17 +65,18 @@ class DecryptMessageUseCase @Inject constructor(
             val oldMessage = messageRepository.getGroupMessage(messageId, groupId)
             if (oldMessage != null) {
                 printlnCK("decryptMessage, exactly old message: ${oldMessage.message}")
-                return oldMessage
+                return@withContext oldMessage
             } else {
                 messageText = getUnableErrorMessage(e.message)
             }
-        } catch (e: Exception) {
-            printlnCK("decryptMessage error : $e")
-            messageText = getUnableErrorMessage(e.message)
         }
+//        catch (e: Exception) {
+//            printlnCK("decryptMessage error : $e")
+//            messageText = getUnableErrorMessage(e.message)
+//        }
 
         printlnCK("decryptMessage done: $messageText")
-        return saveNewMessage(
+        return@withContext saveNewMessage(
             com.clearkeep.domain.model.Message(
                 messageId = messageId, groupId = groupId, groupType = groupType,
                 senderId = fromClientId, receiverId = owner.clientId, message = messageText,
@@ -129,8 +131,8 @@ class DecryptMessageUseCase @Inject constructor(
 
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
     private suspend fun decryptGroupMessage(
-        sender: com.clearkeep.domain.model.Owner, groupId: Long, message: ByteString,
-        owner: com.clearkeep.domain.model.Owner,
+        sender: Owner, groupId: Long, message: ByteString,
+        owner: Owner,
     ): String = withContext(Dispatchers.IO) {
         if (message.isEmpty) {
             return@withContext ""
@@ -156,23 +158,24 @@ class DecryptMessageUseCase @Inject constructor(
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
             throw messageEx
-        } catch (ex: Exception) {
-            printlnCK("decryptGroupMessage, $ex")
-            val initSessionAgain = initSessionUserInGroup(
-                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
-            )
-            if (!initSessionAgain) {
-                throw java.lang.Exception("can not init session in group $groupId")
-            }
-            bobGroupCipher.decrypt(message.toByteArray())
         }
+//        catch (ex: Exception) {
+//            printlnCK("decryptGroupMessage, $ex")
+//            val initSessionAgain = initSessionUserInGroup(
+//                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
+//            )
+//            if (!initSessionAgain) {
+//                throw java.lang.Exception("can not init session in group $groupId")
+//            }
+//            bobGroupCipher.decrypt(message.toByteArray())
+//        }
 
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
     }
 
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
     private suspend fun decryptPeerMessage(
-        sender: com.clearkeep.domain.model.Owner, message: ByteString,
+        sender: Owner, message: ByteString,
     ): String = withContext(Dispatchers.IO) {
         if (message.isEmpty) {
             return@withContext ""
@@ -191,7 +194,7 @@ class DecryptMessageUseCase @Inject constructor(
         groupSender: SenderKeyName,
         senderKeyStore: SenderKeyStore,
         isForceProcess: Boolean,
-        owner: com.clearkeep.domain.model.Owner
+        owner: Owner
     ): Boolean {
         val senderKeyRecord: SenderKeyRecord = signalKeyRepository.loadSenderKey(groupSender)
         if (senderKeyRecord.isEmpty || isForceProcess) {

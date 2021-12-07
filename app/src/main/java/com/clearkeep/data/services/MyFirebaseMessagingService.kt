@@ -35,19 +35,6 @@ import java.util.HashMap
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
-
-    @Inject
-    lateinit var chatRepository: ChatRepository
-
-    @Inject
-    lateinit var groupRepository: GroupRepository
-
-    @Inject
-    lateinit var serverRepository: ServerRepository
-
-    @Inject
-    lateinit var messageRepository: MessageRepository
-
     @Inject
     lateinit var getUserPreferenceUseCase: GetUserPreferenceUseCase
 

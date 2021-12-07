@@ -18,7 +18,7 @@ object NavigationUtils {
     fun navigateToStartActivity(context: Context) {
         val intent = Intent(
             context,
-            Class.forName("com.clearkeep.presentation.screen.auth.login.LoginActivity")
+            Class.forName("com.clearkeep.features.auth.presentation.login.LoginActivity")
         )
         context.startActivity(intent)
     }
@@ -286,7 +286,7 @@ object NavigationUtils {
         clearTempMessage: Boolean
     ): Intent {
         val targetActivity =
-            Class.forName("com.clearkeep.presentation.screen.chat.room.RoomActivity")
+            Class.forName("com.clearkeep.features.chat.presentation.room.RoomActivity")
         val intent = Intent(context, targetActivity)
         intent.putExtra(NAVIGATE_ROOM_ACTIVITY_GROUP_ID, groupId)
         intent.putExtra(NAVIGATE_ROOM_ACTIVITY_DOMAIN, ownerDomain)
@@ -297,7 +297,7 @@ object NavigationUtils {
     }
 
     fun getMainActivityRef(): Class<*> {
-        return Class.forName("com.clearkeep.presentation.screen.chat.home.MainActivity")
+        return Class.forName("com.clearkeep.features.chat.presentation.home.MainActivity")
     }
 
     const val NAVIGATE_ROOM_ACTIVITY_GROUP_ID = "room_id"

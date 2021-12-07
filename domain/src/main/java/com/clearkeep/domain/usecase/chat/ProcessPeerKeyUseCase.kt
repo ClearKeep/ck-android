@@ -28,7 +28,7 @@ class ProcessPeerKeyUseCase @Inject constructor(
         receiverWorkspaceDomain: String,
         senderId: String,
         ownerWorkSpace: String
-    ): Boolean {
+    ): Boolean = withContext(Dispatchers.IO) {
         val signalProtocolAddress =
             CKSignalProtocolAddress(
                 Owner(
@@ -43,7 +43,7 @@ class ProcessPeerKeyUseCase @Inject constructor(
             signalProtocolStore,
             owner = Owner(ownerWorkSpace, senderId)
         )
-        return initSessionUserPeer(
+        return@withContext initSessionUserPeer(
             signalProtocolAddress,
             signalProtocolStore,
             owner = Owner(ownerWorkSpace, senderId)

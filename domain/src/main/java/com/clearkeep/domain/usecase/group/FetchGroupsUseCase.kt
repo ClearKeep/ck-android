@@ -6,6 +6,8 @@ import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.repository.Environment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FetchGroupsUseCase @Inject constructor(
@@ -13,7 +15,7 @@ class FetchGroupsUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val environment: Environment
 ) {
-    suspend operator fun invoke(): Resource<Any> {
+    suspend operator fun invoke(): Resource<Any> = withContext(Dispatchers.IO) {
         val servers = serverRepository.getServers()
 
         servers.forEach { server ->
@@ -24,7 +26,7 @@ class FetchGroupsUseCase @Inject constructor(
             }
             val fetchGroupResponse = groupRepository.fetchGroups(svr)
             if (fetchGroupResponse.status == Status.ERROR) {
-                return fetchGroupResponse
+                return@withContext fetchGroupResponse
             }
 
             for (group in fetchGroupResponse.data ?: emptyList()) {
@@ -42,7 +44,7 @@ class FetchGroupsUseCase @Inject constructor(
             }
         }
 
-        return Resource.success(null)
+        return@withContext Resource.success(null)
     }
 
     private fun getDomain() = environment.getServer().serverDomain

@@ -1,6 +1,6 @@
 package com.clearkeep.srp
 
-class NativeLib {
+internal class NativeLib {
     @JvmField
     var verificatorPtr = 0L
 
@@ -15,9 +15,9 @@ class NativeLib {
     external fun freeMemoryAuthenticate()
 
     companion object {
-        // Used to load the 'dragonsrp' library on application startup.
+        // Used to load the 'srp' library on application startup.
         init {
-            System.loadLibrary("dragonsrp")
+            System.loadLibrary("srp")
         }
     }
 }

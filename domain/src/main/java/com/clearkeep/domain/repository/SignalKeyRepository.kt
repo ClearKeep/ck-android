@@ -2,6 +2,7 @@ package com.clearkeep.domain.repository
 
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.PeerGetClientKeyResponse
 import org.whispersystems.libsignal.ecc.ECKeyPair
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord

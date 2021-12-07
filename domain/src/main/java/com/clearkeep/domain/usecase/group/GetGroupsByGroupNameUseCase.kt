@@ -1,5 +1,7 @@
 package com.clearkeep.domain.usecase.group
 
+import androidx.lifecycle.LiveData
+import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.repository.GroupRepository
 import javax.inject.Inject
 
@@ -8,5 +10,5 @@ class GetGroupsByGroupNameUseCase @Inject constructor(private val groupRepositor
         ownerDomain: String,
         ownerClientId: String,
         query: String
-    ) = groupRepository.getGroupsByGroupName(ownerDomain, ownerClientId, query)
+    ): LiveData<List<ChatGroup>> = groupRepository.getGroupsByGroupName(ownerDomain, ownerClientId, query)
 }

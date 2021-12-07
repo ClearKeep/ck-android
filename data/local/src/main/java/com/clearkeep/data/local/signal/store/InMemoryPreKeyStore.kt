@@ -5,15 +5,17 @@
  */
 package com.clearkeep.data.local.signal.store
 
-import com.clearkeep.data.local.signal.dao.SignalPreKeyDAO
-import com.clearkeep.data.local.signal.model.SignalPreKey
+import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
+import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.domain.repository.Environment
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.PreKeyStore
 import java.io.IOException
 import java.util.*
+import javax.inject.Singleton
 
+@Singleton
 class InMemoryPreKeyStore(
     private val preKeyDAO: SignalPreKeyDAO,
     private val environment: Environment

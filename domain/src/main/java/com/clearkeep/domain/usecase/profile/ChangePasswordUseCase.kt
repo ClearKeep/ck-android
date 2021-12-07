@@ -6,7 +6,7 @@ import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.ProfileRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.srp.NativeLib
+import com.clearkeep.srp.NativeLibWrapper
 import com.clearkeep.common.utilities.network.Resource
 import javax.inject.Inject
 
@@ -14,7 +14,7 @@ class ChangePasswordUseCase @Inject constructor(private val profileRepository: P
     suspend operator fun invoke(owner: Owner, email: String, oldPassword: String, newPassword: String): Resource<String> {
         val server = serverRepository.getServerByOwner(owner) ?: return Resource.error("", null)
 
-        val nativeLib = NativeLib()
+        val nativeLib = NativeLibWrapper()
         val a = nativeLib.getA(email, oldPassword)
 
         val aHex = a.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
@@ -28,7 +28,7 @@ class ChangePasswordUseCase @Inject constructor(private val profileRepository: P
         val mHex = m.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
         nativeLib.freeMemoryAuthenticate()
 
-        val newPasswordNativeLib = NativeLib()
+        val newPasswordNativeLib = NativeLibWrapper()
 
         val newSalt = newPasswordNativeLib.getSalt(email, newPassword)
         val newSaltHex =

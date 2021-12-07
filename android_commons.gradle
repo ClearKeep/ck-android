@@ -1,0 +1,92 @@
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+android {
+    compileSdk ConfigData.compileSdk
+
+    defaultConfig {
+        minSdk ConfigData.minSdk
+        targetSdk ConfigData.targetSdk
+        versionCode ConfigData.versionCode
+        versionName ConfigData.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
+    }
+
+    flavorDimensions "version"
+    productFlavors {
+        prod {
+            dimension "version"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "8188"
+            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-prod\""
+        }
+        staging {
+            dimension "version"
+            resValue 'string', 'app_name', "ClearKeep"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "18188"
+            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-staging\""
+        }
+        dev {
+            dimension "version"
+            resValue 'string', 'app_name', "CK Dev"
+            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
+            buildConfigField "int", 'JANUS_PORT', "28188"
+            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-dev\""
+        }
+    }
+}
+
+dependencies {
+    //Hilt
+    implementation Dependencies.hilt
+    kapt Dependencies.hiltCompiler
+}

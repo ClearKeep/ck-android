@@ -14,8 +14,8 @@ add_library(ssl STATIC IMPORTED)
 set_target_properties(ssl
         PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libssl.a)
 
-add_library(dragonsrp SHARED srp.cpp)
+add_library(srp SHARED srp.cpp)
 
 find_library(log-lib log)
 
-target_link_libraries(dragonsrp ${log-lib} ssl crypto)
+target_link_libraries(srp ${log-lib} ssl crypto)

@@ -5,15 +5,17 @@
  */
 package com.clearkeep.data.local.signal.store
 
-import com.clearkeep.data.local.signal.dao.SignalPreKeyDAO
-import com.clearkeep.data.local.signal.model.SignalPreKey
+import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
+import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.domain.repository.Environment
 import org.whispersystems.libsignal.InvalidKeyIdException
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
 import java.io.IOException
 import java.util.*
+import javax.inject.Singleton
 
+@Singleton
 class InMemorySignedPreKeyStore(
     private val preKeyDAO: SignalPreKeyDAO,
     private val environment: Environment
@@ -42,7 +44,7 @@ class InMemorySignedPreKeyStore(
     }
 
     override fun loadSignedPreKeys(): List<SignedPreKeyRecord> {
-        return try {
+        try {
             return preKeyDAO.getAllSignedPreKey().map { SignedPreKeyRecord(it.preKeyRecord) }
         } catch (e: IOException) {
             throw AssertionError(e)

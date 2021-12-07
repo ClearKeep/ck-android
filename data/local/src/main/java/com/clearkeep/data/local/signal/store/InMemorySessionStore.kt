@@ -10,7 +10,9 @@ import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SessionStore
 import java.io.IOException
 import java.util.*
+import javax.inject.Singleton
 
+@Singleton
 class InMemorySessionStore : SessionStore, Closeable {
     private val sessions: MutableMap<SignalProtocolAddress, ByteArray> = HashMap()
 

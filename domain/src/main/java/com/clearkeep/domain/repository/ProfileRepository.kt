@@ -2,6 +2,8 @@ package com.clearkeep.domain.repository
 
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.MfaAuthChallengeResponse
+import com.clearkeep.domain.model.response.RequestChangePasswordRes
 import com.google.protobuf.ByteString
 
 interface ProfileRepository {

@@ -12,7 +12,7 @@ import com.clearkeep.domain.usecase.call.RequestVideoCallUseCase
 import com.clearkeep.domain.usecase.call.SwitchAudioToVideoCallUseCase
 import com.clearkeep.januswrapper.*
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.domain.model.ServerResponse
+import com.clearkeep.domain.model.response.ServerResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import org.json.JSONObject

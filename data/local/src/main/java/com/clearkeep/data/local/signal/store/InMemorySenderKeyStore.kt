@@ -1,14 +1,16 @@
 package com.clearkeep.data.local.signal.store
 
-import com.clearkeep.data.local.signal.dao.SignalKeyDAO
-import com.clearkeep.data.local.signal.model.SignalSenderKey
+import com.clearkeep.data.local.signal.senderkey.SignalKeyDAO
+import com.clearkeep.data.local.signal.senderkey.SignalSenderKey
 import org.whispersystems.libsignal.groups.SenderKeyName
 import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import java.io.IOException
 import java.util.*
 import com.clearkeep.domain.repository.SenderKeyStore
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class InMemorySenderKeyStore @Inject constructor(
     private val signalKeyDAO: SignalKeyDAO,
 ) : SenderKeyStore {

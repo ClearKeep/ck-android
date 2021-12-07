@@ -3,7 +3,11 @@ package com.clearkeep.domain.usecase.group
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.User
 import com.clearkeep.domain.repository.Environment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class CreateGroupUseCase @Inject constructor(
@@ -14,17 +18,22 @@ class CreateGroupUseCase @Inject constructor(
     suspend operator fun invoke(
         createClientId: String,
         groupName: String,
-        participants: MutableList<com.clearkeep.domain.model.User>,
+        participants: MutableList<User>,
         isGroup: Boolean
-    ): Resource<com.clearkeep.domain.model.ChatGroup> {
+    ): Resource<ChatGroup> = withContext(Dispatchers.IO) {
         val server = serverRepository.getServer(getDomain(), getClientId())
         val response = groupRepository.createGroup(createClientId, groupName, participants, isGroup, getDomain(), getClientId(), server)
         if (response.data != null) {
             val group = groupRepository.convertGroupFromResponse(response.data!!, getDomain(), getClientId(), server)
             groupRepository.insertGroup(group)
-            return Resource.success(group)
+            return@withContext Resource.success(group)
         }
-        return Resource.error(response.message ?: "", null, response.errorCode, response.error)
+        return@withContext Resource.error(
+            response.message ?: "",
+            null,
+            response.errorCode,
+            response.error
+        )
     }
 
     private fun getClientId(): String = environment.getServer().profile.userId

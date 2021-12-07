@@ -4,6 +4,8 @@ import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.Environment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class RemarkGroupKeyRegisteredUseCase @Inject constructor(
@@ -11,7 +13,7 @@ class RemarkGroupKeyRegisteredUseCase @Inject constructor(
     private val serverRepository: ServerRepository,
     private val environment: Environment
 ) {
-    suspend operator fun invoke(groupId: Long): ChatGroup {
+    suspend operator fun invoke(groupId: Long): ChatGroup = withContext(Dispatchers.IO) {
         val server = serverRepository.getServer(getDomain(), getClientId())
         val group = groupRepository.getGroupByID(groupId, getDomain(), getClientId(), server, false)
         group.data?.let {
@@ -39,9 +41,9 @@ class RemarkGroupKeyRegisteredUseCase @Inject constructor(
                 isDeletedUserPeer = it.isDeletedUserPeer
             )
             groupRepository.updateGroup(updateGroup)
-            return updateGroup
+            return@withContext updateGroup
         }
-        return ChatGroup(
+        return@withContext ChatGroup(
             null,
             0,
             "",

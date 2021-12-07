@@ -1,22 +1,21 @@
 package com.clearkeep.data.local.clearkeep.converter
 
 import androidx.room.TypeConverter
-import com.clearkeep.data.local.model.MessageLocal
-import com.clearkeep.domain.model.Message
+import com.clearkeep.data.local.clearkeep.message.MessageEntity
 import com.google.gson.Gson
 
 class MessageConverter {
     @TypeConverter
-    fun restoreList(messageAsString: String?): MessageLocal? {
+    fun restoreList(messageAsString: String?): MessageEntity? {
         if (messageAsString.isNullOrEmpty()) {
             return null
         }
 
-        return Gson().fromJson(messageAsString, MessageLocal::class.java)
+        return Gson().fromJson(messageAsString, MessageEntity::class.java)
     }
 
     @TypeConverter
-    fun saveList(message: MessageLocal?): String? {
+    fun saveList(message: MessageEntity?): String? {
         if (message == null) {
             return null
         }

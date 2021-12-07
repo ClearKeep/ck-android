@@ -5,5 +5,5 @@ import com.clearkeep.domain.repository.MessageRepository
 import javax.inject.Inject
 
 class GetMessageAsStateUseCase @Inject constructor(private val messageRepository: MessageRepository) {
-    operator fun invoke(groupId: Long, owner: com.clearkeep.domain.model.Owner) = messageRepository.getMessagesAsState(groupId, owner)
+    operator fun invoke(groupId: Long, owner: Owner) = messageRepository.getMessagesAsState(groupId, owner)
 }

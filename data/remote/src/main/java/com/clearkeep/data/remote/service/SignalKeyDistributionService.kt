@@ -15,7 +15,7 @@ import javax.inject.Inject
 class SignalKeyDistributionService @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
 ) {
-    suspend fun registerClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?, key: ECKeyPair, senderKeyId: Int, senderKey: ByteArray) = withContext(Dispatchers.IO) {
+    suspend fun groupRegisterClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?, key: ECKeyPair, senderKeyId: Int, senderKey: ByteArray) = withContext(Dispatchers.IO) {
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()

@@ -1,7 +1,5 @@
 package com.clearkeep.domain.usecase.chat
 
-import android.content.Context
-import com.clearkeep.domain.repository.ChatRepository
 import com.clearkeep.domain.repository.FileRepository
 import javax.inject.Inject
 

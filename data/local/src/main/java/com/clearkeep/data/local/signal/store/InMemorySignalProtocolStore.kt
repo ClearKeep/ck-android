@@ -6,8 +6,8 @@
 package com.clearkeep.data.local.signal.store
 
 import androidx.annotation.WorkerThread
-import com.clearkeep.data.local.signal.dao.SignalIdentityKeyDAO
-import com.clearkeep.data.local.signal.dao.SignalPreKeyDAO
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
+import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
 import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.repository.SignalProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
@@ -19,7 +19,9 @@ import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class InMemorySignalProtocolStore @Inject constructor(
     preKeyDAO: SignalPreKeyDAO,
     signalIdentityKeyDAO: SignalIdentityKeyDAO,

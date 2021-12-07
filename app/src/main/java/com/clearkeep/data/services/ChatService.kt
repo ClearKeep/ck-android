@@ -43,21 +43,6 @@ class ChatService : Service(),
     lateinit var environment: Environment
 
     @Inject
-    lateinit var serverRepository: ServerRepository
-
-    @Inject
-    lateinit var chatRepository: ChatRepository
-
-    @Inject
-    lateinit var peopleRepository: PeopleRepository
-
-    @Inject
-    lateinit var messageRepository: MessageRepository
-
-    @Inject
-    lateinit var groupRepository: GroupRepository
-
-    @Inject
     lateinit var fetchGroupsUseCase: FetchGroupsUseCase
 
     @Inject

@@ -9,7 +9,7 @@ import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.MessageObjectResponse
+import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.*
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,6 @@ import java.lang.Exception
 import javax.inject.Inject
 
 class SendMessageUseCase @Inject constructor(
-    private val chatRepository: ChatRepository,
     private val messageRepository: MessageRepository,
     private val serverRepository: ServerRepository,
     private val signalProtocolStore: SignalProtocolStore,
@@ -80,7 +79,7 @@ class SendMessageUseCase @Inject constructor(
         val messageSender: CiphertextMessage =
             sessionCipherSender.encrypt(plainMessage.toByteArray(charset("UTF-8")))
 
-        val response = chatRepository.sendMessageInPeer(server, receiverId, userRepository.getUniqueDeviceID(), groupId, message.serialize(), messageSender.serialize())
+        val response = messageRepository.sendMessageInPeer(server, receiverId, userRepository.getUniqueDeviceID(), groupId, message.serialize(), messageSender.serialize())
 
         if (response.isSuccess() && response.data != null) {
             val responseMessage = convertMessageResponse(
@@ -91,7 +90,7 @@ class SendMessageUseCase @Inject constructor(
             if (cachedMessageId == 0) {
                 saveNewMessage(responseMessage)
             } else {
-                chatRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
+                messageRepository.updateMessage(responseMessage.copy(generateId = cachedMessageId))
             }
             return Resource.success(null)
         }
@@ -108,29 +107,32 @@ class SendMessageUseCase @Inject constructor(
         withContext(Dispatchers.IO) {
             val senderAddress =
                 CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            println("toGroup sender address init ok")
             val groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            printlnCK("sendMessageToGroup: senderAddress : $senderAddress  groupSender: $groupSender")
+            printlnCK("toGroup: senderAddress : $senderAddress  groupSender: $groupSender")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =
                 aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
-
+            printlnCK("toGroup: encrypt ok")
             val server = serverRepository.getServerByOwner(
                 Owner(
                     ownerWorkSpace,
                     senderId
                 )
             )
+            printlnCK("toGroup: get server ok")
             if (server == null) {
                 printlnCK("sendMessageToGroup: server must be not null")
                 return@withContext Resource.error("server must be not null", null)
             }
 
-            val response = chatRepository.sendMessageToGroup(
+            val response = messageRepository.sendMessageToGroup(
                 server,
                 userRepository.getUniqueDeviceID(),
                 groupId,
                 ciphertextFromAlice
             )
+            printlnCK("toGroup: send message to server ok")
 
             if (response.isSuccess() && response.data != null) {
                 val message = convertMessageResponse(
@@ -142,7 +144,7 @@ class SendMessageUseCase @Inject constructor(
                 if (cachedMessageId == 0) {
                     saveNewMessage(message)
                 } else {
-                    chatRepository.updateMessage(message.copy(generateId = cachedMessageId))
+                    messageRepository.updateMessage(message.copy(generateId = cachedMessageId))
                 }
                 return@withContext Resource.success(null)
             }
