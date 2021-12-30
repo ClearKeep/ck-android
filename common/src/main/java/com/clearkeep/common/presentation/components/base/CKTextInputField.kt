@@ -88,7 +88,7 @@ fun CKTextInputField(
                     if (placeholder.isNotBlank()) {
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = LocalColorMapping.current.bodyTextAlt,
+                                color = LocalColorMapping.current.inputHint,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = defaultNonScalableTextSize()
                             )
