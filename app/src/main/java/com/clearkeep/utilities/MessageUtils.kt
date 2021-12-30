@@ -2,8 +2,8 @@ package com.clearkeep.utilities
 
 fun isImageMessage(content: String): Boolean {
     return content.contains(remoteImageRegex) || content.contains(tempImageRegex) || content.contains(
-        "content://.+/external_files/Pictures/.+".toRegex()
-    )
+        tempImageRegex2
+    ) || content.contains(tempImageRegex3)
 }
 
 fun isFileMessage(content: String): Boolean {
@@ -13,7 +13,7 @@ fun isFileMessage(content: String): Boolean {
 fun isTempMessage(content: String): Boolean {
     return content.contains(tempFileRegex) || content.contains(tempImageRegex) || content.contains(
         tempImageRegex2
-    )
+    )  || content.contains(tempImageRegex3)
 }
 
 fun isForwardedMessage(content: String): Boolean {
@@ -27,6 +27,10 @@ fun getImageUriStrings(content: String): List<String> {
     temp.add(tempImageRegex.findAll(content).map { it.value.split(" ") }.toList().flatten())
     temp.add(
         tempImageRegex2.findAll(content).map { it.value.split(" ").filter { isImageMessage(it) } }
+            .toList().flatten()
+    )
+    temp.add(
+        tempImageRegex3.findAll(content).map { it.value.split(" ").filter { isImageMessage(it) } }
             .toList().flatten()
     )
     return temp.flatten().map { it.trim() }.filter { it.isNotBlank() }
@@ -71,5 +75,8 @@ val tempFileRegex =
 
 val tempImageRegex2 =
     "content://.+/external_files/Pictures/.+".toRegex()
+
+val tempImageRegex3 =
+    "content://.+/cache/.+".toRegex()
 
 val fileSizeRegex = "\\|.+".toRegex()

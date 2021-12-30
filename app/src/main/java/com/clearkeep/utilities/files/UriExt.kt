@@ -8,7 +8,11 @@ import android.provider.OpenableColumns
 fun Uri.getFileName(context: Context, persistablePermission: Boolean = true): String {
     val contentResolver = context.contentResolver
     if (persistablePermission) {
-        contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (e: SecurityException) {
+
+        }
     }
     val cursor = contentResolver.query(this, null, null, null, null, null)
     if (cursor != null && cursor.moveToFirst()) {
@@ -23,7 +27,11 @@ fun Uri.getFileName(context: Context, persistablePermission: Boolean = true): St
 fun Uri.getFileSize(context: Context, persistablePermission: Boolean = true): Long {
     val contentResolver = context.contentResolver
     if (persistablePermission) {
-        contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            contentResolver.takePersistableUriPermission(this, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (e: SecurityException) {
+
+        }
     }
     val cursor = contentResolver.query(this, null, null, null, null, null)
     if (cursor != null && cursor.moveToFirst()) {

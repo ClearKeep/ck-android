@@ -12,8 +12,7 @@ import java.util.*
 
 fun generatePhotoUri(context: Context): Uri {
     val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
-    val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+    val file = File.createTempFile("JPEG_${timeStamp}_", ".jpg", context.cacheDir)
     return FileProvider.getUriForFile(
         context.applicationContext,
         BuildConfig.APPLICATION_ID + ".provider",
