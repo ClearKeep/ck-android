@@ -264,11 +264,6 @@ public class PeerConnectionClient {
 
     private void createPeerConnectionFactoryInternal(Context context) {
         PeerConnectionFactory.initializeInternalTracer();
-        if (peerConnectionParameters.tracing) {
-            PeerConnectionFactory.startInternalTracingCapture(
-                    Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
-                            + "webrtc-trace.txt");
-        }
         Log.d(TAG,
                 "Create peer connection factory. Use video: true");
         isError = false;
