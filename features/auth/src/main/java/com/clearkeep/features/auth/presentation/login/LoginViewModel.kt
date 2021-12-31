@@ -63,7 +63,10 @@ class LoginViewModel @Inject constructor(
     val isAccountLocked: LiveData<Boolean> get() = _isAccountLocked
 
     private val _securityPhrase = MutableLiveData<String>()
+//    val securityPhrase: LiveData<String> get() = _securityPhrase
+
     private val _confirmSecurityPhrase = MutableLiveData<String>()
+//    val confirmSecurityPhrase: LiveData<String> get() = _confirmSecurityPhrase
 
     private val _isSecurityPhraseValid = MutableLiveData<Boolean>()
     val isSecurityPhraseValid: LiveData<Boolean> get() = _isSecurityPhraseValid
@@ -240,6 +243,7 @@ class LoginViewModel @Inject constructor(
         _securityPhrase.value = ""
         _confirmSecurityPhrase.value = ""
         _isSecurityPhraseValid.value = null
+        _isConfirmSecurityPhraseValid.value = null
     }
 
     fun resetSecurityPhraseErrors() {

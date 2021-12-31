@@ -9,6 +9,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +30,7 @@ fun EnterSocialLoginPhraseScreen(
     onVerifySuccess: () -> Unit,
     onConfirmForgotPassphrase: () -> Unit
 ) {
-    val securityPhrase = rememberSaveable {mutableStateOf("") }
+    val securityPhrase = remember { mutableStateOf("") }
     val isSecurityPhraseValid = viewModel.isSecurityPhraseValid.observeAsState()
     val isConfirmForgotPassphraseDialogVisible = rememberSaveable {mutableStateOf(false) }
     val verifyResponse = viewModel.verifyPassphraseResponse.observeAsState()
