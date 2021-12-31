@@ -168,21 +168,15 @@ fun ChangePasswordScreen(
             )
 
             if (changePasswordResponse.value?.status == Status.SUCCESS) {
-                CKAlertDialog(
-                    title = stringResource(R.string.password_change_success_title),
-                    text = stringResource(R.string.password_change_success_text),
-                    onDismissButtonClick = {
-                        if (isResetPassword.value == true) {
-                            val intent = Intent(context, SplashActivity::class.java)
-                            intent.flags =
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                            (context as AppCompatActivity).finish()
-                        }
+                if (isResetPassword.value == true) {
+                    val intent = Intent(context, SplashActivity::class.java)
+                    intent.flags =
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                    (context as AppCompatActivity).finish()
+                }
 
-                        onBackPress()
-                    }
-                )
+                onBackPress()
             } else if (changePasswordResponse.value?.status == Status.ERROR) {
                 CKAlertDialog(
                     title = stringResource(R.string.error),
