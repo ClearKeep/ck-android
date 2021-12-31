@@ -518,6 +518,8 @@ class AuthRepository @Inject constructor(
                 .setClientKeyPeer(clientKeyPeer)
                 .build()
 
+            printlnCK("resetSocialPin setUsername $userId setResetPinCodeToken $resetPincodeToken hashPinCode $verificatorHex salt $saltHex ivParam ${toHex(decrypter.getIv())} clientKeyPeer $clientKeyPeer")
+
             val response =
                 paramAPIProvider.provideAuthBlockingStub(ParamAPI(domain)).withDeadlineAfter(
                     REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
