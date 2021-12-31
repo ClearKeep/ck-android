@@ -87,7 +87,8 @@
         <activity
             android:name="com.clearkeep.features.auth.presentation.register.RegisterActivity"
             android:label="@string/btn_register"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.clearkeep.features.auth.presentation.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"

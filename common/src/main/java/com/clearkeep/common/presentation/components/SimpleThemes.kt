@@ -1,6 +1,7 @@
 package com.clearkeep.common.presentation.components
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -8,7 +9,10 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import com.google.accompanist.insets.ProvideWindowInsets
 
 @SuppressLint("ConflictingOnColor")
@@ -56,13 +60,22 @@ fun CKSimpleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     children: @Composable () -> Unit
 ) {
+    val localFocusManager = LocalFocusManager.current
+
     MaterialTheme(
         colors = if (darkTheme) simpleDarkThemeColors else simpleLightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
         CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
-            Surface(color = if (darkTheme) colorBackgroundDark else Color.White) {
+            Surface(
+                color = if (darkTheme) colorBackgroundDark else Color.White,
+                modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    localFocusManager.clearFocus()
+                })
+                }
+            ) {
                 children()
             }
         }

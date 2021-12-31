@@ -1,6 +1,7 @@
 package com.clearkeep.common.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.MaterialTheme
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -57,6 +60,8 @@ fun CKTheme(
         shapes = Shapes,
         typography = ckTypography
     ) {
+        val localFocusManager = LocalFocusManager.current
+
         CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
             Box(
                 modifier = Modifier
@@ -65,6 +70,11 @@ fun CKTheme(
                             colors = LocalColorMapping.current.backgroundBrush
                         )
                     )
+                    .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        localFocusManager.clearFocus()
+                    })
+                }
             ) {
                 children()
             }
@@ -77,6 +87,8 @@ fun CKInsetTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     children: @Composable () -> Unit
 ) {
+    val localFocusManager = LocalFocusManager.current
+
     val systemUiController = rememberSystemUiController()
     SideEffect {
         systemUiController.setStatusBarColor(Color.Transparent, true)
@@ -96,6 +108,11 @@ fun CKInsetTheme(
                                 colors = LocalColorMapping.current.backgroundBrush
                             )
                         )
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = {
+                                localFocusManager.clearFocus()
+                            })
+                        }
                 ) {
                     children()
                 }
