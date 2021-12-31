@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -62,8 +63,6 @@ fun LoginScreen(
 
     email.value = loginViewModel.email.observeAsState().value ?: ""
 
-    val image = painterResource(R.drawable.ic_logo)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -89,7 +88,7 @@ fun LoginScreen(
         Spacer(Modifier.height(dimensionResource(R.dimen._32sdp)))
 
         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-            Image(image, contentDescription = "")
+            Icon(painterResource(R.drawable.ic_logo), contentDescription = "", tint = Color.White)
         }
 
         ViewUsedCustomServer(loginViewModel.customDomain.isNotEmpty() && loginViewModel.isCustomServer)
