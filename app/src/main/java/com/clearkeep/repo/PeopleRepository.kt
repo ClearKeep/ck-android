@@ -41,6 +41,7 @@ class PeopleRepository @Inject constructor(
                 val activeUserIds = response.lstUserOrBuilderList.map { it.id }
 
                 list.filter { it.userId in activeUserIds }
+                    .distinctBy { it.userId }
                     .map { userEntity -> convertEntityToUser(userEntity) }
                     .sortedBy { it.userName.toLowerCase() }
             } else {
@@ -257,7 +258,7 @@ class PeopleRepository @Inject constructor(
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
-                user.avatar = "${newUser?.avatar}?cache=${UUID.randomUUID()}" //Force reload
+                user.avatar = if (!newUser?.avatar.isNullOrBlank()) "${newUser?.avatar}?cache=${UUID.randomUUID()}" else "" //Force reload
                 printlnCK("avata: ${user.avatar}")
             }
             return@withContext list

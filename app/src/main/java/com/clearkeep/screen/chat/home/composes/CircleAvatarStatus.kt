@@ -56,7 +56,7 @@ fun CircleAvatarStatus(
         Column(Modifier.size(size)) {
             if (!url.isNullOrEmpty()) {
                 val painter = rememberImagePainter(
-                    "$url?cache=$cacheKey", //Force reload when cache key changes
+                    "$url", //Force reload when cache key changes
                     builder = {
                         placeholderMemoryCacheKey(lastUri.value)
                         crossfade(250)
