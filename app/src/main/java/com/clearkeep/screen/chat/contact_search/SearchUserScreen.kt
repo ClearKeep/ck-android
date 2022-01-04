@@ -270,13 +270,25 @@ private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () 
     val isDarkTheme = LocalColorMapping.current.isDarkTheme
 
     val backgroundModifier = if (LocalColorMapping.current.isDarkTheme) {
-        val borderModifier = if (isSelected) Modifier.border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp())) else Modifier
-        Modifier.background(Brush.horizontalGradient(listOf(
-            backgroundGradientStart,
-            backgroundGradientEnd,
-        )), RoundedCornerShape(8.sdp())).then(borderModifier)
+        val borderModifier = if (isSelected) Modifier.border(
+            1.sdp(),
+            Color(0xFFF3F3F3),
+            RoundedCornerShape(8.sdp())
+        ) else Modifier
+        Modifier
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        backgroundGradientStart,
+                        backgroundGradientEnd,
+                    )
+                ), RoundedCornerShape(8.sdp())
+            )
+            .then(borderModifier)
     } else {
-        Modifier.background(Color.White, RoundedCornerShape(8.sdp())).border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
+        Modifier
+            .background(Color.White, RoundedCornerShape(8.sdp()))
+            .border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
 
     }
     Box(
@@ -334,13 +346,21 @@ fun PeopleResultItem(
 
 @Composable
 fun GroupResultItem(groupName: String, query: String, onClick: () -> Unit) {
-    HighlightedSearchText(
+    Column(
         Modifier
             .clickable { onClick() }
-            .fillMaxWidth(), groupName, query,
-        style = MaterialTheme.typography.body2.copy(
-            color = LocalColorMapping.current.descriptionText
-        ))
+            .fillMaxWidth()
+    ) {
+        HighlightedSearchText(
+            Modifier,
+            groupName,
+            query,
+            style = MaterialTheme.typography.body2.copy(
+                fontWeight = FontWeight.Bold,
+                color = LocalColorMapping.current.descriptionText
+            )
+        )
+    }
 }
 
 @Composable
@@ -375,6 +395,7 @@ fun MessageResultItem(
                 message.message,
                 query,
                 style = MaterialTheme.typography.body2.copy(
+                    fontWeight = FontWeight.Bold,
                     color = LocalColorMapping.current.descriptionText
                 ), overflow = TextOverflow.Ellipsis, maxLines = 3
             )
@@ -421,15 +442,36 @@ fun HighlightedSearchText(
             if (newIndex >= 0) {
                 withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
                     append(fullString.substring(matchIndex until newIndex))
+                    printlnCK(
+                        "HighlightedSearchText append bold text ${
+                            fullString.substring(
+                                matchIndex until newIndex
+                            )
+                        }"
+                    )
                 }
                 withStyle(SpanStyle(color = LocalColorMapping.current.profileText)) {
                     append(fullString.substring(newIndex until newIndex + query.length))
+                    printlnCK(
+                        "HighlightedSearchText append profileText text ${
+                            fullString.substring(
+                                newIndex until newIndex + query.length
+                            )
+                        }"
+                    )
                 }
                 matchIndex = newIndex + query.length
             } else {
                 withStyle(SpanStyle(fontWeight = FontWeight.W400)) {
                     val startIndex = if (matchIndex == -1) 0 else matchIndex
                     append(fullString.substring(startIndex until fullString.length))
+                    printlnCK(
+                        "HighlightedSearchText append bold text ${
+                            fullString.substring(
+                                startIndex until fullString.length
+                            )
+                        }"
+                    )
                 }
                 break
             }
