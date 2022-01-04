@@ -112,10 +112,10 @@ fun CKButton(
 @Composable
 private fun getButtonTextColor(buttonType: ButtonType): Color {
     return when (buttonType) {
-        ButtonType.White -> if (isSystemInDarkTheme()) grayscaleBackground else primaryDefault
+        ButtonType.White -> if (LocalColorMapping.current.isDarkTheme) grayscaleBackground else primaryDefault
         ButtonType.Blue -> grayscaleBackground
         ButtonType.Red -> primaryDefault
-        ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
+        ButtonType.BorderWhite -> if (LocalColorMapping.current.isDarkTheme) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
         ButtonType.Black -> Color.White
     }
@@ -124,10 +124,10 @@ private fun getButtonTextColor(buttonType: ButtonType): Color {
 @Composable
 private fun getDisabledButtonTextColor(buttonType: ButtonType): Color {
     return when (buttonType) {
-        ButtonType.White -> if (isSystemInDarkTheme()) grayscaleBackground else primaryDefault
-        ButtonType.Blue -> grayscaleBackground
+        ButtonType.White -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else primaryDefault
+        ButtonType.Blue -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else grayscaleBackground
         ButtonType.Red -> primaryDefault
-        ButtonType.BorderWhite -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
+        ButtonType.BorderWhite -> if (LocalColorMapping.current.isDarkTheme) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart
         ButtonType.Black -> Color.White
     }
