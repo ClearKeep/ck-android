@@ -16,6 +16,7 @@ import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import user.UserOuterClass
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -256,7 +257,7 @@ class PeopleRepository @Inject constructor(
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
-                user.avatar = newUser?.avatar
+                user.avatar = "${newUser?.avatar}?cache=${UUID.randomUUID()}" //Force reload
                 printlnCK("avata: ${user.avatar}")
             }
             return@withContext list

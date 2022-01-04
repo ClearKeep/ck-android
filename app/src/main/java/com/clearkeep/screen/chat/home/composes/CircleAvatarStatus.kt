@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -13,7 +15,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
+import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
+import coil.memory.MemoryCache
 import com.clearkeep.R
 import coil.request.CachePolicy
 import com.clearkeep.components.*
@@ -28,8 +32,11 @@ fun CircleAvatarStatus(
     name: String,
     size: Dp = 24.sdp(),
     status: String,
-    sizeIndicator: Dp = 8.sdp()
+    sizeIndicator: Dp = 8.sdp(),
+    cacheKey: String = ""
 ) {
+    val lastUri = rememberSaveable { mutableStateOf<MemoryCache.Key?>(null) }
+
     val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
     val color = when (status) {
         UserStatus.ONLINE.value -> {
@@ -48,19 +55,25 @@ fun CircleAvatarStatus(
     ) {
         Column(Modifier.size(size)) {
             if (!url.isNullOrEmpty()) {
+                val painter = rememberImagePainter(
+                    "$url?cache=$cacheKey", //Force reload when cache key changes
+                    builder = {
+                        placeholderMemoryCacheKey(lastUri.value)
+                        crossfade(250)
+                    }
+                )
                 Image(
-                    rememberImagePainter(
-                        "$url", //Force reload when cache key changes
-                        builder = {
-                            memoryCachePolicy(CachePolicy.DISABLED)
-                        }
-                    ),
+                    painter,
                     null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(size)
                         .clip(CircleShape)
                 )
+                if  (painter.state is ImagePainter.State.Success) {
+                    val memoryCacheKey = (painter.state as ImagePainter.State.Success).metadata.memoryCacheKey
+                    lastUri.value = memoryCacheKey
+                }
             } else
                 Column(
                     modifier = Modifier
