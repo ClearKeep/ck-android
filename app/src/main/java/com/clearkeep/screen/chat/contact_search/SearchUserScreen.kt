@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -90,11 +89,7 @@ fun SearchUserScreen(
             placeholder = stringResource(R.string.home_search_hint),
             maxChars = MAX_SEARCH_LENGTH,
             focusRequester = focusRequester
-        ) {
-            if (query.value.isNotBlank()) {
-                searchViewModel.search(query.value)
-            }
-        }
+        )
         Spacer(Modifier.height(10.sdp()))
         Row(Modifier.fillMaxWidth()) {
             FilterItem(
@@ -256,6 +251,17 @@ fun SearchUserScreen(
                 }
             )
         }
+
+        LaunchedEffect(query) {
+            snapshotFlow { query.value }
+                .distinctUntilChanged()
+                .collect { query ->
+                    if (query.isNotBlank()) {
+                        searchViewModel.search(query)
+                    }
+                }
+        }
+
     }
 }
 
