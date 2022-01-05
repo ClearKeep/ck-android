@@ -174,9 +174,15 @@ fun ChangePasswordScreen(
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     context.startActivity(intent)
                     (context as AppCompatActivity).finish()
+                } else {
+                    CKAlertDialog(
+                        title = stringResource(R.string.password_change_success_title),
+                        text = stringResource(R.string.password_change_success_text),
+                        onDismissButtonClick = {
+                            onBackPress()
+                        }
+                    )
                 }
-
-                onBackPress()
             } else if (changePasswordResponse.value?.status == Status.ERROR) {
                 CKAlertDialog(
                     title = stringResource(R.string.error),

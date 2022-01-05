@@ -2,13 +2,14 @@ package com.clearkeep.db.clear_keep.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import androidx.room.OnConflictStrategy.IGNORE
 import androidx.room.OnConflictStrategy.REPLACE
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.Server
 
 @Dao
 interface ServerDAO {
-    @Insert(onConflict = REPLACE)
+    @Insert(onConflict = IGNORE)
     suspend fun insert(server: Server)
 
     @Query("DELETE FROM server WHERE id =:serverId")

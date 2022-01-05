@@ -96,7 +96,7 @@ fun CKTextInputField(
                 },
                 colors = TextFieldDefaults.textFieldColors(
                     textColor = LocalColorMapping.current.bodyTextAlt,
-                    cursorColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = LocalColorMapping.current.cursor,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (LocalColorMapping.current.isDarkTheme) {

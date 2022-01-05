@@ -28,20 +28,21 @@ open class BaseViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            val response = authRepository.logoutFromAPI(currentServer.value!!)
+            currentServer.value?.let {
+                val response = authRepository.logoutFromAPI(it)
 
-            if (response.data?.error.isNullOrBlank()) {
-                currentServer.value?.id?.let {
-                    val removeResult = serverRepository.deleteServer(it)
+                if (response.data?.error.isNullOrBlank()) {
+                    val removeResult = it.id?.let { it1 -> serverRepository.deleteServer(it1) }
                     roomRepository.removeGroupByDomain(
-                        currentServer.value!!.serverDomain,
-                        currentServer.value!!.ownerClientId
+                        it.serverDomain,
+                        it.ownerClientId
                     )
                     messageRepository.clearMessageByDomain(
-                        currentServer.value!!.serverDomain,
-                        currentServer.value!!.ownerClientId
+                        it.serverDomain,
+                        it.ownerClientId
                     )
-                    if (removeResult > 0) {
+
+                    if (removeResult != null && removeResult > 0) {
                         printlnCK("serverRepository: ${serverRepository.getServers().size}")
                         if (serverRepository.getServers().isNotEmpty()) {
                             selectChannel(servers.value!![0])
@@ -49,9 +50,9 @@ open class BaseViewModel @Inject constructor(
                             _isLogOutCompleted.value = true
                         }
                     }
+                } else {
+                    printlnCK("signOut error")
                 }
-            } else {
-                printlnCK("signOut error")
             }
         }
     }

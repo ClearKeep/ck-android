@@ -184,7 +184,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = stringResource(R.string.social_sign_in),
-                    color = Color.White,
+                    color = LocalColorMapping.current.loginText,
                     style = TextStyle(
                         fontSize = defaultNonScalableTextSize(),
                         fontWeight = FontWeight.Bold
@@ -241,7 +241,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = stringResource(R.string.tv_not_account),
-                    color = Color.White,
+                    color = LocalColorMapping.current.loginText,
                     style = TextStyle(
                         fontSize = defaultNonScalableTextSize(),
                         fontWeight = FontWeight.Bold
@@ -267,7 +267,7 @@ fun LoginScreen(
                 style = MaterialTheme.typography.caption.copy(
                     fontSize = 10.dp.toNonScalableTextSize()
                 ),
-                color = Color.White
+                color = LocalColorMapping.current.loginText
             )
             Spacer(Modifier.height(dimensionResource(R.dimen._14sdp)))
         }
