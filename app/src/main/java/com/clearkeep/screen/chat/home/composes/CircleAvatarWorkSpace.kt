@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKText
+import com.clearkeep.components.grayscaleDarkModeGreyLight2
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.Server
 
@@ -39,7 +40,7 @@ fun Highlight(item: Server, contentSize: Dp) {
             .size(contentSize.plus(dimensionResource(R.dimen._12sdp)))
             .background(color = Color.Transparent)
             .border(
-                BorderStroke(dimensionResource(R.dimen._1sdp), if (LocalColorMapping.current.isDarkTheme) Color.Black else primaryDefault),
+                BorderStroke(dimensionResource(R.dimen._1sdp), if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else primaryDefault),
                 shape = RoundedCornerShape(dimensionResource(R.dimen._4sdp))
             ),
         horizontalAlignment = Alignment.CenterHorizontally,

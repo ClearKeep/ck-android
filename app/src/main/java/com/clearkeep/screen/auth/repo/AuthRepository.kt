@@ -853,26 +853,28 @@ class AuthRepository @Inject constructor(
             myStore.storeSignedPreKey(signedPreKeyId, signedPreKeyRecord)
 
             if (clearOldUserData) {
-                val oldServer = serverRepository.getServer(domain, profile.userId)
+                val oldServer = serverRepository.getServerByDomain(domain)
+
                 oldServer?.id?.let {
                     roomRepository.removeGroupByDomain(domain, profile.userId)
                     messageRepository.clearMessageByDomain(domain, profile.userId)
                 }
             }
 
-            serverRepository.insertServer(
-                Server(
-                    serverName = response.workspaceName,
-                    serverDomain = domain,
-                    ownerClientId = profile.userId,
-                    serverAvatar = "",
-                    loginTime = getCurrentDateTime().time,
-                    accessKey = accessToken,
-                    hashKey = hashKey,
-                    refreshToken = response.refreshToken,
-                    profile = profile,
-                )
+            val server = Server(
+                serverName = response.workspaceName,
+                serverDomain = domain,
+                ownerClientId = profile.userId,
+                serverAvatar = "",
+                loginTime = getCurrentDateTime().time,
+                accessKey = accessToken,
+                hashKey = hashKey,
+                refreshToken = response.refreshToken,
+                profile = profile,
             )
+            printlnCK("onLoginSuccess insert new server $server")
+            serverRepository.insertServer(server)
+            serverRepository.setActiveServer(server)
             userPreferenceRepository.initDefaultUserPreference(
                 domain,
                 profile.userId,

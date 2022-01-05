@@ -127,8 +127,8 @@ private fun getButtonTextColor(buttonType: ButtonType): Color {
 @Composable
 private fun getDisabledButtonTextColor(buttonType: ButtonType): Color {
     return when (buttonType) {
-        ButtonType.White -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else primaryDefault
-        ButtonType.Blue -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else grayscaleBackground
+        ButtonType.White -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2Transparent else primaryDefault
+        ButtonType.Blue -> if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2Transparent else grayscaleBackground
         ButtonType.Red -> primaryDefault
         ButtonType.BorderWhite -> if (LocalColorMapping.current.isDarkTheme) primaryDefault else grayscaleOffWhite
         ButtonType.BorderGradient -> backgroundGradientStart

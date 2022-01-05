@@ -18,7 +18,7 @@ class ServerRepository @Inject constructor(
 ) {
     var profile = MutableLiveData<Profile>()
 
-    var activeServer = MutableLiveData<Server>()
+    val activeServer = serverDAO.getDefaultServerAsState()
 
     val isLogout = MutableLiveData<Boolean>()
 
@@ -42,7 +42,6 @@ class ServerRepository @Inject constructor(
     suspend fun setActiveServer(server: Server) {
         environment.setUpDomain(server)
         profile.postValue(server.profile)
-        activeServer.postValue(server)
         serverDAO.setDefaultServerByDomain(server.serverDomain)
     }
 

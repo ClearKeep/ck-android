@@ -152,6 +152,8 @@ data class ColorMapping(
     val descriptionTextAlt: Color = grayscale2,
     val separator: Color = separatorDarkNonOpaque,
     val inputHint: Color = grayscale3,
+    val loginText: Color = Color.White,
+    val cursor: Color = grayscaleBlack,
     val isDarkTheme: Boolean = false
 )
 
@@ -189,6 +191,8 @@ fun provideColor(darkTheme: Boolean) = if (darkTheme) {
         descriptionTextAlt = primaryDefault,
         separator = grayscaleDarkModeGreyLight,
         inputHint = grayscaleDarkModeGreyLight,
+        loginText = grayscaleDarkModeGreyLight2,
+        cursor =  grayscaleDarkModeGreyLight2,
         isDarkTheme = true
     )
 } else {
