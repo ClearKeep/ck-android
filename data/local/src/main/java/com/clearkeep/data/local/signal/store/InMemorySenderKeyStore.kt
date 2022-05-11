@@ -1,5 +1,7 @@
 package com.clearkeep.data.local.signal.store
 
+import android.util.Log
+import androidx.lifecycle.LiveData
 import com.clearkeep.data.local.signal.senderkey.SignalKeyDAO
 import com.clearkeep.data.local.signal.senderkey.SignalSenderKey
 import org.whispersystems.libsignal.groups.SenderKeyName
@@ -7,6 +9,7 @@ import org.whispersystems.libsignal.groups.state.SenderKeyRecord
 import java.io.IOException
 import java.util.*
 import com.clearkeep.domain.repository.SenderKeyStore
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -72,6 +75,13 @@ class InMemorySenderKeyStore @Inject constructor(
     }
 
     override suspend fun deleteSenderKey(senderKeyName: SenderKeyName) {
-        signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId, senderKeyName.sender.name)
+        val deleteSenderKey = signalKeyDAO.deleteSignalSenderKey(senderKeyName.groupId, senderKeyName.sender.name)
+        Log.d("antx: ", "deleteSenderKey line = 76:$ ${senderKeyName.groupId}: $deleteSenderKey ");
+    }
+
+    override suspend fun getAllSenderKey() {
+        signalKeyDAO.getSignalSenderKeys().forEach {
+            Log.d("antx: ", "getAllSenderKey groupId: ${it.groupId} ${it.senderKey} ");
+        }
     }
 }

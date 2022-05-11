@@ -92,7 +92,7 @@ android {
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"dev0.clearkeep.org\""
+            buildConfigField "String", 'BASE_URL', "\"develop3.clearkeep.org\""
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"

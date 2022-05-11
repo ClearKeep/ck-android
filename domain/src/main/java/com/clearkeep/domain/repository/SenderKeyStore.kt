@@ -6,4 +6,5 @@ import org.whispersystems.libsignal.groups.state.SenderKeyStore
 interface SenderKeyStore: SenderKeyStore {
     fun hasSenderKey(senderKeyName: SenderKeyName): Boolean
     suspend fun deleteSenderKey(senderKeyName: SenderKeyName)
+    suspend fun getAllSenderKey()
 }

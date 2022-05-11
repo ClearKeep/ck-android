@@ -17,7 +17,7 @@ class GroupService @Inject constructor(
     private val dynamicAPIProvider: DynamicAPIProvider,
     private val apiProvider: ParamAPIProvider
 ) {
-    suspend fun getGroup(server: com.clearkeep.domain.model.Server, groupId: Long): GroupOuterClass.GroupObjectResponse = withContext(Dispatchers.IO)  {
+    suspend fun getGroup(server: com.clearkeep.domain.model.Server, groupId: Long): GroupOuterClass.GroupObjectResponse = withContext(Dispatchers.IO) {
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
         val groupGrpc = apiProvider.provideGroupBlockingStub(paramAPI)
         val request = GroupOuterClass.GetGroupRequest.newBuilder()
@@ -164,5 +164,22 @@ class GroupService @Inject constructor(
 
         return@withContext dynamicAPIProvider.provideUserBlockingStub()
             .withDeadlineAfter(30, TimeUnit.SECONDS).getUserInfo(request)
+    }
+
+    suspend fun findUserByEmail(emailHard: String): List<User> = withContext(Dispatchers.IO) {
+        try {
+            val request = UserOuterClass
+                .FindUserByEmailRequest
+                .newBuilder()
+                .setEmailHash(emailHard)
+                .build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
+            return@withContext response.lstUserOrBuilderList.map {
+                User(it.id, it.displayName, it.workspaceDomain)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext emptyList<User>()
+        }
     }
 }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.features.chat.R
 import com.clearkeep.common.utilities.getMessageContent
@@ -30,6 +31,7 @@ import com.clearkeep.common.utilities.files.*
 import com.clearkeep.features.shared.presentation.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import java.util.*
@@ -68,6 +70,9 @@ class RoomViewModel @Inject constructor(
     private val registerSenderKeyToGroupUseCase: RegisterSenderKeyToGroupUseCase,
 
     private val setActiveServerUseCase: SetActiveServerUseCase,
+    var getListClientInGroupUseCase: GetListClientInGroupUseCase,
+    var senderKeyStore: SenderKeyStore,
+
     getActiveServerUseCase: GetActiveServerUseCase,
     getIsLogoutUseCase: GetIsLogoutUseCase,
     getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
@@ -534,6 +539,25 @@ class RoomViewModel @Inject constructor(
                         getOwner().domain,
                         getOwner().clientId
                     )
+                    /*getListClientInGroupUseCase(it, getOwner().domain)?.forEach {
+                        Log.d("antx: ", "RoomViewModel leaveGroup line = 543: " );
+                        val senderAddress2 = CKSignalProtocolAddress(
+                            Owner(
+                                getOwner().domain,
+                                it
+                            ), RECEIVER_DEVICE_ID
+                        )
+                        val senderAddress1 = CKSignalProtocolAddress(
+                            Owner(
+                                getOwner().domain,
+                                it
+                            ), SENDER_DEVICE_ID
+                        )
+                        val groupSender2 = SenderKeyName(getOwner().domain, senderAddress2)
+                        val groupSender = SenderKeyName(getOwner().domain, senderAddress1)
+                        senderKeyStore.deleteSenderKey(groupSender2)
+                        senderKeyStore.deleteSenderKey(groupSender)
+                    }*/
                     onSuccess?.invoke()
                 } else {
                     onError?.invoke()

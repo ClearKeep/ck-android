@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.message
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.network.Resource
@@ -96,13 +97,17 @@ class MessageRepositoryImpl @Inject constructor(
         groupId: Long,
         ownerDomain: String,
         ownerClientId: String
-    ) = withContext(Dispatchers.IO) {
-        messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
+    ):Int = withContext(Dispatchers.IO) {
+       val test= messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
+        Log.d("antx: ", "MessageRepositoryImpl deleteMessageInGroup line = 101: $test " );
+        return@withContext test
     }
 
-    override suspend fun deleteMessageByDomain(domain: String, userId: String) =
+    override suspend fun deleteMessageByDomain(domain: String, userId: String): Int  =
         withContext(Dispatchers.IO) {
-            messageDAO.deleteMessageByDomain(domain, userId)
+          val test=  messageDAO.deleteMessageByDomain(domain, userId)
+            Log.d("antx: ", "MessageRepositoryImpl deleteMessageByDomain line = 109: $test" )
+            return@withContext test
         }
 
     private var roomId: Long = -1

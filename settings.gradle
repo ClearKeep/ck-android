@@ -25,5 +25,3 @@ include ':app',
         ':srp',
         ':features:chat',
         ':features:auth'
-include ':database'
-include ':repository'

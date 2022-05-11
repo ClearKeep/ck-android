@@ -114,6 +114,7 @@ fun FriendListMoreItem(count: Int, paddingX: Int) {
                 fontWeight = FontWeight.W700,
                 modifier = Modifier.align(Alignment.Center)
             )
+
         }
     }
 }

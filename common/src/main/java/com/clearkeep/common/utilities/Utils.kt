@@ -199,7 +199,7 @@ fun getCurrentDateTime(): Date {
 
 fun getUnableErrorMessage(message: String?): String {
     return if (BuildConfig.FLAVOR == "dev") {
-        message ?: ""
+         ""
     } else {
         ""
     }

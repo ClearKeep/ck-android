@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.signal
 
+import android.util.Log
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
 import com.clearkeep.data.remote.service.SignalKeyDistributionService
 import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
@@ -12,6 +13,8 @@ import com.clearkeep.data.local.signal.model.toLocal
 import com.clearkeep.data.repository.userkey.toModel
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.response.GroupClientKeyObject
+import com.clearkeep.domain.model.response.GroupGetClientKeyResponse
 import com.clearkeep.domain.model.response.PeerGetClientKeyResponse
 import com.clearkeep.domain.repository.SenderKeyStore
 import io.grpc.StatusRuntimeException
@@ -76,7 +79,9 @@ class SignalKeyRepositoryImpl @Inject constructor(
 
     override suspend fun loadSenderKey(senderKeyName: SenderKeyName): SenderKeyRecord =
         withContext(Dispatchers.IO) {
-            return@withContext senderKeyStore.loadSenderKey(senderKeyName)
+            val senderKey=senderKeyStore.loadSenderKey(senderKeyName)
+            Log.d("antx: ", "SignalKeyRepositoryImpl loadSenderKey line = 81:${senderKeyName} ${senderKey.isEmpty} " );
+            return@withContext senderKey
         }
 
     override suspend fun getUserKey(serverDomain: String, userId: String): UserKey =

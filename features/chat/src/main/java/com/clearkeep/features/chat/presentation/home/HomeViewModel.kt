@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.home
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
@@ -41,6 +42,7 @@ class HomeViewModel @Inject constructor(
     private val updateStatusUseCase: UpdateStatusUseCase,
     private val sendPingUseCase: SendPingUseCase,
     private val updateAvatarUserEntityUseCase: UpdateAvatarUserEntityUseCase,
+    private val signalKeyRepository: SignalKeyRepository,
 
     getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
     getIsLogoutUseCase: GetIsLogoutUseCase,
@@ -49,6 +51,7 @@ class HomeViewModel @Inject constructor(
     getServersAsStateUseCase: GetServersAsStateUseCase,
     logoutUseCase: LogoutUseCase,
     getActiveServerUseCase: GetActiveServerUseCase,
+    var senderKeyStore: SenderKeyStore,
 
     private val setActiveServerUseCase: SetActiveServerUseCase
 ) : BaseViewModel(logoutUseCase) {
@@ -91,12 +94,23 @@ class HomeViewModel @Inject constructor(
             handleResponse(fetchGroupResponse)
             getStatusUserInDirectGroup()
         }
-
+        getAllSenderKey()
         sendPing()
+    }
+
+    private fun getAllSenderKey(){
+        viewModelScope.launch {
+            launch(Dispatchers.IO){
+                //senderKeyStore.getAllSenderKey()
+            }
+            Log.d("antx: ", "HomeViewModel getAllSenderKey line = 103: " );
+        }
+
     }
 
     fun onPullToRefresh() {
         isRefreshing.postValue(true)
+        getAllSenderKey()
         viewModelScope.launch {
             val fetchGroupResponse = fetchGroupsUseCase()
             handleResponse(fetchGroupResponse)

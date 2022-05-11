@@ -10,7 +10,7 @@ interface SignalKeyDAO {
     fun insert(senderKey: SignalSenderKey)
 
     @Query("SELECT * FROM signalsenderkey")
-    fun getSignalSenderKeys(): LiveData<List<SignalSenderKey>>
+    suspend fun getSignalSenderKeys(): List<SignalSenderKey>
 
     @Query("SELECT * FROM signalsenderkey WHERE group_id = :groupId AND sender_name = :senderName AND device_id = :deviceId LIMIT 1")
     fun getSignalSenderKey(groupId: String, senderName: String, deviceId: Int): SignalSenderKey

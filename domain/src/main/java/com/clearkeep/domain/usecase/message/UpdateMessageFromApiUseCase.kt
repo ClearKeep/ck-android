@@ -1,5 +1,6 @@
 package com.clearkeep.domain.usecase.message
 
+import android.util.Log
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.model.MessagePagingResponse
@@ -121,6 +122,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
                     decryptPeerMessage(sender, encryptedMessage)
                 }
             } else {
+                Log.d("antx: ", "UpdateMessageFromApiUseCase decryptMessage line = 125:decryptGroupMessage " );
                 decryptGroupMessage(
                     sender,
                     groupId,
@@ -163,7 +165,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         owner: Owner,
         lastMessage: Message
     ) {
-        val server = serverRepository.getServer(owner.domain, owner.clientId,)
+        val server = serverRepository.getServer(owner.domain, owner.clientId)
         val group = groupRepository.getGroupByID(groupId, owner.domain, owner.clientId, server, false).data
         group?.let {
             val updateGroup = ChatGroup(
@@ -228,7 +230,11 @@ class UpdateMessageFromApiUseCase @Inject constructor(
             if (!initSessionAgain) {
                 throw java.lang.Exception("can not init session in group $groupId")
             }
-            bobGroupCipher.decrypt(message)
+            try {
+                bobGroupCipher.decrypt(message)
+            } catch (e: Exception) {
+                "".toByteArray()
+            }
         }
 
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
@@ -313,13 +319,15 @@ class UpdateMessageFromApiUseCase @Inject constructor(
                 printlnCK("initSessionUserInGroup: server must be not null")
                 return false
             }
-            printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
             val senderKeyDistribution =
                 signalKeyRepository.getGroupClientKey(server, groupId, fromClientId)
+            printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} ${senderKeyDistribution != null}")
+
             if (senderKeyDistribution != null) {
                 printlnCK("")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution)
+                Log.d("antx: ", "UpdateMessageFromApiUseCase initSessionUserInGroup line = 327:groupId ${groupId} ${senderKeyDistribution.clientKey.clientKeyDistribution} " );
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
             } else {

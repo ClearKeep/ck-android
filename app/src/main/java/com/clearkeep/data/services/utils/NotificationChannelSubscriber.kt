@@ -35,7 +35,7 @@ class NotificationChannelSubscriber(
                 printlnCK("subscribeNotificationChannel, success")
                 listenNotificationChannel()
             } else {
-                printlnCK("subscribeNotificationChannel, ${res.error}")
+                printlnCK("subscribeNotificationChannel, ${res.error} $res")
             }
             return@withContext res.error.isNullOrEmpty()
         } catch (e: Exception) {

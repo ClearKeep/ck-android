@@ -10,4 +10,6 @@ class GetFriendUseCase @Inject constructor(private val peopleRepository: PeopleR
 
     suspend operator fun invoke(friendClientId: String) =
         peopleRepository.getFriendFromID(friendClientId)
+
+    suspend fun getFriendByEmail(hashEmail: String) = peopleRepository.getFriendByEmail(hashEmail)
 }

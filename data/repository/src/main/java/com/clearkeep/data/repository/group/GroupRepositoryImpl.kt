@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.group
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.*
@@ -312,6 +313,7 @@ class GroupRepositoryImpl @Inject constructor(
     ): ChatGroup = withContext(Dispatchers.IO) {
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         var isRegisteredKey = oldGroup?.isJoined ?: false
+        Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 316:$isRegisteredKey " );
         val lastMessageSyncTime =
             oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
@@ -333,7 +335,9 @@ class GroupRepositoryImpl @Inject constructor(
             val senderAddress =
                 CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
+            Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337:isRegisteredKey $isRegisteredKey " );
             if (response.clientKey.senderKeyId > 0 && response.groupType == "group" && !isRegisteredKey) {
+                Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337: " );
                 val senderKeyID = response.clientKey.senderKeyId
                 val senderKey = response.clientKey.senderKey
                 val privateKeyEncrypt = response.clientKey.privateKey

@@ -2,6 +2,7 @@ package com.clearkeep.data.services
 
 import android.content.Intent
 import android.util.Base64
+import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.*
@@ -79,6 +80,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var senderKeyStore: SenderKeyStore
+
+    @Inject
+    lateinit var signalKeyRepository: SignalKeyRepository
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -176,9 +180,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 stunUrl, currentUserName, currentUserAvatar
             )
         } else {
-            groupId?.let { busyCallUseCase(it.toInt(),
-                Owner(clientDomain, clientId)
-            ) }
+            groupId?.let {
+                busyCallUseCase(
+                    it.toInt(),
+                    Owner(clientDomain, clientId)
+                )
+            }
         }
     }
 
@@ -238,7 +245,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val clientDomain = data["client_workspace_domain"] ?: ""
             val groupId = data["group_id"]?.toLong() ?: 0
             val removedMember = data["leave_member"] ?: ""
-            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain groupId: groupId")
+            printlnCK("handlerRequestAddRemoteMember clientId: $clientId  clientDomain: $clientDomain removedMember: $removedMember")
             if (!getOwnerClientIdsUseCase().contains(removedMember))
                 getGroupByIdUseCase(groupId, clientDomain, clientId)
             if (removedMember.isNotEmpty()) {
@@ -246,25 +253,49 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 if (getOwnerClientIdsUseCase().contains(removedMember)) {
                     deleteMessageUseCase(groupId, clientDomain, removedMember)
                 }
-                getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
+                if (getOwnerClientIdsUseCase().contains(removedMember)) {
+                    getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
+                        Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it");
+                        val senderAddress2 = CKSignalProtocolAddress(
+                            Owner(
+                                clientDomain,
+                                it
+                            ), RECEIVER_DEVICE_ID
+                        )
+                        val senderAddress1 = CKSignalProtocolAddress(
+                            Owner(
+                                clientDomain,
+                                it
+                            ), SENDER_DEVICE_ID
+                        )
+                        val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                        val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                        senderKeyStore.deleteSenderKey(groupSender2)
+                        senderKeyStore.deleteSenderKey(groupSender)
+                    }
+                    deleteGroupUseCase(groupId, clientDomain, removedMember)
+                } else {
+                    Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 274: ");
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
-                            it
+                            removedMember
                         ), RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
-                            it
+                            removedMember
                         ), SENDER_DEVICE_ID
                     )
                     val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
                     val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
                     senderKeyStore.deleteSenderKey(groupSender2)
                     senderKeyStore.deleteSenderKey(groupSender)
+                    signalKeyRepository.deleteGroupSenderKey(groupSender.groupId, groupSender.sender.name)
+
                 }
-                deleteGroupUseCase(groupId, clientDomain, removedMember)
+
             }
             if (!getOwnerClientIdsUseCase().contains(removedMember)) {
                 val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
@@ -284,7 +315,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val deactivatedAccountId = data["deactive_account_id"] ?: ""
         printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
-
         disableChatOfDeactivatedUserUseCase(clientId, clientDomain, deactivatedAccountId)
     }
 

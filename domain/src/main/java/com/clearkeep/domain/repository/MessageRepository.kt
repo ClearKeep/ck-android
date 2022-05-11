@@ -36,8 +36,8 @@ interface MessageRepository {
     suspend fun clearTempMessage()
     suspend fun saveMessage(message: Message): Int
     suspend fun saveMessages(messages: List<Message>)
-    suspend fun deleteMessageInGroup(groupId: Long, ownerDomain: String, ownerClientId: String)
-    suspend fun deleteMessageByDomain(domain: String, userId: String)
+    suspend fun deleteMessageInGroup(groupId: Long, ownerDomain: String, ownerClientId: String): Int
+    suspend fun deleteMessageByDomain(domain: String, userId: String):Int
     fun setJoiningRoomId(roomId: Long)
     fun getJoiningRoomId(): Long
     suspend fun sendMessageInPeer(

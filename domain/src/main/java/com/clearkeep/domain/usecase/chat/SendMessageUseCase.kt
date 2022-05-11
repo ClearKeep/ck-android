@@ -1,6 +1,7 @@
 package com.clearkeep.domain.usecase.chat
 
 import android.text.TextUtils
+import android.util.Log
 import com.clearkeep.common.utilities.SENDER_DEVICE_ID
 import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.common.utilities.network.Resource
@@ -109,7 +110,7 @@ class SendMessageUseCase @Inject constructor(
                 CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
             println("toGroup sender address init ok")
             val groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            printlnCK("toGroup: senderAddress : $senderAddress  groupSender: $groupSender")
+            printlnCK("toGroup: senderAddress : $senderAddress  groupSender: ${groupSender.groupId}")
             val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
             val ciphertextFromAlice: ByteArray =
                 aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))

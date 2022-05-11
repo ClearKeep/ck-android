@@ -1,5 +1,6 @@
 package com.clearkeep.domain.usecase.message
 
+import android.util.Log
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
@@ -157,19 +158,18 @@ class DecryptMessageUseCase @Inject constructor(
         val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
+            Log.d("antx: ", "DecryptMessageUseCase DuplicateMessageException line = 161: " );
             throw messageEx
-        }
-//        catch (ex: Exception) {
-//            printlnCK("decryptGroupMessage, $ex")
-//            val initSessionAgain = initSessionUserInGroup(
-//                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
-//            )
-//            if (!initSessionAgain) {
-//                throw java.lang.Exception("can not init session in group $groupId")
-//            }
-//            bobGroupCipher.decrypt(message.toByteArray())
-//        }
+        } catch (e: Exception) {
+                        val initSessionAgain = initSessionUserInGroup(
+               groupId, sender.clientId, groupSender, senderKeyStore, true, owner
+            )
+            if (!initSessionAgain) {
+                throw java.lang.Exception("can not init session in group $groupId")
+            }
+            bobGroupCipher.decrypt(message.toByteArray())
 
+        }
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
     }
 

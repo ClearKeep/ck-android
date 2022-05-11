@@ -35,6 +35,7 @@ fun CKTextInputField(
     maxLines: Int = Int.MAX_VALUE,
     imeAction: ImeAction = ImeAction.Done,
     onNext: () -> Unit = {},
+    onDone: (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
     allowSpace: Boolean = true,
@@ -152,7 +153,10 @@ fun CKTextInputField(
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = {
-                    if (imeAction == ImeAction.Done) focusManager.clearFocus()
+                    if (imeAction == ImeAction.Done) {
+                        onDone?.invoke()
+                        focusManager.clearFocus()
+                    }
                 }, onNext = { if (imeAction == ImeAction.Next) onNext() }),
                 keyboardOptions = KeyboardOptions(
                     imeAction = imeAction,

@@ -16,7 +16,7 @@ interface MessageDAO {
     suspend fun updateMessage(message: MessageEntity)
 
     @Query("DELETE FROM message WHERE group_id =:groupId AND owner_domain = :domain AND owner_client_id = :ownerClientId")
-    suspend fun deleteMessageFromGroupId(groupId: Long, domain: String, ownerClientId: String)
+    suspend fun deleteMessageFromGroupId(groupId: Long, domain: String, ownerClientId: String):Int
 
     @Query("SELECT * FROM message WHERE message_id = :messageId AND group_id =:groupId")
     suspend fun getMessage(messageId: String, groupId: Long): MessageEntity?
@@ -50,5 +50,5 @@ interface MessageDAO {
     ): LiveData<List<MessageEntity>>
 
     @Query("DELETE FROM message WHERE owner_domain = :domain AND owner_client_id = :ownerClientId")
-    suspend fun deleteMessageByDomain(domain: String, ownerClientId: String)
+    suspend fun deleteMessageByDomain(domain: String, ownerClientId: String): Int
 }

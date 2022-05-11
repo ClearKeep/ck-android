@@ -1,17 +1,19 @@
 package com.clearkeep.features.chat.presentation.groupinvite
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.model.User
-import com.clearkeep.domain.usecase.people.GetFriendsUseCase
-import com.clearkeep.domain.usecase.people.GetUserInfoUseCase
-import com.clearkeep.domain.usecase.people.InsertFriendUseCase
-import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.usecase.people.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.lang.Exception
+import java.lang.RuntimeException
+import java.lang.StringBuilder
+import java.security.MessageDigest
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,6 +22,7 @@ class InviteGroupViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val insertFriendUseCase: InsertFriendUseCase,
     private val updatePeopleUseCase: UpdatePeopleUseCase,
+    private val getFriendUseCase: GetFriendUseCase,
     getFriendsUseCase: GetFriendsUseCase
 ) : ViewModel() {
     fun getClientId() = environment.getServer().profile.userId
@@ -34,6 +37,17 @@ class InviteGroupViewModel @Inject constructor(
 
     private var checkUserUrlJob: Job? = null
 
+    private val friendsByEmail = MutableLiveData<List<User>>()
+
+    init {
+    }
+
+    val _friendsByEmail: LiveData<List<User>>
+        get() {
+            return friendsByEmail
+        }
+
+
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 
@@ -43,6 +57,9 @@ class InviteGroupViewModel @Inject constructor(
         }
         result.addSource(textSearch) { text ->
             result.value = getFilterFriends(friends.value ?: emptyList(), text)
+        }
+        result.addSource(friendsByEmail) {
+            result.value = friendsByEmail.value
         }
         emitSource(result)
     }
@@ -75,6 +92,18 @@ class InviteGroupViewModel @Inject constructor(
         }
     }
 
+    fun findEmail(email: String) {
+        viewModelScope.launch {
+            Log.d("antx: ", "InviteGroupViewModel findEmail line = 97:$email " );
+            var hashUser = sha256(email)
+            val result = getFriendUseCase.getFriendByEmail(hashEmail = hashUser ?: "")
+            result.forEach {
+                Log.d("antx: ", "InviteGroupViewModel findEmail line = 93: $it");
+            }
+            friendsByEmail.postValue(result)
+        }
+    }
+
     fun checkUserUrlValid(userId: String, userDomain: String) {
         checkUserUrlJob?.cancel()
 
@@ -84,4 +113,21 @@ class InviteGroupViewModel @Inject constructor(
             _isLoading.value = false
         }
     }
+
+    fun sha256(base: String): String? {
+        return try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            val hash = digest.digest(base.toByteArray(charset("UTF-8")))
+            val hexString = StringBuilder()
+            for (i in hash.indices) {
+                val hex = Integer.toHexString(0xff and hash[i].toInt())
+                if (hex.length == 1) hexString.append('0')
+                hexString.append(hex)
+            }
+            hexString.toString()
+        } catch (ex: Exception) {
+            throw RuntimeException(ex)
+        }
+    }
+
 }

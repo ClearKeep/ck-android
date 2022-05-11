@@ -236,4 +236,8 @@ class PeopleRepositoryImpl @Inject constructor(
                 return@withContext Resource.error(e.toString(), null)
             }
         }
+
+    override suspend fun getFriendByEmail(emailHard: String): List<User> = withContext(Dispatchers.IO) {
+        return@withContext groupService.findUserByEmail(emailHard)
+    }
 }
