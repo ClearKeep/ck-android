@@ -2,6 +2,7 @@ package com.clearkeep.navigation
 
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.ContextCompat.startActivity
 import com.clearkeep.common.utilities.*
 import kotlin.system.exitProcess
 
@@ -62,11 +63,12 @@ object NavigationUtils {
 
     fun navigateToJoinServer(context: Context, domain: String) {
         val loginActivity =
-            Class.forName("com.clearkeep.presentation.screen.auth.login.LoginActivity")
+            Class.forName("com.clearkeep.features.auth.presentation.login.LoginActivity")
 
         val intent = Intent(context, loginActivity)
         intent.putExtra(NAVIGATE_LOGIN_ACTIVITY_IS_JOIN_SERVER, true)
         intent.putExtra(NAVIGATE_LOGIN_ACTIVITY_SERVER_DOMAIN, domain)
+        startActivity(context,intent,null)
     }
 
     fun startChatService(context: Context) {

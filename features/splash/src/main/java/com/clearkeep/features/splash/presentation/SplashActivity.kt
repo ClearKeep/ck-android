@@ -1,6 +1,7 @@
 package com.clearkeep.features.splash.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +36,7 @@ class SplashActivity : AppCompatActivity() {
         GlobalScope.launch(context = Dispatchers.Main) {
             delay(1000)
             if (splashViewModel.isUserRegistered()) {
+                Log.d("antx: ", "SplashActivity nextNavigation line = 38:setupEnvironment " );
                 splashViewModel.setupEnvironment()
                 navigateToHomeActivity()
             } else navigateToLoginActivity()

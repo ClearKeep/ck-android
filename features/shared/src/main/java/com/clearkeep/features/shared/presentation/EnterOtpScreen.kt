@@ -1,5 +1,6 @@
 package com.clearkeep.features.shared.presentation
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -13,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -52,7 +55,11 @@ fun EnterOtpScreen(
     onClickSave: () -> Unit,
 ) {
     printlnCK("EnterOtpScreen recompose")
-    val input = rememberSaveable { mutableStateListOf(" ", " ", " ", " ") }
+    val input = rememberMutableStateListOf<String>()
+    input.add(" ")
+    input.add(" ")
+    input.add(" ")
+    input.add(" ")
     val verifyOtpResponse = otpResponse.observeAsState()
 
     BackHandler {
@@ -274,4 +281,24 @@ private fun isValidOtp(otp: String): Boolean {
         }
     }
     return true
+}
+
+@Composable
+fun <T : Any> rememberMutableStateListOf(vararg elements: T): SnapshotStateList<T> {
+    return rememberSaveable(
+        saver = listSaver(
+            save = { stateList ->
+                if (stateList.isNotEmpty()) {
+                    val first = stateList.first()
+                    if (!canBeSaved(first)) {
+                        throw IllegalStateException("${first::class} cannot be saved. By default only types which can be stored in the Bundle class can be saved.")
+                    }
+                }
+                stateList.toList()
+            },
+            restore = { it.toMutableStateList() }
+        )
+    ) {
+        elements.toList().toMutableStateList()
+    }
 }

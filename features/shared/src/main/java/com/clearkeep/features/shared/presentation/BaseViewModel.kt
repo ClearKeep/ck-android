@@ -25,7 +25,7 @@ open class BaseViewModel @Inject constructor(
     }
 
     fun handleResponse(response: com.clearkeep.common.utilities.network.Resource<Any>?) {
-        if (response?.status == com.clearkeep.common.utilities.network.Status.ERROR && response.error is TokenExpiredException) {
+        if (response?.status == com.clearkeep.common.utilities.network.Status.ERROR && response.error is TokenExpiredException||response?.errorCode==1000) {
             signOut()
         }
     }

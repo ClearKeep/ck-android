@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.otp
 
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -97,6 +98,7 @@ fun OtpVerifyPasswordScreen(
                 )
             }
             Status.SUCCESS -> {
+                Log.d("antx: ", " OtpVerifyPasswordScreen line = 100: SUCCESS" );
                 otpViewModel.verifyPasswordResponse.value = null
                 onClickNext()
             }

@@ -21,9 +21,7 @@ class LogoutUseCase @Inject constructor(
         val server = serverRepository.getDefaultServer()
         server?.let {
             val response = authRepository.logoutFromAPI(server)
-
-            if (response.data?.isBlank() == true) {
-                server.id?.let {
+            server.id?.let {
                     val removeResult = serverRepository.deleteServer(it)
                     groupRepository.deleteGroup(
                         server.serverDomain,
@@ -55,14 +53,9 @@ class LogoutUseCase @Inject constructor(
                 }
 
                 deleteKey(owner, server, groupsInServer)
-            } else {
-                printlnCK("signOut error")
-                return false
             }
-            return false
+            return true
         }
-        return false
-    }
 
     private suspend fun deleteKey(owner: Owner, server: com.clearkeep.domain.model.Server, chatGroups: List<com.clearkeep.domain.model.ChatGroup>?) {
         val (domain, clientId) = owner

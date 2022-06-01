@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.profile
 
+import android.util.Log
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.data.local.clearkeep.userpreference.UserPreferenceDAO
 import com.clearkeep.data.remote.service.UserService
@@ -150,16 +151,21 @@ class ProfileRepositoryImpl @Inject constructor(
         otp: String
     ): Resource<String> =
         withContext(Dispatchers.IO) {
+            Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 154: " );
             try {
                 val response = userService.mfaValidateOtp(server, otp)
-                printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
+                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 157:${response} " );
+                printlnCK("antx mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
                 return@withContext if (response.success) {
                     userPreferenceDAO.updateMfa(owner.domain, owner.clientId, true)
                     Resource.success(null)
                 } else {
+                    Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 161: " );
                     Resource.error(response.error, null)
                 }
             } catch (exception: StatusRuntimeException) {
+                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 164: ${server.serverDomain} " );
+                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 163: ${exception.message}" );
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
                     1071 -> "Authentication failed. Please retry."

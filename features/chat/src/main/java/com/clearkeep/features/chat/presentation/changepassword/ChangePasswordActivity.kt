@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import com.clearkeep.common.presentation.components.CKSimpleTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.URLDecoder
 
 @AndroidEntryPoint
 class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
@@ -19,8 +20,8 @@ class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         val data: Uri? = intent?.data
-        changePasswordViewModel.processDeepLinkUri(data)
-
+        val decodedURL: String = URLDecoder.decode(data.toString(), "UTF-8")
+        changePasswordViewModel.processDeepLinkUri(Uri.parse(decodedURL))
         setContent {
             CKSimpleTheme {
                 MainComposable()

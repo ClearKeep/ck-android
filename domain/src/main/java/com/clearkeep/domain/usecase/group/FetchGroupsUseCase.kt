@@ -1,5 +1,6 @@
 package com.clearkeep.domain.usecase.group
 
+import android.util.Log
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.common.utilities.network.Resource
@@ -19,27 +20,31 @@ class FetchGroupsUseCase @Inject constructor(
         val servers = serverRepository.getServers()
 
         servers.forEach { server ->
+            Log.d("antx: ", "FetchGroupsUseCase invoke line = 22: ${getDomain()} " );
+            Log.d("antx: ", "FetchGroupsUseCase invoke line = 22:serverDomain: ${server.serverDomain} userId: ${server.profile.userId} " );
             val svr = serverRepository.getServer(getDomain(), server.profile.userId)
             if (svr == null) {
-                printlnCK("getGroupByID: null server")
-                throw NullPointerException("fetchGroup null server")
+                printlnCK("antx: null server ${server.serverDomain}")
+               // throw NullPointerException("fetchGroup null server")
             }
-            val fetchGroupResponse = groupRepository.fetchGroups(svr)
-            if (fetchGroupResponse.status == Status.ERROR) {
-                return@withContext fetchGroupResponse
-            }
+            else {
+                val fetchGroupResponse = groupRepository.fetchGroups(svr)
+                if (fetchGroupResponse.status == Status.ERROR) {
+                    return@withContext fetchGroupResponse
+                }
 
-            for (group in fetchGroupResponse.data ?: emptyList()) {
-                val decryptedGroup = groupRepository.convertGroupFromResponse(
-                    group,
-                    server.serverDomain,
-                    server.profile.userId,
-                    server
-                )
+                for (group in fetchGroupResponse.data ?: emptyList()) {
+                    val decryptedGroup = groupRepository.convertGroupFromResponse(
+                        group,
+                        server.serverDomain,
+                        server.profile.userId,
+                        server
+                    )
 
-                val oldGroup = groupRepository.getGroupByID(group.groupId, server.serverDomain)
-                if (oldGroup?.isDeletedUserPeer != true) {
-                    groupRepository.insertGroup(decryptedGroup)
+                    val oldGroup = groupRepository.getGroupByID(group.groupId, server.serverDomain)
+                    if (oldGroup?.isDeletedUserPeer != true) {
+                        groupRepository.insertGroup(decryptedGroup)
+                    }
                 }
             }
         }

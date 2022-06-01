@@ -18,7 +18,13 @@ class DisableChatOfDeactivatedUserUseCase @Inject constructor(private val groupR
         ).filter {
             printlnCK("disableChatOfDeactivatedUser peerRooms before filter $it")
             it.clientList.find { it.userId == userId } != null
-        }.map { it.generateId ?: 0 }
+        }.map {
+            it.generateId ?: 0
+        }
+
+        peerRooms.forEach {
+            printlnCK("disableChatOfDeactivatedUser peerRooms before filter id delete $it")
+        }
 
         groupRepository.setDeletedUserPeerGroup(peerRooms)
     }

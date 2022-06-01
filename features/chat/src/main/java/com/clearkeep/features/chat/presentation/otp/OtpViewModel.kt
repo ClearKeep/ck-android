@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.otp
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -29,6 +30,7 @@ class OtpViewModel @Inject constructor(
     val isAccountLocked: LiveData<Boolean> get() = _isAccountLocked
 
     fun verifyPassword(password: String) {
+        Log.d("antx: ", "OtpViewModel verifyPassword line = 33: " );
         if (password.isBlank()) {
             verifyPasswordResponse.value =
                 Resource.error("Current Password must not be blank", null)
@@ -40,18 +42,22 @@ class OtpViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            Log.d("antx: ", "OtpViewModel verifyPassword line = 45: " );
             val response = mfaValidatePasswordUseCase(getOwner(), password)
             verifyPasswordResponse.value = response
         }
     }
 
     fun verifyOtp(otp: String) {
-        if (otp.isBlank() || otp.length != 4) {
+        Log.d("antx: ", "OtpViewModel verifyOtp line = 52: $otp " );
+        Log.d("antx: ", "OtpViewModel verifyOtp line = 54:$otp ${otp.length}  ${otp.isBlank()}" );
+        if (otp.isBlank()) {
             verifyOtpResponse.value = Resource.error("Authentication failed. Please retry.", null)
             return
         }
 
         viewModelScope.launch {
+            Log.d("antx: ", "OtpViewModel verifyOtp line = 60: " );
             val response = mfaValidateOtpUseCase(getOwner(), otp)
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(
@@ -66,6 +72,7 @@ class OtpViewModel @Inject constructor(
 
     fun requestResendOtp() {
         viewModelScope.launch {
+            Log.d("antx: ", "OtpViewModel requestResendOtp line = 69: " );
             val response = mfaResendOtpUseCase(getOwner())
             val errorCode = response.data?.first
             if (response.status == Status.ERROR) {
