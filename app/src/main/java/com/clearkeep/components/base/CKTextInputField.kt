@@ -35,6 +35,7 @@ fun CKTextInputField(
     maxLines: Int = Int.MAX_VALUE,
     imeAction: ImeAction = ImeAction.Done,
     onNext: () -> Unit = {},
+    onDone: (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     readOnly: Boolean = false,
     allowSpace: Boolean = true,
@@ -87,7 +88,7 @@ fun CKTextInputField(
                     if (placeholder.isNotBlank()) {
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = LocalColorMapping.current.inputHint,
+                                color = LocalColorMapping.current.bodyTextAlt,
                                 fontWeight = FontWeight.Normal,
                                 fontSize = defaultNonScalableTextSize()
                             )
@@ -96,7 +97,7 @@ fun CKTextInputField(
                 },
                 colors = TextFieldDefaults.textFieldColors(
                     textColor = LocalColorMapping.current.bodyTextAlt,
-                    cursorColor = LocalColorMapping.current.cursor,
+                    cursorColor = LocalColorMapping.current.bodyTextAlt,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (LocalColorMapping.current.isDarkTheme) {
@@ -108,7 +109,7 @@ fun CKTextInputField(
                             } else {
                                 grayscale5
                             }
-                        } else LocalColorMapping.current.errorBackground
+                        } else errorLight
                     },
                     leadingIconColor = LocalColorMapping.current.textFieldIconColor,
                     errorCursorColor = LocalColorMapping.current.error,
@@ -152,7 +153,10 @@ fun CKTextInputField(
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = {
-                    if (imeAction == ImeAction.Done) focusManager.clearFocus()
+                    if (imeAction == ImeAction.Done) {
+                        onDone?.invoke()
+                        focusManager.clearFocus()
+                    }
                 }, onNext = { if (imeAction == ImeAction.Next) onNext() }),
                 keyboardOptions = KeyboardOptions(
                     imeAction = imeAction,

@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.group_invite
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.db.clear_keep.model.User
@@ -9,6 +10,10 @@ import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.lang.Exception
+import java.lang.RuntimeException
+import java.lang.StringBuilder
+import java.security.MessageDigest
 import javax.inject.Inject
 
 class InviteGroupViewModel @Inject constructor(
@@ -30,12 +35,17 @@ class InviteGroupViewModel @Inject constructor(
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 
+    private val friendsByEmail = MutableLiveData<List<User>>()
+
     val filterFriends = liveData<List<User>> {
         val result = MediatorLiveData<List<User>>()
         result.addSource(friends) { _ ->
         }
         result.addSource(textSearch) { text ->
             result.value = getFilterFriends(friends.value ?: emptyList(), text)
+        }
+        result.addSource(friendsByEmail) {
+            result.value = friendsByEmail.value
         }
         emitSource(result)
     }
@@ -61,6 +71,18 @@ class InviteGroupViewModel @Inject constructor(
         textSearch.value = text.trim().toLowerCase()
     }
 
+    fun findEmail(email: String) {
+        viewModelScope.launch {
+            Log.d("antx: ", "InviteGroupViewModel findEmail line = 97:$email " );
+            val hashUser = sha256(email)
+            val result = peopleRepository.findUserByEmail( hashUser ?: "")
+            result.forEach {
+                Log.d("antx: ", "InviteGroupViewModel findEmail line = 93: $it");
+            }
+            friendsByEmail.postValue(result)
+        }
+    }
+
     fun updateContactList() {
         printlnCK("update contact list from remote API")
         viewModelScope.launch {
@@ -75,6 +97,22 @@ class InviteGroupViewModel @Inject constructor(
             _isLoading.value = true
             checkUserUrlResponse.value = peopleRepository.getUserInfo(userId, userDomain)
             _isLoading.value = false
+        }
+    }
+
+    fun sha256(base: String): String? {
+        return try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            val hash = digest.digest(base.toByteArray(charset("UTF-8")))
+            val hexString = StringBuilder()
+            for (i in hash.indices) {
+                val hex = Integer.toHexString(0xff and hash[i].toInt())
+                if (hex.length == 1) hexString.append('0')
+                hexString.append(hex)
+            }
+            hexString.toString()
+        } catch (ex: Exception) {
+            throw RuntimeException(ex)
         }
     }
 }

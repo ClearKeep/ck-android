@@ -3,16 +3,16 @@ syntax = "proto3";
 package user;
 
 message BaseResponse {
-  string error = 1;
+    string error = 1;
 }
 
 //----- FROM MY ACCOUNT -----
 message UserProfileResponse {
-  string id = 1;
-  string display_name = 2;
-  string email = 3;
-  string phone_number = 4;
-  string avatar = 5;
+    string id = 1;
+    string display_name = 2;
+    string email = 3;
+    string phone_number = 4;
+    string avatar = 5;
 }
 
 // Request: get my info
@@ -21,67 +21,75 @@ message Empty {}
 
 // Request: update my info
 message UpdateProfileRequest {
-  string display_name = 1;
-  string avatar = 2;
-  string phone_number = 3;
-  bool clear_phone_number = 4;
+    string display_name = 1;
+    string avatar = 2;
+    string phone_number = 3;
+    bool clear_phone_number = 4;
 }
 // Response: UserObjectResponse
 
 // Request: change password flow
 message RequestChangePasswordReq{
-  string client_public = 1;
+    string client_public = 1;
 }
 
 message RequestChangePasswordRes{
-  string salt = 1;
-  string public_challenge_b = 2;
+    string salt = 1;
+    string public_challenge_b = 2;
 }
 
 message ChangePasswordRequest {
-  string client_public = 1;
-  string client_session_key_proof = 3;
-  string hash_password = 4;
-  string salt = 5;
-  string iv_parameter = 6;
-  string identity_key_encrypted = 7;
+    string client_public = 1;
+    string client_session_key_proof = 3;
+    string hash_password = 4;
+    string salt = 5;
+    string iv_parameter = 6;
+    string identity_key_encrypted = 7;
 }
 // Response: BaseResponse
 
 
 //----- FROM ANOTHER ACCOUNT -----
 message UserInfoResponse {
-  string id = 1;
-  string display_name = 2;
-  string workspace_domain = 3;
+    string id = 1;
+    string display_name = 2;
+    string workspace_domain = 3;
 }
 
 //Request: get other user info
 message GetUserRequest {
-  string client_id = 1;
-  string workspace_domain = 2;
+    string client_id = 1;
+    string workspace_domain = 2;
 }
 // Response: UserObjectResponse
 
 // Request: Search User
 message SearchUserRequest {
-  string keyword = 1;
+    string keyword = 1;
 }
 // Response
 message SearchUserResponse {
-  repeated UserInfoResponse lst_user = 1;
+    repeated UserInfoResponse lst_user = 1;
+}
+
+message FindUserByEmailRequest {
+    string email_hash = 1;
+}
+
+message FindUserByEmailResponse {
+    repeated UserInfoResponse lst_user = 1;
 }
 
 // Request: Get Users
 // Response
 message GetUsersResponse {
-  repeated UserInfoResponse lst_user = 1;
+    repeated UserInfoResponse lst_user = 1;
 }
 
 // << Set user status >>
 // request
 message SetUserStatusRequest {
-  string status = 1;
+    string status = 1;
 }
 
 // << get user status >>
@@ -90,51 +98,51 @@ message PingRequest {}
 
 
 message GetClientsStatusRequest {
-  repeated MemberInfoRequest lst_client = 1;
-  bool should_get_profile = 2;
-}
+    repeated MemberInfoRequest lst_client = 1;
+    bool should_get_profile = 2;
+ }
 
-message MemberInfoRequest {
-  string client_id = 1;
-  string workspace_domain = 2;
-}
+ message MemberInfoRequest {
+   string client_id = 1;
+   string workspace_domain = 2;
+ }
 
 
-message GetClientsStatusResponse {
-  repeated MemberInfoRes lst_client = 1;
-}
+ message GetClientsStatusResponse {
+    repeated MemberInfoRes lst_client = 1;
+ }
 
-message MemberInfoRes {
-  string client_id = 1;
-  string workspace_domain = 2;
-  string status = 3;
-  string display_name = 4;
-  string avatar = 5;
-  string phone_number = 6;
-}
+ message MemberInfoRes {
+   string client_id = 1;
+   string workspace_domain = 2;
+   string status = 3;
+   string display_name = 4;
+   string avatar = 5;
+   string phone_number = 6;
+ }
 
 // << profile >>
 message UploadAvatarRequest {
-  string file_name = 1;
-  string file_content_type = 2;
-  bytes file_data = 3;
-  string file_hash = 4;
-}
+    string file_name = 1;
+    string file_content_type = 2;
+    bytes file_data = 3;
+    string file_hash = 4;
+  }
 
 message UploadAvatarResponse {
   string file_url = 1;
 }
 
 //----- MFA FLOW -----
-message MfaBaseResponse{
-  bool success = 1;
-  string next_step = 2;
-  string error = 3;
-}
+ message MfaBaseResponse{
+     bool success = 1;
+     string next_step = 2;
+     string error = 3;
+ }
 
 message MfaStateResponse{
-  bool mfa_enable = 1;
-  string error = 2;
+    bool mfa_enable = 1;
+    string error = 2;
 }
 
 message MfaGetStateRequest {}
@@ -146,22 +154,22 @@ message MfaChangingStateRequest {
 
 
 message MfaAuthChallengeRequest{
-  string client_public = 1;
+    string client_public = 1;
 }
 
 message MfaAuthChallengeResponse {
-  string salt = 1;
-  string public_challenge_b = 2;
+    string salt = 1;
+    string public_challenge_b = 2;
 }
 
 message MfaValidatePasswordRequest{
-  string client_public = 1;
-  string client_session_key_proof = 2;
+    string client_public = 1;
+    string client_session_key_proof = 2;
 }
 // Response: MfaBaseResponse
 
 message MfaValidateOtpRequest {
-  string otp = 1;
+     string otp = 1;
 }
 // Response: MfaBaseResponse
 
@@ -169,30 +177,31 @@ message MfaResendOtpRequest {}
 // Response: MfaBaseResponse
 
 service User {
-  //----- FROM MY ACCOUNT -----
-  // => profile api
-  rpc get_profile(Empty) returns (UserProfileResponse) {};
-  rpc update_profile(UpdateProfileRequest) returns (BaseResponse) {};
-  rpc upload_avatar(UploadAvatarRequest) returns (UploadAvatarResponse) {};
+    //----- FROM MY ACCOUNT -----
+    // => profile api
+    rpc get_profile(Empty) returns (UserProfileResponse) {};
+    rpc update_profile(UpdateProfileRequest) returns (BaseResponse) {};
+    rpc upload_avatar(UploadAvatarRequest) returns (UploadAvatarResponse) {};
 
-  rpc request_change_password(RequestChangePasswordReq) returns (RequestChangePasswordRes) {};
-  rpc change_password(ChangePasswordRequest) returns (BaseResponse) {};
-  rpc update_status(SetUserStatusRequest) returns (BaseResponse) {};
-  rpc ping_request(PingRequest) returns (BaseResponse) {};
-  rpc get_clients_status(GetClientsStatusRequest) returns (GetClientsStatusResponse) {};
+    rpc request_change_password(RequestChangePasswordReq) returns (RequestChangePasswordRes) {};
+    rpc change_password(ChangePasswordRequest) returns (BaseResponse) {};
+    rpc update_status(SetUserStatusRequest) returns (BaseResponse) {};
+    rpc ping_request(PingRequest) returns (BaseResponse) {};
+    rpc get_clients_status(GetClientsStatusRequest) returns (GetClientsStatusResponse) {};
 
 
-  //----- FROM OTHER ACCOUNT -----
-  rpc get_user_info(GetUserRequest) returns (UserInfoResponse) {};
-  rpc search_user(SearchUserRequest) returns (SearchUserResponse) {};
-  rpc get_users(Empty) returns (GetUsersResponse) {};
+    //----- FROM OTHER ACCOUNT -----
+    rpc get_user_info(GetUserRequest) returns (UserInfoResponse) {};
+    rpc search_user(SearchUserRequest) returns (SearchUserResponse) {};
+    rpc get_users(Empty) returns (GetUsersResponse) {};
+    rpc find_user_by_email(FindUserByEmailRequest) returns (FindUserByEmailResponse) {};
 
-  //----- MFA ENABLE FLOW -----
-  rpc get_mfa_state(MfaGetStateRequest) returns (MfaStateResponse) {};
-  rpc enable_mfa(MfaChangingStateRequest) returns (MfaBaseResponse) {};
-  rpc disable_mfa(MfaChangingStateRequest) returns (MfaBaseResponse) {};
-  rpc mfa_auth_challenge(MfaAuthChallengeRequest) returns (MfaAuthChallengeResponse) {};
-  rpc mfa_validate_password(MfaValidatePasswordRequest) returns (MfaBaseResponse) {};
-  rpc mfa_validate_otp(MfaValidateOtpRequest) returns (MfaBaseResponse) {};
-  rpc mfa_resend_otp(MfaResendOtpRequest) returns (MfaBaseResponse) {};
+    //----- MFA ENABLE FLOW -----
+    rpc get_mfa_state(MfaGetStateRequest) returns (MfaStateResponse) {};
+    rpc enable_mfa(MfaChangingStateRequest) returns (MfaBaseResponse) {};
+    rpc disable_mfa(MfaChangingStateRequest) returns (MfaBaseResponse) {};
+    rpc mfa_auth_challenge(MfaAuthChallengeRequest) returns (MfaAuthChallengeResponse) {};
+    rpc mfa_validate_password(MfaValidatePasswordRequest) returns (MfaBaseResponse) {};
+    rpc mfa_validate_otp(MfaValidateOtpRequest) returns (MfaBaseResponse) {};
+    rpc mfa_resend_otp(MfaResendOtpRequest) returns (MfaBaseResponse) {};
 }

@@ -37,6 +37,7 @@ import com.clearkeep.screen.chat.composes.FriendListItemSelectable
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -56,8 +57,11 @@ fun InviteGroupScreen(
     val friends = inviteGroupViewModel.filterFriends.observeAsState()
     val textSearch = rememberSaveable { mutableStateOf("") }
     val useCustomServerChecked = rememberSaveable { mutableStateOf(false) }
+    val useFindByEmail = rememberSaveable { mutableStateOf(false) }
     val urlOtherServer = rememberSaveable { mutableStateOf("") }
+    val emailFind = rememberSaveable { mutableStateOf("") }
     val addUserFromOtherServerError = rememberSaveable { mutableStateOf("") }
+    val addUserByEmailError = rememberSaveable { mutableStateOf("") }
     val checkUserUrlResponse = inviteGroupViewModel.checkUserUrlResponse.observeAsState()
     val group = chatGroup.observeAsState()
     val isLoading = inviteGroupViewModel.isLoading.observeAsState()
@@ -144,6 +148,7 @@ fun InviteGroupScreen(
                                         .padding(horizontal = 16.sdp())
                                         .clickable {
                                             useCustomServerChecked.value = !useCustomServerChecked.value
+                                            if (useFindByEmail.value) useFindByEmail.value=!useFindByEmail.value
                                         }, verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Image(
@@ -201,6 +206,79 @@ fun InviteGroupScreen(
                                 }
 
                                 Spacer(modifier = Modifier.height(16.sdp()))
+
+
+                                Row(
+                                    modifier = Modifier
+                                        .padding(horizontal = 16.sdp())
+                                        .clickable {
+                                            useFindByEmail.value = !useFindByEmail.value
+                                            if (useCustomServerChecked.value) useCustomServerChecked.value = !useCustomServerChecked.value
+                                        }, verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = if (useFindByEmail.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
+                                        ""
+                                    )
+                                    Spacer(modifier = Modifier.width(16.sdp()))
+                                    Text(
+                                        text = stringResource(R.string.add_user_other_server_email),
+                                        modifier = Modifier.padding(vertical = 16.sdp()),
+                                        style = MaterialTheme.typography.body1.copy(
+                                            color = LocalColorMapping.current.bodyTextAlt,
+                                            fontSize = defaultNonScalableTextSize(),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+
+                                Column(Modifier.padding(horizontal = 16.sdp())) {
+                                    AnimatedVisibility(
+                                        visible = useFindByEmail.value,
+                                        enter = expandIn(
+                                            expandFrom = Alignment.BottomStart,
+                                            animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                                        ),
+                                        exit = shrinkOut(
+                                            shrinkTowards = Alignment.CenterStart,
+                                            targetSize = { fullSize ->
+                                                IntSize(
+                                                    fullSize.width / 10,
+                                                    fullSize.height / 10
+                                                )
+                                            },
+                                            animationSpec = tween(300, easing = FastOutSlowInEasing)
+                                        )
+
+                                    ) {
+                                        Column {
+                                            Row(
+                                                modifier = Modifier,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    CKTextInputField(
+                                                        stringResource(R.string.invite_email_placeholder),
+                                                        textValue = emailFind,
+                                                        keyboardType = KeyboardType.Text,
+                                                        singleLine = true,
+                                                        onDone = {
+                                                            if (useFindByEmail.value){
+                                                                if (emailFind.value.trim().isValidEmail()) {
+                                                                    inviteGroupViewModel.findEmail(emailFind.value.trim())
+                                                                }else {
+                                                                    addUserByEmailError.value =
+                                                                        context.getString(R.string.invite_friend_profile_email_incorrect)
+                                                                }
+                                                            }                                                        }
+                                                    )
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.sdp()))
                             }
                             itemsIndexed(listShow) { _, friend ->
                                 if (isCreateDirectGroup) {
@@ -228,14 +306,23 @@ fun InviteGroupScreen(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup)) {
+                    if ((isCreateDirectGroup && useCustomServerChecked.value) || (!isCreateDirectGroup) || useFindByEmail.value) {
                         CKButton(
-                            if (useCustomServerChecked.value && !isCreateDirectGroup) stringResource(
+                            if (useCustomServerChecked.value && !isCreateDirectGroup && !useFindByEmail.value) stringResource(
                                 id = R.string.btn_add
                             )
+                            else if (useFindByEmail.value) stringResource(R.string.btn_find)
                             else stringResource(R.string.btn_next),
                             onClick = {
-                                if (useCustomServerChecked.value) {
+                                if (useFindByEmail.value){
+                                    if (emailFind.value.trim().isValidEmail()) {
+                                        inviteGroupViewModel.findEmail(emailFind.value.trim())
+                                    }else {
+                                        addUserFromOtherServerError.value =
+                                            context.getString(R.string.invite_friend_profile_email_incorrect)
+                                    }
+                                }
+                                else if (useCustomServerChecked.value) {
                                     val people = getPeopleFromLink(urlOtherServer.value)
                                     if (people?.userId != inviteGroupViewModel.getClientId()) {
                                         if (isCreateDirectGroup) {
@@ -273,7 +360,8 @@ fun InviteGroupScreen(
                             },
                             modifier = Modifier
                                 .width(200.sdp()),
-                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty() || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))))
+                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
+                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
                         )
                     }
                 }
@@ -304,6 +392,17 @@ fun InviteGroupScreen(
             }
         )
     }
+
+    if (addUserByEmailError.value.isNotBlank()) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = addUserByEmailError.value,
+            onDismissButtonClick = {
+                addUserByEmailError.value = ""
+            }
+        )
+    }
+
 
     if (checkUserUrlResponse.value?.status == Status.ERROR) {
         val error = checkUserUrlResponse.value!!.message?.split(",")

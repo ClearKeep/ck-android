@@ -73,15 +73,15 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         homeViewModel.isLogout.observe(this) {
-//            if (false) {
-            printlnCK("MainActivity signOut")
-            homeViewModel.signOut()
-//            }
+            if (false) {
+                printlnCK("MainActivity signOut")
+                homeViewModel.signOut()
+            }
         }
 
         setContent {

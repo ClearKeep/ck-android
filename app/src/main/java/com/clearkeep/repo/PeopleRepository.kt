@@ -57,6 +57,23 @@ class PeopleRepository @Inject constructor(
             return@withContext if (ret != null) convertEntityToUser(ret) else null
         }
 
+    suspend fun findUserByEmail(emailHard: String): List<User> = withContext(Dispatchers.IO) {
+        try {
+            val request = UserOuterClass
+                .FindUserByEmailRequest
+                .newBuilder()
+                .setEmailHash(emailHard)
+                .build()
+            val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
+            return@withContext response.lstUserOrBuilderList.map {
+                User(it.id, it.displayName, it.workspaceDomain)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext emptyList<User>()
+        }
+    }
+
     suspend fun getFriendFromID(friendClientId: String): User? = withContext(Dispatchers.IO) {
         val ret = peopleDao.getFriendFromUserId(friendClientId)
         printlnCK("getFriendFromID: $ret id: $friendClientId")

@@ -227,4 +227,10 @@
     <string name="forwarded_message_from_you">You</string>
     <string name="quote">Quote</string>
     <string name="replying_to">Replying to %1$s</string>
+    <string name="add_user_other_server_email">Add user from email</string>
+    <string name="invite_email_placeholder">Paste your friend\'s email</string>
+    <string name="invite_friend_profile_email_incorrect">Email is incorrect.</string>
+    <string name="btn_find">Find</string>
+
+
 </resources>
