@@ -104,7 +104,7 @@ fun printlnCK(str: String) {
 
 fun getUnableErrorMessage(message: String?): String {
     return if (BuildConfig.FLAVOR == "dev") {
-        message ?: ""
+        /*message ?:*/ ""
     } else {
         ""
     }

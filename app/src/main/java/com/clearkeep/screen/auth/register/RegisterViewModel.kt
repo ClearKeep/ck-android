@@ -9,6 +9,7 @@ import com.clearkeep.R
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
+import java.util.regex.Pattern
 import javax.inject.Inject
 
 class RegisterViewModel @Inject constructor(
@@ -40,6 +41,8 @@ class RegisterViewModel @Inject constructor(
 
     var domain: String = ""
 
+    private val regexUppercase = "^[A-Z0-9]" //alpha uppercase
+
     suspend fun register(
         context: Context,
         email: String,
@@ -55,6 +58,10 @@ class RegisterViewModel @Inject constructor(
         _displayNameError.value = ""
 
         var isValid = true
+        if (isUpperCase(email)){
+            _emailError.value = context.getString(R.string.email_uppercase)
+            isValid = false
+        }
         if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
             isValid = false
@@ -92,4 +99,9 @@ class RegisterViewModel @Inject constructor(
         _isLoading.value = false
         return result
     }
+
+    private fun isUpperCase(str: String): Boolean {
+        return Pattern.compile(regexUppercase).matcher(str).find()
+    }
+
 }

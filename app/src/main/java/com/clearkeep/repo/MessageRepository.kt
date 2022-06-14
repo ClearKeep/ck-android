@@ -1,6 +1,7 @@
 package com.clearkeep.repo
 
 import android.text.TextUtils
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
@@ -81,6 +82,7 @@ class MessageRepository @Inject constructor(
     //Return true if there's no more message
     suspend fun updateMessageFromAPI(groupId: Long, owner: Owner, lastMessageAt: Long = 0, loadSize: Int = 20): MessagePagingResponse = withContext(Dispatchers.IO) {
         try {
+            Log.d("antx: ", "MessageRepository updateMessageFromAPI line = 85: $lastMessageAt " );
             val server = serverRepository.getServerByOwner(owner) ?: return@withContext MessagePagingResponse(
                 isSuccess = false,
                 endOfPaginationReached = true,
@@ -93,12 +95,10 @@ class MessageRepository @Inject constructor(
                     .setLastMessageAt(lastMessageAt)
                     .build()
             val responses = messageGrpc.getMessagesInGroup(request)
-            printlnCK("updateMessageFromAPI! lastMessageAt $lastMessageAt loadSize $loadSize")
             val listMessage = arrayListOf<Message>()
             responses.lstMessageList
                 .sortedWith(compareBy(MessageOuterClass.MessageObjectResponse::getCreatedAt))
-                .forEachIndexed { _, data ->
-                    printlnCK("updateMessageFromAPI! timestamp ${data.createdAt}")
+                .forEachIndexed { index, data ->
                     listMessage.add(parseMessageResponse(data, owner))
                 }
             if (listMessage.isNotEmpty()) {
@@ -452,7 +452,9 @@ class MessageRepository @Inject constructor(
         senderKeyStore: InMemorySenderKeyStore,
         owner: Owner,
     ): String = withContext(Dispatchers.IO) {
+        Log.d("antx: ", "MessageRepository decryptGroupMessage line = 456:===>Start " );
         if (message.isEmpty) {
+            Log.d("antx: ", "MessageRepository decryptGroupMessage line = 490: ====>>END ERROR " );
             return@withContext ""
         }
 
@@ -467,6 +469,7 @@ class MessageRepository @Inject constructor(
             groupSender = SenderKeyName(groupId.toString(), senderAddress)
             bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
         }
+
         initSessionUserInGroup(
             groupId, sender.clientId, groupSender, senderKeyStore, false, owner
         )
@@ -485,7 +488,7 @@ class MessageRepository @Inject constructor(
             }
             bobGroupCipher.decrypt(message.toByteArray())
         }
-
+        Log.d("antx: ", "MessageRepository decryptGroupMessage line = 490: ====>>END " );
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
     }
 
@@ -588,11 +591,13 @@ class MessageRepository @Inject constructor(
                 printlnCK("")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
+
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
+                printlnCK("initSessionUserInGroup done ${groupSender.groupId}")
             } catch (e: StatusRuntimeException) {
                 val parsedError = parseError(e)
-
+                printlnCK("initSessionUserInGroup ERROR ${parsedError}")
                 val message = when (parsedError.code) {
                     1000, 1077 -> {
                         printlnCK("initSessionUsInGroup token expired")

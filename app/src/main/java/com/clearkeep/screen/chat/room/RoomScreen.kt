@@ -23,7 +23,6 @@ import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.screen.chat.room.composes.ToolbarMessage
 import com.clearkeep.utilities.network.Status
-import com.clearkeep.utilities.printlnCK
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,10 +42,8 @@ import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.chat.room.forward_message.ForwardMessageBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.utilities.isWriteFilePermissionGranted
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
-import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay

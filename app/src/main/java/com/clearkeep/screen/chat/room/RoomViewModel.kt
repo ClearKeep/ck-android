@@ -106,6 +106,7 @@ class RoomViewModel @Inject constructor(
     val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
+    val isShowDialog= MutableLiveData(false)
 
     @Volatile
     private var endOfPaginationReached = false
@@ -325,6 +326,7 @@ class RoomViewModel @Inject constructor(
     }
 
     private fun updateMessagesFromRemote(lastMessageAt: Long) {
+        printlnCK("updateMessagesFromRemote $lastMessageAt")
         onScrollChange(lastMessageAt, true)
     }
 
@@ -865,6 +867,7 @@ class RoomViewModel @Inject constructor(
             viewModelScope.launch {
                 isLoading.value = true
                 val server = environment.getServer()
+                printlnCK("loading message 1")
                 val loadResponse = messageRepository.updateMessageFromAPI(
                     group.value?.groupId ?: 0,
                     Owner(server.serverDomain, server.profile.userId),
@@ -873,7 +876,8 @@ class RoomViewModel @Inject constructor(
                 val endOfPagination =  loadResponse.endOfPaginationReached
                 endOfPaginationReached = endOfPagination
                 var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
-                while (isRefresh && newestMessageTimestamp > lastMessageAt) {
+                /*while (isRefresh && newestMessageTimestamp > lastMessageAt) {
+                    printlnCK("loading message 2 $newestMessageTimestamp $lastMessageAt ${newestMessageTimestamp > lastMessageAt} $endOfPaginationReached")
                     val response = messageRepository.updateMessageFromAPI(
                         group.value?.groupId ?: 0,
                         Owner(server.serverDomain, server.profile.userId),
@@ -881,9 +885,9 @@ class RoomViewModel @Inject constructor(
                     )
                     newestMessageTimestamp = response.newestMessageLoadedTimestamp
                     endOfPaginationReached = response.endOfPaginationReached
-                }
-
+                }*/
                 while (!endOfPagination && lastLoadRequestTimestamp != 0L) {
+                    printlnCK("loading message 3")
                     //Execute queued load request
                     val temp = lastLoadRequestTimestamp
                     lastLoadRequestTimestamp = 0L

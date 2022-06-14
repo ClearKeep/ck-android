@@ -420,7 +420,6 @@ class GroupRepository @Inject constructor(
 
     private suspend fun insertGroup(group: ChatGroup) {
         val oldGroup = groupDAO.getGroupById(group.groupId, group.ownerDomain)
-        printlnCK("insertGroup called oldGroup $oldGroup")
         groupDAO.insert(group.copy(isDeletedUserPeer = oldGroup?.isDeletedUserPeer ?: false))
     }
 

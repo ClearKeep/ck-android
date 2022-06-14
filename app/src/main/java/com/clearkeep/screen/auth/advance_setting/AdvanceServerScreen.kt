@@ -160,7 +160,7 @@ fun CustomServerScreen(
 
                         CKButton(
                             stringResource(R.string.all_submit), {
-                                loginViewModel.checkValidServerUrl(rememberServerUrl.value)
+                                loginViewModel.checkValidServerUrl(rememberServerUrl.value.trim())
                             },
                             modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
                             buttonType = ButtonType.White,

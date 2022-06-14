@@ -38,10 +38,12 @@ import android.view.Display
 import android.view.Surface
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.compose.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.screen.chat.room.photo_detail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
@@ -73,7 +75,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -131,6 +133,17 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             CKInsetTheme {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
+                val isShowDialog = roomViewModel.isShowDialog.observeAsState()
+                if (isShowDialog.value == true) {
+                    CKAlertDialog(
+                        title = "",
+                        text = "You have been removed from the conversation",
+                        onDismissButtonClick = {
+                            restartToRoot(context = this)
+
+                        }
+                    )
+                }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         RoomScreen(
@@ -265,10 +278,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
         if (roomId > 0)
             roomViewModel.groups.observe(this, Observer {
-                printlnCK("RoomActivity groups $it")
+                //printlnCK("RoomActivity groups $it")
                 val group =
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
-                if (group == null) finish()
+                if (group == null)
+                    roomViewModel.isShowDialog.postValue(true)
             })
     }
 

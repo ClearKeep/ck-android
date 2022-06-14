@@ -221,39 +221,48 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 peopleRepository.deleteFriend(removedMember)
                 if (serverRepository.getOwnerClientIds().contains(removedMember)) {
                     messageRepository.deleteMessageInGroup(groupId, clientDomain, removedMember)
+
+                    groupRepository.getListClientInGroup(groupId, clientDomain)?.forEach {
+                        val senderAddress2 = CKSignalProtocolAddress(
+                            Owner(
+                                clientDomain,
+                                it
+                            ), RECEIVER_DEVICE_ID
+                        )
+                        val senderAddress1 = CKSignalProtocolAddress(
+                            Owner(
+                                clientDomain,
+                                it
+                            ), SENDER_DEVICE_ID
+                        )
+                        val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                        val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                        senderKeyStore.deleteSenderKey(groupSender2)
+                        senderKeyStore.deleteSenderKey(groupSender)
+                    }
+                    groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
                 }
-                printlnCK(
-                    "getListClientInGroup ${
-                        groupRepository.getListClientInGroup(
-                            groupId,
-                            clientDomain
-                        )?.size
-                    }"
-                )
-                groupRepository.getListClientInGroup(groupId, clientDomain)?.forEach {
-                    val senderAddress2 = CKSignalProtocolAddress(
-                        Owner(
-                            clientDomain,
-                            it
-                        ), RECEIVER_DEVICE_ID
-                    )
-                    val senderAddress1 = CKSignalProtocolAddress(
-                        Owner(
-                            clientDomain,
-                            it
-                        ), SENDER_DEVICE_ID
-                    )
-                    val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
-                    val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
-                    senderKeyStore.deleteSenderKey(groupSender2)
-                    senderKeyStore.deleteSenderKey(groupSender)
-                }
-                groupRepository.removeGroupOnWorkSpace(groupId, clientDomain, removedMember)
             }
             if (!serverRepository.getOwnerClientIds().contains(removedMember)) {
                 val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                 updateGroupIntent.putExtra(EXTRA_GROUP_ID, groupId)
                 sendBroadcast(updateGroupIntent)
+                val senderAddress2 = CKSignalProtocolAddress(
+                    Owner(
+                        clientDomain,
+                        removedMember
+                    ), RECEIVER_DEVICE_ID
+                )
+                val senderAddress1 = CKSignalProtocolAddress(
+                    Owner(
+                        clientDomain,
+                        removedMember
+                    ), SENDER_DEVICE_ID
+                )
+                val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
+                val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
+                senderKeyStore.deleteSenderKey(groupSender2)
+                senderKeyStore.deleteSenderKey(groupSender)
             }
         } catch (e: Exception) {
             printlnCK("handlerRequestAddRemoteMember Exception ${e.message}")
