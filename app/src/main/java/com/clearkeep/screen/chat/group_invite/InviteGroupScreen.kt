@@ -311,18 +311,12 @@ fun InviteGroupScreen(
                             if (useCustomServerChecked.value && !isCreateDirectGroup && !useFindByEmail.value) stringResource(
                                 id = R.string.btn_add
                             )
+/*
                             else if (useFindByEmail.value) stringResource(R.string.btn_find)
+*/
                             else stringResource(R.string.btn_next),
                             onClick = {
-                                if (useFindByEmail.value){
-                                    if (emailFind.value.trim().isValidEmail()) {
-                                        inviteGroupViewModel.findEmail(emailFind.value.trim())
-                                    }else {
-                                        addUserFromOtherServerError.value =
-                                            context.getString(R.string.invite_friend_profile_email_incorrect)
-                                    }
-                                }
-                                else if (useCustomServerChecked.value) {
+                                 if (useCustomServerChecked.value) {
                                     val people = getPeopleFromLink(urlOtherServer.value)
                                     if (people?.userId != inviteGroupViewModel.getClientId()) {
                                         if (isCreateDirectGroup) {
@@ -361,7 +355,7 @@ fun InviteGroupScreen(
                             modifier = Modifier
                                 .width(200.sdp()),
                             enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
-                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
+                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) )
                         )
                     }
                 }
