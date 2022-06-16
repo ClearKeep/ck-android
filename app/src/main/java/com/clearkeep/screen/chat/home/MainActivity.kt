@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -78,9 +79,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         homeViewModel.isLogout.observe(this) {
-            if (false) {
-                printlnCK("MainActivity signOut")
-                homeViewModel.signOut()
+            if (it) {
+                printlnCK("MainActivity refresh token")
+                Log.d("antx: ", "MainActivity onCreate line = 84: " );
+               // homeViewModel.refreshToken()
             }
         }
 
