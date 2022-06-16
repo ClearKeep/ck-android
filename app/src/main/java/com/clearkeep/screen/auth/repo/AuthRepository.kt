@@ -217,6 +217,31 @@ class AuthRepository @Inject constructor(
             }
         }
 
+    suspend fun refreshToken() = withContext(Dispatchers.IO) {
+        try {
+            val server = serverRepository.getDefaultServer()
+            val request = AuthOuterClass
+                .RefreshTokenReq
+                .newBuilder()
+                .setRefreshToken(server.refreshToken)
+                .build()
+            val response =
+                paramAPIProvider.provideAuthBlockingStub(ParamAPI(server.serverDomain)).withDeadlineAfter(
+                    REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
+                ).refreshToken(request)
+            serverRepository.updateServer(server.copy(refreshToken = response.refreshToken, accessKey = response.accessToken))
+            return@withContext Resource.success(response)
+        } catch (e: StatusRuntimeException) {
+            val parsedError = parseError(e)
+            val message = when (parsedError.code) {
+                else -> parsedError.message
+            }
+            return@withContext Resource.error(message, null)
+        } catch (e: Exception) {
+            return@withContext Resource.error(e.toString(), null)
+        }
+    }
+
     suspend fun loginByGoogle(
         token: String,
         domain: String

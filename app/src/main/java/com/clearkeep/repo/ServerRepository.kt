@@ -32,6 +32,8 @@ class ServerRepository @Inject constructor(
 
     suspend fun getServerByOwner(owner: Owner) = serverDAO.getServer(owner.domain, owner.clientId)
 
+    suspend fun updateServer(server: Server) = serverDAO.update(server)
+
     suspend fun insertServer(server: Server) {
         serverDAO.insert(server)
         serverDAO.setDefaultServerByDomain(server.serverDomain)

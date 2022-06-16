@@ -280,6 +280,12 @@ class HomeViewModel @Inject constructor(
             signalKeyRepository.deleteKey(owner, currentServer.value!!, chatGroups.value)
         }
     }
+
+    fun refreshToken(){
+        viewModelScope.launch {
+            authRepository.refreshToken()
+        }
+    }
 }
 
 sealed class PrepareViewState
