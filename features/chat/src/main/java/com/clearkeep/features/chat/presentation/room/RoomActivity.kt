@@ -67,7 +67,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         roomViewModel.isLogout.observe(this) {
             printlnCK("RoomActivity signOut $it")
             if (it) {
-                roomViewModel.signOut()
+                //roomViewModel.signOut()
             }
         }
 

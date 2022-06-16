@@ -15,6 +15,9 @@ interface ServerDAO {
     @Query("SELECT * FROM server WHERE server_domain = :domain AND owner_client_id = :clientId")
     suspend fun getServer(domain: String, clientId: String): ServerEntity?
 
+    @Insert(onConflict = REPLACE)
+    suspend fun update(server: Server)
+
     @Query("SELECT * FROM server WHERE is_active = 1 LIMIT 1")
     suspend fun getDefaultServer(): ServerEntity?
 
