@@ -1,11 +1,28 @@
 plugins {
     id 'com.android.library'
-    id 'kotlin-android-extensions'
 }
 
 apply from: '../../android_commons.gradle'
 apply from: '../../android_feature_dependencies.gradle'
-
+android {
+    buildFeatures {
+        compose true
+    }
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
+        res.srcDirs =
+                [
+                        '/home/tuna/AndroidStudioProjects/ck_demo/ck-android/common/src/main/res',
+                        '/home/tuna/AndroidStudioProjects/ck_demo/ck-android/features/shared/src/main/res',
+                        'src/main/res'
+                ]
+    }
+    composeOptions {
+        kotlinCompilerVersion "$kotlin_version"
+        kotlinCompilerExtensionVersion "$jetpack_compose_version"
+    }
+}
 dependencies {
     //Glide
     implementation Dependencies.glide
@@ -17,5 +34,5 @@ dependencies {
     implementation project(':januswrapper')
     implementation Dependencies.circleImageView
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation files('../../januswrapper/libs/libwebrtc.aar')
+    implementation 'org.webrtc:google-webrtc:1.0.20284'
 }

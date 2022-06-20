@@ -134,7 +134,7 @@ object Version {
     const val toggleImageButton = "1.2"
     const val coroutines = "1.5.2"
 
-    const val kotlin = "1.5.31"
+    const val kotlin = "1.6.21"
 
     const val androidCore = "1.6.0"
 
@@ -144,10 +144,10 @@ object Version {
     const val lifecycleLiveData = "2.2.0"
 
     const val lifecycleExtensions = "2.0.0"
-    const val jetpackCompose = "1.0.4"
+    const val jetpackCompose = "1.1.1"
 
     const val jetpackComposeNav = "2.4.0-alpha10"
-    const val composeConstraintLayout = "1.0.0-rc01"
+    const val composeConstraintLayout = "1.0.1"
     const val signal = "2.8.1"
 
     const val hilt = "2.38.1"

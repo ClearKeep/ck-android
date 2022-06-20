@@ -6,7 +6,7 @@ apply from: '../../android_commons.gradle'
 
 dependencies {
     implementation project(Modules.domain)
-    implementation project(Modules.common)
+    implementation project(path: ':common')
     implementation project(Modules.local)
     implementation project(Modules.remote)
 

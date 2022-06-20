@@ -14,7 +14,7 @@ import com.clearkeep.features.splash.R
 @Composable
 fun SplashScreen(
 ) {
-    val imageLogo = painterResource(R.drawable.ic_logo)
+    val imageLogo = painterResource(com.clearkeep.common.R.drawable.ic_logo)
     Column(
         modifier = Modifier
             .fillMaxWidth()

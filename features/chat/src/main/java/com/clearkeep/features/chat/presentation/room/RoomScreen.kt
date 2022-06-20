@@ -38,7 +38,7 @@ import com.clearkeep.common.presentation.components.base.CKCircularProgressIndic
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.common.utilities.isWriteFilePermissionGranted
 import com.clearkeep.common.utilities.sdp
-import com.clearkeep.features.calls.presentation.AppCall
+import com.clearkeep.features.shared.presentation.AppCall
 import com.clearkeep.features.chat.presentation.room.composes.MessageListView
 import com.clearkeep.features.chat.presentation.room.composes.SendBottomCompose
 import com.clearkeep.features.chat.presentation.room.composes.ToolbarMessage

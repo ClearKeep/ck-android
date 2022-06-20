@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
@@ -20,39 +22,45 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.common.presentation.components.CKTheme
 import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.features.auth.presentation.advancedsettings.CustomServerScreen
-import com.clearkeep.features.auth.presentation.forgot.ForgotActivity
-import com.clearkeep.features.auth.presentation.register.RegisterActivity
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.response.SocialLoginRes
 import com.clearkeep.features.auth.R
-import com.clearkeep.navigation.NavigationUtils
+import com.clearkeep.features.auth.presentation.advancedsettings.CustomServerScreen
+import com.clearkeep.features.auth.presentation.forgot.ForgotActivity
+import com.clearkeep.features.auth.presentation.register.RegisterActivity
 import com.clearkeep.features.auth.presentation.sociallogin.ConfirmSocialLoginPhraseScreen
 import com.clearkeep.features.auth.presentation.sociallogin.EnterSocialLoginPhraseScreen
 import com.clearkeep.features.auth.presentation.sociallogin.SetSocialLoginPhraseScreen
 import com.clearkeep.features.shared.presentation.EnterOtpScreen
-import com.facebook.*
+import com.clearkeep.navigation.NavigationUtils
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.microsoft.identity.client.*
+import com.microsoft.identity.client.AuthenticationCallback
+import com.microsoft.identity.client.IAuthenticationResult
 import com.microsoft.identity.client.exception.MsalException
-import com.facebook.login.LoginResult
-import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class LoginActivity : AppCompatActivity() {
+class LoginActivity() : AppCompatActivity(), Parcelable {
     private val loginViewModel: LoginViewModel by viewModels()
 
     var showErrorDiaLog: ((ErrorMessage) -> Unit)? = null
@@ -79,6 +87,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    constructor(parcel: Parcel) : this() {
+        isJoinServer = parcel.readByte() != 0.toByte()
+    }
+
     @SuppressLint("WrongThread")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +108,6 @@ class LoginActivity : AppCompatActivity() {
         setContent {
             MyApp()
         }
-
         subscriberError()
     }
 
@@ -490,4 +501,22 @@ class LoginActivity : AppCompatActivity() {
         val message: String,
         val dismissButtonText: String = "OK"
     )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeByte(if (isJoinServer) 1 else 0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<LoginActivity> {
+        override fun createFromParcel(parcel: Parcel): LoginActivity {
+            return LoginActivity(parcel)
+        }
+
+        override fun newArray(size: Int): Array<LoginActivity?> {
+            return arrayOfNulls(size)
+        }
+    }
 }

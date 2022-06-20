@@ -4,7 +4,24 @@ plugins {
 
 apply from: '../../android_commons.gradle'
 apply from: '../../android_feature_dependencies.gradle'
-
+android {
+    buildFeatures {
+        compose true
+    }
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
+        res.srcDirs =
+                [
+                        '/home/tuna/AndroidStudioProjects/ck_demo/ck-android/common/src/main/res',
+                        'src/main/res'
+                ]
+    }
+    composeOptions {
+        kotlinCompilerVersion "$kotlin_version"
+        kotlinCompilerExtensionVersion "$jetpack_compose_version"
+    }
+}
 dependencies {
     //Coil
     implementation Dependencies.coil

@@ -1,14 +1,21 @@
 plugins {
     id 'com.android.library'
 }
-
 apply from: '../../android_commons.gradle'
 
 android {
     buildFeatures {
         compose true
     }
-
+    sourceSets.main {
+        jniLibs.srcDir 'libs'
+        jni.srcDirs = []
+        res.srcDirs =
+                [
+                        '/home/tuna/AndroidStudioProjects/ck_demo/ck-android/common/src/main/res',
+                        'src/main/res'
+                ]
+    }
     composeOptions {
         kotlinCompilerVersion "$kotlin_version"
         kotlinCompilerExtensionVersion "$jetpack_compose_version"
@@ -16,7 +23,7 @@ android {
 }
 
 dependencies {
-    implementation project(Modules.common)
+    implementation project(':common')
     implementation project(Modules.domain)
     implementation project(Modules.navigation)
 

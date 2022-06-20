@@ -53,9 +53,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
 
-    @ExperimentalMaterialApi
-    @ExperimentalFoundationApi
-        override fun onCreate(savedInstanceState: Bundle?) {
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

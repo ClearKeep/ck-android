@@ -27,8 +27,7 @@ import com.clearkeep.features.chat.presentation.room.imagepicker.ImagePickerScre
 class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     private val profileViewModel: ProfileViewModel by viewModels()
 
-    @ExperimentalMaterialApi
-        @ExperimentalFoundationApi
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)

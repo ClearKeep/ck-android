@@ -1,4 +1,4 @@
-package com.clearkeep.features.calls.presentation
+package com.clearkeep.features.shared.presentation
 
 import android.app.Notification
 import android.app.NotificationChannel

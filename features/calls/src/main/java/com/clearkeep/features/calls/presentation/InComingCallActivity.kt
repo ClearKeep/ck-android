@@ -20,33 +20,31 @@ import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import dagger.hilt.android.AndroidEntryPoint
-import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.activity_in_coming_call.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.features.calls.R
+import com.clearkeep.features.calls.databinding.ActivityInComingCallBinding
 import com.clearkeep.navigation.NavigationUtils
+import dagger.hilt.android.AndroidEntryPoint
+import de.hdodenhof.circleimageview.CircleImageView
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_coming_call.imageBackground
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private val viewModel: InComingCallViewModel by viewModels()
-
+    private lateinit var binding: ActivityInComingCallBinding
     private var mUserNameInConversation: String? = null
     private var mAvatarInConversation: String? = null
     private lateinit var mOwnerId: String
@@ -84,7 +82,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_in_coming_call)
+        binding = ActivityInComingCallBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
 
@@ -191,13 +190,13 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 .error(R.drawable.ic_bg_gradient)
                 .into(imgThumb)
         } else {
-            tvNickName.visibility = View.VISIBLE
+            binding.tvNickName.visibility = View.VISIBLE
             val displayName =
                 if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(
                     0,
                     1
                 ) else mGroupName
-            tvNickName.text = displayName
+            binding.tvNickName.text = displayName
         }
 
         if (!mIsGroupCall) {
@@ -206,10 +205,10 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 .placeholder(R.drawable.ic_bg_gradient)
                 .error(R.drawable.ic_bg_gradient)
                 .apply(bitmapTransform(BlurTransformation(25, 10)))
-                .into(imageBackground)
+                .into(binding.imageBackground)
         } else {
             imgThumb.visibility = View.GONE
-            tvNickName.visibility = View.GONE
+            binding.tvNickName.visibility = View.GONE
         }
 
         if (mIsAudioMode) {
@@ -225,16 +224,16 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
         if (mIsGroupCall) {
             if (mIsAudioMode) {
-                txtAudioMode.text = getString(R.string.incoming_voice_group)
+                binding.txtAudioMode.text = getString(R.string.incoming_voice_group)
             } else {
-                txtAudioMode.text = getString(R.string.incoming_video_group)
+                binding.txtAudioMode.text = getString(R.string.incoming_video_group)
             }
         } else {
             if (mIsAudioMode) {
-                txtAudioMode.text = getString(R.string.incoming_voice_single)
+                binding.txtAudioMode.text = getString(R.string.incoming_voice_single)
 
             } else {
-                txtAudioMode.text = getString(R.string.incoming_video_single)
+                binding.txtAudioMode.text = getString(R.string.incoming_video_single)
             }
         }
     }
@@ -342,7 +341,8 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         val channelName = INCOMING_CHANNEL_NAME
         val notificationId = INCOMING_NOTIFICATION_ID
 
-        val dismissIntent = Intent(context, com.clearkeep.features.shared.DismissNotificationReceiver::class.java)
+        val dismissIntent =
+            Intent(context, com.clearkeep.features.shared.DismissNotificationReceiver::class.java)
         dismissIntent.action = ACTION_CALL_CANCEL
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, groupId)
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
@@ -409,7 +409,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             if (isAudioMode) R.string.notification_incoming_peer else R.string.notification_incoming_video_peer
         }
         val titleCall = context.resources.getString(titleCallResource)
-
         val headsUpLayout = RemoteViews(context.packageName, R.layout.notification_call)
         headsUpLayout.apply {
             setViewVisibility(R.id.imageButton, if (isGroup(groupType)) View.GONE else View.VISIBLE)
@@ -493,7 +492,10 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             if (isGroup(groupType)) {
                 Intent(context, InCallActivity::class.java)
             } else {
-                Intent(context, com.clearkeep.features.calls.presentation.peertopeer.InCallPeerToPeerActivity::class.java)
+                Intent(
+                    context,
+                    com.clearkeep.features.calls.presentation.peertopeer.InCallPeerToPeerActivity::class.java
+                )
             }
         }
         printlnCK("createIncomingCallIntent isAudioMode $isAudioMode")
@@ -536,7 +538,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun configPortraitLayout() {
         val mConstraintSet = ConstraintSet()
-        mConstraintSet.clone(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.clone(binding.rootViewCallIn)
         mConstraintSet.setMargin(
             R.id.txtAudioMode,
             ConstraintSet.TOP,
@@ -552,12 +554,12 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             ConstraintSet.BOTTOM,
             resources.getDimension(R.dimen._60sdp).toInt()
         )
-        mConstraintSet.applyTo(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.applyTo(binding.rootViewCallIn)
     }
 
     private fun configLandscapeLayout() {
         val mConstraintSet = ConstraintSet()
-        mConstraintSet.clone(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.clone(binding.rootViewCallIn)
         mConstraintSet.setMargin(
             R.id.txtAudioMode,
             ConstraintSet.TOP,
@@ -573,7 +575,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             ConstraintSet.BOTTOM,
             resources.getDimension(R.dimen._30sdp).toInt()
         )
-        mConstraintSet.applyTo(rootViewCallIn as ConstraintLayout)
+        mConstraintSet.applyTo(binding.rootViewCallIn)
     }
 
     companion object {

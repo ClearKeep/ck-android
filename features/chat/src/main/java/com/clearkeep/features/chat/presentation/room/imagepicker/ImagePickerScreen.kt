@@ -109,7 +109,7 @@ fun ImagePickerScreen(
                 LazyVerticalGrid(cells = GridCells.Fixed(2)) {
                     items(uris) {
                         ImageItem(
-                            Modifier.fillParentMaxWidth(0.5f),
+                            Modifier.fillMaxWidth(0.5f),
                             it.toString(),
                             urisSelected.contains(it.toString())
                         ) { uri: String, isSelected: Boolean ->

@@ -42,7 +42,6 @@ dependencies {
     implementation Dependencies.composeAnimation
     implementation Dependencies.composeConstraintLayout
     implementation Dependencies.composeUiTooling
-
     //Jetpack Accompanist
     implementation Dependencies.accompanistSystemUi
     implementation Dependencies.accompanistInsets

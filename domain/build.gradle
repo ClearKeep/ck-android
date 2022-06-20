@@ -5,7 +5,7 @@ plugins {
 apply from: '../android_commons.gradle'
 
 dependencies {
-    implementation project(Modules.common)
+    implementation project(path: ':common')
     implementation project(Modules.srp)
 
     implementation Dependencies.lifecycleLiveData

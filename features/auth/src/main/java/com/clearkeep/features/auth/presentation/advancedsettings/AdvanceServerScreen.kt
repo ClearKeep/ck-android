@@ -71,7 +71,7 @@ fun CustomServerScreen(
             Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
                 modifier = Modifier.padding(start = 6.sdp()),
-                title = stringResource(R.string.advance_server_settings)
+                title = stringResource(com.clearkeep.common.R.string.advance_server_settings)
             ) {
                 if (!useCustomServerChecked.value) {
                     loginViewModel.isCustomServer = false
@@ -96,13 +96,13 @@ fun CustomServerScreen(
                     }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
+                    painter = painterResource(id = if (useCustomServerChecked.value) com.clearkeep.common.R.drawable.ic_checkbox else com.clearkeep.common.R.drawable.ic_ellipse_20),
                     "",
                     Modifier.size(32.sdp()),
                     contentScale = ContentScale.FillBounds
                 )
                 Text(
-                    text = stringResource(R.string.advance_server_settings_custom_server),
+                    text = stringResource(com.clearkeep.common.R.string.advance_server_settings_custom_server),
                     modifier = Modifier.padding(16.sdp()),
                     style = MaterialTheme.typography.body1.copy(
                         color = grayscaleOffWhite,
@@ -132,7 +132,7 @@ fun CustomServerScreen(
                 ) {
                     Column {
                         Text(
-                            text = stringResource(R.string.use_custom_server),
+                            text = stringResource(com.clearkeep.common.R.string.use_custom_server),
                             style = MaterialTheme.typography.body1.copy(
                                 color = grayscaleOffWhite,
                                 fontSize = 16.sdp().toNonScalableTextSize(),
@@ -149,7 +149,7 @@ fun CustomServerScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
-                                    stringResource(R.string.server_url),
+                                    stringResource(com.clearkeep.common.R.string.server_url),
                                     rememberServerUrl,
                                     keyboardType = KeyboardType.Text,
                                     singleLine = true,
@@ -160,7 +160,7 @@ fun CustomServerScreen(
                         Spacer(modifier = Modifier.height(50.sdp()))
 
                         CKButton(
-                            stringResource(R.string.all_submit), {
+                            stringResource(com.clearkeep.common.R.string.all_submit), {
                                 loginViewModel.checkValidServerUrl(rememberServerUrl.value)
                             },
                             modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
@@ -186,15 +186,15 @@ fun CustomServerScreen(
     } else if (serverUrlValidateResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
         val (title, text, dismissText) = if (serverUrlValidateResponse.value!!.errorCode == ERROR_CODE_TIMEOUT) {
             Triple(
-                stringResource(R.string.network_error_dialog_title),
-                stringResource(R.string.network_error_dialog_text),
-                stringResource(R.string.ok)
+                stringResource(com.clearkeep.common.R.string.network_error_dialog_title),
+                stringResource(com.clearkeep.common.R.string.network_error_dialog_text),
+                stringResource(com.clearkeep.common.R.string.ok)
             )
         } else {
             Triple(
-                stringResource(R.string.error),
-                stringResource(R.string.wrong_server_url_error),
-                stringResource(R.string.close)
+                stringResource(com.clearkeep.common.R.string.error),
+                stringResource(com.clearkeep.common.R.string.wrong_server_url_error),
+                stringResource(com.clearkeep.common.R.string.close)
             )
         }
         CKAlertDialog(
@@ -212,7 +212,7 @@ fun CustomServerScreen(
 fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
     if (showDialog.isNotEmpty()) {
         CKAlertDialog(
-            title = stringResource(R.string.error),
+            title = stringResource(com.clearkeep.common.R.string.error),
             text = showDialog,
             onDismissButtonClick = {
                 // Change the state to close the dialog

@@ -20,6 +20,7 @@ import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat
 import com.clearkeep.common.utilities.*
 import com.clearkeep.navigation.NavigationUtils
+import kotlin.coroutines.coroutineContext
 
 const val HEADS_UP_APPEAR_DURATION: Long = 3 * 1000
 
@@ -116,6 +117,7 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
         val headsUpLayout =
             RemoteViews(context.packageName, R.layout.notification_message_view_expand)
+        context.getString(com.clearkeep.common.R.string.notification_content_no_preview)
         val messageContent =
             if (preference.showNotificationPreview) message.message else context.getString(R.string.notification_content_no_preview)
         val messageFrom = context.getString(R.string.notification_sender_no_preview, sender)

@@ -11,7 +11,6 @@ import android.content.res.Configuration
 import android.graphics.drawable.Drawable
 import android.media.MediaPlayer
 import android.os.*
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ToggleButton
@@ -26,44 +25,27 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.common.utilities.*
-import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.features.calls.R
-import com.clearkeep.features.calls.presentation.BaseActivity
-import com.clearkeep.features.calls.presentation.CallViewModel
+import com.clearkeep.features.calls.databinding.ActivityInCallPeerToPeerBinding
 import com.clearkeep.features.calls.presentation.*
 import com.clearkeep.features.calls.presentation.common.CallState
 import com.clearkeep.features.calls.presentation.common.CallStateView
 import com.clearkeep.features.shared.createInCallNotification
 import com.clearkeep.features.shared.dismissInCallNotification
+import com.clearkeep.features.shared.presentation.AppCall
+import com.clearkeep.features.shared.presentation.CallingStateData
+import com.clearkeep.januswrapper.JanusConnection
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_call.*
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageBackground
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvEndButtonDescription
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.viewConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallView
-import kotlinx.android.synthetic.main.view_control_call_audio.view.*
-import kotlinx.android.synthetic.main.view_control_call_video.view.*
 import kotlinx.coroutines.*
 import org.webrtc.*
 import java.util.*
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class InCallPeerToPeerActivity : BaseActivity() {
     private val callScope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
     private val hideBottomButtonHandler: Handler = Handler(Looper.getMainLooper())
-
+    private lateinit var binding: ActivityInCallPeerToPeerBinding
     val callViewModel: CallViewModel by viewModels()
 
     private var mIsMuteVideo = false
@@ -101,7 +83,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
         System.setProperty("java.net.preferIPv6Addresses", "false")
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_in_call_peer_to_peer)
+        binding = ActivityInCallPeerToPeerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         //    allowOnLockScreen()
         isInPeerCall = true
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
@@ -152,28 +135,28 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
         mIsSpeaker = isSpeaker
         mIsMuteVideo = isMuteVideo
-        controlCallAudioView.apply {
-            toggleSpeaker?.isChecked = mIsSpeaker
+        binding.controlCallAudioView.apply {
+            toggleSpeaker.isChecked = mIsSpeaker
         }
-        controlCallVideoView.apply {
-            bottomToggleFaceTime?.isChecked = mIsMuteVideo
+        binding.controlCallVideoView.apply {
+            bottomToggleFaceTime.isChecked = mIsMuteVideo
         }
         callViewModel.onSpeakChange(mIsSpeaker)
         callViewModel.onFaceTimeChange(!isMuteVideo)
     }
 
     private fun initViews() {
-        remoteRender.apply {
+        binding.remoteRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setEnableHardwareScaler(true)
         }
-        localRender.apply {
+        binding.localRender.apply {
             init(callViewModel.rootEglBase.eglBaseContext, null)
             setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
         }
 
-        pipCallNamePeer.text = mCurrentUsername
+        binding.pipCallNamePeer.text = mCurrentUsername
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()
@@ -266,40 +249,40 @@ class InCallPeerToPeerActivity : BaseActivity() {
         newConfig: Configuration
     ) {
         if (isInPictureInPictureMode) {
-            controlCallVideoView.visibility = View.GONE
-            controlCallAudioView.visibility = View.GONE
-            imgEndWaiting.visibility = View.GONE
-            tvEndButtonDescription.visibility = View.GONE
-            tvVideoTimeCall.visibility = View.GONE
-            tvUserName.visibility = View.GONE
-            remoteRender.visibility = View.GONE
-            imgVideoCallBack.visibility = View.GONE
-            imgWaitingBack.visibility = View.GONE
+            binding.controlCallVideoView.root.gone()
+            binding.controlCallAudioView.root.gone()
+            binding.imgEndWaiting.gone()
+            binding.tvEndButtonDescription.gone()
+            binding.tvVideoTimeCall.gone()
+            binding.tvUserName.gone()
+            binding.remoteRender.gone()
+            binding.imgVideoCallBack.gone()
+            binding.imgWaitingBack.gone()
             if (mIsMuteVideo) {
-                pipInfoPeer.visible()
-                localRender.gone()
+                binding.pipInfoPeer.visible()
+                binding.localRender.gone()
             } else {
-                remoteRender.visibility = View.GONE
+                binding.remoteRender.gone()
                 setLocalViewFullScreen()
             }
         } else {
-            remoteRender.visibility = View.VISIBLE
-            imgEndWaiting.visibility = View.VISIBLE
-            tvVideoTimeCall.visibility = View.VISIBLE
-            tvEndButtonDescription.visibility = View.VISIBLE
-            tvUserName.visibility = View.VISIBLE
-            imgVideoCallBack.visibility = View.VISIBLE
-            imgWaitingBack.visibility = View.VISIBLE
-            pipInfoPeer.gone()
+            binding.remoteRender.visible()
+            binding.imgEndWaiting.visible()
+            binding.tvVideoTimeCall.visible()
+            binding.tvEndButtonDescription.visible()
+            binding.tvUserName.visible()
+            binding.imgVideoCallBack.visible()
+            binding.imgWaitingBack.visible()
+            binding.pipInfoPeer.gone()
             if (!mIsAudioMode || callViewModel.mIsAudioMode.value == false) {
-                controlCallVideoView.visibility = View.VISIBLE
-                localRender.visible()
+                binding.controlCallVideoView.root.visible()
+                binding.localRender.visible()
                 if (mIsMuteVideo) {
                 } else {
                     setLocalFixScreen()
                 }
             } else {
-                controlCallAudioView.visibility = View.VISIBLE
+                binding.controlCallAudioView.root.visible()
             }
         }
     }
@@ -323,7 +306,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun onClickControlCall() {
-        controlCallAudioView.apply {
+        binding.controlCallAudioView.apply {
             this.toggleMute.setOnClickListener {
                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value != true)
@@ -334,13 +317,13 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 callViewModel.onSpeakChange(true)
                 mIsMuteVideo = !mIsMuteVideo
                 switchToVideoMode()
-                controlCallVideoView.bottomToggleFaceTime.isChecked = false
+                binding.controlCallVideoView.bottomToggleFaceTime.isChecked = false
             }
             this.toggleSpeaker.setOnClickListener {
                 callViewModel.onSpeakChange((it as ToggleButton).isChecked)
             }
         }
-        controlCallVideoView.apply {
+        binding.controlCallVideoView.apply {
             this.bottomToggleMute.setOnClickListener {
                 callViewModel.onMuteChange(callViewModel.mIsMute.value != true)
                 callViewModel.mIsMute.postValue(callViewModel.mIsMute.value != true)
@@ -358,24 +341,24 @@ class InCallPeerToPeerActivity : BaseActivity() {
             }
         }
 
-        imgEndWaiting.setOnClickListener {
+        binding.imgEndWaiting.setOnClickListener {
             endCall()
         }
-        callViewModel.mIsAudioMode.observe(this, {
+        callViewModel.mIsAudioMode.observe(this) {
             if (it == false && mIsAudioMode) {
                 updateUIbyStateView(CallStateView.CALLED_VIDEO)
             }
-        })
+        }
 
-        callViewModel.mIsMute.observe(this, {
-            controlCallVideoView.bottomToggleMute.isChecked = it
-            controlCallAudioView.toggleMute.isChecked = it
-        })
+        callViewModel.mIsMute.observe(this) {
+            binding.controlCallVideoView.bottomToggleMute.isChecked = it
+            binding.controlCallAudioView.toggleMute.isChecked = it
+        }
 
-        imgWaitingBack.setOnClickListener {
+        binding.imgWaitingBack.setOnClickListener {
             handleBackPressed()
         }
-        imgVideoCallBack.setOnClickListener {
+        binding.imgVideoCallBack.setOnClickListener {
             handleBackPressed()
         }
     }
@@ -414,15 +397,15 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun initWaitingCallView() {
-        tvUserName2.text = mGroupName
-        tvUserName.text = mGroupName
-        tvNickName.visibility = View.VISIBLE
+        binding.tvUserName2.text = mGroupName
+        binding.tvUserName.text = mGroupName
+        binding.tvNickName.visible()
         val displayName =
             if (mGroupName.isNotBlank() && mGroupName.length >= 2) mGroupName.substring(
                 0,
                 1
             ) else mGroupName
-        tvNickName.text = displayName
+        binding.tvNickName.text = displayName
 
         if (!mIsGroupCall) {
             Glide.with(this)
@@ -430,7 +413,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 .placeholder(R.drawable.ic_background_gradient_call)
                 .error(R.drawable.ic_background_gradient_call)
                 .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
-                .into(imageBackground)
+                .into(binding.imageBackground)
 
             Glide.with(this)
                 .load(mPeerUserAvatar)
@@ -443,7 +426,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                         target: Target<Drawable>?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        tvNickName.visibility = View.VISIBLE
+                        binding.tvNickName.visible()
                         return false
                     }
 
@@ -454,35 +437,35 @@ class InCallPeerToPeerActivity : BaseActivity() {
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        tvNickName.visibility = View.GONE
+                        binding.tvNickName.gone()
                         return false
                     }
 
                 })
-                .into(imgThumb2)
+                .into(binding.imgThumb2)
 
             Glide.with(this)
                 .load(mCurrentUserAvatar)
                 .circleCrop()
-                .into(pipCallAvatar)
+                .into(binding.pipCallAvatar)
 
         } else {
-            tvStateCall.text = getString(R.string.calling_group)
-            imgThumb2.visibility = View.GONE
-            tvNickName.visibility = View.GONE
+            binding.tvStateCall.text = getString(R.string.calling_group)
+            binding.imgThumb2.gone()
+            binding.tvNickName.gone()
         }
     }
 
     private fun initViewConnecting() {
         if (isFromComingCall)
-            tvConnecting.visible()
-        else tvConnecting.gone()
+            binding.tvConnecting.visible()
+        else binding.tvConnecting.gone()
         Glide.with(this)
             .load(mPeerUserAvatar)
             .placeholder(R.drawable.ic_background_gradient_call)
             .error(R.drawable.ic_background_gradient_call)
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
-            .into(imageConnecting)
+            .into(binding.imageConnecting)
     }
 
     private fun startVideo(
@@ -496,7 +479,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         val ourClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT) ?: ""
         callViewModel.startVideo(
             context = this,
-            localRender,
+            binding.localRender,
             ourClientId,
             webRtcGroupId, webRtcUrl,
             stunUrl,
@@ -553,34 +536,34 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun updateUIbyStateView(callStateView: CallStateView) {
         when (callStateView) {
             CallStateView.CALL_AUDIO_WAITING -> {
-                waitingCallView.visibility = View.VISIBLE
-                viewAudioCalled.visibility = View.GONE
-                viewVideoCalled.visibility = View.GONE
+                binding.waitingCallView.visible()
+                binding.viewAudioCalled.gone()
+                binding.viewVideoCalled.gone()
             }
 
             CallStateView.CALL_VIDEO_WAITING -> {
-                waitingCallView.visibility = View.GONE
+                binding.waitingCallView.gone()
                 setLocalViewFullScreen()
-                tvStateVideoCall.visibility = View.VISIBLE
-                tvUserNameVideoCall.visibility = View.VISIBLE
-                tvUserNameVideoCall.text = mGroupName
-                viewVideoCalled.visibility = View.GONE
+                binding.tvStateVideoCall.visible()
+                binding.tvUserNameVideoCall.visible()
+                binding.tvUserNameVideoCall.text = mGroupName
+                binding.viewVideoCalled.gone()
 
 
             }
             CallStateView.CALLED_AUDIO -> {
-                waitingCallView.visibility = View.VISIBLE
-                tvStateVideoCall.visibility = View.GONE
-                tvStateCall.visibility = View.GONE
-                viewAudioCalled.visibility = View.VISIBLE
+                binding.waitingCallView.visible()
+                binding.tvStateVideoCall.gone()
+                binding.tvStateCall.gone()
+                binding.viewAudioCalled.visible()
 
             }
             CallStateView.CALLED_VIDEO -> {
                 setLocalFixScreen()
-                waitingCallView.visibility = View.GONE
-                tvStateVideoCall.visibility = View.GONE
-                tvUserNameVideoCall.visibility = View.GONE
-                viewVideoCalled.visibility = View.VISIBLE
+                binding.waitingCallView.gone()
+                binding.tvStateVideoCall.gone()
+                binding.tvUserNameVideoCall.gone()
+                binding.viewVideoCalled.visible()
             }
         }
     }
@@ -621,7 +604,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private var listenerOnRemoteRenderAdd = fun(connection: JanusConnection) {
-        connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
+        connection.videoTrack.addRenderer(VideoRenderer(binding.remoteRender))
         startTimeInterval()
         dispatchCallStatus(true)
     }
@@ -631,7 +614,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             callViewModel.onFaceTimeChange(!mIsMuteVideo)
             if (!isFromComingCall)
                 Handler(mainLooper).postDelayed({
-                    viewConnecting.gone()
+                    binding.viewConnecting.gone()
                 }, 1000)
         }
     }
@@ -770,7 +753,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun startTimeInterval() {
         if (isFromComingCall) {
             Handler(mainLooper).postDelayed({
-                viewConnecting.gone()
+                binding.viewConnecting.gone()
             }, 2000)
         }
         mTimeStarted = SystemClock.elapsedRealtime()
@@ -778,8 +761,8 @@ class InCallPeerToPeerActivity : BaseActivity() {
             startCoroutineTimer(delayMillis = 1000, repeatMillis = 1000) {
                 callViewModel.totalTimeRun += 1
                 runOnUiThread {
-                    tvTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
-                    tvVideoTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
+                    binding.tvTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
+                    binding.tvVideoTimeCall.text = convertSecondsToHMmSs(callViewModel.totalTimeRun)
                 }
             }
     }
@@ -791,21 +774,21 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
 
     private fun setLocalViewFullScreen() {
-        localRender.layoutParams =
-            fullView(localRender.layoutParams as ConstraintLayout.LayoutParams)
+        binding.localRender.layoutParams =
+            fullView(binding.localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
 
     private fun setLocalFixScreen() {
-        localRender.layoutParams =
-            fixViewLocalView(localRender.layoutParams as ConstraintLayout.LayoutParams)
+        binding.localRender.layoutParams =
+            fixViewLocalView(binding.localRender.layoutParams as ConstraintLayout.LayoutParams)
     }
 
     private fun fullView(localView: ConstraintLayout.LayoutParams): ConstraintLayout.LayoutParams {
         localView.apply {
             width = ViewGroup.LayoutParams.MATCH_PARENT
             height = 0
-            leftToLeft = containerCall.id
-            rightToRight = containerCall.id
+            leftToLeft = binding.containerCall.id
+            rightToRight = binding.containerCall.id
             marginEnd = 0
             marginStart = 0
             topMargin = 0
@@ -820,7 +803,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             height = dp2px(120 * 4 / 3.toFloat())
             topToTop = ConstraintLayout.LayoutParams.UNSET
             startToStart = ConstraintLayout.LayoutParams.UNSET
-            endToEnd = containerCall.id
+            endToEnd = binding.containerCall.id
             bottomToBottom = ConstraintLayout.LayoutParams.UNSET
             marginEnd = dp2px(16f)
             bottomMargin = dp2px(48f)
@@ -845,83 +828,93 @@ class InCallPeerToPeerActivity : BaseActivity() {
     }
 
     private fun configPortraitLayout() {
-        controlCallAudioView.imgEndWaiting.gone()
-        controlCallAudioView.tvEndButtonDescription.gone()
-        tvEndButtonDescription.visible()
-        imgEndWaiting.visible()
+        binding.controlCallAudioView.imgEndWaiting.gone()
+        binding.controlCallAudioView.tvEndButtonDescription.gone()
+        binding.tvEndButtonDescription.visible()
+        binding.imgEndWaiting.visible()
 
         val mConstraintSet = ConstraintSet()
-        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.clone(binding.controlCallAudioView as ConstraintLayout)
         mConstraintSet.connect(
             R.id.controlCallAudioView,
             ConstraintSet.TOP,
-            R.id.parent,
+            androidx.constraintlayout.widget.R.id.parent,
             ConstraintSet.TOP
         )
         mConstraintSet.connect(
             R.id.controlCallAudioView,
             ConstraintSet.BOTTOM,
-            R.id.parent,
+            androidx.constraintlayout.widget.R.id.parent,
             ConstraintSet.BOTTOM
         )
-        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.applyTo(binding.controlCallAudioView as ConstraintLayout)
 
-        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        val layoutParams =
+            (binding.controlCallAudioView as ConstraintLayout) as ConstraintLayout.LayoutParams
         layoutParams.verticalBias = 0.7f
-        controlCallAudioView.layoutParams = layoutParams
+        (binding.controlCallAudioView as ConstraintLayout).layoutParams= layoutParams
 
         val parentConstraintSet = ConstraintSet()
-        parentConstraintSet.clone(waitingCallView as ConstraintLayout)
-        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._100sdp).toInt())
-        parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
+        parentConstraintSet.clone(binding.waitingCallView as ConstraintLayout)
+        parentConstraintSet.setMargin(
+            R.id.tvStateCall,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._100sdp).toInt()
+        )
+        parentConstraintSet.applyTo(binding.waitingCallView as ConstraintLayout)
 
-        val avatarLayoutParams = imgThumb2.layoutParams
+        val avatarLayoutParams = binding.imgThumb2.layoutParams
         avatarLayoutParams.width = resources.getDimension(R.dimen._159sdp).toInt()
         avatarLayoutParams.height = resources.getDimension(R.dimen._159sdp).toInt()
-        imgThumb2.layoutParams = avatarLayoutParams
+        binding.imgThumb2.layoutParams = avatarLayoutParams
     }
 
     private fun configLandscapeLayout() {
-        controlCallAudioView.imgEndWaiting.visible()
-        controlCallAudioView.tvEndButtonDescription.visible()
-        tvEndButtonDescription.gone()
-        imgEndWaiting.gone()
+        binding.controlCallAudioView.imgEndWaiting.visible()
+        binding.controlCallAudioView.tvEndButtonDescription.visible()
+        binding.tvEndButtonDescription.gone()
+        binding.imgEndWaiting.gone()
 
         val mConstraintSet = ConstraintSet()
-        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.clone(binding.controlCallAudioView as ConstraintLayout)
         mConstraintSet.connect(
             R.id.controlCallAudioView,
             ConstraintSet.END,
-            R.id.parent,
+            androidx.constraintlayout.widget.R.id.parent,
             ConstraintSet.END
         )
         mConstraintSet.connect(
             R.id.controlCallAudioView,
             ConstraintSet.START,
-            R.id.parent,
+            androidx.constraintlayout.widget.R.id.parent,
             ConstraintSet.START
         )
         mConstraintSet.connect(
             R.id.controlCallAudioView,
             ConstraintSet.BOTTOM,
-            R.id.parent,
+            androidx.constraintlayout.widget.R.id.parent,
             ConstraintSet.BOTTOM
         )
-        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.applyTo(binding.controlCallAudioView as ConstraintLayout)
 
-        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        val layoutParams =
+            (binding.controlCallAudioView as ConstraintLayout).layoutParams as ConstraintLayout.LayoutParams
         layoutParams.verticalBias = 1f
-        controlCallAudioView.layoutParams = layoutParams
+        (binding.controlCallAudioView as ConstraintLayout).layoutParams = layoutParams
 
         val parentConstraintSet = ConstraintSet()
-        parentConstraintSet.clone(waitingCallView as ConstraintLayout)
-        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._20sdp).toInt())
-        parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
+        parentConstraintSet.clone(binding.waitingCallView as ConstraintLayout)
+        parentConstraintSet.setMargin(
+            R.id.tvStateCall,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._20sdp).toInt()
+        )
+        parentConstraintSet.applyTo(binding.waitingCallView as ConstraintLayout)
 
-        val avatarLayoutParams = imgThumb2.layoutParams
+        val avatarLayoutParams = binding.imgThumb2.layoutParams
         avatarLayoutParams.width = resources.getDimension(R.dimen._100sdp).toInt()
         avatarLayoutParams.height = resources.getDimension(R.dimen._100sdp).toInt()
-        imgThumb2.layoutParams = avatarLayoutParams
+        binding.imgThumb2.layoutParams = avatarLayoutParams
     }
 
     private fun dispatchCallStatus(isStarted: Boolean) {
