@@ -535,7 +535,7 @@ fun JoinServerComposable(
             CKButton(
                 stringResource(R.string.btn_join),
                 onClick = {
-                    onJoinServer(rememberServerUrl.value)
+                    onJoinServer(rememberServerUrl.value.trim())
                 },
                 enabled = rememberServerUrl.value.isNotBlank() && !isLoading
             )
