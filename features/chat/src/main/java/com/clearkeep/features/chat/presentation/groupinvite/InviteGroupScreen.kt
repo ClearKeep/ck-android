@@ -358,8 +358,8 @@ fun InviteGroupScreen(
                             },
                             modifier = Modifier
                                 .width(200.sdp()),
-                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
-                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
+                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isValidEmail()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
+                                    || (useCustomServerChecked.value && urlOtherServer.value.isValidEmail()))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
                         )
                     }
                 }
