@@ -321,7 +321,7 @@ fun InviteGroupScreen(
                                     }
                                 }
                                 else if (useCustomServerChecked.value) {
-                                    val people = getPeopleFromLink(urlOtherServer.value)
+                                    val people = getPeopleFromLink(urlOtherServer.value.trim())
                                     if (people?.userId != inviteGroupViewModel.getClientId()) {
                                         if (isCreateDirectGroup) {
                                             if (people != null) {
