@@ -12,7 +12,7 @@ android {
         jni.srcDirs = []
         res.srcDirs =
                 [
-                        '/home/tuna/AndroidStudioProjects/ck_demo/ck-android/common/src/main/res',
+                        '../../common/src/main/res',
                         'src/main/res'
                 ]
     }
