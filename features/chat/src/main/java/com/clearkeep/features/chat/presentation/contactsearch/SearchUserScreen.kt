@@ -89,7 +89,7 @@ fun SearchUserScreen(
             focusRequester = focusRequester
         ) {
             if (query.value.isNotBlank()) {
-                searchViewModel.search(query.value)
+                searchViewModel.search(query.value.trim())
             }
         }
         Spacer(Modifier.height(10.sdp()))

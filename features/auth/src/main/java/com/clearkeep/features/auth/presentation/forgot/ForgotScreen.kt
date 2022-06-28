@@ -1,18 +1,16 @@
 package com.clearkeep.features.auth.presentation.forgot
 
-import com.clearkeep.features.auth.R
 import androidx.compose.foundation.Image
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.clearkeep.common.presentation.components.LocalColorMapping
@@ -21,6 +19,7 @@ import com.clearkeep.common.presentation.components.grayscaleOffWhite
 import com.clearkeep.common.utilities.isValidEmail
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize
+import com.clearkeep.features.auth.R
 
 @Composable
 fun ForgotScreen(
@@ -32,9 +31,10 @@ fun ForgotScreen(
     val isEmptyEmail = rememberSaveable { mutableStateOf(false) }
     val isInvalidEmailFormat = rememberSaveable { mutableStateOf(false) }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .verticalScroll(rememberScrollState())
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         Spacer(Modifier.height(80.sdp()))
         CKTopAppBarSample(
@@ -81,7 +81,7 @@ fun ForgotScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading && email.value.isNotBlank(),
+                enabled = !isLoading && email.value.isValidEmail(),
                 buttonType = ButtonType.White
             )
             if (isEmptyEmail.value || isInvalidEmailFormat.value) {
