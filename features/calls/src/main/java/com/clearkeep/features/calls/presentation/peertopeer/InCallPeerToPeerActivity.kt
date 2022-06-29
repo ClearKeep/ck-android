@@ -9,8 +9,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -26,38 +28,23 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.common.utilities.*
-import com.clearkeep.januswrapper.JanusConnection
 import com.clearkeep.features.calls.R
+import com.clearkeep.features.calls.presentation.AppCall
 import com.clearkeep.features.calls.presentation.BaseActivity
 import com.clearkeep.features.calls.presentation.CallViewModel
-import com.clearkeep.features.calls.presentation.*
+import com.clearkeep.features.calls.presentation.CallingStateData
 import com.clearkeep.features.calls.presentation.common.CallState
 import com.clearkeep.features.calls.presentation.common.CallStateView
 import com.clearkeep.features.shared.createInCallNotification
 import com.clearkeep.features.shared.dismissInCallNotification
+import com.clearkeep.januswrapper.JanusConnection
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageBackground
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvEndButtonDescription
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.viewConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallView
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.android.synthetic.main.view_control_call_video.view.*
 import kotlinx.coroutines.*
-import org.webrtc.*
-import java.util.*
-import javax.inject.Inject
+import org.webrtc.VideoRenderer
 
 @AndroidEntryPoint
 class InCallPeerToPeerActivity : BaseActivity() {
@@ -85,6 +72,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private var busyCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+    private var broadcastReceiver: BroadcastReceiver? = null
 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
@@ -94,7 +82,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
     private var mTimeStarted: Long = 0
     var isShowedDialogCamera = false
-
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,6 +110,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         initViews()
 
         registerEndCallReceiver()
+        registerBroadcastReceiver()
         if (mIsAudioMode) {
             configMedia(isSpeaker = false, isMuteVideo = true)
             registerSwitchVideoReceiver()
@@ -361,16 +349,16 @@ class InCallPeerToPeerActivity : BaseActivity() {
         imgEndWaiting.setOnClickListener {
             endCall()
         }
-        callViewModel.mIsAudioMode.observe(this, {
+        callViewModel.mIsAudioMode.observe(this) {
             if (it == false && mIsAudioMode) {
                 updateUIbyStateView(CallStateView.CALLED_VIDEO)
             }
-        })
+        }
 
-        callViewModel.mIsMute.observe(this, {
+        callViewModel.mIsMute.observe(this) {
             controlCallVideoView.bottomToggleMute.isChecked = it
             controlCallAudioView.toggleMute.isChecked = it
-        })
+        }
 
         imgWaitingBack.setOnClickListener {
             handleBackPressed()
@@ -602,6 +590,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         isInPeerCall = false
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
+        unRegisterBroadcastReceiver()
         stopRingBackTone()
         stopBusySignalSound()
         if (!mIsGroupCall) {
@@ -667,6 +656,31 @@ class InCallPeerToPeerActivity : BaseActivity() {
             .show()
     }
 
+    private fun registerBroadcastReceiver() {
+        Log.d("---", "registerBroadcastReceiver")
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged -  Call Peer")
+                        }
+                        1 -> {
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged - Call Peer")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
+    }
+
     private fun registerEndCallReceiver() {
         endCallReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -707,6 +721,25 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun endCall() {
         hangup()
         finishAndReleaseResource()
+    }
+
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun setSpeakerphoneOn(isOn: Boolean) {
+        printlnCK("setSpeakerphoneOn, isOn = $isOn")
+        try {
+            val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_IN_CALL
+            audioManager.isSpeakerphoneOn = isOn
+        } catch (e: Exception) {
+            printlnCK("setSpeakerphoneOn, exception!! $e")
+        }
     }
 
     private fun unRegisterEndCallReceiver() {
@@ -872,7 +905,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         val parentConstraintSet = ConstraintSet()
         parentConstraintSet.clone(waitingCallView as ConstraintLayout)
-        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._100sdp).toInt())
+        parentConstraintSet.setMargin(
+            R.id.tvStateCall,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._100sdp).toInt()
+        )
         parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
 
         val avatarLayoutParams = imgThumb2.layoutParams
@@ -915,7 +952,11 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         val parentConstraintSet = ConstraintSet()
         parentConstraintSet.clone(waitingCallView as ConstraintLayout)
-        parentConstraintSet.setMargin(R.id.tvStateCall, ConstraintSet.TOP, resources.getDimension(R.dimen._20sdp).toInt())
+        parentConstraintSet.setMargin(
+            R.id.tvStateCall,
+            ConstraintSet.TOP,
+            resources.getDimension(R.dimen._20sdp).toInt()
+        )
         parentConstraintSet.applyTo(waitingCallView as ConstraintLayout)
 
         val avatarLayoutParams = imgThumb2.layoutParams

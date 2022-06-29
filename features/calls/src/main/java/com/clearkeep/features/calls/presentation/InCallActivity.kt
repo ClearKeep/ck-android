@@ -1,7 +1,7 @@
 package com.clearkeep.features.calls.presentation
 
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,7 +18,7 @@ import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog.*
+import androidx.appcompat.app.AlertDialog.Builder
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
@@ -28,27 +28,19 @@ import com.bumptech.glide.request.RequestOptions
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.Owner
-import com.clearkeep.januswrapper.*
+import com.clearkeep.domain.repository.Environment
 import com.clearkeep.features.calls.R
-import com.clearkeep.domain.repository.GroupRepository
-import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.features.calls.databinding.ActivityInCallBinding
+import com.clearkeep.features.calls.presentation.common.CallState
+import com.clearkeep.features.calls.presentation.common.createVideoCapture
 import com.clearkeep.features.calls.presentation.surfacegenerator.SurfacePosition
 import com.clearkeep.features.calls.presentation.surfacegenerator.SurfacePositionFactory
+import com.clearkeep.features.shared.createInCallNotification
+import com.clearkeep.features.shared.dismissInCallNotification
+import com.clearkeep.januswrapper.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_call.*
-import kotlinx.android.synthetic.main.activity_in_call.controlCallAudioView
-import kotlinx.android.synthetic.main.activity_in_call.controlCallVideoView
-import kotlinx.android.synthetic.main.activity_in_call.imageConnecting
-import kotlinx.android.synthetic.main.activity_in_call.imgEndWaiting
-import kotlinx.android.synthetic.main.activity_in_call.tvConnecting
-import kotlinx.android.synthetic.main.activity_in_call.tvEndButtonDescription
-import kotlinx.android.synthetic.main.activity_in_call.tvUserName
-import kotlinx.android.synthetic.main.activity_in_call.tvUserName2
-import kotlinx.android.synthetic.main.activity_in_call.viewConnecting
-import kotlinx.android.synthetic.main.activity_in_call.waitingCallView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
 import kotlinx.android.synthetic.main.toolbar_call_default.*
 import kotlinx.android.synthetic.main.toolbar_call_default.view.*
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
@@ -57,13 +49,7 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.webrtc.*
 import java.math.BigInteger
-import java.util.*
 import javax.inject.Inject
-import com.clearkeep.domain.repository.Environment
-import com.clearkeep.features.calls.presentation.common.CallState
-import com.clearkeep.features.calls.presentation.common.createVideoCapture
-import com.clearkeep.features.shared.createInCallNotification
-import com.clearkeep.features.shared.dismissInCallNotification
 
 @AndroidEntryPoint
 class InCallActivity : BaseActivity(), JanusRTCInterface,
@@ -107,6 +93,8 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var endCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
+    private var broadcastReceiver: BroadcastReceiver? = null
 
     private var group: ChatGroup? = null
 
@@ -159,8 +147,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         initViews()
-
+        registerBroadcastReceiver()
         registerEndCallReceiver()
+
         if (mIsAudioMode) {
             configMedia(isSpeaker = false, isMuteVideo = true)
             registerSwitchVideoReceiver()
@@ -177,6 +166,31 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             configLandscapeLayout()
         }
+    }
+
+    private fun registerBroadcastReceiver() {
+        Log.d("---", "registerBroadcastReceiver")
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged - In Call")
+                        }
+                        1 -> {
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged - In Call")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -643,6 +657,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
+        unRegisterBroadcastReceiver()
         stopRingBackTone()
         stopBusySignalSound()
         Log.e(
@@ -905,6 +920,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (endCallReceiver != null) {
             unregisterReceiver(endCallReceiver)
             endCallReceiver = null
+        }
+    }
+
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
