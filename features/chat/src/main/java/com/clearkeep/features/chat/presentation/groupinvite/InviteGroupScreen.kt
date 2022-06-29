@@ -7,15 +7,23 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,16 +34,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.LiveData
-import com.clearkeep.features.chat.R
-import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.CKSimpleTheme
+import com.clearkeep.common.presentation.components.LocalColorMapping
 import com.clearkeep.common.presentation.components.base.*
-import com.clearkeep.features.chat.presentation.composes.FriendListItem
-import com.clearkeep.features.chat.presentation.composes.FriendListItemSelectable
-import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.isValidEmail
+import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.domain.model.User
+import com.clearkeep.features.chat.R
+import com.clearkeep.features.chat.presentation.composes.FriendListItem
+import com.clearkeep.features.chat.presentation.composes.FriendListItemSelectable
 import com.clearkeep.features.chat.presentation.utils.getPeopleFromLink
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -145,8 +154,10 @@ fun InviteGroupScreen(
                                     modifier = Modifier
                                         .padding(horizontal = 16.sdp())
                                         .clickable {
-                                            useCustomServerChecked.value = !useCustomServerChecked.value
-                                            if (useFindByEmail.value) useFindByEmail.value=!useFindByEmail.value
+                                            useCustomServerChecked.value =
+                                                !useCustomServerChecked.value
+                                            if (useFindByEmail.value) useFindByEmail.value =
+                                                !useFindByEmail.value
                                         }, verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Image(
@@ -170,7 +181,10 @@ fun InviteGroupScreen(
                                         visible = useCustomServerChecked.value,
                                         enter = expandIn(
                                             expandFrom = Alignment.BottomStart,
-                                            animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                                            animationSpec = tween(
+                                                300,
+                                                easing = LinearOutSlowInEasing
+                                            )
                                         ),
                                         exit = shrinkOut(
                                             shrinkTowards = Alignment.CenterStart,
@@ -195,6 +209,7 @@ fun InviteGroupScreen(
                                                         textValue = urlOtherServer,
                                                         keyboardType = KeyboardType.Text,
                                                         singleLine = true,
+                                                        allowSpace = false
                                                     )
                                                 }
                                             }
@@ -211,7 +226,8 @@ fun InviteGroupScreen(
                                         .padding(horizontal = 16.sdp())
                                         .clickable {
                                             useFindByEmail.value = !useFindByEmail.value
-                                            if (useCustomServerChecked.value) useCustomServerChecked.value = !useCustomServerChecked.value
+                                            if (useCustomServerChecked.value) useCustomServerChecked.value =
+                                                !useCustomServerChecked.value
                                         }, verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Image(
@@ -235,7 +251,10 @@ fun InviteGroupScreen(
                                         visible = useFindByEmail.value,
                                         enter = expandIn(
                                             expandFrom = Alignment.BottomStart,
-                                            animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                                            animationSpec = tween(
+                                                300,
+                                                easing = LinearOutSlowInEasing
+                                            )
                                         ),
                                         exit = shrinkOut(
                                             shrinkTowards = Alignment.CenterStart,
@@ -261,14 +280,19 @@ fun InviteGroupScreen(
                                                         keyboardType = KeyboardType.Text,
                                                         singleLine = true,
                                                         onDone = {
-                                                            if (useFindByEmail.value){
-                                                                if (emailFind.value.trim().isValidEmail()) {
-                                                                    inviteGroupViewModel.findEmail(emailFind.value.trim())
-                                                                }else {
+                                                            if (useFindByEmail.value) {
+                                                                if (emailFind.value.trim()
+                                                                        .isValidEmail()
+                                                                ) {
+                                                                    inviteGroupViewModel.findEmail(
+                                                                        emailFind.value.trim()
+                                                                    )
+                                                                } else {
                                                                     addUserByEmailError.value =
                                                                         context.getString(R.string.invite_friend_profile_email_incorrect)
                                                                 }
-                                                            }                                                        }
+                                                            }
+                                                        }
                                                     )
                                                 }
                                             }
@@ -280,13 +304,17 @@ fun InviteGroupScreen(
                             }
                             itemsIndexed(listShow) { _, friend ->
                                 if (isCreateDirectGroup) {
-                                    FriendListItem(Modifier.padding(horizontal = 16.sdp()), friend, onFriendSelected = {
-                                        if (isLoading.value != true) {
-                                            onDirectFriendSelected(it)
-                                        }
-                                    })
+                                    FriendListItem(
+                                        Modifier.padding(horizontal = 16.sdp()),
+                                        friend,
+                                        onFriendSelected = {
+                                            if (isLoading.value != true) {
+                                                onDirectFriendSelected(it)
+                                            }
+                                        })
                                 } else {
-                                    FriendListItemSelectable(Modifier.padding(horizontal = 16.sdp()), friend,
+                                    FriendListItemSelectable(Modifier.padding(horizontal = 16.sdp()),
+                                        friend,
                                         selectedItem.contains(friend),
                                         onFriendSelected = { people, isAdd ->
                                             if (isAdd) selectedItem.add(people) else
@@ -312,10 +340,10 @@ fun InviteGroupScreen(
                             else if (useFindByEmail.value) stringResource(R.string.btn_find)
                             else stringResource(R.string.btn_next),
                             onClick = {
-                                if (useFindByEmail.value){
+                                if (useFindByEmail.value) {
                                     if (emailFind.value.trim().isValidEmail()) {
                                         inviteGroupViewModel.findEmail(emailFind.value.trim())
-                                    }else {
+                                    } else {
                                         addUserFromOtherServerError.value =
                                             context.getString(R.string.invite_friend_profile_email_incorrect)
                                     }
@@ -358,8 +386,12 @@ fun InviteGroupScreen(
                             },
                             modifier = Modifier
                                 .width(200.sdp()),
-                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
-                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
+                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && isValidServerUrl(
+                                urlOtherServer.value
+                            )) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
+                                    || (useCustomServerChecked.value && isValidServerUrl(
+                                urlOtherServer.value
+                            )))) || (useFindByEmail.value && emailFind.value.trim().isValidEmail()))
                         )
                     }
                 }
