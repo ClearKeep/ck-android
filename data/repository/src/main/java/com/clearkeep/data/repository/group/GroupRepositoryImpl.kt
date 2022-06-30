@@ -335,7 +335,7 @@ class GroupRepositoryImpl @Inject constructor(
             val senderAddress =
                 CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
             val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
-            Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337:isRegisteredKey $isRegisteredKey " );
+            Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337:isRegisteredKey ${!isRegisteredKey} senderKeyId: ${response.clientKey.senderKeyId} groupType: ${response.groupType == "group"}" );
             if (response.clientKey.senderKeyId > 0 && response.groupType == "group" && !isRegisteredKey) {
                 Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337: " );
                 val senderKeyID = response.clientKey.senderKeyId

@@ -37,6 +37,7 @@
 
     // error
     <string name="email_empty">Email must not be blank</string>
+    <string name="email_uppercase">Email must not be uppercase</string>
     <string name="pls_check_again">Please check your details and try again</string>
     <string name="password_empty">Password must not be blank</string>
     <string name="password_length_invalid">Password must be between 6–12 characters</string>

@@ -174,11 +174,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun subscriberLogout() {
-        homeViewModel.shouldReLogin.observe(this, { completed ->
+        homeViewModel.shouldReLogin.observe(this) { completed ->
             if (completed) {
                 NavigationUtils.restartToRoot(this)
             }
-        })
+        }
     }
 
     private fun signOut() {

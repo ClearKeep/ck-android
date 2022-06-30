@@ -28,17 +28,20 @@ import androidx.compose.material.ExperimentalMaterialApi
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.view.View
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.common.utilities.ACTION_ADD_REMOVE_MEMBER
 import com.clearkeep.common.utilities.EXTRA_GROUP_ID
 import com.clearkeep.common.utilities.INCOMING_NOTIFICATION_ID
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.navigation.NavigationUtils
-import com.clearkeep.common.utilities.*
 import com.clearkeep.features.chat.presentation.room.photodetail.PhotoDetailScreen
+import com.clearkeep.navigation.NavigationUtils.restartToRoot
 
 @AndroidEntryPoint
 class RoomActivity : AppCompatActivity(), LifecycleObserver {
@@ -52,6 +55,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private lateinit var clientId: String
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
+    lateinit var navController: NavHostController
 
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
@@ -106,7 +110,19 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
         setContent {
             CKInsetTheme {
-                val navController = rememberNavController()
+                navController = rememberNavController()
+                val showing = roomViewModel.isShowDialog.observeAsState()
+                if (showing.value == true) {
+                    CKAlertDialog(
+                        title = "",
+                        text = "You have been removed from the conversation",
+                        onDismissButtonClick = {
+                            restartToRoot(context = this@RoomActivity)
+
+                        }
+                    )
+                }
+
                 val selectedItem = remember { mutableStateListOf<com.clearkeep.domain.model.User>() }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
@@ -183,7 +199,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 }
             }
         }
-
         subscriber()
     }
 
@@ -192,6 +207,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
                 if (roomId == groupId) {
+                    navController.navigate("room_screen")
                     roomViewModel.refreshRoom()
                 }
             }
@@ -201,6 +217,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             IntentFilter(ACTION_ADD_REMOVE_MEMBER)
         )
     }
+
 
     private fun unRegisterAddMemberReceiver() {
         if (addMemberReceiver != null) {
@@ -244,7 +261,9 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             roomViewModel.groups.observe(this, Observer {
                 val group =
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
-                if (group == null) finish()
+                if (group == null) {
+                    roomViewModel.isShowDialog.postValue(true)
+                }
             })
     }
 

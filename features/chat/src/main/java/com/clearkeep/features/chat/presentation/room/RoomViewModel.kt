@@ -31,7 +31,6 @@ import com.clearkeep.common.utilities.files.*
 import com.clearkeep.features.shared.presentation.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import java.lang.IllegalArgumentException
 import javax.inject.Inject
 import java.util.*
@@ -153,6 +152,7 @@ class RoomViewModel @Inject constructor(
     val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
+    val isShowDialog= MutableLiveData(false)
 
     @Volatile
     private var endOfPaginationReached = false

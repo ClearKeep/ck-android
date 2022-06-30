@@ -10,6 +10,8 @@ import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.features.auth.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import java.util.regex.Pattern
+
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -40,6 +42,8 @@ class RegisterViewModel @Inject constructor(
         get() = _displayNameError
 
     var domain: String = ""
+    private val regexUppercase = "^[A-Z0-9]" //alpha uppercase
+
 
     suspend fun register(
         context: Context,
@@ -56,6 +60,10 @@ class RegisterViewModel @Inject constructor(
         _displayNameError.value = ""
 
         var isValid = true
+        if (isUpperCase(email)) {
+            _emailError.value = context.getString(R.string.email_uppercase)
+            isValid = false
+        }
         if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
             isValid = false
@@ -93,4 +101,8 @@ class RegisterViewModel @Inject constructor(
         _isLoading.value = false
         return result
     }
+    private fun isUpperCase(str: String): Boolean {
+        return Pattern.compile(regexUppercase).matcher(str).find()
+    }
+
 }
