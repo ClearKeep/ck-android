@@ -161,7 +161,7 @@ fun CustomServerScreen(
 
                         CKButton(
                             stringResource(R.string.all_submit), {
-                                loginViewModel.checkValidServerUrl(rememberServerUrl.value)
+                                loginViewModel.checkValidServerUrl(rememberServerUrl.value.trim())
                             },
                             modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
                             buttonType = ButtonType.White,
@@ -180,7 +180,7 @@ fun CustomServerScreen(
 
     if (serverUrlValidateResponse.value?.status == com.clearkeep.common.utilities.network.Status.SUCCESS) {
         loginViewModel.isCustomServer = useCustomServerChecked.value
-        loginViewModel.customDomain = rememberServerUrl.value
+        loginViewModel.customDomain = rememberServerUrl.value.trim()
         loginViewModel.serverUrlValidateResponse.value = null
         onBackPress()
     } else if (serverUrlValidateResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {

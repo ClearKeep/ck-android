@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.home
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -7,7 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -27,12 +30,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.clearkeep.features.chat.R
-import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.LocalColorMapping
 import com.clearkeep.common.presentation.components.base.*
+import com.clearkeep.common.presentation.components.grayscale2
+import com.clearkeep.common.presentation.components.grayscaleOverlay
+import com.clearkeep.common.presentation.components.primaryDefault
 import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
+import com.clearkeep.features.chat.R
 import com.clearkeep.features.chat.presentation.home.composes.CircleAvatarStatus
 import com.clearkeep.features.chat.presentation.home.composes.CircleAvatarWorkSpace
 import com.clearkeep.features.chat.presentation.home.composes.SiteMenuScreen
@@ -246,8 +252,10 @@ fun ItemListDirectMessage(
             client.userId != clintId
         }
         val roomName =
-            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else partnerUser?.userName
-                ?: ""
+            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
+                client.userId == partnerUser?.userId
+            }?.userName ?: ""
+            ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -468,6 +476,8 @@ fun DirectMessagesView(
                                 viewModel.getClientIdOfActiveServer(),
                                 onItemClickListener
                             )
+                            Log.d("hungnv", listUserStatus.value.toString())
+                            Log.d("hungnv", viewModel.getClientIdOfActiveServer())
                         }
                     }
                 }
@@ -535,7 +545,7 @@ fun JoinServerComposable(
             CKButton(
                 stringResource(R.string.btn_join),
                 onClick = {
-                    onJoinServer(rememberServerUrl.value)
+                    onJoinServer(rememberServerUrl.value.trim())
                 },
                 enabled = rememberServerUrl.value.isNotBlank() && !isLoading
             )
@@ -592,7 +602,10 @@ fun WorkSpaceView(
         Row(
             modifier = Modifier
                 .clickable { gotoSearch.invoke() }
-                .background(LocalColorMapping.current.textFieldBackgroundAlt, MaterialTheme.shapes.large)
+                .background(
+                    LocalColorMapping.current.textFieldBackgroundAlt,
+                    MaterialTheme.shapes.large
+                )
                 .padding(18.sdp())
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -660,7 +673,10 @@ fun AddWorkspace(mainViewModel: HomeViewModel) {
                 .size(42.sdp())
                 .background(color = Color.Transparent)
                 .border(
-                    BorderStroke(1.5.dp, if (LocalColorMapping.current.isDarkTheme) Color.Black else primaryDefault),
+                    BorderStroke(
+                        1.5.dp,
+                        if (LocalColorMapping.current.isDarkTheme) Color.Black else primaryDefault
+                    ),
                     shape = RoundedCornerShape(4.sdp())
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,

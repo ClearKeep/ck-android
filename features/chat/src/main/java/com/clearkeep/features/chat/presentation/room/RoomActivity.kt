@@ -1,18 +1,31 @@
 package com.clearkeep.features.chat.presentation.room
 
+import android.app.ActivityManager
 import android.app.NotificationManager
-import android.content.Context
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.*
 import android.os.Bundle
+import android.view.View
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.lifecycle.*
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.common.presentation.components.CKInsetTheme
+import com.clearkeep.common.utilities.ACTION_ADD_REMOVE_MEMBER
+import com.clearkeep.common.utilities.EXTRA_GROUP_ID
+import com.clearkeep.common.utilities.INCOMING_NOTIFICATION_ID
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupViewModel
 import com.clearkeep.features.chat.presentation.groupcreate.EnterGroupNameScreen
 import com.clearkeep.features.chat.presentation.groupinvite.AddMemberUIType
@@ -20,25 +33,11 @@ import com.clearkeep.features.chat.presentation.groupinvite.InviteGroupScreen
 import com.clearkeep.features.chat.presentation.groupinvite.InviteGroupViewModel
 import com.clearkeep.features.chat.presentation.groupremove.RemoveMemberScreen
 import com.clearkeep.features.chat.presentation.room.imagepicker.ImagePickerScreen
+import com.clearkeep.features.chat.presentation.room.photodetail.PhotoDetailScreen
 import com.clearkeep.features.chat.presentation.room.roomdetail.GroupMemberScreen
 import com.clearkeep.features.chat.presentation.room.roomdetail.RoomInfoScreen
-import dagger.hilt.android.AndroidEntryPoint
-import android.app.ActivityManager
-import androidx.compose.material.ExperimentalMaterialApi
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
-import android.view.View
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.navigation.compose.*
-import com.clearkeep.common.utilities.ACTION_ADD_REMOVE_MEMBER
-import com.clearkeep.common.utilities.EXTRA_GROUP_ID
-import com.clearkeep.common.utilities.INCOMING_NOTIFICATION_ID
-import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.navigation.NavigationUtils
-import com.clearkeep.common.utilities.*
-import com.clearkeep.features.chat.presentation.room.photodetail.PhotoDetailScreen
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RoomActivity : AppCompatActivity(), LifecycleObserver {
@@ -46,6 +45,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private val createGroupViewModel: CreateGroupViewModel by viewModels()
     private val inviteGroupViewModel: InviteGroupViewModel by viewModels()
 
+    lateinit var messageSharedPreferences: SharedPreferences
     private var addMemberReceiver: BroadcastReceiver? = null
     private var roomId: Long = 0
     private lateinit var domain: String
@@ -58,6 +58,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        messageSharedPreferences =
+            getSharedPreferences("CK_SharePreference_Message", Context.MODE_PRIVATE)
 
         roomViewModel.isLogout.observe(this) {
             printlnCK("RoomActivity signOut $it")
@@ -110,10 +112,20 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 val selectedItem = remember { mutableStateListOf<com.clearkeep.domain.model.User>() }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
+                        LaunchedEffect(true) {
+                            roomViewModel.setMessage(
+                                messageSharedPreferences.getString(
+                                    "$roomId+$clientId+$domain",
+                                    ""
+                                ).orEmpty()
+                            )
+                        }
+
                         RoomScreen(
                             roomViewModel,
                             navController,
                             onFinishActivity = {
+                                roomViewModel.message.value?.let { it -> saveDrafMessage(it) }
                                 finish()
                             },
                             onCallingClick = { isPeer ->
@@ -185,6 +197,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         subscriber()
+    }
+
+    private fun saveDrafMessage(message: String) {
+        messageSharedPreferences.edit().putString("$roomId+$clientId+$domain", message).apply()
     }
 
     private fun registerAddMemberReceiver() {

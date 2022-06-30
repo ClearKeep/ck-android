@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.people
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.network.Resource
@@ -187,14 +188,18 @@ class PeopleRepositoryImpl @Inject constructor(
     override suspend fun getListClientStatus(list: List<User>): List<User>? = withContext(Dispatchers.IO) {
         try {
             val response = groupService.getListClientStatus(list)
+            Log.d("---", response.toString())
             list.map { user ->
                 val newUser = response.lstClientList.find {
                     user.userId == it.clientId
                 }
                 user.userStatus = newUser?.status
                 user.avatar = newUser?.avatar
+                user.userName = newUser?.displayName.orEmpty()
                 printlnCK("avata: ${user.avatar}")
+                printlnCK("username: ${user.userName}")
             }
+            printlnCK("list: ${list}")
             return@withContext list
         } catch (e: StatusRuntimeException) {
             return@withContext emptyList()

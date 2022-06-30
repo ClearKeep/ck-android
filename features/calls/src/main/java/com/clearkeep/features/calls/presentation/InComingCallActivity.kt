@@ -8,11 +8,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -25,23 +27,22 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import dagger.hilt.android.AndroidEntryPoint
-import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.activity_in_coming_call.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions.bitmapTransform
 import com.bumptech.glide.request.target.NotificationTarget
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.ServerRepository
 import com.clearkeep.domain.repository.VideoCallRepository
 import com.clearkeep.features.calls.R
 import com.clearkeep.navigation.NavigationUtils
+import dagger.hilt.android.AndroidEntryPoint
+import de.hdodenhof.circleimageview.CircleImageView
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_coming_call.imageBackground
+import kotlinx.android.synthetic.main.activity_in_coming_call.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
@@ -61,7 +62,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imgEnd: ImageView
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
-
+    private var broadcastReceiver: BroadcastReceiver? = null
     private var ringtone: Ringtone? = null
 
     @Inject
@@ -80,6 +81,41 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 finishAndRemoveFromTask()
             }
         }
+    }
+
+    private fun registerBroadcastReceiver() {
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged, In Comming Call")
+                        }
+                        1 -> {
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged, In Comming Call")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
+    }
+
+        private fun setSpeakerphoneOn(isOn: Boolean) {
+            printlnCK("setSpeakerphoneOn, isOn = $isOn")
+            try {
+                val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+                audioManager.mode = AudioManager.MODE_IN_CALL
+                audioManager.isSpeakerphoneOn = isOn
+            } catch (e: Exception) {
+                printlnCK("setSpeakerphoneOn, exception!! $e")
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,6 +144,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         initViews()
 
         registerEndCallReceiver()
+        registerBroadcastReceiver()
         GlobalScope.launch {
             delay(CALL_WAIT_TIME_OUT)
             if (isInComingCall) {
@@ -143,6 +180,14 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private fun unRegisterEndCallReceiver() {
         try {
             unregisterReceiver(endCallReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -520,6 +565,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun finishAndRemoveFromTask() {
         unRegisterEndCallReceiver()
+        unRegisterBroadcastReceiver()
         ringtone?.stop()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()
