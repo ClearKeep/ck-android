@@ -100,7 +100,7 @@ class InviteGroupViewModel @Inject constructor(
             result.forEach {
                 Log.d("antx: ", "InviteGroupViewModel findEmail line = 93: $it");
             }
-            friendsByEmail.postValue(result)
+            friendsByEmail.postValue(result.filter { return@filter it.userId!=getClientId() })
         }
     }
 
