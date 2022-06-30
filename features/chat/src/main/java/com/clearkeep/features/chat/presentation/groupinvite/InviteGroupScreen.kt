@@ -347,8 +347,9 @@ fun InviteGroupScreen(
                                         addUserFromOtherServerError.value =
                                             context.getString(R.string.invite_friend_profile_email_incorrect)
                                     }
-                                } else if (useCustomServerChecked.value) {
-                                    val people = getPeopleFromLink(urlOtherServer.value)
+                                }
+                                else if (useCustomServerChecked.value) {
+                                    val people = getPeopleFromLink(urlOtherServer.value.trim())
                                     if (people?.userId != inviteGroupViewModel.getClientId()) {
                                         if (isCreateDirectGroup) {
                                             if (people != null) {

@@ -3,51 +3,56 @@ package com.clearkeep.features.chat.presentation.room
 import android.Manifest
 import android.content.Context
 import android.os.*
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.*
-import com.clearkeep.common.presentation.components.*
-import com.clearkeep.common.presentation.components.base.CKAlertDialog
-import com.clearkeep.common.utilities.printlnCK
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.core.os.postDelayed
-import com.clearkeep.features.chat.R
+import androidx.navigation.NavHostController
+import com.clearkeep.common.presentation.components.LocalColorMapping
+import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
+import com.clearkeep.common.presentation.components.colorDialogScrim
+import com.clearkeep.common.presentation.components.colorLightBlue
+import com.clearkeep.common.presentation.components.separatorDarkNonOpaque
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
 import com.clearkeep.common.utilities.isWriteFilePermissionGranted
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.features.calls.presentation.AppCall
+import com.clearkeep.features.chat.R
 import com.clearkeep.features.chat.presentation.room.composes.MessageListView
 import com.clearkeep.features.chat.presentation.room.composes.SendBottomCompose
 import com.clearkeep.features.chat.presentation.room.composes.ToolbarMessage
 import com.clearkeep.features.chat.presentation.room.filepicker.FilePickerBottomSheetDialog
 import com.clearkeep.features.chat.presentation.room.forwardmessage.ForwardMessageBottomSheetDialog
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalMaterialApi
@@ -97,6 +102,10 @@ fun RoomScreen(
             color = Color.Transparent,
             darkIcons = !isDarkMode
         )
+    }
+
+    BackHandler {
+        onFinishActivity()
     }
 
     val group = groupState.value
