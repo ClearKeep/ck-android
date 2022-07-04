@@ -17,6 +17,7 @@ import com.clearkeep.utilities.network.Resource
 import group.GroupOuterClass
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.ecc.ECKeyPair
@@ -141,10 +142,35 @@ class GroupRepository @Inject constructor(
         groupId: Long,
         owner: Owner
     ): Resource<ChatGroup> = withContext(Dispatchers.IO) {
-        invitedUsers.forEach {
-            printlnCK("inviteToGroupFromAPIs: ${it.userName}")
-            inviteToGroupFromAPI(it, groupId, owner)
+        invitedUsers.forEach { invitedUser ->
+            printlnCK("inviteToGroupFromAPIs: ${invitedUser.userName}")
+//            inviteToGroupFromAPI(invitedUser, groupId, owner)
+            async {
+                val memberInfo = GroupOuterClass.MemberInfo.newBuilder()
+                    .setId(invitedUser.userId)
+                    .setWorkspaceDomain(invitedUser.domain)
+                    .setDisplayName(invitedUser.userName)
+                    .setStatus("")
+                    .build()
+
+                val adding = GroupOuterClass.MemberInfo.newBuilder()
+                    .setId(getClientId())
+                    .setWorkspaceDomain(owner.domain)
+                    .setDisplayName(environment.getServer().profile.userName)
+                    .build()
+
+
+                val request = GroupOuterClass.AddMemberRequest.newBuilder()
+                    .setAddingMemberInfo(adding)
+                    .setAddedMemberInfo(memberInfo)
+                    .setGroupId(groupId)
+                    .build()
+
+                val response = dynamicAPIProvider.provideGroupBlockingStub().addMember(request)
+                printlnCK("inviteToGroupFromAPI: ${response.error}")
+            }
         }
+
         val server = serverRepository.getServer(domain = owner.domain, ownerId = owner.clientId)
         if (server == null) {
             printlnCK("fetchNewGroup: can not find server")
