@@ -54,7 +54,6 @@ class CallCredentials(
             .setRefreshToken(accessKey)
             .build()
 
-
     }
 
     companion object {
