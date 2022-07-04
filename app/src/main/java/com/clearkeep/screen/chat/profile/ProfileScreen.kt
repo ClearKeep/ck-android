@@ -249,7 +249,7 @@ fun ProfileScreen(
                                 ChangePassword(onChangePassword)
                                 Spacer(Modifier.height(24.sdp()))
                             }
-                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
+                            /*TwoFaceAuthView(userPreference.value?.mfa ?: false) {
                                 focusManager.clearFocus()
                                 if (it) {
                                     if (profileViewModel.getMfaErrorMessage().first.isEmpty()) {
@@ -261,7 +261,7 @@ fun ProfileScreen(
                                     profileViewModel.updateMfaSettings(it)
                                 }
                             }
-                            Spacer(Modifier.height(24.sdp()))
+                            Spacer(Modifier.height(24.sdp()))*/
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()

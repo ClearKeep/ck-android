@@ -270,7 +270,6 @@ class MessageRepository @Inject constructor(
         try {
             val sender = Owner(fromDomain, fromClientId)
             messageText = if (!isGroup(groupType)) {
-                //decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 if (owner.clientId == sender.clientId) {
                     decryptPeerMessage(owner, encryptedMessage, signalProtocolStore)
                 } else {
@@ -480,11 +479,13 @@ class MessageRepository @Inject constructor(
             throw messageEx
         } catch (ex: Exception) {
             printlnCK("decryptGroupMessage, $ex")
-            val initSessionAgain = initSessionUserInGroup(
-                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
-            )
-            if (!initSessionAgain) {
-                throw java.lang.Exception("can not init session in group $groupId")
+            if (sender.clientId != owner.clientId){
+                val initSessionAgain = initSessionUserInGroup(
+                    groupId, sender.clientId, groupSender, senderKeyStore, true, owner
+                )
+                if (!initSessionAgain) {
+                    throw java.lang.Exception("can not init session in group $groupId")
+                }
             }
             bobGroupCipher.decrypt(message.toByteArray())
         }
@@ -591,7 +592,6 @@ class MessageRepository @Inject constructor(
                 printlnCK("")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution.toByteArray())
-
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
                 bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
                 printlnCK("initSessionUserInGroup done ${groupSender.groupId}")

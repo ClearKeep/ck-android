@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.repo
 
+import android.util.Log
 import auth.AuthOuterClass
 import com.clearkeep.db.clear_keep.model.LoginResponse
 import com.clearkeep.db.clear_keep.model.Server
@@ -232,6 +233,7 @@ class AuthRepository @Inject constructor(
             serverRepository.updateServer(server.copy(refreshToken = response.refreshToken, accessKey = response.accessToken))
             return@withContext Resource.success(response)
         } catch (e: StatusRuntimeException) {
+            Log.d("antx: ", "AuthRepository refreshToken line = 235: ${e.printStackTrace()} ");
             val parsedError = parseError(e)
             val message = when (parsedError.code) {
                 else -> parsedError.message
@@ -353,6 +355,7 @@ class AuthRepository @Inject constructor(
         userId: String
     ) = withContext(Dispatchers.IO) {
         try {
+            Log.d("antx: ", "AuthRepository registerSocialPin line = 358: userId: $userId ");
             val nativeLib = NativeLib()
 
             val salt = nativeLib.getSalt(userId, rawPin)
@@ -406,7 +409,7 @@ class AuthRepository @Inject constructor(
                     REQUEST_DEADLINE_SECONDS, TimeUnit.SECONDS
                 ).registerPincode(request)
             if (response.error.isEmpty()) {
-                printlnCK("registerSocialPin success ${response.requireAction}")
+                printlnCK("registerSocialPin success ${response.requireAction} ")
                 val profileResponse =
                     onLoginSuccess(domain, rawPin, response, isSocialAccount = true)
                 printlnCK("registerSocialPin get profile response $profileResponse")

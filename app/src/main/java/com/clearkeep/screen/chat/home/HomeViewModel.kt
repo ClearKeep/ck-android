@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.home
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
@@ -11,8 +12,8 @@ import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
-
 
 class HomeViewModel @Inject constructor(
     roomRepository: GroupRepository,
@@ -29,6 +30,7 @@ class HomeViewModel @Inject constructor(
     var profile = serverRepository.getDefaultServerProfileAsState()
 
     val isLogout = serverRepository.isLogout
+    val isNeedLogout = MutableLiveData<Boolean>(false)
 
     val selectingJoinServer = MutableLiveData(false)
     private val _prepareState = MutableLiveData<PrepareViewState>()
@@ -57,12 +59,14 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            Log.d("antx: ", "HomeViewModel  line = 62: " );
+            refreshToken()
+            Log.d("antx: ", "HomeViewModel  line = 64: " );
             messageRepository.clearTempNotes()
             messageRepository.clearTempMessage()
             roomRepository.fetchGroups()
             getStatusUserInDirectGroup()
         }
-
         sendPing()
     }
 
@@ -281,11 +285,18 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun refreshToken(){
-        viewModelScope.launch {
-            authRepository.refreshToken()
+    suspend fun refreshToken() {
+            val res = authRepository.refreshToken()
+            if (res.status == Status.SUCCESS) {
+                isNeedLogout.postValue(false)
+                Log.d("antx: ", "HomeViewModel refreshToken line = 292: ");
+            } else {
+                Log.d("antx: ", "HomeViewModel refreshToken line = 294: ");
+                isNeedLogout.postValue(true)
+                deleteKey()
+                signOut()
+            }
         }
-    }
 }
 
 sealed class PrepareViewState

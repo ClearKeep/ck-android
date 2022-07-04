@@ -145,6 +145,9 @@ class LoginViewModel @Inject constructor(
             if (it.status == Status.SUCCESS) {
                 resetPincodeToken = it.data?.resetPincodeToken ?: ""
                 userId = it.data?.userName ?: ""
+            } else {
+                printlnCK("loginByGoogle: errorCode ${it.errorCode} ${it.message} ")
+                it.errorCode
             }
         }
         _isLoading.value = false

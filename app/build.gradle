@@ -62,8 +62,8 @@ android {
         prod {
             dimension "version"
             resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_URL', "\"stag2.clearkeep.org\""
+            buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "8188"
         }
@@ -82,8 +82,8 @@ android {
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"stag1.clearkeep.org\""
-            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_URL', "\"prod1.clearkeep.org\""
+            buildConfigField "int", 'PORT', "5000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
         }
@@ -239,7 +239,7 @@ dependencies {
     implementation files('../januswrapper/libs/libwebrtc.aar')
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
-    implementation 'com.microsoft.identity.client:msal:2.0.8'
+    implementation 'com.microsoft.identity.client:msal:3.0.2'
     implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
 
     implementation 'com.github.bumptech.glide:glide:4.12.0'
