@@ -29,29 +29,23 @@ open class BaseViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             currentServer.value?.let {
-                val response = authRepository.logoutFromAPI(it)
-
-                if (response.data?.error.isNullOrBlank()) {
-                    val removeResult = it.id?.let { it1 -> serverRepository.deleteServer(it1) }
-                    roomRepository.removeGroupByDomain(
-                        it.serverDomain,
-                        it.ownerClientId
-                    )
-                    messageRepository.clearMessageByDomain(
-                        it.serverDomain,
-                        it.ownerClientId
-                    )
-
-                    if (removeResult != null && removeResult > 0) {
-                        printlnCK("serverRepository: ${serverRepository.getServers().size}")
-                        if (serverRepository.getServers().isNotEmpty()) {
-                            selectChannel(servers.value!![0])
-                        } else {
-                            _isLogOutCompleted.value = true
-                        }
+                authRepository.logoutFromAPI(it)
+                val removeResult = it.id?.let { it1 -> serverRepository.deleteServer(it1) }
+                roomRepository.removeGroupByDomain(
+                    it.serverDomain,
+                    it.ownerClientId
+                )
+                messageRepository.clearMessageByDomain(
+                    it.serverDomain,
+                    it.ownerClientId
+                )
+                if (removeResult != null && removeResult > 0) {
+                    printlnCK("serverRepository: ${serverRepository.getServers().size}")
+                    if (serverRepository.getServers().isNotEmpty()) {
+                        selectChannel(servers.value!![0])
+                    } else {
+                        _isLogOutCompleted.value = true
                     }
-                } else {
-                    printlnCK("signOut error")
                 }
             }
         }

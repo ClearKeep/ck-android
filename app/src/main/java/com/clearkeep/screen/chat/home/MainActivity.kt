@@ -80,9 +80,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
         homeViewModel.isLogout.observe(this) {
             if (it) {
-                printlnCK("MainActivity refresh token")
-                Log.d("antx: ", "MainActivity onCreate line = 84: " );
-               // homeViewModel.refreshToken()
+                signOut()
             }
         }
 
@@ -201,11 +199,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun subscriberLogout() {
-        homeViewModel.isLogOutCompleted.observe(this, { completed ->
+        homeViewModel.isLogOutCompleted.observe(this) { completed ->
             if (completed) {
                 restartToRoot(this)
             }
-        })
+        }
 
         homeViewModel.servers.observe(this, Observer {
             printlnCK("homeViewModel servers: ${it.size}")

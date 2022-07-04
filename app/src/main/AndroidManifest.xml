@@ -190,7 +190,6 @@
             android:exported="true">
             <intent-filter android:label="@string/change_password">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -198,6 +197,11 @@
                     android:scheme="http"
                     android:host="www.clearkeep.com"
                     android:pathPrefix="/resetpassword" />
+
+                <data
+                    android:scheme="clearkeep"
+                    android:pathPrefix="/resetpassword" />
+
             </intent-filter>
         </activity>
 

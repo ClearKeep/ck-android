@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import com.clearkeep.db.clear_keep.model.Note
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
@@ -147,6 +148,7 @@ class ChatRepository @Inject constructor(
         senderId: String,
         ownerWorkSpace: String
     ): Boolean {
+        Log.d("antx: ", "ChatRepository processPeerKey line = 150: $SENDER_DEVICE_ID " );
         val signalProtocolAddress =
             CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
         val signalProtocolAddress2 =

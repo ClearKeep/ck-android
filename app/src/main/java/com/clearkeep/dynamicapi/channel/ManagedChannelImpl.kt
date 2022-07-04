@@ -12,7 +12,7 @@ class ManagedChannelImpl : ChannelFactory {
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
             .enableRetry()
-            .intercept(RetryAuthTokenInterceptor())
+            .intercept()
             .build()
     }
 }

@@ -79,13 +79,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        roomViewModel.isLogout.observe(this) {
-            printlnCK("RoomActivity signOut $it")
-            if (it) {
-                //roomViewModel.signOut()
-            }
-        }
-
         roomViewModel.isLogOutCompleted.observe(this) {
             printlnCK("RoomActivity isLogoutCompleted $it")
             if (it) {
@@ -127,6 +120,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         } else {
             roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
         }
+
+        roomViewModel.isLogout.observe(this, Observer {
+            restartToRoot(context = this)
+        })
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
@@ -134,7 +132,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
                 val isShowDialog = roomViewModel.isShowDialog.observeAsState()
-                if (isShowDialog.value == true) {
+                if (isShowDialog.value == true && roomViewModel.isLogout.value == false) {
                     CKAlertDialog(
                         title = "",
                         text = "You have been removed from the conversation",
