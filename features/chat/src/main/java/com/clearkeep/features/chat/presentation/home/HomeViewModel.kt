@@ -4,21 +4,23 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.domain.repository.*
-import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.Server
+import com.clearkeep.domain.model.User
+import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.repository.SenderKeyStore
+import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
-import com.clearkeep.domain.usecase.notification.RegisterTokenUseCase
 import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
 import com.clearkeep.domain.usecase.group.GetAllRoomsAsStateUseCase
 import com.clearkeep.domain.usecase.message.ClearTempMessageUseCase
+import com.clearkeep.domain.usecase.notification.RegisterTokenUseCase
 import com.clearkeep.domain.usecase.notification.SetFirebaseTokenUseCase
-import com.clearkeep.domain.usecase.people.GetListClientStatusUseCase
-import com.clearkeep.domain.usecase.people.SendPingUseCase
-import com.clearkeep.domain.usecase.people.UpdateAvatarUserEntityUseCase
-import com.clearkeep.domain.usecase.people.UpdateStatusUseCase
+import com.clearkeep.domain.usecase.people.*
 import com.clearkeep.domain.usecase.server.*
 import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
+import com.clearkeep.features.chat.presentation.utils.SingleLiveEvent
 import com.clearkeep.features.chat.presentation.utils.getLinkFromPeople
 import com.clearkeep.features.shared.presentation.BaseViewModel
 import com.google.firebase.messaging.FirebaseMessaging
@@ -40,6 +42,7 @@ class HomeViewModel @Inject constructor(
 
     private val getListClientStatusUseCase: GetListClientStatusUseCase,
     private val updateStatusUseCase: UpdateStatusUseCase,
+    private val getUserInfoUseCase: GetUserInfoUseCase,
     private val sendPingUseCase: SendPingUseCase,
     private val updateAvatarUserEntityUseCase: UpdateAvatarUserEntityUseCase,
     private val signalKeyRepository: SignalKeyRepository,
@@ -72,7 +75,7 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing = MutableLiveData(false)
 
-    private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+    private val _currentStatus = SingleLiveEvent<String>()
     val currentStatus: LiveData<String>
         get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
@@ -86,12 +89,13 @@ class HomeViewModel @Inject constructor(
         get() = _isServerUrlValidateLoading
 
     private var checkValidServerJob: Job? = null
-
     init {
         viewModelScope.launch {
             clearTempMessageUseCase()
             val fetchGroupResponse = fetchGroupsUseCase()
             handleResponse(fetchGroupResponse)
+        }
+        viewModelScope.launch {
             getStatusUserInDirectGroup()
         }
         getAllSenderKey()
@@ -103,7 +107,7 @@ class HomeViewModel @Inject constructor(
             launch(Dispatchers.IO){
                 //senderKeyStore.getAllSenderKey()
             }
-            Log.d("antx: ", "HomeViewModel getAllSenderKey line = 103: " );
+            Log.d("antx: ", "HomeViewModel getAllSenderKey line = 103: ")
         }
 
     }
@@ -184,8 +188,19 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+            val server = environment.getServer()
+            listUserRequest.add(
+                User(
+                    server.profile.userId,
+                    server.profile.userName ?: "",
+                    server.serverDomain
+                )
+            )
             val listClientStatus = getListClientStatusUseCase(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
+            val status =
+                listClientStatus?.filter { it.userId == server.profile.userId }?.get(0)?.userStatus
+            _currentStatus.postValue(status)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
