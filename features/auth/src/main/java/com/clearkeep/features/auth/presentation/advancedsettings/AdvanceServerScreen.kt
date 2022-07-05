@@ -153,6 +153,7 @@ fun CustomServerScreen(
                                     rememberServerUrl,
                                     keyboardType = KeyboardType.Text,
                                     singleLine = true,
+                                    allowSpace = false
                                 )
                             }
                         }
