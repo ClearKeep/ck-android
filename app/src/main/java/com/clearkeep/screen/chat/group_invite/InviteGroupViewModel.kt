@@ -10,9 +10,6 @@ import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.lang.RuntimeException
-import java.lang.StringBuilder
 import java.security.MessageDigest
 import javax.inject.Inject
 
@@ -73,13 +70,13 @@ class InviteGroupViewModel @Inject constructor(
 
     fun findEmail(email: String) {
         viewModelScope.launch {
-            Log.d("antx: ", "InviteGroupViewModel findEmail line = 97:$email " );
+            Log.d("antx: ", "InviteGroupViewModel findEmail line = 97:$email ");
             val hashUser = sha256(email)
-            val result = peopleRepository.findUserByEmail( hashUser ?: "")
+            val result = peopleRepository.findUserByEmail(hashUser ?: "")
             result.forEach {
                 Log.d("antx: ", "InviteGroupViewModel findEmail line = 93: $it");
             }
-            friendsByEmail.postValue(result.filter { return@filter it.userId!=getClientId() })
+            friendsByEmail.postValue(result.filter { return@filter it.userId != getClientId() })
         }
     }
 
