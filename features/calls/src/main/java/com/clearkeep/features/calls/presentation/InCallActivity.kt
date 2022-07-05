@@ -67,6 +67,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var mTimeStarted: Long = 0
 
     private var mIsAudioMode: Boolean = false
+    private var IsHeadPhone: Boolean = false
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
@@ -176,10 +177,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     val state = intent.getIntExtra("state", -1)
                     when (state) {
                         0 -> {
+                            IsHeadPhone = true
                             setSpeakerphoneOn(true)
                             Log.d("---", "Headset is unplugged - In Call")
                         }
                         1 -> {
+                            IsHeadPhone = false
                             setSpeakerphoneOn(false)
                             Log.d("---", "Headset is plugged - In Call")
                         }
@@ -629,7 +632,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private fun enableMuteVideo(isMuteVideo: Boolean) {
         Log.e("antx", "enableMute enableMuteVideo $isMuteVideo")
-
         controlCallAudioView.toggleFaceTime.isChecked = isMuteVideo
         controlCallVideoView.bottomToggleFaceTime.isChecked = isMuteVideo
         peerConnectionClient?.setLocalVideoEnable(!isMuteVideo)
@@ -640,7 +642,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         try {
             val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
             audioManager.mode = AudioManager.MODE_IN_CALL
-            audioManager.isSpeakerphoneOn = isOn
+            if (!IsHeadPhone) {
+                audioManager.isSpeakerphoneOn = isOn
+            } else audioManager.isSpeakerphoneOn = true
+
         } catch (e: Exception) {
             printlnCK("setSpeakerphoneOn, exception!! $e")
         }
