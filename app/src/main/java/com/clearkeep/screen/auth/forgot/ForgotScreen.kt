@@ -82,7 +82,7 @@ fun ForgotScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading && email.value.isNotBlank(),
+                enabled = !isLoading && email.value.isValidEmail(),
                 buttonType = ButtonType.White
             )
             if (isEmptyEmail.value || isInvalidEmailFormat.value) {

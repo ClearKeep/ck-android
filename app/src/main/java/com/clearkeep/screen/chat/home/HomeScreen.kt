@@ -537,6 +537,7 @@ fun JoinServerComposable(
                 rememberServerUrl,
                 keyboardType = KeyboardType.Text,
                 singleLine = true,
+                allowSpace = false
             )
             Spacer(modifier = Modifier.size(14.sdp()))
             CKButton(
