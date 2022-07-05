@@ -319,7 +319,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
             this.toggleFaceTime.setOnClickListener {
                 callViewModel.onFaceTimeChange((it as ToggleButton).isChecked)
                 callViewModel.mIsAudioMode.postValue(it.isChecked)
-                callViewModel.onSpeakChange(true)
+                Log.d("--- InCall ", intent.getIntExtra("state", -1).toString())
+                if (intent.getIntExtra("state", -1) == 0){
+                    callViewModel.onSpeakChange(true)
+                }
                 mIsMuteVideo = !mIsMuteVideo
                 switchToVideoMode()
                 controlCallVideoView.bottomToggleFaceTime.isChecked = false
