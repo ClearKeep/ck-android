@@ -9,11 +9,13 @@ import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
@@ -66,7 +68,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
     private val environment: Environment? = null
-
+    private var broadcastReceiver: BroadcastReceiver? = null
     private var ringtone: Ringtone? = null
 
     @Inject
@@ -84,6 +86,41 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             if (mGroupId == groupId) {
                 finishAndRemoveFromTask()
             }
+        }
+    }
+
+    private fun registerBroadcastReceiver() {
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged, In Comming Call")
+                        }
+                        1 -> {
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged, In Comming Call")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
+    }
+
+    private fun setSpeakerphoneOn(isOn: Boolean) {
+        printlnCK("setSpeakerphoneOn, isOn = $isOn")
+        try {
+            val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_IN_CALL
+            audioManager.isSpeakerphoneOn = isOn
+        } catch (e: Exception) {
+            printlnCK("setSpeakerphoneOn, exception!! $e")
         }
     }
 
@@ -113,6 +150,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         initViews()
 
         registerEndCallReceiver()
+        registerBroadcastReceiver()
         GlobalScope.launch {
             delay(CALL_WAIT_TIME_OUT)
             if (isInComingCall) {
@@ -148,6 +186,14 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private fun unRegisterEndCallReceiver() {
         try {
             unregisterReceiver(endCallReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -525,6 +571,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun finishAndRemoveFromTask() {
         unRegisterEndCallReceiver()
+        unRegisterBroadcastReceiver()
         ringtone?.stop()
         if (Build.VERSION.SDK_INT >= 21) {
             finishAndRemoveTask()

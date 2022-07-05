@@ -1,8 +1,6 @@
 package com.clearkeep.screen.chat.room
 
 import android.app.NotificationManager
-import android.content.Context
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -31,13 +29,13 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
+import android.content.*
 import androidx.compose.material.ExperimentalMaterialApi
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
 import android.view.Display
 import android.view.Surface
 import android.view.View
 import android.view.WindowManager
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
@@ -64,6 +62,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    lateinit var messageSharedPreferences: SharedPreferences
     private var addMemberReceiver: BroadcastReceiver? = null
 
     private var roomId: Long = 0
@@ -78,6 +77,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        messageSharedPreferences =
+            getSharedPreferences("CK_SharePreference_Message", Context.MODE_PRIVATE)
 
         roomViewModel.isLogout.observe(this) {
             printlnCK("RoomActivity signOut $it")
@@ -146,10 +147,19 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 }
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
+                        LaunchedEffect(true) {
+                            roomViewModel.setMessage(
+                                messageSharedPreferences.getString(
+                                    "$roomId+$clientId+$domain",
+                                    ""
+                                ).orEmpty()
+                            )
+                        }
                         RoomScreen(
                             roomViewModel,
                             navController,
                             onFinishActivity = {
+                                roomViewModel.message.value?.let { it -> saveDrafMessage(it) }
                                 finish()
                             },
                             onCallingClick = { isPeer ->
@@ -221,6 +231,10 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         }
 
         subscriber()
+    }
+
+    private fun saveDrafMessage(message: String) {
+        messageSharedPreferences.edit().putString("$roomId+$clientId+$domain", message).apply()
     }
 
     private fun registerAddMemberReceiver() {
