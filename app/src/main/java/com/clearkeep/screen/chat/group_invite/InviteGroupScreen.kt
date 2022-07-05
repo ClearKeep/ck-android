@@ -38,6 +38,7 @@ import com.clearkeep.screen.chat.utils.getPeopleFromLink
 import com.clearkeep.utilities.network.Status
 import com.clearkeep.utilities.defaultNonScalableTextSize
 import com.clearkeep.utilities.isValidEmail
+import com.clearkeep.utilities.isValidServerUrl
 import com.clearkeep.utilities.sdp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -270,7 +271,9 @@ fun InviteGroupScreen(
                                                                     addUserByEmailError.value =
                                                                         context.getString(R.string.invite_friend_profile_email_incorrect)
                                                                 }
-                                                            }                                                        }
+                                                            }
+                                                        },
+                                                        allowSpace = false
                                                     )
                                                 }
                                             }
@@ -354,8 +357,9 @@ fun InviteGroupScreen(
                             },
                             modifier = Modifier
                                 .width(200.sdp()),
-                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && urlOtherServer.value.isNotBlank()) || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
-                                    || (useCustomServerChecked.value && urlOtherServer.value.isNotBlank()))) )
+                            enabled = isLoading.value != true && ((isCreateDirectGroup && useCustomServerChecked.value && isValidServerUrl(urlOtherServer.value))
+                                    || (!isCreateDirectGroup && (selectedItem.isNotEmpty()
+                                    || (useCustomServerChecked.value && isValidServerUrl(urlOtherServer.value)))) )
                         )
                     }
                 }
