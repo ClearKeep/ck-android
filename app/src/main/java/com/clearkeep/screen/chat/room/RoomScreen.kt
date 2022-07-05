@@ -24,6 +24,7 @@ import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.screen.chat.room.composes.ToolbarMessage
 import com.clearkeep.utilities.network.Status
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -97,6 +98,10 @@ fun RoomScreen(
             color = Color.Transparent,
             darkIcons = !isDarkMode
         )
+    }
+
+    BackHandler {
+        onFinishActivity()
     }
 
     val group = groupState.value
