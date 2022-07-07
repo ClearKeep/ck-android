@@ -1,5 +1,6 @@
 package com.clearkeep.screen.chat.room.composes
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -75,7 +76,7 @@ private fun MessageListView(
     onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
     val groupedMessages: Map<String, List<MessageDisplayInfo>> =
-        messageList.filter { it.message.isNotBlank() }
+        messageList.filter { it.message.isNotBlank() || it.message != "" }
             .groupBy { getTimeAsString(it.createdTime) }.mapValues { entry ->
                 convertMessageList(entry.value, clients, listAvatar, myClientId, isGroup)
             }
@@ -87,10 +88,11 @@ private fun MessageListView(
         val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
+        val listMessageCanShow=messageList.filter { it.message.isNotBlank() || it.message.isNotEmpty() }
         LaunchedEffect(key1 = oldestVisibleItemIndex) {
-            printlnCK("MessageListView oldestVisibleItemIndex $oldestVisibleItemIndex list size ${messageList.size}")
-            if (oldestVisibleItemIndex != null && oldestVisibleItemIndex >= messageList.size - 1) {
-                val oldestItem = messageList[messageList.size - 1]
+            printlnCK("MessageListView oldestVisibleItemIndex $oldestVisibleItemIndex list size ${listMessageCanShow.size}")
+            if (oldestVisibleItemIndex != null && oldestVisibleItemIndex >= listMessageCanShow.size - 1) {
+                val oldestItem = listMessageCanShow[listMessageCanShow.size - 1]
                 printlnCK("MessageListView oldest item $oldestItem")
                 onScrollChange(oldestVisibleItemIndex, oldestItem.createdTime)
             }

@@ -30,6 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
 import android.content.*
+import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import android.view.Display
 import android.view.Surface
@@ -133,16 +134,16 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
                 val isShowDialog = roomViewModel.isShowDialog.observeAsState()
-                if (isShowDialog.value == true && roomViewModel.isLogout.value == false) {
+                if (isShowDialog.value == true) {
                     CKAlertDialog(
                         title = "",
                         text = "You have been removed from the conversation",
                         onDismissButtonClick = {
                             restartToRoot(context = this)
-
                         }
                     )
                 }
+
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
                         LaunchedEffect(true) {
@@ -293,8 +294,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 //printlnCK("RoomActivity groups $it")
                 val group =
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
-                if (group == null)
+                printlnCK("isShowDialog: $group")
+                if (group == null){
                     roomViewModel.isShowDialog.postValue(true)
+                }
+
             })
     }
 

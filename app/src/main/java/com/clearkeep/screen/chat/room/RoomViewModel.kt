@@ -876,7 +876,7 @@ class RoomViewModel @Inject constructor(
                 val endOfPagination =  loadResponse.endOfPaginationReached
                 endOfPaginationReached = endOfPagination
                 var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
-                /*while (isRefresh && newestMessageTimestamp > lastMessageAt) {
+                while (isRefresh && newestMessageTimestamp > lastMessageAt) {
                     printlnCK("loading message 2 $newestMessageTimestamp $lastMessageAt ${newestMessageTimestamp > lastMessageAt} $endOfPaginationReached")
                     val response = messageRepository.updateMessageFromAPI(
                         group.value?.groupId ?: 0,
@@ -885,7 +885,7 @@ class RoomViewModel @Inject constructor(
                     )
                     newestMessageTimestamp = response.newestMessageLoadedTimestamp
                     endOfPaginationReached = response.endOfPaginationReached
-                }*/
+                }
                 while (!endOfPagination && lastLoadRequestTimestamp != 0L) {
                     printlnCK("loading message 3")
                     //Execute queued load request
