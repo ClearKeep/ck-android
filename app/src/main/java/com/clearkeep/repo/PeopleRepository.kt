@@ -276,7 +276,9 @@ class PeopleRepository @Inject constructor(
                 }
                 user.userStatus = newUser?.status
                 user.avatar = if (!newUser?.avatar.isNullOrBlank()) "${newUser?.avatar}?cache=${UUID.randomUUID()}" else "" //Force reload
+                user.userName = newUser?.displayName.orEmpty()
                 printlnCK("avata: ${user.avatar}")
+                printlnCK("username: ${user.userName}")
             }
             return@withContext list
         } catch (e: StatusRuntimeException) {

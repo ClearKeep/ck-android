@@ -9,8 +9,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.*
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -29,8 +31,8 @@ import com.bumptech.glide.request.target.Target
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.januswrapper.JanusConnection
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.repo.VideoCallRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.*
@@ -39,26 +41,11 @@ import com.clearkeep.screen.videojanus.common.CallStateView
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
-import kotlinx.android.synthetic.main.activity_in_call.*
 import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.*
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallAudioView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.controlCallVideoView
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageBackground
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imageConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgEndWaiting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.imgThumb2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvEndButtonDescription
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvNickName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.tvUserName2
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.viewConnecting
-import kotlinx.android.synthetic.main.activity_in_call_peer_to_peer.waitingCallView
 import kotlinx.android.synthetic.main.view_control_call_audio.view.*
 import kotlinx.android.synthetic.main.view_control_call_video.view.*
 import kotlinx.coroutines.*
-import org.webrtc.*
-import java.util.*
+import org.webrtc.VideoRenderer
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -101,6 +88,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private var busyCallReceiver: BroadcastReceiver? = null
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+    private var broadcastReceiver: BroadcastReceiver? = null
 
     // sound
     private var ringBackPlayer: MediaPlayer? = null
@@ -140,6 +128,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         initViews()
 
         registerEndCallReceiver()
+        registerBroadcastReceiver()
         if (mIsAudioMode) {
             configMedia(isSpeaker = false, isMuteVideo = true)
             registerSwitchVideoReceiver()
@@ -149,9 +138,9 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         requestCallPermissions()
 
-        callViewModel.mCurrentCallState.observe(this, {
+        callViewModel.mCurrentCallState.observe(this) {
             updateCallStatus(it)
-        })
+        }
         onClickControlCall()
         dispatchCallStatus(true)
         createInCallNotification(this, InCallPeerToPeerActivity::class.java)
@@ -350,7 +339,10 @@ class InCallPeerToPeerActivity : BaseActivity() {
             this.toggleFaceTime.setOnClickListener {
                 callViewModel.onFaceTimeChange((it as ToggleButton).isChecked)
                 callViewModel.mIsAudioMode.postValue(it.isChecked)
-                callViewModel.onSpeakChange(true)
+                Log.d("--- InCall ", intent.getIntExtra("state", -1).toString())
+                if (intent.getIntExtra("state", -1) == 0) {
+                    callViewModel.onSpeakChange(true)
+                }
                 mIsMuteVideo = !mIsMuteVideo
                 switchToVideoMode()
                 controlCallVideoView.bottomToggleFaceTime.isChecked = false
@@ -380,16 +372,16 @@ class InCallPeerToPeerActivity : BaseActivity() {
         imgEndWaiting.setOnClickListener {
             endCall()
         }
-        callViewModel.mIsAudioMode.observe(this, {
+        callViewModel.mIsAudioMode.observe(this) {
             if (it == false && mIsAudioMode) {
                 updateUIbyStateView(CallStateView.CALLED_VIDEO)
             }
-        })
+        }
 
-        callViewModel.mIsMute.observe(this, {
+        callViewModel.mIsMute.observe(this) {
             controlCallVideoView.bottomToggleMute.isChecked = it
             controlCallAudioView.toggleMute.isChecked = it
-        })
+        }
 
         imgWaitingBack.setOnClickListener {
             handleBackPressed()
@@ -622,6 +614,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         isInPeerCall = false
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
+        unRegisterBroadcastReceiver()
         stopRingBackTone()
         stopBusySignalSound()
         if (!mIsGroupCall) {
@@ -687,6 +680,31 @@ class InCallPeerToPeerActivity : BaseActivity() {
             .show()
     }
 
+    private fun registerBroadcastReceiver() {
+        Log.d("---", "registerBroadcastReceiver")
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged -  Call Peer")
+                        }
+                        1 -> {
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged - Call Peer")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
+    }
+
     private fun registerEndCallReceiver() {
         endCallReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
@@ -727,6 +745,25 @@ class InCallPeerToPeerActivity : BaseActivity() {
     private fun endCall() {
         hangup()
         finishAndReleaseResource()
+    }
+
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun setSpeakerphoneOn(isOn: Boolean) {
+        printlnCK("setSpeakerphoneOn, isOn = $isOn")
+        try {
+            val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_IN_CALL
+            audioManager.isSpeakerphoneOn = isOn
+        } catch (e: Exception) {
+            printlnCK("setSpeakerphoneOn, exception!! $e")
+        }
     }
 
     private fun unRegisterEndCallReceiver() {

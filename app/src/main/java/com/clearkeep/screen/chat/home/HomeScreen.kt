@@ -252,8 +252,9 @@ fun ItemListDirectMessage(
             client.userId != clintId
         }
         val roomName =
-            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else partnerUser?.userName
-                ?: ""
+            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
+                client.userId == partnerUser?.userId
+            }?.userName ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -536,6 +537,7 @@ fun JoinServerComposable(
                 rememberServerUrl,
                 keyboardType = KeyboardType.Text,
                 singleLine = true,
+                allowSpace = false
             )
             Spacer(modifier = Modifier.size(14.sdp()))
             CKButton(
