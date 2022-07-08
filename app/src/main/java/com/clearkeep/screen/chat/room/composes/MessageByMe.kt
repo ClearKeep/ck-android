@@ -13,15 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
-import com.clearkeep.components.LocalColorMapping
-import com.clearkeep.components.base.CKText
 import com.clearkeep.components.grayscale1
 import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale3
@@ -34,10 +31,10 @@ fun MessageByMe(
     messageDisplayInfo: MessageDisplayInfo,
     onClickFile: (uri: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
     val message = messageDisplayInfo.message.message
-    val context = LocalContext.current
 
     if (message.isNotBlank()) {
         Column(
@@ -47,7 +44,11 @@ fun MessageByMe(
             horizontalAlignment = Alignment.End
         ) {
             Spacer(modifier = Modifier.height(if (messageDisplayInfo.showSpacer) 8.sdp() else 2.sdp()))
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.height(IntrinsicSize.Max), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.height(IntrinsicSize.Max),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 if (messageDisplayInfo.isForwardedMessage) {
                     Box(
                         Modifier
@@ -81,7 +82,9 @@ fun MessageByMe(
                 )
             }
             if (messageDisplayInfo.isQuoteMessage) {
-                QuotedMessageView(messageDisplayInfo)
+                QuotedMessageView(messageDisplayInfo){
+                    onQuoteClick(messageDisplayInfo)
+                }
             }
             Row(
                 horizontalArrangement = Arrangement.End,

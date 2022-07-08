@@ -29,10 +29,10 @@ fun MessageFromOther(
     messageDisplayInfo: MessageDisplayInfo,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) ->Unit
 ) {
     val message = messageDisplayInfo.message.message
-    val context = LocalContext.current
 
     if (message.isNotBlank()) {
         Column {
@@ -111,7 +111,9 @@ fun MessageFromOther(
                             horizontalAlignment = Alignment.Start,
                         ) {
                             if (messageDisplayInfo.isQuoteMessage) {
-                                QuotedMessageView(messageDisplayInfo)
+                                QuotedMessageView(messageDisplayInfo){
+                                    onQuoteClick(messageDisplayInfo)
+                                }
                             }
 
                             Row(Modifier.height(IntrinsicSize.Max)) {
