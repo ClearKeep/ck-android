@@ -112,7 +112,6 @@ fun MessageFromOther(
                         ) {
                             if (messageDisplayInfo.isQuoteMessage) {
                                 QuotedMessageView(messageDisplayInfo) {
-                                    Log.d("tuna: Test quote", "test from message from other")
                                     onQuoteClick(messageDisplayInfo)
                                 }
                             }
@@ -179,7 +178,7 @@ fun MessageFromOther(
                                                     )
                                                 }
                                             } else if (isFileMessage(message)) {
-                                                FileMessageContent(getFileUriStrings(message), message = message, false) {
+                                                FileMessageContent(getFileUriStrings(message), false) {
                                                     onClickFile.invoke(it)
                                                 }
                                             }
