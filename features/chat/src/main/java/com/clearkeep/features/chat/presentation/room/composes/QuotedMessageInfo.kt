@@ -1,8 +1,10 @@
 package com.clearkeep.features.chat.presentation.room.composes
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -15,14 +17,18 @@ import com.clearkeep.common.presentation.components.grayscale3
 import com.clearkeep.common.utilities.*
 import com.clearkeep.features.chat.presentation.room.messagedisplaygenerator.MessageDisplayInfo
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuotedMessageView(message: MessageDisplayInfo) {
+fun QuotedMessageView(message: MessageDisplayInfo, onClick :()-> Unit) {
     val arrangement = if (message.isOwner) Arrangement.End else Arrangement.Start
     Row(Modifier.fillMaxWidth(), arrangement) {
         if (message.isOwner) {
             Spacer(Modifier.width(18.sdp()))
         }
-        Card {
+        Card(onClick = {
+            Log.d("tuna: Press test", "test on QuotedMessageInfo")
+            onClick()
+        }) {
             ConstraintLayout(Modifier.background(LocalColorMapping.current.quoteMessageBackground)) {
                 val (messageContent, quotedMessageIndicator, quotedMessageInfo) = createRefs()
 
@@ -45,8 +51,7 @@ fun QuotedMessageView(message: MessageDisplayInfo) {
 
                         }
                     } else if (isFileMessage(quotedMessage)) {
-                        FileMessageContent(getFileUriStrings(quotedMessage), true) {
-
+                        FileMessageContent(getFileUriStrings(quotedMessage), isQuote = true) {
                         }
                     }
                     val messageContent = getMessageContent(quotedMessage)
@@ -60,6 +65,7 @@ fun QuotedMessageView(message: MessageDisplayInfo) {
                                 true,
                                 quotedMessage.hashCode()
                             ) {
+                                Log.d("--- Quote message", "Touched quote message")
                             }
                         }
                     }

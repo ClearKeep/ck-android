@@ -2,10 +2,9 @@ package com.clearkeep.features.chat.presentation.room.messagedisplaygenerator
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.User
-import com.clearkeep.common.utilities.printlnCK
-import kotlin.collections.ArrayList
 
 val roundSizeLarge = 18.dp
 val roundSizeSmall = 4.dp
@@ -33,12 +32,17 @@ fun convertMessageList(
                 it.userId == rawMessage.senderId
             }?.avatar ?: ""
 
+            val messageId = messages.firstOrNull {
+                it.messageId == rawMessage.messageId
+            }?.messageId ?: rawMessage.messageId
+
             val isForwardedMessage = rawMessage.message.startsWith(">>>")
             val isQuoteMessage = rawMessage.message.startsWith("```")
 
             var quotedUser = ""
             var quotedMessage = ""
             var quotedMessageTimestamp = 0L
+            var quotedMessageID = messageId
 
             val message = when {
                 isForwardedMessage -> {
@@ -47,13 +51,17 @@ fun convertMessageList(
                 }
                 isQuoteMessage -> {
                     val parts = rawMessage.message.substring(3).split("|")
-                    if (parts.size == 4) {
+                    if (parts.size == 5) {
                         quotedUser = parts[0]
                         quotedMessage = parts[1]
                         quotedMessageTimestamp = parts[2].toLongOrNull() ?: 0L
-                        val newMessage = parts[3]
+                        quotedMessageID = parts[3]
+                        val newMessage = parts[4]
 
-                        printlnCK("convertMessageList quotedUser $quotedUser quotedMessage $quotedMessage quotedMessageTimestamp $quotedMessageTimestamp newMsg $newMessage")
+                        printlnCK(
+                            "convertMessageList quotedUser $quotedUser " +
+                                    "quotedMessage $quotedMessage quotedMessageTimestamp $quotedMessageTimestamp newMsg $newMessage quotedMsgID $quotedMessageID"
+                        )
 
                         rawMessage.copy(message = newMessage)
                     } else {
@@ -67,11 +75,22 @@ fun convertMessageList(
             }
 
             MessageDisplayInfo(
-                message, isOwner, showAvatarAndName, showSpacerTop, userName,
+                message,
+                isOwner,
+                showAvatarAndName,
+                showSpacerTop,
+                userName,
                 if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(
                     index,
                     groupedSize
-                ), avatar, isForwardedMessage, isQuoteMessage, quotedUser, quotedMessage, quotedMessageTimestamp
+                ),
+                avatar,
+                isForwardedMessage,
+                isQuoteMessage,
+                quotedUser,
+                quotedMessage,
+                quotedMessageTimestamp,
+                quotedMessageID
             )
 
         }

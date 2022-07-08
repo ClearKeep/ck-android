@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.room.composes
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -24,6 +25,7 @@ import com.clearkeep.common.presentation.components.grayscale1
 import com.clearkeep.common.presentation.components.grayscale2
 import com.clearkeep.common.presentation.components.grayscale3
 import com.clearkeep.common.utilities.*
+import com.clearkeep.domain.model.Message
 import com.clearkeep.features.chat.presentation.room.messagedisplaygenerator.MessageDisplayInfo
 
 @ExperimentalFoundationApi
@@ -32,7 +34,8 @@ fun MessageByMe(
     messageDisplayInfo: MessageDisplayInfo,
     onClickFile: (uri: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) ->Unit
 ) {
     val message = messageDisplayInfo.message.message
 
@@ -78,7 +81,10 @@ fun MessageByMe(
                 )
             }
             if (messageDisplayInfo.isQuoteMessage) {
-                QuotedMessageView(messageDisplayInfo)
+                QuotedMessageView(messageDisplayInfo) {
+                    Log.d("tuna: Press quote", "test from Message by me")
+                    onQuoteClick(messageDisplayInfo)
+                }
             }
             Row(
                 horizontalArrangement = Arrangement.End,
@@ -93,6 +99,10 @@ fun MessageByMe(
                             onLongPress = {
                                 printlnCK("Long press on message ${messageDisplayInfo.message.message}")
                                 onLongClick(messageDisplayInfo)
+                                Log.d("tuna: Long press", "test")
+                            },
+                            onPress = {
+                                Log.d("tuna: Press", "test on Message by me")
                             }
                         )
                     },
@@ -118,7 +128,7 @@ fun MessageByMe(
                                     onClickImage.invoke(getImageUriStrings(message), "You")
                                 }
                             } else if (isFileMessage(message)) {
-                                FileMessageContent(getFileUriStrings(message), false) {
+                                FileMessageContent(getFileUriStrings(message),message = "hello", false) {
                                     onClickFile.invoke(it)
                                 }
                             }
