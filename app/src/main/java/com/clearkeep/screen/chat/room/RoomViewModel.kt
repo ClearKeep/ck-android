@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
-import androidx.lifecycle.*
-import com.clearkeep.MyApplication
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
@@ -15,13 +17,32 @@ import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
-import com.clearkeep.utilities.files.*
+import com.clearkeep.utilities.files.generatePhotoUri
+import com.clearkeep.utilities.files.getFileMimeType
+import com.clearkeep.utilities.files.getFileName
+import com.clearkeep.utilities.files.getFileSize
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import kotlinx.coroutines.*
-import java.lang.IllegalArgumentException
-import javax.inject.Inject
 import java.util.*
+import javax.inject.Inject
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.arrayListOf
+import kotlin.collections.contains
+import kotlin.collections.emptyList
+import kotlin.collections.emptyMap
+import kotlin.collections.filter
+import kotlin.collections.firstOrNull
+import kotlin.collections.forEach
+import kotlin.collections.isNullOrEmpty
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.mapIndexed
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
+import kotlin.collections.toList
 
 class RoomViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
@@ -87,7 +108,7 @@ class RoomViewModel @Inject constructor(
     private val _listGroupUserStatus = MutableLiveData<List<User>>()
     val listGroupUserStatus: LiveData<List<User>>
         get() = _listGroupUserStatus
-    
+
     private val _listUserStatus = MutableLiveData<List<User>>()
     val listUserStatus: LiveData<List<User>> get() = _listUserStatus
 
@@ -106,10 +127,11 @@ class RoomViewModel @Inject constructor(
     val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
-    val isShowDialog= MutableLiveData(false)
+    val isShowDialog = MutableLiveData(false)
 
     @Volatile
     private var endOfPaginationReached = false
+
     @Volatile
     private var lastLoadRequestTimestamp = 0L
 
@@ -336,11 +358,21 @@ class RoomViewModel @Inject constructor(
         messageRepository.updateNotesFromAPI(Owner(server.serverDomain, server.profile.userId))
     }
 
-    fun sendMessageToUser(context: Context, receiverPeople: User, groupId: Long, message: String, isForwardMessage: Boolean = false) {
+    fun sendMessageToUser(
+        context: Context,
+        receiverPeople: User,
+        groupId: Long,
+        message: String,
+        isForwardMessage: Boolean = false
+    ) {
         viewModelScope.launch {
             try {
                 val quotedMessage = quotedMessage.value
-                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                val encodedMessage =
+                    if (isForwardMessage)
+                        ">>>$message"
+                    else if (quotedMessage != null)
+                        "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|${quotedMessage.message.messageId}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
@@ -420,7 +452,11 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val quotedMessage = quotedMessage.value
-                val encodedMessage = if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                val encodedMessage =
+                    if (isForwardMessage)
+                        ">>>$message"
+                    else if (quotedMessage != null)
+                        "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|${quotedMessage.message.messageId}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
@@ -873,7 +909,7 @@ class RoomViewModel @Inject constructor(
                     Owner(server.serverDomain, server.profile.userId),
                     if (isRefresh) 0 else lastMessageAt
                 )
-                val endOfPagination =  loadResponse.endOfPaginationReached
+                val endOfPagination = loadResponse.endOfPaginationReached
                 endOfPaginationReached = endOfPagination
                 var newestMessageTimestamp = loadResponse.newestMessageLoadedTimestamp
                 while (isRefresh && newestMessageTimestamp > lastMessageAt) {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,14 +19,17 @@ import com.clearkeep.components.grayscale3
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
 import com.clearkeep.utilities.*
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun QuotedMessageView(message: MessageDisplayInfo) {
+fun QuotedMessageView(message: MessageDisplayInfo, onClick :()-> Unit) {
     val arrangement = if (message.isOwner) Arrangement.End else Arrangement.Start
     Row(Modifier.fillMaxWidth(), arrangement) {
         if (message.isOwner) {
             Spacer(Modifier.width(18.sdp()))
         }
-        Card {
+        Card(onClick = {
+            onClick()
+        }) {
             ConstraintLayout(Modifier.background(LocalColorMapping.current.quoteMessageBackground)) {
                 val (messageContent, quotedMessageIndicator, quotedMessageInfo) = createRefs()
 

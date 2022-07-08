@@ -15,5 +15,6 @@ data class MessageDisplayInfo(
     val isQuoteMessage: Boolean = false,
     val quotedUser: String = "",
     val quotedMessage: String = "",
-    val quotedTimestamp: Long = 0L
+    val quotedTimestamp: Long = 0L,
+    val quotedMessageID: String
 )
