@@ -7,8 +7,12 @@ import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.repo.*
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.screen.chat.utils.getLinkFromPeople
-import com.clearkeep.utilities.*
+import com.clearkeep.utilities.BaseViewModel
+import com.clearkeep.utilities.FIREBASE_TOKEN
+import com.clearkeep.utilities.isValidServerUrl
+import com.clearkeep.utilities.livedata.SingleLiveEvent
 import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
 import com.clearkeep.utilities.storage.UserPreferencesStorage
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.*
@@ -42,7 +46,7 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing = MutableLiveData(false)
 
-    private val _currentStatus = MutableLiveData(UserStatus.ONLINE.value)
+    private val _currentStatus = SingleLiveEvent<String>()
     val currentStatus: LiveData<String>
         get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
@@ -65,6 +69,8 @@ class HomeViewModel @Inject constructor(
             messageRepository.clearTempNotes()
             messageRepository.clearTempMessage()
             roomRepository.fetchGroups()
+        }
+        viewModelScope.launch {
             getStatusUserInDirectGroup()
         }
         sendPing()
@@ -145,8 +151,19 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
+            val server = environment.getServer()
+            listUserRequest.add(
+                User(
+                    server.profile.userId,
+                    server.profile.userName ?: "",
+                    server.serverDomain
+                )
+            )
             val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
+            val status =
+                listClientStatus?.filter { it.userId == server.profile.userId }?.get(0)?.userStatus
+            _currentStatus.postValue(status)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
