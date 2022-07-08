@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.room.composes
 
+import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
     listAvatar: List<User>,
+    listState: LazyListState = rememberLazyListState(),
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -41,7 +43,8 @@ fun MessageListView(
     onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) ->Unit
 ) {
     mIsNewMessage = isNewMessage
     MessageListView(
@@ -51,13 +54,14 @@ fun MessageListView(
         myClientId = myClientId,
         isGroup = isGroup,
         isLoading = isLoading,
-        onScrollChange,
-        onClickFile,
-        onClickImage,
-        onLongClick
+        listState = listState,
+        onScrollChange = onScrollChange,
+        onClickFile = onClickFile,
+        onClickImage = onClickImage,
+        onLongClick = onLongClick,
+        onQuoteClick = onQuoteClick
     )
 }
-
 @ExperimentalFoundationApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -65,13 +69,15 @@ private fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
     listAvatar: List<User>,
+    listState: LazyListState = rememberLazyListState(),
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
     onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) ->Unit
 ) {
     val groupedMessages: Map<String, List<MessageDisplayInfo>> =
         messageList.filter { it.message.isNotBlank() }
@@ -81,7 +87,6 @@ private fun MessageListView(
     Surface(
         color = MaterialTheme.colors.background
     ) {
-        val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
         val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
@@ -128,8 +133,11 @@ private fun MessageListView(
                             item,
                             onClickFile,
                             onClickImage,
-                            onLongClick
-                        ) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
+                            onLongClick,
+                            onQuoteClick
+                        )
+
+                        else MessageFromOther(item, onClickFile, onClickImage, onLongClick, onQuoteClick)
                         if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
                     }
                 }

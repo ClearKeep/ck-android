@@ -361,7 +361,10 @@ class RoomViewModel @Inject constructor(
             try {
                 val quotedMessage = quotedMessage.value
                 val encodedMessage =
-                    if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                    if (isForwardMessage)
+                        ">>>$message"
+                    else if (quotedMessage != null)
+                        "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|${quotedMessage.message.messageId}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
@@ -442,7 +445,10 @@ class RoomViewModel @Inject constructor(
             try {
                 val quotedMessage = quotedMessage.value
                 val encodedMessage =
-                    if (isForwardMessage) ">>>$message" else if (quotedMessage != null) "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|$message" else message
+                    if (isForwardMessage)
+                        ">>>$message"
+                    else if (quotedMessage != null)
+                        "```${quotedMessage.userName}|${quotedMessage.message.message}|${quotedMessage.message.createdTime}|${quotedMessage.message.messageId}|$message" else message
                 this@RoomViewModel.quotedMessage.value = null
 
                 if (!_imageUriSelected.value.isNullOrEmpty()) {
