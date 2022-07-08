@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.room.composes
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -28,7 +29,8 @@ fun MessageFromOther(
     messageDisplayInfo: MessageDisplayInfo,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) ->Unit
 ) {
     val message = messageDisplayInfo.message.message
 
@@ -109,7 +111,10 @@ fun MessageFromOther(
                             horizontalAlignment = Alignment.Start,
                         ) {
                             if (messageDisplayInfo.isQuoteMessage) {
-                                QuotedMessageView(messageDisplayInfo)
+                                QuotedMessageView(messageDisplayInfo) {
+                                    Log.d("tuna: Test quote", "test from message from other")
+                                    onQuoteClick(messageDisplayInfo)
+                                }
                             }
 
                             Row(Modifier.height(IntrinsicSize.Max)) {
@@ -174,7 +179,7 @@ fun MessageFromOther(
                                                     )
                                                 }
                                             } else if (isFileMessage(message)) {
-                                                FileMessageContent(getFileUriStrings(message), false) {
+                                                FileMessageContent(getFileUriStrings(message), message = message, false) {
                                                     onClickFile.invoke(it)
                                                 }
                                             }

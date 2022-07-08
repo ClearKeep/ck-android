@@ -3,6 +3,7 @@ package com.clearkeep.features.chat.presentation.room
 import android.Manifest
 import android.content.Context
 import android.os.*
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -11,6 +12,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -227,12 +230,15 @@ fun RoomScreen(
                                 0.66f
                             )
                     ) {
+                        val lazyListState = rememberLazyListState()
+
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
                             listAvatar = listGroupUserStatusState.value ?: emptyList(),
                             myClientId = roomViewModel.clientId,
-                            group?.isGroup() ?: false,
+                            isGroup = group?.isGroup() ?: false,
+                            listState = lazyListState,
                             isLoading = false,
                             onScrollChange = { _, lastTimestamp ->
                               roomViewModel.onScrollChange(lastTimestamp)
@@ -265,6 +271,16 @@ fun RoomScreen(
                                 }
                                 roomViewModel.setSelectedMessage(it)
                                 isMessageClickDialogVisible.value = true
+                            },
+                            onQuoteClick = { messageDisplayInfo ->
+                                if(messageDisplayInfo.isQuoteMessage){
+                                    val listMessage = messageList.value ?: emptyList()
+                                    val index = listMessage.indexOfFirst { messageDisplayInfo.quotedMessageID == it.messageId }
+                                    coroutineScope.launch {
+                                        lazyListState.scrollToItem(index = index)
+                                    }
+                                }
+
                             }
                         )
                     }
