@@ -86,10 +86,11 @@ private fun MessageListView(
         val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
         val oldestVisibleItemIndex = listState.visibleItems(50f).map { it.index }.maxOrNull()
+        val listMessageCanShow=messageList.filter { it.message.isNotBlank() || it.message.isNotEmpty() }
         LaunchedEffect(key1 = oldestVisibleItemIndex) {
             printlnCK("MessageListView oldestVisibleItemIndex $oldestVisibleItemIndex list size ${messageList.size}")
-            if (oldestVisibleItemIndex != null && oldestVisibleItemIndex >= messageList.size - 1) {
-                val oldestItem = messageList[messageList.size - 1]
+            if (oldestVisibleItemIndex != null && oldestVisibleItemIndex >= listMessageCanShow.size - 1) {
+                val oldestItem = listMessageCanShow[listMessageCanShow.size - 1]
                 printlnCK("MessageListView oldest item $oldestItem")
                 onScrollChange(oldestVisibleItemIndex, oldestItem.createdTime)
             }
