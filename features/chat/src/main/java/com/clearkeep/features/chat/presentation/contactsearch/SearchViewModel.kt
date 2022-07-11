@@ -128,7 +128,7 @@ class SearchViewModel @Inject constructor(
                 groupSource = getGroupsByGroupNameUseCase(
                     server.serverDomain,
                     server.profile.userId,
-                    query
+                    query.trim()
                 )
             }
             try {
@@ -151,7 +151,7 @@ class SearchViewModel @Inject constructor(
         val allPeerChat = getPeerRoomsByPeerNameUseCase(
             server.serverDomain,
             server.profile.userId,
-            query
+            query.trim()
         )
 
         val allUnchattedPeople =
@@ -159,14 +159,14 @@ class SearchViewModel @Inject constructor(
                 val usersFromGroupChatFiltered =
                     a.map { it.clientList }.flatten().filter {
                         it.userId != server.profile.userId && it.userName.contains(
-                            query,
+                            query.trim(),
                             true
                         )
                     }
                 val usersInServerFiltered =
                     b.filter {
                         it.userName.contains(
-                            query,
+                            query.trim(),
                             true
                         ) && it.userId != server.profile.userId
                     }
@@ -204,7 +204,7 @@ class SearchViewModel @Inject constructor(
                 messagesSource = getMessageByTextUseCase(
                     server.serverDomain,
                     server.profile.userId,
-                    query
+                    query.trim()
                 )
             }
             try {
