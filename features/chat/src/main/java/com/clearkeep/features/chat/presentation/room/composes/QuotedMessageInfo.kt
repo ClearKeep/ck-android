@@ -26,7 +26,6 @@ fun QuotedMessageView(message: MessageDisplayInfo, onClick :()-> Unit) {
             Spacer(Modifier.width(18.sdp()))
         }
         Card(onClick = {
-            Log.d("tuna: Press test", "test on QuotedMessageInfo")
             onClick()
         }) {
             ConstraintLayout(Modifier.background(LocalColorMapping.current.quoteMessageBackground)) {

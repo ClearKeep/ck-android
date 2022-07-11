@@ -82,7 +82,6 @@ fun MessageByMe(
             }
             if (messageDisplayInfo.isQuoteMessage) {
                 QuotedMessageView(messageDisplayInfo) {
-                    Log.d("tuna: Press quote", "test from Message by me")
                     onQuoteClick(messageDisplayInfo)
                 }
             }
@@ -99,10 +98,8 @@ fun MessageByMe(
                             onLongPress = {
                                 printlnCK("Long press on message ${messageDisplayInfo.message.message}")
                                 onLongClick(messageDisplayInfo)
-                                Log.d("tuna: Long press", "test")
                             },
                             onPress = {
-                                Log.d("tuna: Press", "test on Message by me")
                             }
                         )
                     },
@@ -128,7 +125,7 @@ fun MessageByMe(
                                     onClickImage.invoke(getImageUriStrings(message), "You")
                                 }
                             } else if (isFileMessage(message)) {
-                                FileMessageContent(getFileUriStrings(message),message = "hello", false) {
+                                FileMessageContent(getFileUriStrings(message), false) {
                                     onClickFile.invoke(it)
                                 }
                             }
