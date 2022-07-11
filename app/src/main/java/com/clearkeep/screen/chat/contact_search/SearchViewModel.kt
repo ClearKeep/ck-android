@@ -69,7 +69,7 @@ class SearchViewModel @Inject constructor(
         _messages.value = null
 
         searchQuery.value?.let {
-            search(it)
+            search(it.trim())
         }
     }
 
@@ -82,7 +82,7 @@ class SearchViewModel @Inject constructor(
             _messages.value = null
             return
         }
-        _searchQuery.value = text
+        _searchQuery.value = text.trim()
         val server = environment.getServer()
         searchJob = viewModelScope.launch {
             when (searchMode.value) {
@@ -112,7 +112,7 @@ class SearchViewModel @Inject constructor(
                 groupSource = roomRepository.getGroupsByGroupName(
                     server.serverDomain,
                     server.profile.userId,
-                    query
+                    query.trim()
                 )
             }
             try {
@@ -135,7 +135,7 @@ class SearchViewModel @Inject constructor(
         val allPeerChat = roomRepository.getPeerRoomsByPeerName(
             server.serverDomain,
             server.profile.userId,
-            query
+            query.trim()
         )
 
         val allUnchattedPeople =
@@ -143,14 +143,14 @@ class SearchViewModel @Inject constructor(
                 val usersFromGroupChatFiltered =
                     a.map { it.clientList }.flatten().filter {
                         it.userId != server.profile.userId && it.userName.contains(
-                            query,
+                            query.trim(),
                             true
                         )
                     }
                 val usersInServerFiltered =
                     b.filter {
                         it.userName.contains(
-                            query,
+                            query.trim(),
                             true
                         ) && it.userId != server.profile.userId
                     }
@@ -189,7 +189,7 @@ class SearchViewModel @Inject constructor(
                 messagesSource = messageRepository.getMessageByText(
                     server.serverDomain,
                     server.profile.userId,
-                    query
+                    query.trim()
                 )
             }
             try {
