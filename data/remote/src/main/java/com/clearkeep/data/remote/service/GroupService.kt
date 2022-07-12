@@ -175,9 +175,7 @@ class GroupService @Inject constructor(
                 .setEmailHash(emailHard)
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
-            Log.e("hungnv", "findUserByEmail: response: $response")
             return@withContext response.lstUserOrBuilderList.map {
-                Log.e("hungnv", "findUserByEmail: avatar ${it.avatar}" )
                 User(it.id, it.displayName, it.workspaceDomain,avatar = it.avatar)
             }
         } catch (e: Exception) {

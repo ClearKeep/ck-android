@@ -51,7 +51,6 @@ class InviteGroupViewModel @Inject constructor(
         }
         result.addSource(friendsByEmail) {
             result.value = friendsByEmail.value
-            Log.e("hungnv", "friendsByEmail: ${friendsByEmail.value}", )
         }
         emitSource(result)
     }

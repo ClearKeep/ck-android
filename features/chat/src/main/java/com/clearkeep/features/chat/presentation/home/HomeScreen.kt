@@ -476,8 +476,6 @@ fun DirectMessagesView(
                                 viewModel.getClientIdOfActiveServer(),
                                 onItemClickListener
                             )
-//                            Log.d("hungnv", listUserStatus.value.toString())
-//                            Log.d("hungnv", viewModel.getClientIdOfActiveServer())
                         }
                     }
                 }

@@ -1,6 +1,5 @@
 package com.clearkeep.features.chat.presentation.groupinvite
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -303,7 +302,6 @@ fun InviteGroupScreen(
                                 }
                                 Spacer(modifier = Modifier.height(16.sdp()))
                             }
-                            Log.e("hungnv", "InviteGroupScreen: listShow : $listShow" )
                             itemsIndexed(listShow) { _, friend ->
                                 if (isCreateDirectGroup) {
                                     FriendListItem(

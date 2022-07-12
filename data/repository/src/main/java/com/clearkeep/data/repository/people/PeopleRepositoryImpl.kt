@@ -29,8 +29,6 @@ class PeopleRepositoryImpl @Inject constructor(
         peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
             if (list.isNotEmpty()) {
                 val response = groupService.getUsersInServer()
-                Log.e("hungnv", "getFriendsAsState: $response")
-                Log.e("hungnv", "List: $list")
                 val activeUserIds = response.lstUserOrBuilderList.map { it.id }
 
                 list.filter { it.userId in activeUserIds }
@@ -197,7 +195,6 @@ class PeopleRepositoryImpl @Inject constructor(
                 }
                 user.userStatus = newUser?.status
                 user.avatar = newUser?.avatar
-                Log.e("hungnv", "avatar: ${newUser?.avatar.orEmpty()}")
                 user.userName = newUser?.displayName.orEmpty()
                 peopleDao.updateAvatar(newUser?.avatar.orEmpty(), user.userId)
                 printlnCK("avata: ${user.avatar}")
