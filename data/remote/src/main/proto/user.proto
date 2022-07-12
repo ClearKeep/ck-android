@@ -54,6 +54,7 @@ message UserInfoResponse {
     string id = 1;
     string display_name = 2;
     string workspace_domain = 3;
+    string avatar = 4;
 }
 
 //Request: get other user info
@@ -195,6 +196,7 @@ service User {
     rpc search_user(SearchUserRequest) returns (SearchUserResponse) {};
     rpc get_users(Empty) returns (GetUsersResponse) {};
     rpc find_user_by_email(FindUserByEmailRequest) returns (FindUserByEmailResponse) {};
+    rpc find_user_detail_info_from_email_hash(FindUserByEmailRequest) returns (UserInfoResponse) {};
 
     //----- MFA ENABLE FLOW -----
     rpc get_mfa_state(MfaGetStateRequest) returns (MfaStateResponse) {};

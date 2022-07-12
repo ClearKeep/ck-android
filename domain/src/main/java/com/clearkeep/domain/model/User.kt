@@ -11,7 +11,7 @@ data class User(
     var email: String? = "",
 ) {
     override fun toString(): String {
-        return "id = $userId, userName = $userName, workspace_domain = $domain state: $userState, userStatus = $userStatus"
+        return "id = $userId, userName = $userName, workspace_domain = $domain state: $userState, userStatus = $userStatus, avatar = $avatar"
     }
 }
 

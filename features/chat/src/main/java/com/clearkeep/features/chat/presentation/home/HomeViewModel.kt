@@ -45,6 +45,7 @@ class HomeViewModel @Inject constructor(
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val sendPingUseCase: SendPingUseCase,
     private val updateAvatarUserEntityUseCase: UpdateAvatarUserEntityUseCase,
+    private val getListUserEntityUseCase: GetListUserEntityUseCase,
     private val signalKeyRepository: SignalKeyRepository,
 
     getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
@@ -196,6 +197,7 @@ class HomeViewModel @Inject constructor(
                     server.serverDomain
                 )
             )
+            listUserRequest.addAll(getListUserEntityUseCase())
             val listClientStatus = getListClientStatusUseCase(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
             val status =

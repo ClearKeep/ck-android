@@ -39,15 +39,6 @@ class InviteGroupViewModel @Inject constructor(
 
     private val friendsByEmail = MutableLiveData<List<User>>()
 
-    init {
-    }
-
-    val _friendsByEmail: LiveData<List<User>>
-        get() {
-            return friendsByEmail
-        }
-
-
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 

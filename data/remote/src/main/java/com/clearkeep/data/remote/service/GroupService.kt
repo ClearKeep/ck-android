@@ -1,10 +1,11 @@
 package com.clearkeep.data.remote.service
 
+import android.util.Log
+import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
+import com.clearkeep.common.utilities.getGroupType
 import com.clearkeep.data.remote.dynamicapi.DynamicAPIProvider
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
-import com.clearkeep.common.utilities.getGroupType
 import com.clearkeep.domain.model.User
 import group.GroupOuterClass
 import kotlinx.coroutines.Dispatchers
@@ -175,7 +176,7 @@ class GroupService @Inject constructor(
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
             return@withContext response.lstUserOrBuilderList.map {
-                User(it.id, it.displayName, it.workspaceDomain)
+                User(it.id, it.displayName, it.workspaceDomain,avatar = it.avatar)
             }
         } catch (e: Exception) {
             e.printStackTrace()
