@@ -6,7 +6,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.runtime.*
@@ -16,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.components.grayscale3
-import com.clearkeep.components.grayscaleBackground
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.room.message_display_generator.MessageDisplayInfo
@@ -36,6 +38,7 @@ fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
     listAvatar: List<User>,
+    listState: LazyListState = rememberLazyListState(),
     myClientId: String,
     isGroup: Boolean,
     isNewMessage: Boolean = true,
@@ -43,7 +46,8 @@ fun MessageListView(
     onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
     mIsNewMessage = isNewMessage
     MessageListView(
@@ -53,10 +57,12 @@ fun MessageListView(
         myClientId = myClientId,
         isGroup = isGroup,
         isLoading = isLoading,
-        onScrollChange,
-        onClickFile,
-        onClickImage,
-        onLongClick
+        listState = listState,
+        onScrollChange = onScrollChange,
+        onClickFile = onClickFile,
+        onClickImage = onClickImage,
+        onLongClick = onLongClick,
+        onQuoteClick = onQuoteClick
     )
 }
 
@@ -67,13 +73,15 @@ private fun MessageListView(
     messageList: List<Message>,
     clients: List<User>,
     listAvatar: List<User>,
+    listState: LazyListState = rememberLazyListState(),
     myClientId: String,
     isGroup: Boolean,
     isLoading: Boolean,
     onScrollChange: (itemIndex: Int, lastMessageTimestamp: Long) -> Unit,
     onClickFile: (url: String) -> Unit,
     onClickImage: (uris: List<String>, senderName: String) -> Unit,
-    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
+    onLongClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit,
+    onQuoteClick: (messageDisplayInfo: MessageDisplayInfo) -> Unit
 ) {
     val groupedMessages: Map<String, List<MessageDisplayInfo>> =
         messageList.filter { it.message.isNotBlank() || it.message != "" }
@@ -83,7 +91,6 @@ private fun MessageListView(
     Surface(
         color = MaterialTheme.colors.background
     ) {
-        val listState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
         val lastNewestItem = remember { mutableStateOf<Message?>(null) }
 
@@ -130,8 +137,15 @@ private fun MessageListView(
                             item,
                             onClickFile,
                             onClickImage,
-                            onLongClick
-                        ) else MessageFromOther(item, onClickFile, onClickImage, onLongClick)
+                            onLongClick,
+                            onQuoteClick
+                        ) else MessageFromOther(
+                            item,
+                            onClickFile,
+                            onClickImage,
+                            onLongClick,
+                            onQuoteClick
+                        )
                         if (index == 0) Spacer(modifier = Modifier.height(20.sdp()))
                     }
                 }

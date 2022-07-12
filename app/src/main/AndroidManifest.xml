@@ -184,7 +184,7 @@
         </activity>
 
         <activity
-            android:name=".screen.chat.change_pass_word.ChangePasswordActivity"
+            android:name="com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
             android:launchMode="singleTop"
             android:exported="true">
@@ -192,11 +192,6 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="http"
-                    android:host="www.clearkeep.com"
-                    android:pathPrefix="/resetpassword" />
 
                 <data
                     android:scheme="clearkeep"
@@ -218,6 +213,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
     </application>
 
 </manifest>

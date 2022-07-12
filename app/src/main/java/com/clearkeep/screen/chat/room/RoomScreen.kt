@@ -3,52 +3,59 @@ package com.clearkeep.screen.chat.room
 import android.Manifest
 import android.content.Context
 import android.os.*
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.os.postDelayed
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.*
-import com.clearkeep.components.*
+import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKAlertDialog
+import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.components.colorDialogScrim
+import com.clearkeep.components.colorLightBlue
+import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.db.clear_keep.model.GROUP_ID_TEMPO
 import com.clearkeep.screen.chat.room.composes.MessageListView
 import com.clearkeep.screen.chat.room.composes.SendBottomCompose
 import com.clearkeep.screen.chat.room.composes.ToolbarMessage
-import com.clearkeep.utilities.network.Status
-import android.widget.Toast
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.core.os.postDelayed
-import com.clearkeep.R
-import com.clearkeep.components.base.CKCircularProgressIndicator
 import com.clearkeep.screen.chat.room.file_picker.FilePickerBottomSheetDialog
 import com.clearkeep.screen.chat.room.forward_message.ForwardMessageBottomSheetDialog
 import com.clearkeep.screen.videojanus.AppCall
-import com.clearkeep.utilities.*
+import com.clearkeep.utilities.ERROR_CODE_TIMEOUT
+import com.clearkeep.utilities.isWriteFilePermissionGranted
 import com.clearkeep.utilities.network.Resource
+import com.clearkeep.utilities.network.Status
+import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalMaterialApi
@@ -100,10 +107,6 @@ fun RoomScreen(
         )
     }
 
-    BackHandler {
-        onFinishActivity()
-    }
-
     val group = groupState.value
 
     if (group != null && group.groupId != GROUP_ID_TEMPO) {
@@ -133,7 +136,7 @@ fun RoomScreen(
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
         sheetContent = {
-            when(sheetContent.value) {
+            when (sheetContent.value) {
                 BottomSheetMode.FILE_PICKER -> {
                     FilePickerBottomSheetDialog(roomViewModel) {
                         coroutineScope.launch {
@@ -149,7 +152,12 @@ fun RoomScreen(
                                         client.userId != roomViewModel.clientId
                                     }
                                     if (friend != null) {
-                                        roomViewModel.uploadFile(context, group.groupId, null, friend)
+                                        roomViewModel.uploadFile(
+                                            context,
+                                            group.groupId,
+                                            null,
+                                            friend
+                                        )
                                     } else {
                                         roomViewModel.sendMessageResponse.value =
                                             Resource.error("", null, ERROR_CODE_TIMEOUT)
@@ -171,10 +179,22 @@ fun RoomScreen(
                             listPeerUserStatus.value ?: emptyList(),
                             listGroupUserStatusState.value ?: emptyList(),
                             onForwardMessageGroup = {
-                                roomViewModel.sendMessageToGroup(context, it, message.message, false, isForwardMessage = true)
+                                roomViewModel.sendMessageToGroup(
+                                    context,
+                                    it,
+                                    message.message,
+                                    false,
+                                    isForwardMessage = true
+                                )
                             },
                             onForwardMessagePeer = { receiver, groupId ->
-                                roomViewModel.sendMessageToUser(context, receiver, groupId, message.message, isForwardMessage = true)
+                                roomViewModel.sendMessageToUser(
+                                    context,
+                                    receiver,
+                                    groupId,
+                                    message.message,
+                                    isForwardMessage = true
+                                )
                             }
                         )
                     }
@@ -226,15 +246,17 @@ fun RoomScreen(
                                 0.66f
                             )
                     ) {
+                        val lazyListState = rememberLazyListState()
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
                             listAvatar = listGroupUserStatusState.value ?: emptyList(),
                             myClientId = roomViewModel.clientId,
-                            group?.isGroup() ?: false,
+                            isGroup = group?.isGroup() ?: false,
+                            listState = lazyListState,
                             isLoading = false,
                             onScrollChange = { _, lastTimestamp ->
-                              roomViewModel.onScrollChange(lastTimestamp)
+                                roomViewModel.onScrollChange(lastTimestamp)
                             },
                             onClickFile = {
                                 if (isWriteFilePermissionGranted(context)) {
@@ -264,6 +286,16 @@ fun RoomScreen(
                                 }
                                 roomViewModel.setSelectedMessage(it)
                                 isMessageClickDialogVisible.value = true
+                            },
+                            onQuoteClick = { messageDisplayInfo ->
+                                if (messageDisplayInfo.isQuoteMessage) {
+                                    val listMessage = messageList.value ?: emptyList()
+                                    val index =
+                                        listMessage.indexOfFirst { messageDisplayInfo.quotedMessageID == it.messageId }
+                                    coroutineScope.launch {
+                                        lazyListState.scrollToItem(index = index)
+                                    }
+                                }
                             }
                         )
                     }
@@ -288,7 +320,7 @@ fun RoomScreen(
                             }
                             val isGroup = group.isGroup()
                             if (isNote.value == true) {
-                                roomViewModel.sendNote(context, )
+                                roomViewModel.sendNote(context)
                             } else if (isGroup) {
                                 val isJoined = group.isJoined
                                 roomViewModel.sendMessageToGroup(
