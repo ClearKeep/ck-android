@@ -181,7 +181,7 @@ fun SearchUserScreen(
                             itemsIndexed(it) { _, messageWithUser ->
                                 Spacer(Modifier.height(18.sdp()))
                                 MessageResultItem(
-                                    user = messageWithUser.user ?: User("", "", ""),
+                                    user = messageWithUser.user ?: User("", "", "", avatar = ""),
                                     message = messageWithUser.message,
                                     group = messageWithUser.group ?: ChatGroup(
                                         null,
@@ -320,7 +320,7 @@ fun PeopleResultItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CircleAvatar(
-            emptyList(),
+            listOf(user.avatar.orEmpty()),
             user.userName,
             size = 64.sdp(),
             false,
@@ -373,7 +373,7 @@ fun MessageResultItem(
 ) {
     Row(Modifier.clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         CircleAvatar(
-            emptyList(),
+            listOf(user.avatar.orEmpty()),
             user.userName,
             size = 64.sdp(),
             false,

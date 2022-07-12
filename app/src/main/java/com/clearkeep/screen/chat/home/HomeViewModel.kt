@@ -159,6 +159,7 @@ class HomeViewModel @Inject constructor(
                     server.serverDomain
                 )
             )
+            listUserRequest.addAll(peopleRepository.getListUserEntity())
             val listClientStatus = peopleRepository.getListClientStatus(listUserRequest)
             _listUserStatus.postValue(listClientStatus)
             val status =

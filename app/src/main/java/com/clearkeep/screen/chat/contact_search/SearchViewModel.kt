@@ -1,20 +1,23 @@
 package com.clearkeep.screen.chat.contact_search
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.dynamicapi.Environment
-import com.clearkeep.repo.ServerRepository
 import com.clearkeep.repo.GroupRepository
 import com.clearkeep.repo.MessageRepository
 import com.clearkeep.repo.PeopleRepository
+import com.clearkeep.repo.ServerRepository
 import com.clearkeep.utilities.isFileMessage
 import com.clearkeep.utilities.isImageMessage
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.printlnCK
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import java.lang.Exception
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SearchViewModel @Inject constructor(
@@ -176,7 +179,10 @@ class SearchViewModel @Inject constructor(
                     ""
                 )
             }
-            (usersInPeerChat + b).distinctBy { it.userId }
+            (usersInPeerChat + b).groupBy { it.userId }.map {
+                val avatar = it.value.find { !it.avatar.isNullOrEmpty() }?.avatar
+                it.value.first().copy(avatar = avatar)
+            }
         }.collect {
             _friends.value = it.distinctBy { it.userId }
         }
