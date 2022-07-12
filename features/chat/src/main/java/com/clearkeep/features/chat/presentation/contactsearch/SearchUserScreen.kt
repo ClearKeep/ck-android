@@ -30,11 +30,14 @@ import com.clearkeep.features.chat.R
 import com.clearkeep.common.presentation.components.*
 import com.clearkeep.common.presentation.components.base.*
 import com.clearkeep.common.utilities.getTimeAsString
+import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.features.chat.presentation.composes.CircleAvatar
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize
 import com.clearkeep.domain.model.ChatGroup
 import com.clearkeep.domain.model.User
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun SearchUserScreen(
@@ -63,7 +66,9 @@ fun SearchUserScreen(
             .background(MaterialTheme.colors.background)
             .padding(horizontal = 16.sdp())
     ) {
-        val query = rememberSaveable { mutableStateOf("") }
+        val query = rememberSaveable{
+            mutableStateOf("")
+        }
 
         Spacer(Modifier.height(44.sdp()))
         Box(Modifier.fillMaxWidth()) {
@@ -87,11 +92,7 @@ fun SearchUserScreen(
             placeholder = stringResource(R.string.home_search_hint),
             maxChars = MAX_SEARCH_LENGTH,
             focusRequester = focusRequester
-        ) {
-            if (query.value.isNotBlank()) {
-                searchViewModel.search(query.value.trim())
-            }
-        }
+        )
         Spacer(Modifier.height(10.sdp()))
         Row(Modifier.fillMaxWidth()) {
             FilterItem(
@@ -183,11 +184,7 @@ fun SearchUserScreen(
                             itemsIndexed(it) { _, messageWithUser ->
                                 Spacer(Modifier.height(18.sdp()))
                                 MessageResultItem(
-                                    user = messageWithUser.user ?: User(
-                                        "",
-                                        "",
-                                        ""
-                                    ),
+                                    user = messageWithUser.user ?: User("", "", ""),
                                     message = messageWithUser.message,
                                     group = messageWithUser.group ?: ChatGroup(
                                         null,
@@ -248,7 +245,7 @@ fun SearchUserScreen(
             }
         }
 
-        if (getPeopleResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR) {
+        if (getPeopleResponse.value?.status == Status.ERROR) {
             CKAlertDialog(
                 title = stringResource(R.string.network_error_dialog_title),
                 text = stringResource(R.string.network_error_dialog_text),
@@ -256,6 +253,16 @@ fun SearchUserScreen(
                     searchViewModel.getPeopleResponse.value = null
                 }
             )
+        }
+
+        LaunchedEffect(query) {
+            snapshotFlow { query.value }
+                .distinctUntilChanged()
+                .collect { query ->
+                    if (query.isNotBlank()) {
+                        searchViewModel.search(query)
+                    }
+                }
         }
     }
 }
@@ -266,12 +273,20 @@ private fun RowScope.FilterItem(label: String, isSelected: Boolean, onClick: () 
 
     val backgroundModifier = if (LocalColorMapping.current.isDarkTheme) {
         val borderModifier = if (isSelected) Modifier.border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp())) else Modifier
-        Modifier.background(Brush.horizontalGradient(listOf(
-            backgroundGradientStart,
-            backgroundGradientEnd,
-        )), RoundedCornerShape(8.sdp())).then(borderModifier)
+        Modifier
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        backgroundGradientStart,
+                        backgroundGradientEnd,
+                    )
+                ), RoundedCornerShape(8.sdp())
+            )
+            .then(borderModifier)
     } else {
-        Modifier.background(Color.White, RoundedCornerShape(8.sdp())).border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
+        Modifier
+            .background(Color.White, RoundedCornerShape(8.sdp()))
+            .border(1.sdp(), Color(0xFFF3F3F3), RoundedCornerShape(8.sdp()))
 
     }
     Box(

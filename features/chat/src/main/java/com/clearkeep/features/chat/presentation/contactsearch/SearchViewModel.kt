@@ -80,7 +80,7 @@ class SearchViewModel @Inject constructor(
         _messages.value = null
 
         searchQuery.value?.let {
-            search(it)
+            search(it.trim())
         }
     }
 
@@ -93,23 +93,23 @@ class SearchViewModel @Inject constructor(
             _messages.value = null
             return
         }
-        _searchQuery.value = text
+        _searchQuery.value = text.trim()
         val server = environment.getServer()
         searchJob = viewModelScope.launch {
             when (searchMode.value) {
                 SearchMode.ALL -> {
-                    searchGroups(server, text)
-                    searchMessages(server, text)
-                    searchUsers(server, text)
+                    searchGroups(server, text.trim())
+                    searchMessages(server, text.trim())
+                    searchUsers(server, text.trim())
                 }
                 SearchMode.PEOPLE -> {
-                    searchUsers(server, text)
+                    searchUsers(server, text.trim())
                 }
                 SearchMode.GROUPS -> {
-                    searchGroups(server, text)
+                    searchGroups(server, text.trim())
                 }
                 SearchMode.MESSAGES -> {
-                    searchMessages(server, text)
+                    searchMessages(server, text.trim())
                 }
             }
             isShowLoading.postValue(false)
