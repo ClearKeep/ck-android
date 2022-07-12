@@ -1,9 +1,12 @@
 package com.clearkeep.features.chat.presentation.contactsearch
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isFileMessage
 import com.clearkeep.common.utilities.isImageMessage
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.*
+import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.usecase.group.GetGroupsByDomainUseCase
 import com.clearkeep.domain.usecase.group.GetGroupsByGroupNameUseCase
 import com.clearkeep.domain.usecase.group.GetPeerRoomsByPeerNameUseCase
@@ -13,13 +16,14 @@ import com.clearkeep.domain.usecase.people.InsertFriendUseCase
 import com.clearkeep.domain.usecase.people.UpdatePeopleUseCase
 import com.clearkeep.domain.usecase.server.GetActiveServerUseCase
 import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
-import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.domain.repository.Environment
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
-import java.lang.Exception
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -172,7 +176,6 @@ class SearchViewModel @Inject constructor(
                         { it.userName })
                 )
             }
-
         allPeerChat.asFlow().combine(allUnchattedPeople) { a: List<ChatGroup>, b: List<User> ->
             val usersInPeerChat = a.sortedByDescending { it.lastMessageAt }.map {
                 val user = it.clientList.find { it.userId != server.profile.userId }
@@ -187,7 +190,7 @@ class SearchViewModel @Inject constructor(
                     ""
                 )
             }
-            (usersInPeerChat + b).distinctBy { it.userId }
+            (usersInPeerChat + b.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }).distinctBy { it.userId }
         }.collect {
             _friends.value = it.distinctBy { it.userId }
         }

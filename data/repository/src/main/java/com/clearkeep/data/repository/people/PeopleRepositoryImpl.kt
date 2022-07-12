@@ -4,15 +4,15 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.common.utilities.network.Status.*
-import com.clearkeep.data.remote.service.GroupService
+import com.clearkeep.common.utilities.network.Status.SUCCESS
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.clearkeep.user.UserDAO
+import com.clearkeep.data.remote.service.GroupService
+import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.model.UserEntity
-import com.clearkeep.domain.repository.PeopleRepository
-import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.repository.PeopleRepository
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +29,8 @@ class PeopleRepositoryImpl @Inject constructor(
         peopleDao.getFriends(ownerDomain, ownerClientId).map { list ->
             if (list.isNotEmpty()) {
                 val response = groupService.getUsersInServer()
+                Log.e("hungnv", "getFriendsAsState: $response")
+                Log.e("hungnv", "List: $list")
                 val activeUserIds = response.lstUserOrBuilderList.map { it.id }
 
                 list.filter { it.userId in activeUserIds }
@@ -195,7 +197,9 @@ class PeopleRepositoryImpl @Inject constructor(
                 }
                 user.userStatus = newUser?.status
                 user.avatar = newUser?.avatar
+                Log.e("hungnv", "avatar: ${newUser?.avatar.orEmpty()}")
                 user.userName = newUser?.displayName.orEmpty()
+                peopleDao.updateAvatar(newUser?.avatar.orEmpty(), user.userId)
                 printlnCK("avata: ${user.avatar}")
                 printlnCK("username: ${user.userName}")
             }
@@ -242,7 +246,14 @@ class PeopleRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getFriendByEmail(emailHard: String): List<User> = withContext(Dispatchers.IO) {
-        return@withContext groupService.findUserByEmail(emailHard)
+    override suspend fun getFriendByEmail(emailHard: String): List<User> =
+        withContext(Dispatchers.IO) {
+            return@withContext groupService.findUserByEmail(emailHard)
+        }
+
+    override suspend fun getListUserEntity(): List<User> {
+        return peopleDao.getListUserEntity().map {
+            convertEntityToUser(it.toModel())
+        }
     }
 }

@@ -34,7 +34,7 @@ fun FriendListItemSelectable(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
-                emptyList(),
+                listOf(friend.avatar.orEmpty()),
                 friend.userName,
                 size = 64.sdp()
             )

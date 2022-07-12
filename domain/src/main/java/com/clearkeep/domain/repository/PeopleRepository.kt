@@ -19,4 +19,5 @@ interface PeopleRepository {
     suspend fun getListClientStatus(list: List<User>): List<User>?
     suspend fun getUserInfo(userId: String, userDomain: String): Resource<User>
     suspend fun getFriendByEmail(emailHard:String): List<User>
+    suspend fun getListUserEntity(): List<User>
 }
