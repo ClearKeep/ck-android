@@ -1,28 +1,32 @@
 package com.clearkeep.screen.auth.login
 
 import android.content.Context
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import auth.AuthOuterClass
 import com.clearkeep.R
 import com.clearkeep.db.clear_keep.model.LoginResponse
-import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.repo.WorkSpaceRepository
+import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.*
 import com.clearkeep.utilities.network.Resource
 import com.clearkeep.utilities.network.Status
 import com.facebook.AccessToken
+import com.facebook.GraphRequest
 import com.facebook.login.LoginManager
-import javax.inject.Inject
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.microsoft.identity.client.*
+import com.microsoft.identity.client.IPublicClientApplication
+import com.microsoft.identity.client.ISingleAccountPublicClientApplication
+import com.microsoft.identity.client.PublicClientApplication
 import com.microsoft.identity.client.exception.MsalException
-import com.facebook.GraphRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class LoginViewModel @Inject constructor(

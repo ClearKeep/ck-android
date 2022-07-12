@@ -538,7 +538,6 @@ class MessageRepository @Inject constructor(
             )
 
             val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
-
             // Build a session with a PreKey retrieved from the server.
             sessionBuilder.process(retrievedPreKey)
             printlnCK("initSessionUserPeer: success")

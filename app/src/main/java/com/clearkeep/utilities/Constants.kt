@@ -15,6 +15,7 @@ const val PORT = BuildConfig.PORT
 // janus
 const val EXTRA_OWNER_CLIENT = "to"
 const val EXTRA_GROUP_ID = "call_id"
+const val EXTRA_ID_MEMBER_CHANGE_KEY = "extra_id_member_change_key"
 const val EXTRA_OWNER_DOMAIN = "owner_domain"
 const val EXTRA_GROUP_NAME = "group_name"
 const val EXTRA_GROUP_TYPE = "group_type"
@@ -43,6 +44,7 @@ const val EXTRA_CALL_CANCEL_GROUP_TYPE = "call_cancel_group_type"
 const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
 const val ACTION_REMOVE_MEMBER = "ck.action.remove.member"
 const val ACTION_ADD_REMOVE_MEMBER = "ck.action.add.member"
+const val ACTION_MEMBER_CHANGE_KEY = "ck.action.member.change.key"
 const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
 
 const val INCOMING_NOTIFICATION_ID = 123456

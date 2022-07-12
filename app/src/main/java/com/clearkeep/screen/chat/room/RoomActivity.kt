@@ -8,7 +8,6 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
 import com.clearkeep.components.CKInsetTheme
@@ -30,12 +29,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
 import android.content.*
-import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
-import android.view.Display
-import android.view.Surface
 import android.view.View
-import android.view.WindowManager
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.app.NotificationManagerCompat
@@ -133,15 +128,24 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             CKInsetTheme {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
-                val isShowDialog = roomViewModel.isShowDialog.observeAsState()
+                val isShowDialog = roomViewModel.isShowDialogRemoved.observeAsState()
+                val isMemberChangeKey = roomViewModel.isMemberChangeKey.observeAsState()
+
                 if (isShowDialog.value == true) {
                     CKAlertDialog(
                         title = "",
                         text = "You have been removed from the conversation",
                         onDismissButtonClick = {
                             restartToRoot(context = this)
+
                         }
                     )
+                }
+
+                if (isMemberChangeKey.value == true) {
+                    val mIntent = intent
+                    finish()
+                    startActivity(mIntent)
                 }
 
                 NavHost(navController, startDestination = "room_screen") {
@@ -240,14 +244,33 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         addMemberReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
-                if (roomId == groupId) {
-                    roomViewModel.refreshRoom()
+                when (intent.action) {
+                    ACTION_MEMBER_CHANGE_KEY -> {
+                        if (roomViewModel.group.value?.isGroup() == false) {
+                            val refClientId = intent.getStringExtra(EXTRA_ID_MEMBER_CHANGE_KEY)
+                            val friend = roomViewModel.group.value?.clientList?.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
+                            }
+                            if (friend?.userId == refClientId) {
+                                roomViewModel.isMemberChangeKey.postValue(true)
+                            }
+                        }
+                    }
+                    else -> {
+                        if (roomId == groupId) {
+                            roomViewModel.refreshRoom()
+                        }
+                    }
                 }
             }
         }
         registerReceiver(
             addMemberReceiver,
             IntentFilter(ACTION_ADD_REMOVE_MEMBER)
+        )
+        registerReceiver(
+            addMemberReceiver,
+            IntentFilter(ACTION_MEMBER_CHANGE_KEY)
         )
     }
 
@@ -296,7 +319,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
                 printlnCK("isShowDialog: $group")
                 if (group == null){
-                    roomViewModel.isShowDialog.postValue(true)
+                    roomViewModel.isShowDialogRemoved.postValue(true)
                 }
 
             })

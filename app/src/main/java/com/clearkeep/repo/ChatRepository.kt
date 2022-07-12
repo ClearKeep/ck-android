@@ -148,11 +148,11 @@ class ChatRepository @Inject constructor(
         senderId: String,
         ownerWorkSpace: String
     ): Boolean {
-        Log.d("antx: ", "ChatRepository processPeerKey line = 150: $SENDER_DEVICE_ID " );
         val signalProtocolAddress =
             CKSignalProtocolAddress(Owner(receiverWorkspaceDomain, receiverId), SENDER_DEVICE_ID)
         val signalProtocolAddress2 =
             CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+
         messageRepository.initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,

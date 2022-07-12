@@ -226,6 +226,9 @@ class ChatService : Service(),
                         value.clientId,
                         value.clientWorkspaceDomain
                     )
+                    val updateGroupIntent = Intent(ACTION_MEMBER_CHANGE_KEY)
+                    updateGroupIntent.putExtra(EXTRA_ID_MEMBER_CHANGE_KEY, value.refClientId)
+                    sendBroadcast(updateGroupIntent)
                 }
                 "member-add" -> {
                     groupRepository.fetchGroups()

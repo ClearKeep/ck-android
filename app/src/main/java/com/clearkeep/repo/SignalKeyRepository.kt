@@ -42,7 +42,7 @@ class SignalKeyRepository @Inject constructor(
         val (domain, clientId) = owner
 
         signalIdentityKeyDAO
-            .deleteSignalKeyByOwnerDomain(domain, clientId)
+            .deleteSignalKeyByOwnerDomain(clientId = clientId, domain = domain)
         val senderAddress = CKSignalProtocolAddress(
             Owner(server.serverDomain, server.ownerClientId),
             RECEIVER_DEVICE_ID
