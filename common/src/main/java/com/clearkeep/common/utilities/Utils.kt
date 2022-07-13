@@ -266,7 +266,11 @@ fun isTempMessage(content: String): Boolean {
 }
 
 fun isForwardedMessage(content: String): Boolean {
-    return content.contains(">>>")
+    return content.startsWith(">>>")
+}
+
+fun isQuotedMessage(content: String): Boolean {
+    return content.startsWith("```")
 }
 
 fun getImageUriStrings(content: String): List<String> {
