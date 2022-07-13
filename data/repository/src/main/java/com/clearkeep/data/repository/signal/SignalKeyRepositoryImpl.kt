@@ -47,7 +47,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
     override suspend fun deleteIdentityKeyByOwnerDomain(domain: String, clientId: String): Unit =
         withContext(Dispatchers.IO) {
             signalIdentityKeyDAO
-                .deleteSignalKeyByOwnerDomain(domain, clientId)
+                .deleteSignalKeyByOwnerDomain(domain = domain, clientId = clientId)
         }
 
     override suspend fun deleteSenderPreKey(domain: String, clientId: String): Unit =

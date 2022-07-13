@@ -25,10 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.common.presentation.components.CKInsetTheme
 import com.clearkeep.common.presentation.components.base.CKAlertDialog
-import com.clearkeep.common.utilities.ACTION_ADD_REMOVE_MEMBER
-import com.clearkeep.common.utilities.EXTRA_GROUP_ID
-import com.clearkeep.common.utilities.INCOMING_NOTIFICATION_ID
-import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.common.utilities.*
 import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupViewModel
 import com.clearkeep.features.chat.presentation.groupcreate.EnterGroupNameScreen
 import com.clearkeep.features.chat.presentation.groupinvite.AddMemberUIType
@@ -114,7 +111,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         setContent {
             CKInsetTheme {
                 navController = rememberNavController()
-                val showing = roomViewModel.isShowDialog.observeAsState()
+                val showing = roomViewModel.isShowDialogRemoved.observeAsState()
                 if (showing.value == true) {
                     CKAlertDialog(
                         title = "",
@@ -223,15 +220,33 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         addMemberReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
-                if (roomId == groupId) {
-                    navController.navigate("room_screen")
-                    roomViewModel.refreshRoom()
+                when (intent.action) {
+                    ACTION_MEMBER_CHANGE_KEY -> {
+                        if (roomViewModel.group.value?.isGroup() == false) {
+                            val refClientId = intent.getStringExtra(EXTRA_ID_MEMBER_CHANGE_KEY)
+                            val friend = roomViewModel.group.value?.clientList?.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
+                            }
+                            if (friend?.userId == refClientId) {
+                                roomViewModel.isMemberChangeKey.postValue(true)
+                            }
+                        }
+                    }
+                    else -> {
+                        if (roomId == groupId) {
+                            roomViewModel.refreshRoom()
+                        }
+                    }
                 }
             }
         }
         registerReceiver(
             addMemberReceiver,
             IntentFilter(ACTION_ADD_REMOVE_MEMBER)
+        )
+        registerReceiver(
+            addMemberReceiver,
+            IntentFilter(ACTION_MEMBER_CHANGE_KEY)
         )
     }
 
@@ -279,7 +294,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                 val group =
                     it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
                 if (group == null) {
-                    roomViewModel.isShowDialog.postValue(true)
+                    roomViewModel.isShowDialogRemoved.postValue(true)
                 }
             })
     }

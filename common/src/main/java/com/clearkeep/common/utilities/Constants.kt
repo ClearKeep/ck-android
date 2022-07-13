@@ -74,3 +74,6 @@ const val REQUEST_DEADLINE_SECONDS = 30L
 
 const val SENDER_DEVICE_ID = 111
 const val RECEIVER_DEVICE_ID = 222
+
+const val ACTION_MEMBER_CHANGE_KEY = "ck.action.member.change.key"
+const val EXTRA_ID_MEMBER_CHANGE_KEY = "extra_id_member_change_key"

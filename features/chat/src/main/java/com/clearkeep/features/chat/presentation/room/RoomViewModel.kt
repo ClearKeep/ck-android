@@ -152,7 +152,9 @@ class RoomViewModel @Inject constructor(
     val forwardMessageResponse = MutableLiveData<Long>()
 
     val isLoading = MutableLiveData(false)
-    val isShowDialog= MutableLiveData(false)
+    val isShowDialogRemoved= MutableLiveData(false)
+    val isMemberChangeKey = MutableLiveData(false)
+
 
     @Volatile
     private var endOfPaginationReached = false

@@ -9,7 +9,6 @@ import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
 import com.clearkeep.domain.repository.*
-import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import message.MessageOuterClass
@@ -249,6 +248,9 @@ class ChatService : Service(),
                         value.clientId,
                         value.clientWorkspaceDomain
                     )
+                    val updateGroupIntent = Intent(ACTION_MEMBER_CHANGE_KEY)
+                    updateGroupIntent.putExtra(EXTRA_ID_MEMBER_CHANGE_KEY, value.refClientId)
+                    sendBroadcast(updateGroupIntent)
                 }
                 "member-add" -> {
                     fetchGroupsUseCase()

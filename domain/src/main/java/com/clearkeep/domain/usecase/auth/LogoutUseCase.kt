@@ -22,45 +22,45 @@ class LogoutUseCase @Inject constructor(
         server?.let {
             val response = authRepository.logoutFromAPI(server)
             server.id?.let {
-                    val removeResult = serverRepository.deleteServer(it)
-                    groupRepository.deleteGroup(
-                        server.serverDomain,
-                        server.ownerClientId
-                    )
-                    messageRepository.deleteMessageByDomain(
-                        server.serverDomain,
-                        server.ownerClientId
-                    )
-                    if (removeResult > 0) {
-                        return if (serverRepository.getServers().isNotEmpty()) {
-                            val firstServer = serverRepository.getServers()[0]
-                            serverRepository.setActiveServer(firstServer)
-                            false
-                        } else {
-                            true
-                        }
+                val removeResult = serverRepository.deleteServer(it)
+                groupRepository.deleteGroup(
+                    server.serverDomain,
+                    server.ownerClientId
+                )
+                messageRepository.deleteMessageByDomain(
+                    server.serverDomain,
+                    server.ownerClientId
+                )
+                if (removeResult > 0) {
+                    return if (serverRepository.getServers().isNotEmpty()) {
+                        val firstServer = serverRepository.getServers()[0]
+                        serverRepository.setActiveServer(firstServer)
+                        false
+                    } else {
+                        true
                     }
                 }
-                val server = environment.getServer()
-                val owner = Owner(server.serverDomain, server.ownerClientId)
-                val groups = groupRepository.getAllRooms()
-                val profile = serverRepository.getDefaultServer()?.profile
-                val groupsInServer = groups.filter {
-                    it.ownerDomain == server.serverDomain
-                            && it.ownerClientId == server.profile.userId
-                            && it.isGroup()
-                            && it.clientList.firstOrNull { it.userId == profile?.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
-                }
-
-                deleteKey(owner, server, groupsInServer)
             }
-            return true
+            val server = environment.getServer()
+            val owner = Owner(server.serverDomain, server.ownerClientId)
+            val groups = groupRepository.getAllRooms()
+            val profile = serverRepository.getDefaultServer()?.profile
+            val groupsInServer = groups.filter {
+                it.ownerDomain == server.serverDomain
+                        && it.ownerClientId == server.profile.userId
+                        && it.isGroup()
+                        && it.clientList.firstOrNull { it.userId == profile?.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
+            }
+
+            deleteKey(owner, server, groupsInServer)
         }
+        return true
+    }
 
     private suspend fun deleteKey(owner: Owner, server: com.clearkeep.domain.model.Server, chatGroups: List<com.clearkeep.domain.model.ChatGroup>?) {
         val (domain, clientId) = owner
 
-        signalKeyRepository.deleteIdentityKeyByOwnerDomain(domain, clientId)
+        signalKeyRepository.deleteIdentityKeyByOwnerDomain(domain = domain, clientId = clientId)
         val senderAddress = CKSignalProtocolAddress(
             Owner(server.serverDomain, server.ownerClientId),
             RECEIVER_DEVICE_ID
