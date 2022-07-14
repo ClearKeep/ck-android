@@ -210,7 +210,7 @@ class HomeViewModel @Inject constructor(
                     }
                 }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
-            delay(60 * 1000)
+            delay(300 * 1000)
             getStatusUserInDirectGroup()
 
         } catch (e: Exception) {
