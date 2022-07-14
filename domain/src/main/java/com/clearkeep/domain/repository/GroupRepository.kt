@@ -55,7 +55,7 @@ interface GroupRepository {
         domain: String
     ): List<String>?
     suspend fun inviteUserToGroup(
-        invitedUser: User,
+        invitedUsers: List<User>,
         groupId: Long,
         owner: Owner
     ): String?

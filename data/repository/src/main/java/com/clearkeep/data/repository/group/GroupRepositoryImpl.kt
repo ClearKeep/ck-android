@@ -7,21 +7,20 @@ import com.clearkeep.common.utilities.*
 import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.data.remote.service.GroupService
+import com.clearkeep.common.utilities.network.TokenExpiredException
 import com.clearkeep.data.local.clearkeep.group.GroupDAO
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
-import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
-import com.clearkeep.domain.repository.GroupRepository
-import com.clearkeep.common.utilities.network.TokenExpiredException
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyEntity
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
+import com.clearkeep.data.remote.service.GroupService
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.model.response.GroupObjectResponse
 import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
 import io.grpc.StatusRuntimeException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.ecc.ECKeyPair
 import org.whispersystems.libsignal.ecc.ECPrivateKey
@@ -107,22 +106,28 @@ class GroupRepositoryImpl @Inject constructor(
         }
 
     override suspend fun inviteUserToGroup(
-        invitedUser: User,
+        invitedUsers: List<User>,
         groupId: Long,
         owner: Owner
     ): String? =
         withContext(Dispatchers.IO) {
             printlnCK("inviteToGroupFromAPI: $groupId ")
             try {
-                val response = groupService.addMember(
-                    groupId,
-                    invitedUser,
-                    getClientId(),
-                    owner.domain,
-                    environment.getServer().profile.userName
-                )
-                printlnCK("inviteToGroupFromAPI: ${response.error}")
-                return@withContext response.error
+                val addMember = invitedUsers.map { user ->
+                    async {
+                        groupService.addMember(
+                            groupId,
+                            user,
+                            getClientId(),
+                            owner.domain,
+                            environment.getServer().profile.userName
+                        )
+                    }
+                }
+
+                awaitAll(*addMember.toTypedArray())
+                printlnCK("inviteToGroupFromAPI: $addMember")
+                return@withContext null
             } catch (e: StatusRuntimeException) {
                 return@withContext null
             } catch (e: Exception) {
