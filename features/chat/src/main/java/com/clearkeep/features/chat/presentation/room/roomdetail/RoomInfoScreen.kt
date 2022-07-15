@@ -1,5 +1,6 @@
 package com.clearkeep.features.chat.presentation.room.roomdetail
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -82,11 +83,14 @@ fun RoomInfoScreen(
                         val listUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
                         for (i in group.clientList.indices) {
                             if (i < maxItems) {
-                                FriendListItemInfo(
-                                    listUserStatusState.value?.get(i) ?: group.clientList[i],
-                                    null,
-                                    28 * i
-                                )
+                                group.clientList[i].let {
+                                    FriendListItemInfo(
+                                        it,
+                                        null,
+                                        28 * i
+                                    )
+                                }
+
                             } else {
                                 FriendListMoreItem(group.clientList.size - maxItems, 28 * i)
                                 break
