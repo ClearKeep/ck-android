@@ -1,6 +1,5 @@
 package com.clearkeep.data.repository.signal
 
-import android.util.Log
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
 import com.clearkeep.data.remote.service.SignalKeyDistributionService
 import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
@@ -52,7 +51,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
 
     override suspend fun deleteSenderPreKey(domain: String, clientId: String): Unit =
         withContext(Dispatchers.IO) {
-            signalPreKeyDAO.deleteSignalSenderKey(domain, clientId)
+            signalPreKeyDAO.deleteSignalSenderKey(domain = domain, userId = clientId)
         }
 
     override suspend fun deleteGroupSenderKey(senderKeyName: SenderKeyName) =
@@ -79,9 +78,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
 
     override suspend fun loadSenderKey(senderKeyName: SenderKeyName): SenderKeyRecord =
         withContext(Dispatchers.IO) {
-            val senderKey=senderKeyStore.loadSenderKey(senderKeyName)
-            Log.d("antx: ", "SignalKeyRepositoryImpl loadSenderKey line = 81:${senderKeyName} ${senderKey.isEmpty} " );
-            return@withContext senderKey
+            return@withContext senderKeyStore.loadSenderKey(senderKeyName)
         }
 
     override suspend fun getUserKey(serverDomain: String, userId: String): UserKey =

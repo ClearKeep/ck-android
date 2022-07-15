@@ -205,11 +205,12 @@ class ChatService : Service(),
                     Profile(null, value.clientId, "", "", "", 0L, "")
                 )
             )
+            val messageEncrypt = if (!isGroup(value.groupType) && getOwnerClientIdsUseCase().contains(value.fromClientId)) value.senderMessage else value.message
             val res = decryptMessageUseCase(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
                 value.createdAt, value.updatedAt,
-                value.message,
+                messageEncrypt,
                 Owner(domain, value.clientId)
             )
             val isShowNotification =

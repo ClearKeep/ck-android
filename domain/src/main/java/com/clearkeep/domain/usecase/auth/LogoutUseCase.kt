@@ -1,5 +1,6 @@
 package com.clearkeep.domain.usecase.auth
 
+import android.util.Log
 import com.clearkeep.domain.repository.*
 import com.clearkeep.common.utilities.RECEIVER_DEVICE_ID
 import com.clearkeep.common.utilities.SENDER_DEVICE_ID
@@ -20,27 +21,6 @@ class LogoutUseCase @Inject constructor(
     suspend operator fun invoke(): Boolean {
         val server = serverRepository.getDefaultServer()
         server?.let {
-            val response = authRepository.logoutFromAPI(server)
-            server.id?.let {
-                val removeResult = serverRepository.deleteServer(it)
-                groupRepository.deleteGroup(
-                    server.serverDomain,
-                    server.ownerClientId
-                )
-                messageRepository.deleteMessageByDomain(
-                    server.serverDomain,
-                    server.ownerClientId
-                )
-                if (removeResult > 0) {
-                    return if (serverRepository.getServers().isNotEmpty()) {
-                        val firstServer = serverRepository.getServers()[0]
-                        serverRepository.setActiveServer(firstServer)
-                        false
-                    } else {
-                        true
-                    }
-                }
-            }
             val server = environment.getServer()
             val owner = Owner(server.serverDomain, server.ownerClientId)
             val groups = groupRepository.getAllRooms()
@@ -53,6 +33,25 @@ class LogoutUseCase @Inject constructor(
             }
 
             deleteKey(owner, server, groupsInServer)
+
+            server.id?.let {
+                val removeResult = serverRepository.deleteServer(it)
+                groupRepository.deleteGroup(
+                    server.serverDomain,
+                    server.ownerClientId
+                )
+                messageRepository.deleteMessageByDomain(
+                    server.serverDomain,
+                    server.ownerClientId
+                )
+                if (removeResult > 0) {
+                     if (serverRepository.getServers().isNotEmpty()) {
+                        val firstServer = serverRepository.getServers()[0]
+                        serverRepository.setActiveServer(firstServer)
+                         return true
+                    }
+                }
+            }
         }
         return true
     }
@@ -65,8 +64,7 @@ class LogoutUseCase @Inject constructor(
             Owner(server.serverDomain, server.ownerClientId),
             RECEIVER_DEVICE_ID
         )
-
-        signalKeyRepository.deleteSenderPreKey(server.serverDomain, server.ownerClientId)
+        signalKeyRepository.deleteSenderPreKey(domain = server.serverDomain, clientId = server.ownerClientId)
 
         chatGroups?.forEach { group ->
             val groupSender2 = SenderKeyName(group.groupId.toString(), senderAddress)

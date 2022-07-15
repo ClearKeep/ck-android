@@ -72,7 +72,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
         roomViewModel.shouldReLogin.observe(this) {
             if (it) {
-                NavigationUtils.restartToRoot(this)
+                restartToRoot(this)
             }
         }
 
@@ -112,6 +112,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             CKInsetTheme {
                 navController = rememberNavController()
                 val showing = roomViewModel.isShowDialogRemoved.observeAsState()
+                val isMemberChangeKey = roomViewModel.isMemberChangeKey.observeAsState()
+
                 if (showing.value == true) {
                     CKAlertDialog(
                         title = "",
@@ -121,6 +123,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
                         }
                     )
+                }
+                if (isMemberChangeKey.value == true) {
+                    val mIntent = intent
+                    finish()
+                    startActivity(mIntent)
                 }
 
                 val selectedItem = remember { mutableStateListOf<com.clearkeep.domain.model.User>() }

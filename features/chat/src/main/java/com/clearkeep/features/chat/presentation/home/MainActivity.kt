@@ -2,6 +2,7 @@ package com.clearkeep.features.chat.presentation.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             }
         }
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
@@ -182,6 +183,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun signOut() {
+        Log.d("antx: ", "MainActivity signOut line = 186: ");
         homeViewModel.signOut()
     }
 

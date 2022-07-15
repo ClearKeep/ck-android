@@ -80,7 +80,7 @@ android {
             buildConfigField "int", 'PORT', "5000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.1.1-dev\""
+            buildConfigField "String", 'VERSION_NAME', "\"1.1.4-dev\""
         }
     }
 }

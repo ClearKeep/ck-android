@@ -20,12 +20,14 @@ open class BaseViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
-            _shouldReLogin.value = logoutUseCase()
+            _shouldReLogin.value = logoutUseCase.invoke()
         }
     }
 
     fun handleResponse(response: com.clearkeep.common.utilities.network.Resource<Any>?) {
-        if (response?.status == com.clearkeep.common.utilities.network.Status.ERROR && response.error is TokenExpiredException||response?.errorCode==1000) {
+        if (response?.status == com.clearkeep.common.utilities.network.Status.ERROR
+            && response.error is TokenExpiredException || response?.errorCode == 1000
+        ) {
             signOut()
         }
     }

@@ -7,6 +7,7 @@ import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.model.response.LoginResponse
 import com.clearkeep.domain.model.response.AuthRes
 import com.clearkeep.domain.model.response.SocialLoginRes
+import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.domain.usecase.auth.*
 import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
 import com.clearkeep.features.auth.R
@@ -33,6 +34,7 @@ class LoginViewModel @Inject constructor(
     private val validateOtpUseCase: ValidateOtpUseCase,
     private val mfaResendOtpUseCase: LoginMfaResendOtpUseCase,
     private val getWorkspaceInfoUseCase: GetWorkspaceInfoUseCase,
+    private val signalKeyRepository: SignalKeyRepository
 ) : ViewModel() {
     lateinit var googleSignIn: GoogleSignInOptions
     lateinit var googleSignInClient: GoogleSignInClient
@@ -84,6 +86,11 @@ class LoginViewModel @Inject constructor(
     private var isResetPincode = false
     private var resetPincodeToken: String = ""
 
+    init {
+        viewModelScope.launch {
+            signalKeyRepository.getIdentityKey("","")
+        }
+    }
     fun setOtpLoginInfo(otpHash: String, userId: String, hashKey: String) {
         this.otpHash = otpHash
         this.userId = userId
