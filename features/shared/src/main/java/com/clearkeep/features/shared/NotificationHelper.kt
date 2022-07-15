@@ -60,6 +60,9 @@ fun showMessagingStyleNotification(
         isForwardedMessage(message.message) -> {
             message.message.substring(3)
         }
+        isQuotedMessage(message.message) -> {
+            message.message.substring(3).split("|")[4]
+        }
         else -> {
             message.message
         }
@@ -212,6 +215,9 @@ fun showMessageNotificationToSystemBar(
                         }
                         isForwardedMessage(message.message) -> {
                             message.message.substring(3)
+                        }
+                        isQuotedMessage(message.message) -> {
+                            message.message.substring(3).split("|")[4]
                         }
                         else -> {
                             message.message
