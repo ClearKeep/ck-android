@@ -66,7 +66,7 @@ class PeopleRepository @Inject constructor(
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
             return@withContext response.lstUserOrBuilderList.map {
-                User(it.id, it.displayName, it.workspaceDomain)
+                User(it.id, it.displayName, it.workspaceDomain,avatar = it.avatar)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -277,6 +277,7 @@ class PeopleRepository @Inject constructor(
                 user.userStatus = newUser?.status
                 user.avatar = if (!newUser?.avatar.isNullOrBlank()) "${newUser?.avatar}?cache=${UUID.randomUUID()}" else "" //Force reload
                 user.userName = newUser?.displayName.orEmpty()
+                peopleDao.updateAvatar(newUser?.avatar.orEmpty(), user.userId)
                 printlnCK("avata: ${user.avatar}")
                 printlnCK("username: ${user.userName}")
             }
@@ -345,4 +346,10 @@ class PeopleRepository @Inject constructor(
                 return@withContext Resource.error(e.toString(), null)
             }
         }
+
+    suspend fun getListUserEntity(): List<User> {
+        return peopleDao.getListUserEntity().map {
+            convertEntityToUser(it)
+        }
+    }
 }
