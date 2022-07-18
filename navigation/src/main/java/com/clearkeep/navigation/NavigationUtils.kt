@@ -88,7 +88,7 @@ object NavigationUtils {
     }
 
     fun getChatServiceRef(): Class<*> {
-        return Class.forName("com.clearkeep.data.services.ChatService")
+        return Class.forName("com.meadowpoc.utils.ChatService")
     }
 
     fun navigateToCall(
