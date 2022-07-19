@@ -48,6 +48,7 @@ import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.features.calls.presentation.AppCall
 import com.clearkeep.features.chat.R
+import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupActivity
 import com.clearkeep.features.chat.presentation.room.composes.MessageListView
 import com.clearkeep.features.chat.presentation.room.composes.SendBottomCompose
 import com.clearkeep.features.chat.presentation.room.composes.ToolbarMessage
@@ -131,6 +132,7 @@ fun RoomScreen(
             group?.isDeletedUserPeer == true -> stringResource(
                 R.string.deleted_user
             )
+            group?.groupType == "peer" && !roomViewModel._groupName.value.isNullOrEmpty() -> (roomViewModel._groupName.value.toString())
             else -> group?.groupName ?: ""
         }
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()

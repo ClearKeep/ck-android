@@ -67,6 +67,7 @@ class HomeViewModel @Inject constructor(
     val isLogout = getIsLogoutUseCase()
 
     val selectingJoinServer = MutableLiveData(false)
+//    val groupName = MutableLiveData<String>()
     private val _prepareState = MutableLiveData<PrepareViewState>()
 
     val prepareState: LiveData<PrepareViewState>
