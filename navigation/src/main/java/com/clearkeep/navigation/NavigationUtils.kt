@@ -303,6 +303,7 @@ object NavigationUtils {
     }
 
     const val NAVIGATE_ROOM_ACTIVITY_GROUP_ID = "room_id"
+    const val NAVIGATE_ROOM_ACTIVITY_ROOM_NAME = "room_name"
     const val NAVIGATE_ROOM_ACTIVITY_DOMAIN = "domain"
     const val NAVIGATE_ROOM_ACTIVITY_CLIENT_ID = "client_id"
     const val NAVIGATE_ROOM_ACTIVITY_FRIEND_ID = "remote_id"

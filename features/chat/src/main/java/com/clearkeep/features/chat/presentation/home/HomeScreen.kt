@@ -51,7 +51,7 @@ fun HomeScreen(
     homeViewModel: HomeViewModel,
     gotoSearch: () -> Unit,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
-    gotoRoomById: (idRoom: Long) -> Unit,
+    gotoRoomById: (idRoom: Long, groupName: String) -> Unit,
     onSignOut: () -> Unit,
     onJoinServer: (serverUrl: String) -> Unit,
     onNavigateServerSetting: () -> Unit,
@@ -88,8 +88,8 @@ fun HomeScreen(
                         homeViewModel,
                         gotoSearch,
                         createGroupChat,
-                        onItemClickListener = {
-                            gotoRoomById(it)
+                        onItemClickListener = { id, name ->
+                            gotoRoomById(id, name)
                         },
                         gotoProfile = {
                             rememberStateSiteMenu.value = true
@@ -240,22 +240,21 @@ fun ItemListDirectMessage(
     chatGroup: com.clearkeep.domain.model.ChatGroup,
     listUserStatus: List<com.clearkeep.domain.model.User>?,
     clintId: String,
-    onItemClickListener: ((Long) -> Unit)? = null
+    onItemClickListener: ((groupId: Long, groupName: String) -> Unit)? = null
 ) {
+    val partnerUser = chatGroup.clientList.firstOrNull { client ->
+        client.userId != clintId
+    }
+    val roomName: String =
+        if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
+            client.userId == partnerUser?.userId
+        }?.userName ?: ""
     Row(
         modifier = modifier
             .clickable {
-                onItemClickListener?.invoke(chatGroup.groupId)
+                onItemClickListener?.invoke(chatGroup.groupId, roomName)
             }
     ) {
-        val partnerUser = chatGroup.clientList.firstOrNull { client ->
-            client.userId != clintId
-        }
-        val roomName =
-            if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
-                client.userId == partnerUser?.userId
-            }?.userName ?: ""
-            ?: ""
         val userStatus = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.userStatus ?: ""
@@ -286,12 +285,12 @@ fun ItemListDirectMessage(
 fun ChatGroupItemView(
     modifier: Modifier,
     chatGroup: com.clearkeep.domain.model.ChatGroup,
-    onItemClickListener: ((Long) -> Unit)? = null
+    onItemClickListener: ((groupId: Long, groupName: String) -> Unit)? = null
 ) {
     Row(
         modifier = modifier
             .clickable {
-                onItemClickListener?.invoke(chatGroup.groupId)
+                onItemClickListener?.invoke(chatGroup.groupId,chatGroup.groupName)
             },
     ) {
         Row(modifier = Modifier.padding(top = 16.sdp())) {
@@ -314,7 +313,7 @@ fun ChatGroupItemView(
 @Composable
 fun ChatGroupView(
     viewModel: HomeViewModel, createGroupChat: (isDirectGroup: Boolean) -> Unit,
-    onItemClickListener: ((Long) -> Unit)? = null
+    onItemClickListener: ((groupId: Long, groupName: String) -> Unit)? = null
 ) {
     val chatGroups = viewModel.chatGroups.observeAsState()
     val rememberItemGroup = rememberSaveable { mutableStateOf(true) }
@@ -399,7 +398,7 @@ fun ChatGroupView(
 fun DirectMessagesView(
     viewModel: HomeViewModel,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
-    onItemClickListener: ((Long) -> Unit)? = null
+    onItemClickListener: ((groupId: Long, groupName: String) -> Unit)? = null
 ) {
     val chatGroup = viewModel.directGroups.observeAsState()
     val rememberItemGroup = rememberSaveable { mutableStateOf(true) }
@@ -565,7 +564,7 @@ fun WorkSpaceView(
     homeViewModel: HomeViewModel,
     gotoSearch: () -> Unit,
     createGroupChat: (isDirectGroup: Boolean) -> Unit,
-    onItemClickListener: ((Long) -> Unit)?,
+    onItemClickListener: ((groupId: Long, groupName: String) -> Unit)?,
     gotoProfile: () -> Unit
 ) {
     val activeServer = homeViewModel.currentServer.observeAsState()

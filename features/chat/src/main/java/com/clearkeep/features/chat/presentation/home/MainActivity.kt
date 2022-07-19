@@ -50,8 +50,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         }
                     } else {
                         val groupId = intent.getLongExtra(CreateGroupActivity.EXTRA_GROUP_ID, -1)
+                        val groupName = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_NAME)
                         if (groupId > 0) {
-                            navigateToRoomScreen(groupId)
+                            navigateToRoomScreen(groupId, groupName.orEmpty())
                         }
                     }
                 }
@@ -81,8 +82,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 createGroupChat = {
                                     navigateToCreateGroupScreen(isDirectGroup = it)
                                 },
-                                gotoRoomById = {
-                                    navigateToRoomScreen(it)
+                                gotoRoomById = { id, name ->
+                                    navigateToRoomScreen(id, name)
                                 },
                                 onSignOut = {
                                     signOut()
@@ -197,9 +198,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         startActivity(intent)
     }
 
-    private fun navigateToRoomScreen(groupId: Long) {
+    private fun navigateToRoomScreen(groupId: Long, groupName: String) {
         val intent = Intent(this, RoomActivity::class.java)
         intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, groupId)
+        intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_ROOM_NAME, groupName)
         intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN, homeViewModel.getDomainOfActiveServer())
         intent.putExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID, homeViewModel.getClientIdOfActiveServer())
         startActivity(intent)

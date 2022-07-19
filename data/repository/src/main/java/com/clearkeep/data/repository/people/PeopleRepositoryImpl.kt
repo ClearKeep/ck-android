@@ -72,6 +72,7 @@ class PeopleRepositoryImpl @Inject constructor(
         val userEntity = peopleDao.getFriend(user.userId, user.domain, owner.domain, owner.clientId)
         if (userEntity != null) {
             userEntity.avatar = user.avatar
+            userEntity.userName = user.userName
             peopleDao.insert(userEntity)
         }
         return@withContext userEntity?.toModel()
@@ -197,6 +198,7 @@ class PeopleRepositoryImpl @Inject constructor(
                 user.avatar = newUser?.avatar
                 user.userName = newUser?.displayName.orEmpty()
                 peopleDao.updateAvatar(newUser?.avatar.orEmpty(), user.userId)
+                peopleDao.updateUserName(newUser?.displayName.orEmpty(), user.userId)
                 printlnCK("avata: ${user.avatar}")
                 printlnCK("username: ${user.userName}")
             }
