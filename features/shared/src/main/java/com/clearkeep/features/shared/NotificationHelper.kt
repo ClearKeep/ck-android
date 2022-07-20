@@ -92,29 +92,45 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         val notificationId = message.createdTime.toInt()
 
         val intent = NavigationUtils.getNotificationClickIntent(context, message.groupId, message.ownerDomain, message.ownerClientId, true)
-        val pendingIntent =
+        val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        } else {
             PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
 
         val trickIntent = Intent()
-        val trickPendingIntent =
+        val trickPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getActivity(context, 0, trickIntent, PendingIntent.FLAG_IMMUTABLE)
+        } else {
             PendingIntent.getActivity(context, 0, trickIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
+        }
         val dismissIntent = Intent(context, DismissNotificationReceiver::class.java)
         dismissIntent.action = ACTION_MESSAGE_CANCEL
         dismissIntent.putExtra(MESSAGE_HEADS_UP_CANCEL_NOTIFICATION_ID, notificationId)
-        val pendingDismissIntent =
+        val pendingDismissIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getActivity(context, 0, dismissIntent, PendingIntent.FLAG_IMMUTABLE)
+        } else {
             PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
+        }
         val showSummaryIntent = Intent(context, ShowSummaryNotificationReceiver::class.java)
         showSummaryIntent.putExtra(EXTRA_GROUP_ID, message.groupId)
         showSummaryIntent.putExtra(EXTRA_OWNER_CLIENT, message.ownerClientId)
         showSummaryIntent.putExtra(EXTRA_OWNER_DOMAIN, message.ownerDomain)
-        val pendingShowSummaryIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            showSummaryIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val pendingShowSummaryIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getBroadcast(
+                context,
+                0,
+                showSummaryIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        } else {
+            PendingIntent.getBroadcast(
+                context,
+                0,
+                showSummaryIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
 
         val smallLayout = RemoteViews(context.packageName, R.layout.notification_message_view_small)
         val headsUpLayout =
@@ -246,12 +262,21 @@ fun showMessageNotificationToSystemBar(
         // Adds the Intent to the top of the stack
         stackBuilder.addNextIntent(notifyIntent)
         // Gets a PendingIntent containing the entire back stack
-        val mainPendingIntent = PendingIntent.getActivity(
-            context,
-            notificationId,
-            notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val mainPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getActivity(
+                context,
+                notificationId,
+                notifyIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        } else {
+            PendingIntent.getActivity(
+                context,
+                notificationId,
+                notifyIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
 
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -307,8 +332,11 @@ fun showMessageNotificationToSystemBar(
 fun createInCallNotification(context: Context, activityToLaunchOnClick: Class<*>) {
     val intent = Intent(context, activityToLaunchOnClick)
     intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-    val pendingIntent =
+    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    } else {
         PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
 
     val channelId =  CALL_CHANNEL_ID
     val channelName = CALL_CHANNEL_NAME

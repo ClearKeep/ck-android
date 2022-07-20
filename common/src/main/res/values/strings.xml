@@ -1,5 +1,7 @@
 <resources>
     <string name="title_app">ClearKeep</string>
+    <string name="default_notification_channel_id">message_channel_id_ck</string>
+    <string name="default_notification_channel_name">message_channel_name_ck</string>
     <string name="sign_out">Sign out</string>
     <string name="profile">Profile</string>
     <string name="btn_login">Sign in</string>
