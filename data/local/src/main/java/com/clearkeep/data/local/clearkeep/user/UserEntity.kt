@@ -10,7 +10,7 @@ import com.clearkeep.domain.model.UserStatus
 data class UserEntity(
     @PrimaryKey(autoGenerate = true) val generateId: Int? = null,
     @ColumnInfo(name = "user_id") val userId: String,
-    @ColumnInfo(name = "display_name") val userName: String,
+    @ColumnInfo(name = "display_name") var userName: String,
     @ColumnInfo(name = "domain") val domain: String,
 
     @ColumnInfo(name = "owner_client_id") val ownerClientId: String,

@@ -21,6 +21,12 @@ interface UserDAO {
         userId: String
     )
 
+    @Query("UPDATE UserEntity SET avatar =:userName WHERE user_id =:userId")
+    suspend fun updateUserName(
+        userName: String,
+        userId: String
+    )
+
     @Query("SELECT * FROM userentity WHERE user_id =:userId AND domain = :domain AND owner_domain = :ownerDomain AND owner_client_id = :ownerClientId LIMIT 1")
     suspend fun getFriend(
         userId: String,

@@ -49,6 +49,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     lateinit var messageSharedPreferences: SharedPreferences
     private var addMemberReceiver: BroadcastReceiver? = null
     private var roomId: Long = 0
+    private var roomName: String = ""
     private lateinit var domain: String
     private lateinit var clientId: String
     private var isNote: Boolean = false
@@ -90,6 +91,8 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerAddMemberReceiver()
         roomId = intent.getLongExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, 0)
+        roomName = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_ROOM_NAME).orEmpty()
+        roomViewModel.groupName.value = roomName
         domain = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN) ?: ""
         clientId = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID) ?: ""
         isNote = intent.getBooleanExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_IS_NOTE, false)

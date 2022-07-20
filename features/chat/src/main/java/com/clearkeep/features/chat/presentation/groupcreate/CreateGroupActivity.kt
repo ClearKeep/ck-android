@@ -3,6 +3,7 @@ package com.clearkeep.features.chat.presentation.groupcreate
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.mutableStateListOf
@@ -91,6 +92,7 @@ class CreateGroupActivity : AppCompatActivity() {
         intent.putExtra(EXTRA_PEOPLE_ID, people.userId)
         intent.putExtra(EXTRA_PEOPLE_DOMAIN, people.domain)
         intent.putExtra(EXTRA_IS_DIRECT_CHAT, true)
+        intent.putExtra(EXTRA_PEOPLE_NAME, people.userName)
         setResult(RESULT_OK, intent)
         finish()
     }
@@ -112,5 +114,6 @@ class CreateGroupActivity : AppCompatActivity() {
         const val EXTRA_PEOPLE_ID = "extra_people_id"
         const val EXTRA_PEOPLE_DOMAIN = "extra_people_domain"
         const val EXTRA_IS_DIRECT_CHAT = "extra_is_direct"
+        const val EXTRA_PEOPLE_NAME = "extra_people_name"
     }
 }

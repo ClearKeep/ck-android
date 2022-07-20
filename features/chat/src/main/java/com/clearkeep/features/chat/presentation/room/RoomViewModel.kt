@@ -91,6 +91,7 @@ class RoomViewModel @Inject constructor(
     private var isLatestPeerSignalKeyProcessed = false
 
     private val _group = MutableLiveData<ChatGroup>()
+    val groupName = MutableLiveData<String>()
 
     val requestCallState = MutableLiveData<Resource<RequestInfo>>()
 
@@ -915,6 +916,8 @@ class RoomViewModel @Inject constructor(
             lastLoadRequestTimestamp = lastMessageAt
         }
     }
+
+    fun getClientIdOfActiveServer() = environment.getServer().profile.userId
 
     companion object {
         private const val FILE_MAX_COUNT = 10

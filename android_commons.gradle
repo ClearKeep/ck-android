@@ -62,7 +62,7 @@ android {
             buildConfigField "int", 'PORT', "5000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "8188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-prod\""
+            buildConfigField "String", 'VERSION_NAME', "\"1.1.6-prod\""
         }
         staging {
             dimension "version"
@@ -71,7 +71,7 @@ android {
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "18188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.0.0-staging\""
+            buildConfigField "String", 'VERSION_NAME', "\"1.1.6-staging\""
         }
         dev {
             dimension "version"
@@ -80,7 +80,7 @@ android {
             buildConfigField "int", 'PORT', "5000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
-            buildConfigField "String", 'VERSION_NAME', "\"1.1.4-dev\""
+            buildConfigField "String", 'VERSION_NAME', "\"1.1.6-dev\""
         }
     }
 }

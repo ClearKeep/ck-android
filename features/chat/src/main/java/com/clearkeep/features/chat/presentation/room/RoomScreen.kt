@@ -3,7 +3,6 @@ package com.clearkeep.features.chat.presentation.room
 import android.Manifest
 import android.content.Context
 import android.os.*
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,7 +11,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -131,6 +129,7 @@ fun RoomScreen(
             group?.isDeletedUserPeer == true -> stringResource(
                 R.string.deleted_user
             )
+            group?.groupType == "peer" && !roomViewModel.groupName.value.isNullOrEmpty() -> (roomViewModel.groupName.value.toString())
             else -> group?.groupName ?: ""
         }
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
