@@ -91,7 +91,7 @@ class RoomViewModel @Inject constructor(
     private var isLatestPeerSignalKeyProcessed = false
 
     private val _group = MutableLiveData<ChatGroup>()
-    val _groupName = MutableLiveData<String>()
+    val groupName = MutableLiveData<String>()
 
     val requestCallState = MutableLiveData<Resource<RequestInfo>>()
 

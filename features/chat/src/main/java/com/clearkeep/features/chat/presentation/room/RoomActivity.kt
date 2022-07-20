@@ -4,7 +4,6 @@ import android.app.ActivityManager
 import android.app.NotificationManager
 import android.content.*
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -27,7 +26,6 @@ import androidx.navigation.compose.rememberNavController
 import com.clearkeep.common.presentation.components.CKInsetTheme
 import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.common.utilities.*
-import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupActivity
 import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupViewModel
 import com.clearkeep.features.chat.presentation.groupcreate.EnterGroupNameScreen
 import com.clearkeep.features.chat.presentation.groupinvite.AddMemberUIType
@@ -94,7 +92,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         registerAddMemberReceiver()
         roomId = intent.getLongExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_GROUP_ID, 0)
         roomName = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_ROOM_NAME).orEmpty()
-        roomViewModel._groupName.value = roomName
+        roomViewModel.groupName.value = roomName
         domain = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_DOMAIN) ?: ""
         clientId = intent.getStringExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_CLIENT_ID) ?: ""
         isNote = intent.getBooleanExtra(NavigationUtils.NAVIGATE_ROOM_ACTIVITY_IS_NOTE, false)
