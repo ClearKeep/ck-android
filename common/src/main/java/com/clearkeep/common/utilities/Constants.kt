@@ -3,6 +3,7 @@ package com.clearkeep.common.utilities
 import com.clearkeep.common.BuildConfig
 
 const val FIREBASE_TOKEN = "ck_firebase_token"
+const val CK_DATABASE = "ck_database.db"
 
 const val BASE_URL = BuildConfig.BASE_URL
 const val PORT = BuildConfig.PORT
