@@ -85,8 +85,6 @@ class ChatService : Service(),
 
     private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
-    private var job: Job? = null
-
     private var isShouldRecreateChannel = false
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -137,7 +135,6 @@ class ChatService : Service(),
     override fun onDestroy() {
         printlnCK("ChatService, onDestroy")
         scope.cancel()
-        job?.cancel()
         dynamicAPIProvider.shutDownAll()
         unregisterNetworkChange()
     }
@@ -191,8 +188,7 @@ class ChatService : Service(),
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            job = launch {
+        CoroutineScope(Dispatchers.IO).launch {
                 printlnCK("chatService raw message ${value.message.toStringUtf8()}")
                 environment.setUpTempDomain(
                     Server(
@@ -231,8 +227,6 @@ class ChatService : Service(),
                         value.clientId
                     )
                 }
-            }
-            job?.join()
         }
     }
 
@@ -312,8 +306,7 @@ class ChatService : Service(),
         domain: String,
         ownerClientId: String
     ) {
-        GlobalScope.launch(Dispatchers.IO){
-            job = launch {
+        CoroutineScope(Dispatchers.IO).launch{
                 printlnCK("handleShowNotification $groupId")
                 val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
                 group?.data?.let {
@@ -336,9 +329,6 @@ class ChatService : Service(),
                         )
                     }
                 }
-            }
-            job?.join()
-
         }
     }
 
