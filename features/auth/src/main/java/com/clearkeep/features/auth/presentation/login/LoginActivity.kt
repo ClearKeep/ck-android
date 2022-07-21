@@ -152,7 +152,7 @@ class LoginActivity : AppCompatActivity() {
                     setShowDialog(
                         ErrorMessage(
                             title = title,
-                            message = res.message ?: "",
+                            message = res.data?.errorMessage ?: "",
                             dismissButtonText = dismissButtonTitle
                         )
                     )

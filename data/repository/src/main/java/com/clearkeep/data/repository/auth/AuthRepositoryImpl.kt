@@ -446,7 +446,7 @@ class AuthRepositoryImpl @Inject constructor(
                     parsedError.message
                 }
             }
-            return@withContext Resource.error(errorMessage, null)
+            return@withContext Resource.error(errorMessage,null,errorCode = parsedError.code,e)
         } catch (e: Exception) {
             printlnCK("login error: $e")
             return@withContext Resource.error(e.toString(), null)
