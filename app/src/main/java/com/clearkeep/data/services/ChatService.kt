@@ -191,8 +191,7 @@ class ChatService : Service(),
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            job = launch {
+        CoroutineScope(Dispatchers.IO).launch {
                 printlnCK("chatService raw message ${value.message.toStringUtf8()}")
                 environment.setUpTempDomain(
                     Server(
@@ -231,8 +230,6 @@ class ChatService : Service(),
                         value.clientId
                     )
                 }
-            }
-            job?.join()
         }
     }
 
@@ -312,8 +309,7 @@ class ChatService : Service(),
         domain: String,
         ownerClientId: String
     ) {
-        GlobalScope.launch(Dispatchers.IO){
-            job = launch {
+        CoroutineScope(Dispatchers.IO).launch{
                 printlnCK("handleShowNotification $groupId")
                 val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
                 group?.data?.let {
@@ -336,9 +332,6 @@ class ChatService : Service(),
                         )
                     }
                 }
-            }
-            job?.join()
-
         }
     }
 
