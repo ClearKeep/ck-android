@@ -1,17 +1,16 @@
 package com.clearkeep.data.repository.auth
 
-import com.clearkeep.data.repository.*
-import com.clearkeep.domain.repository.*
-import com.clearkeep.data.remote.service.AuthService
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.preference.AppStorage
+import com.clearkeep.data.remote.service.AuthService
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.Profile
 import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.response.AuthChallengeRes
 import com.clearkeep.domain.model.response.AuthRes
 import com.clearkeep.domain.model.response.SocialLoginRes
+import com.clearkeep.domain.repository.AuthRepository
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -447,7 +446,7 @@ class AuthRepositoryImpl @Inject constructor(
                     parsedError.message
                 }
             }
-            return@withContext Resource.error(errorMessage, null)
+            return@withContext Resource.error(errorMessage,null,errorCode = parsedError.code,e)
         } catch (e: Exception) {
             printlnCK("login error: $e")
             return@withContext Resource.error(e.toString(), null)
