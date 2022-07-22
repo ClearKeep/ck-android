@@ -188,44 +188,45 @@ class ChatService : Service(),
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
-        scope.launch {
-            printlnCK("chatService raw message ${value.message.toStringUtf8()}")
-            environment.setUpTempDomain(
-                Server(
-                    null,
-                    "",
-                    domain,
-                    value.clientId,
-                    "",
-                    0L,
-                    "",
-                    "",
-                    "",
-                    false,
-                    Profile(null, value.clientId, "", "", "", 0L, "")
+        CoroutineScope(Dispatchers.IO).launch {
+                printlnCK("chatService raw message ${value.message.toStringUtf8()}")
+                environment.setUpTempDomain(
+                    Server(
+                        null,
+                        "",
+                        domain,
+                        value.clientId,
+                        "",
+                        0L,
+                        "",
+                        "",
+                        "",
+                        false,
+                        Profile(null, value.clientId, "", "", "", 0L, "")
+                    )
                 )
-            )
-            val messageEncrypt = if (!isGroup(value.groupType) && getOwnerClientIdsUseCase().contains(value.fromClientId)) value.senderMessage else value.message
-            val res = decryptMessageUseCase(
-                value.id, value.groupId, value.groupType,
-                value.fromClientId, value.fromClientWorkspaceDomain,
-                value.createdAt, value.updatedAt,
-                messageEncrypt,
-                Owner(domain, value.clientId)
-            )
-            val isShowNotification =
-                getOwnerClientIdsUseCase().contains(value.fromClientId)
-            if (!isShowNotification) {
-                val roomId = getJoiningRoomUseCase()
-                val groupId = value.groupId
-                handleShowNotification(
-                    joiningRoomId = roomId,
-                    groupId = groupId,
-                    res,
-                    domain,
-                    value.clientId
+                val messageEncrypt =
+                    if (!isGroup(value.groupType) && getOwnerClientIdsUseCase().contains(value.fromClientId)) value.senderMessage else value.message
+                val res = decryptMessageUseCase(
+                    value.id, value.groupId, value.groupType,
+                    value.fromClientId, value.fromClientWorkspaceDomain,
+                    value.createdAt, value.updatedAt,
+                    messageEncrypt,
+                    Owner(domain, value.clientId)
                 )
-            }
+                val isShowNotification =
+                    getOwnerClientIdsUseCase().contains(value.fromClientId)
+                if (!isShowNotification) {
+                    val roomId = getJoiningRoomUseCase()
+                    val groupId = value.groupId
+                    handleShowNotification(
+                        joiningRoomId = roomId,
+                        groupId = groupId,
+                        res,
+                        domain,
+                        value.clientId
+                    )
+                }
         }
     }
 
@@ -305,29 +306,29 @@ class ChatService : Service(),
         domain: String,
         ownerClientId: String
     ) {
-        scope.launch {
-            printlnCK("handleShowNotification $groupId")
-            val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
-            group?.data?.let {
-                val currentServer = environment.getServer()
-                if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
-                    val userPreference =
-                        getUserPreferenceUseCase(domain, ownerClientId)
-                            ?: UserPreference.getDefaultUserPreference("", "", false)
-                    val senderUser = getFriendUseCase(
-                        message.senderId
-                    )
-                    val avatar = senderUser?.avatar
-                    printlnCK("Notification service raw message $message")
-                    showMessagingStyleNotification(
-                        context = applicationContext,
-                        chatGroup = it,
-                        message,
-                        userPreference,
-                        avatar
-                    )
+        CoroutineScope(Dispatchers.IO).launch{
+                printlnCK("handleShowNotification $groupId")
+                val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
+                group?.data?.let {
+                    val currentServer = environment.getServer()
+                    if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
+                        val userPreference =
+                            getUserPreferenceUseCase(domain, ownerClientId)
+                                ?: UserPreference.getDefaultUserPreference("", "", false)
+                        val senderUser = getFriendUseCase(
+                            message.senderId
+                        )
+                        val avatar = senderUser?.avatar
+                        printlnCK("Notification service raw message $message")
+                        showMessagingStyleNotification(
+                            context = applicationContext,
+                            chatGroup = it,
+                            message,
+                            userPreference,
+                            avatar
+                        )
+                    }
                 }
-            }
         }
     }
 
