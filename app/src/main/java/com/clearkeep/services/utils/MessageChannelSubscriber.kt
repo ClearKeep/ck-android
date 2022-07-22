@@ -1,6 +1,8 @@
 package com.clearkeep.services.utils
 
+import com.clearkeep.utilities.AppStorage
 import com.clearkeep.utilities.printlnCK
+import com.clearkeep.utilities.storage.PersistPreferencesStorage
 import io.grpc.stub.StreamObserver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,7 +14,8 @@ class MessageChannelSubscriber(
     private val clientId: String,
     private val messageBlockingStub: MessageGrpc.MessageBlockingStub,
     private val messageGrpc: MessageGrpc.MessageStub,
-    private val onMessageSubscriberListener: MessageSubscriberListener
+    private val onMessageSubscriberListener: MessageSubscriberListener,
+    private val userManager: AppStorage
 ) : ChannelSubscriber {
 
     interface MessageSubscriberListener {
@@ -29,18 +32,18 @@ class MessageChannelSubscriber(
 
     private suspend fun subscribe(): Boolean = withContext(Dispatchers.IO) {
         val request = MessageOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
         try {
             val res = messageBlockingStub.subscribe(request)
-            if (res.success) {
+            if (res.error.isNullOrEmpty()) {
                 printlnCK("subscribeMessageChannel, success")
                 listenMessageChannel()
             } else {
-                printlnCK("subscribeMessageChannel, ${res.errors}")
+                printlnCK("subscribeMessageChannel, ${res.error}")
             }
-            return@withContext res.success
+            return@withContext res.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("subscribeMessageChannel, $e")
             return@withContext false
@@ -49,13 +52,17 @@ class MessageChannelSubscriber(
 
     private fun listenMessageChannel() {
         val request = MessageOuterClass.ListenRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
-        messageGrpc.listen(request, object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
+        messageGrpc.listen(
+            request,
+            object : StreamObserver<MessageOuterClass.MessageObjectResponse> {
                 override fun onNext(value: MessageOuterClass.MessageObjectResponse) {
-                    printlnCK("listenMessageChannel, Receive a message from : ${value.fromClientId}" +
-                            ", from workspace = ${value.fromClientWorkspaceDomain}, groupId = ${value.groupId} to client id = ${value.clientId}, workspace = $domain")
+                    printlnCK(
+                        "listenMessageChannel, Receive a message from : ${value.fromClientId}" +
+                                ", from workspace = ${value.fromClientWorkspaceDomain}, groupId = ${value.groupId} to client id = ${value.clientId}, workspace = $domain"
+                    )
                     onMessageSubscriberListener.onMessageReceived(value, domain)
                 }
 

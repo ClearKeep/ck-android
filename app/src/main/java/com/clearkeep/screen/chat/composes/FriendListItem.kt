@@ -16,13 +16,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.backgroundGradientEnd
 import com.clearkeep.components.backgroundGradientStart
 import com.clearkeep.components.grayscaleOffWhite
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun FriendListItem(
+    modifier: Modifier = Modifier,
     friend: User,
     onFriendSelected: ((people: User) -> Unit)? = null,
 ) {
@@ -32,28 +36,30 @@ fun FriendListItem(
                 onFriendSelected(friend)
             }
         }
+        .then(modifier)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 16.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
-                emptyList(),
+                listOf(friend.avatar.orEmpty()),
                 friend.userName,
-                size = 64.dp
+                size = 64.sdp()
             )
             Column(
                 modifier = Modifier
-                    .padding(start = 16.dp)
+                    .padding(start = 16.sdp())
                     .weight(1.0f, true)
             ) {
                 Text(
                     text = friend.userName,
                     style = MaterialTheme.typography.body2.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.onBackground
+                        color = LocalColorMapping.current.descriptionText,
+                        fontSize = defaultNonScalableTextSize()
                     ),
                 )
             }
@@ -74,7 +80,7 @@ fun FriendListItemInfo(
                     onFriendSelected(friend)
                 }
             }
-            .padding(start = paddingX.dp)
+            .padding(start = paddingX.sdp())
     ) {
         Row(
             modifier = Modifier
@@ -82,9 +88,9 @@ fun FriendListItemInfo(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircleAvatar(
-                emptyList(),
+                arrayListOf(friend.avatar ?: ""),
                 friend.userName,
-                size = 36.dp
+                size = 36.sdp()
             )
         }
     }
@@ -93,10 +99,10 @@ fun FriendListItemInfo(
 @Composable
 fun FriendListMoreItem(count: Int, paddingX: Int) {
     Row() {
-        Spacer(Modifier.width(paddingX.dp))
+        Spacer(Modifier.width(paddingX.sdp()))
         Box(
             Modifier
-                .size(36.dp)
+                .size(36.sdp())
                 .background(
                     Brush.horizontalGradient(
                         colors = listOf(
@@ -106,7 +112,13 @@ fun FriendListMoreItem(count: Int, paddingX: Int) {
                     ), CircleShape
                 )
         ) {
-            Text("+$count", color = grayscaleOffWhite, fontSize = 14.sp, fontWeight = FontWeight.W700, modifier = Modifier.align(Alignment.Center))
+            Text(
+                "+$count",
+                color = grayscaleOffWhite,
+                fontSize = defaultNonScalableTextSize(),
+                fontWeight = FontWeight.W700,
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
     }
 }

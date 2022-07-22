@@ -1,13 +1,9 @@
 package com.clearkeep.screen.chat.room.image_picker
 
-import android.Manifest
 import android.content.ContentUris
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.MediaStore
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
@@ -15,10 +11,7 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,42 +19,62 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import coil.imageLoader
 import com.clearkeep.R
-import com.clearkeep.components.CKSimpleInsetTheme
-import com.clearkeep.components.CKSimpleTheme
-import com.clearkeep.components.base.CKRadioButton
+import com.clearkeep.components.*
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.base.CKTopAppBar
-import com.clearkeep.components.primaryDefault
-import com.clearkeep.db.clear_keep.model.User
-import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.printlnCK
-import com.google.accompanist.coil.rememberCoilPainter
+import com.clearkeep.utilities.sdp
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.insets.statusBarsHeight
-import com.google.accompanist.insets.statusBarsPadding
-import java.util.*
 
 @ExperimentalFoundationApi
 @Composable
 fun ImagePickerScreen(
-    roomViewModel: RoomViewModel,
-    navController: NavController
+    imageUriSelected: LiveData<List<String>>,
+    navController: NavController,
+    onlyPickOne: Boolean = false,
+    insetEnabled: Boolean = true,
+    onSetSelectedImages: (uris: List<String>) -> Unit
 ) {
     val context = LocalContext.current
-    val urisSelected = remember { roomViewModel.imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
+    val urisSelected =
+        remember { imageUriSelected.value?.toMutableStateList() ?: mutableStateListOf() }
 
     val uris = getAllImages(context)
     printlnCK(uris.toString())
 
     CKSimpleInsetTheme {
-        Column(Modifier.navigationBarsPadding()) {
-            printlnCK((roomViewModel.imageUriSelected.value?.size ?: 0).toString())
-            Box(Modifier.statusBarsHeight().background(MaterialTheme.colors.primary).fillMaxWidth())
+        val isDarkTheme = LocalColorMapping.current.isDarkTheme
+
+        val paddingModifier = if (insetEnabled) {
+            if (!isDarkTheme) {
+                Modifier
+            } else {
+                Modifier.navigationBarsPadding()
+            }
+        } else {
+            Modifier
+        }
+
+        Column(Modifier.then(paddingModifier)) {
+            val statusBarColor = if (LocalColorMapping.current.isDarkTheme) {
+                grayscaleDarkModeDarkGrey2
+            } else {
+                primaryDefault
+            }
+
+            Box(
+                Modifier
+                    .statusBarsHeight()
+                    .background(statusBarColor)
+                    .fillMaxWidth()
+            )
             CKTopAppBar(
                 {},
                 Modifier,
@@ -69,30 +82,45 @@ fun ImagePickerScreen(
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
-                        Icon(painterResource(R.drawable.ic_cross), null)
+                        Icon(
+                            painterResource(R.drawable.ic_cross),
+                            null,
+                            tint = LocalColorMapping.current.topAppBarTitle
+                        )
                     }
                 },
                 actions = {
-                    Text(
-                        "Upload (${urisSelected?.size ?: 0})",
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable {
-                                roomViewModel.setSelectedImages(urisSelected)
-                                navController.popBackStack()
-                            }
-                    )
-                })
-            Box(Modifier.padding(16.dp)) {
+                    if (!onlyPickOne) {
+                        CKText(
+                            stringResource(R.string.image_picker_file_count, urisSelected.size),
+                            modifier = Modifier
+                                .padding(end = 16.sdp())
+                                .clickable {
+                                    onSetSelectedImages(urisSelected)
+                                    navController.popBackStack()
+                                },
+                            color = LocalColorMapping.current.topAppBarTitle
+                        )
+                    }
+                },
+                isDarkTheme = LocalColorMapping.current.isDarkTheme
+            )
+            Box(Modifier.padding(16.sdp())) {
                 LazyVerticalGrid(cells = GridCells.Fixed(2)) {
                     items(uris) {
                         ImageItem(
                             Modifier.fillParentMaxWidth(0.5f),
                             it.toString(),
-                            urisSelected?.contains(it.toString())
+                            urisSelected.contains(it.toString())
                         ) { uri: String, isSelected: Boolean ->
-                            if (isSelected)
-                                urisSelected.add(uri) else urisSelected.remove(uri)
+                            when {
+                                onlyPickOne -> {
+                                    onSetSelectedImages(listOf(uri))
+                                    navController.popBackStack()
+                                }
+                                isSelected -> urisSelected.add(uri)
+                                else -> urisSelected.remove(uri)
+                            }
                         }
                     }
                 }
@@ -147,11 +175,14 @@ fun ImageItem(
                 .clickable {
                     onSelect(uri, !isSelected)
                 }
-                .then(if (isSelected) Modifier.border(2.dp, primaryDefault) else Modifier)
+                .then(if (isSelected) Modifier.border(2.sdp(), primaryDefault) else Modifier)
         )
     ) {
         Image(
-            rememberCoilPainter(request = uri, imageLoader = context.imageLoader, previewPlaceholder = R.drawable.ic_cross),
+            rememberImagePainter(
+                uri,
+                imageLoader = context.imageLoader,
+            ),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier
@@ -159,7 +190,7 @@ fun ImageItem(
         Box(
             Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 12.dp, end = 12.dp)
+                .padding(bottom = 12.sdp(), end = 12.sdp())
         ) {
             Image(
                 painter = painterResource(id = if (isSelected) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),

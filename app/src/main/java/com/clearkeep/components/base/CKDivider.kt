@@ -6,12 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKDivider(
     modifier: Modifier = Modifier,
-    thickness: Dp = 1.dp,
-    startIndent: Dp = 0.dp,
+    thickness: Dp = 1.sdp(),
+    startIndent: Dp = 0.sdp(),
 ) {
     Divider(
         color = MaterialTheme.colors.onSecondary,

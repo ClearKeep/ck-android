@@ -1,21 +1,16 @@
 package com.clearkeep.screen.chat.room
 
 import android.app.NotificationManager
-import android.content.Context
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import androidx.core.view.WindowCompat
 import com.clearkeep.components.CKInsetTheme
-import com.clearkeep.components.CKTheme
 import com.clearkeep.db.clear_keep.model.ChatGroup
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
@@ -33,14 +28,16 @@ import com.clearkeep.utilities.network.Status
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.app.ActivityManager
+import android.content.*
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.*
-import android.content.BroadcastReceiver
-import android.content.IntentFilter
 import android.view.View
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.compose.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.screen.chat.room.photo_detail.PhotoDetailScreen
 import com.clearkeep.utilities.*
 
@@ -61,6 +58,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+    lateinit var messageSharedPreferences: SharedPreferences
     private var addMemberReceiver: BroadcastReceiver? = null
 
     private var roomId: Long = 0
@@ -69,18 +67,31 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
     private var isNote: Boolean = false
     private var chatServiceIsStartInRoom = false
 
+
     @ExperimentalMaterialApi
     @ExperimentalFoundationApi
-    @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        messageSharedPreferences =
+            getSharedPreferences("CK_SharePreference_Message", Context.MODE_PRIVATE)
+
+        roomViewModel.isLogOutCompleted.observe(this) {
+            printlnCK("RoomActivity isLogoutCompleted $it")
+            if (it) {
+                restartToRoot(this)
+            }
+        }
+
         val rootView = findViewById<View>(android.R.id.content).rootView
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { _, insets ->
             val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             val navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            val navigationWidthLeft = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).left
+            val navigationWidthRight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).right
+
             val bottomPadding = if (imeHeight == 0) navigation else imeHeight
-            rootView.setPadding(0, 0, 0, bottomPadding)
+            rootView.setPadding(navigationWidthLeft, 0, navigationWidthRight, bottomPadding)
             insets
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -106,18 +117,52 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         } else {
             roomViewModel.joinRoom(domain, clientId, roomId, friendId, friendDomain)
         }
+
+        roomViewModel.isLogout.observe(this, Observer {
+            restartToRoot(context = this)
+        })
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             CKInsetTheme {
                 val navController = rememberNavController()
                 val selectedItem = remember { mutableStateListOf<User>() }
+                val isShowDialog = roomViewModel.isShowDialogRemoved.observeAsState()
+                val isMemberChangeKey = roomViewModel.isMemberChangeKey.observeAsState()
+
+                if (isShowDialog.value == true) {
+                    CKAlertDialog(
+                        title = "",
+                        text = "You have been removed from the conversation",
+                        onDismissButtonClick = {
+                            restartToRoot(context = this)
+
+                        }
+                    )
+                }
+
+                if (isMemberChangeKey.value == true) {
+                    val mIntent = intent
+                    finish()
+                    startActivity(mIntent)
+                }
+
                 NavHost(navController, startDestination = "room_screen") {
                     composable("room_screen") {
+                        LaunchedEffect(true) {
+                            roomViewModel.setMessage(
+                                messageSharedPreferences.getString(
+                                    "$roomId+$clientId+$domain",
+                                    ""
+                                ).orEmpty()
+                            )
+                        }
                         RoomScreen(
                             roomViewModel,
                             navController,
                             onFinishActivity = {
+                                roomViewModel.message.value?.let { it -> saveDrafMessage(it) }
                                 finish()
                             },
                             onCallingClick = { isPeer ->
@@ -137,18 +182,15 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                         InviteGroupScreen(
                             AddMemberUIType,
                             inviteGroupViewModel,
-                            listMemberInGroup = roomViewModel.group.value?.clientList ?: listOf(),
+                            selectedItem = selectedItem,
+                            chatGroup = roomViewModel.group,
                             onFriendSelected = { friends ->
                                 roomViewModel.inviteToGroup(friends, groupId = roomId)
                                 navController.navigate("room_screen")
                             },
+                            onDirectFriendSelected = { },
                             onBackPressed = {
                                 navController.popBackStack()
-                            },
-                            selectedItem = selectedItem,
-                            onDirectFriendSelected = { },
-                            onInsertFriend = {
-                                navController.navigate("insert_friend")
                             },
                             isCreateDirectGroup = false
                         )
@@ -173,8 +215,11 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                     }
                     composable("image_picker") {
                         ImagePickerScreen(
-                            roomViewModel,
-                            navController
+                            roomViewModel.imageUriSelected,
+                            navController,
+                            onSetSelectedImages = {
+                                roomViewModel.setSelectedImages(it)
+                            }
                         )
                     }
                     composable("photo_detail") {
@@ -191,18 +236,41 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
         subscriber()
     }
 
+    private fun saveDrafMessage(message: String) {
+        messageSharedPreferences.edit().putString("$roomId+$clientId+$domain", message).apply()
+    }
+
     private fun registerAddMemberReceiver() {
         addMemberReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_GROUP_ID,-1)
-                if (roomId == groupId) {
-                    roomViewModel.refreshRoom()
+                val groupId = intent.getLongExtra(EXTRA_GROUP_ID, -1)
+                when (intent.action) {
+                    ACTION_MEMBER_CHANGE_KEY -> {
+                        if (roomViewModel.group.value?.isGroup() == false) {
+                            val refClientId = intent.getStringExtra(EXTRA_ID_MEMBER_CHANGE_KEY)
+                            val friend = roomViewModel.group.value?.clientList?.firstOrNull { client ->
+                                client.userId != roomViewModel.clientId
+                            }
+                            if (friend?.userId == refClientId) {
+                                roomViewModel.isMemberChangeKey.postValue(true)
+                            }
+                        }
+                    }
+                    else -> {
+                        if (roomId == groupId) {
+                            roomViewModel.refreshRoom()
+                        }
+                    }
                 }
             }
         }
         registerReceiver(
             addMemberReceiver,
             IntentFilter(ACTION_ADD_REMOVE_MEMBER)
+        )
+        registerReceiver(
+            addMemberReceiver,
+            IntentFilter(ACTION_MEMBER_CHANGE_KEY)
         )
     }
 
@@ -232,20 +300,28 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun subscriber() {
         roomViewModel.requestCallState.observe(this, Observer {
-            if (it.status == Status.SUCCESS) {
+            if (it != null && it.status == Status.SUCCESS) {
                 it.data?.let { requestInfo ->
+                    NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
                     navigateToInComingCallActivity(
                         requestInfo.chatGroup,
                         requestInfo.isAudioMode
                     )
                 }
+                roomViewModel.requestCallState.value = null
             }
         })
 
         if (roomId > 0)
             roomViewModel.groups.observe(this, Observer {
-                val group = it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
-                if (group == null) finish()
+                //printlnCK("RoomActivity groups $it")
+                val group =
+                    it.find { group -> group.groupId == roomId && group.ownerDomain == domain }
+                printlnCK("isShowDialog: $group")
+                if (group == null){
+                    roomViewModel.isShowDialogRemoved.postValue(true)
+                }
+
             })
     }
 
@@ -256,9 +332,19 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             }?.userName ?: ""
         }
         AppCall.call(
-            this, isAudioMode, null,
-            group.groupId.toString(), group.groupType, roomName,
-            domain, clientId, roomName, "", false, currentUserName = roomViewModel.getUserName(), currentUserAvatar = roomViewModel.getUserAvatarUrl()
+            this,
+            isAudioMode,
+            null,
+            group.groupId.toString(),
+            group.groupType,
+            roomName,
+            domain,
+            clientId,
+            roomName,
+            roomViewModel.getUserAvatarUrl(),
+            false,
+            currentUserName = roomViewModel.getUserName(),
+            currentUserAvatar = roomViewModel.getSelfAvatarUrl()
         )
     }
 
@@ -268,7 +354,6 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
             printlnCK("CK room go into background")
             stopChatService()
         }
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)

@@ -9,12 +9,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
-import com.clearkeep.components.grayscale1
 import com.clearkeep.db.clear_keep.model.UserStateTypeInGroup
 import com.clearkeep.screen.chat.composes.NewFriendListItem
 import com.clearkeep.screen.chat.room.RoomViewModel
@@ -25,7 +26,9 @@ fun GroupMemberScreen(
     navHostController: NavHostController,
 ) {
     val groupState = roomViewModel.group.observeAsState()
-    groupState?.value?.let { group ->
+    val listUserStatusState = roomViewModel.listGroupUserStatus.observeAsState()
+
+    groupState.value?.let { group ->
         Surface(
             color = MaterialTheme.colors.background
         ) {
@@ -45,6 +48,11 @@ fun GroupMemberScreen(
                     ),
                 ) {
                     itemsIndexed(group.clientList.filter { it.userState == UserStateTypeInGroup.ACTIVE.value }) { _, friend ->
+                        val newUser = listUserStatusState.value?.find {
+                            it.userId == friend.userId
+                        }
+                        friend.userStatus = newUser?.userStatus
+                        friend.avatar = newUser?.avatar
                         NewFriendListItem(Modifier.padding(vertical = 8.dp), friend)
                     }
                 }
@@ -73,11 +81,11 @@ fun RoomMemberHeader(onCloseView: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chev_left),
                     contentDescription = null,
-                    tint = grayscale1,
+                    tint = LocalColorMapping.current.headerText,
                 )
             }
             CKHeaderText(
-                "Member", modifier = Modifier
+                stringResource(R.string.see_members), modifier = Modifier
                     .weight(1.0f, true), headerTextType = HeaderTextType.Medium
             )
         }

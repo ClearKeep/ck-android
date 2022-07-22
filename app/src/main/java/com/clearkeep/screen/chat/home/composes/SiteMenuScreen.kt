@@ -3,7 +3,6 @@ package com.clearkeep.screen.chat.home.composes
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -18,81 +17,94 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.components.base.CKAlertDialog
 import com.clearkeep.components.base.CKHeaderText
 import com.clearkeep.components.base.HeaderTextType
 import com.clearkeep.db.clear_keep.model.Profile
 import com.clearkeep.db.clear_keep.model.UserStatus
 import com.clearkeep.screen.chat.home.HomeViewModel
-import com.clearkeep.screen.chat.profile.LogoutConfirmDialog
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun SiteMenuScreen(
     homeViewModel: HomeViewModel,
     profile: Profile,
     closeSiteMenu: (() -> Unit),
-    onLogout: (()->Unit),
+    onLeaveServer: (() -> Unit),
     onNavigateServerSetting: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
     onNavigateNotificationSetting: () -> Unit,
     onNavigateInvite: () -> Unit,
     onNavigateBannedUser: () -> Unit
 ) {
-    val (showReminder, setShowReminderDialog) = remember { mutableStateOf(false) }
+    val (showReminder, setShowReminderDialog) = rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .background(grayscaleOverlay)
             .focusable()
-            .clickable(enabled = true, onClick = { null })
+            .clickable(enabled = true, onClick = { })
     ) {
         Row(
             Modifier.background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 ),
-                alpha = 0.4f
+                alpha = if (LocalColorMapping.current.isDarkTheme) 1f else .4f
             )
         ) {
             Box(
                 Modifier
-                    .width(108.dp)
+                    .width(108.sdp())
             ) {
             }
             Card(
                 Modifier
                     .fillMaxSize()
-                    .padding(top = 20.dp, bottom = 20.dp),
-                backgroundColor = Color.White,
-                shape = RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp),
-                elevation = 8.dp
+                    .padding(top = 20.sdp(), bottom = 20.sdp()),
+                backgroundColor = LocalColorMapping.current.surface,
+                shape = RoundedCornerShape(topStart = 30.sdp(), bottomStart = 30.sdp()),
+                elevation = 8.sdp()
             ) {
-                Box {
-                    Column {
+                ConstraintLayout {
+                    val (scrollContent, leaveServerButton) = createRefs()
+                    Column(Modifier.constrainAs(scrollContent) {
+                        top.linkTo(parent.top)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        bottom.linkTo(leaveServerButton.top)
+                        width = Dimension.fillToConstraints
+                        height = Dimension.fillToConstraints
+                    }) {
                         Column(
                             Modifier
                                 .fillMaxSize()
-                                .padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 20.dp)
+                                .padding(
+                                    start = 16.sdp(),
+                                    top = 24.sdp(),
+                                    end = 16.sdp(),
+                                    bottom = 20.sdp()
+                                )
                                 .verticalScroll(rememberScrollState())
                         ) {
                             Row(
@@ -101,48 +113,52 @@ fun SiteMenuScreen(
                                 horizontalArrangement = Arrangement.End,
                             ) {
                                 IconButton(
-                                    onClick = { closeSiteMenu.invoke() }
+                                    onClick = { closeSiteMenu.invoke() },
+                                    Modifier.size(24.sdp())
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Close,
                                         contentDescription = "",
-                                        tint = MaterialTheme.colors.primaryVariant
+                                        tint = LocalColorMapping.current.iconColorAlt,
+                                        modifier = Modifier.fillMaxSize()
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.size(16.sdp()))
                             HeaderSite(profile, homeViewModel)
-                            Spacer(modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.size(12.sdp()))
                             Divider(color = grayscale3)
+                            SettingGeneral(onNavigateAccountSetting)
                             SettingServer(
-                                "CK Development",
                                 onNavigateServerSetting,
-                                onNavigateNotificationSetting,
-                                onNavigateInvite,
-                                onNavigateBannedUser
+                                onNavigateNotificationSetting
                             )
-                            Divider(color = grayscale3)
-                            SettingGeneral(onLogout, onNavigateAccountSetting)
                         }
                     }
 
                     Row(modifier = Modifier
-                        .padding(top = 38.dp, bottom = 38.dp)
-                        .align(Alignment.BottomCenter)
-                        .clickable { onLogout() },
+                        .padding(top = 8.sdp(), bottom = 38.sdp())
+                        .wrapContentSize()
+                        .constrainAs(leaveServerButton) {
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            bottom.linkTo(parent.bottom)
+                        }
+                        .clickable { setShowReminderDialog(true) },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_logout),
                             contentDescription = null,
-                            tint = errorDefault
+                            tint = LocalColorMapping.current.error,
+                            modifier = Modifier.size(24.sdp())
                         )
                         Text(
-                            text = "Leave Server", modifier = Modifier
-                                .padding(start = 16.dp), style = TextStyle(
-                                color = errorDefault ?: MaterialTheme.colors.onBackground,
-                                fontSize = 14.sp,
+                            text = stringResource(R.string.sign_out), modifier = Modifier
+                                .padding(start = 16.sdp()), style = TextStyle(
+                                color = LocalColorMapping.current.error,
+                                fontSize = defaultNonScalableTextSize(),
                                 fontWeight = FontWeight.Bold
                             )
                         )
@@ -150,71 +166,104 @@ fun SiteMenuScreen(
                 }
             }
         }
-        LogoutConfirmDialog(showReminder, setShowReminderDialog, onLogout)
+        LeaveServerConfirmDialog(showReminder, setShowReminderDialog, onLeaveServer)
     }
 }
 
 @Composable
 fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
     val context = LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val statusUse = homeViewModel.currentStatus.observeAsState()
 
     Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-        CircleAvatarSite(url = "", name = profile?.userName ?: "", status = "")
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        CircleAvatarSite(
+            url = profile.avatar,
+            name = profile.userName ?: "",
+            status = "",
+            cacheKey = profile.updatedAt.toString()
+        )
+        Column(modifier = Modifier.padding(horizontal = 16.sdp())) {
             CKHeaderText(
-                text = profile?.userName ?: "",
+                text = profile.userName ?: "",
                 headerTextType = HeaderTextType.Normal,
                 color = primaryDefault
             )
-            Row(modifier = Modifier.clickable { expanded = true }, verticalAlignment = Alignment.CenterVertically) {
-                when(statusUse.value){
-                    UserStatus.ONLINE.value->{
+            Row(
+                modifier = Modifier.clickable { expanded = true },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                when (statusUse.value) {
+                    UserStatus.ONLINE.value -> {
                         Text(
                             text = UserStatus.ONLINE.value,
-                            style = TextStyle(color = colorSuccessDefault, fontSize = 14.sp)
+                            style = TextStyle(
+                                color = colorSuccessDefault,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
-                    UserStatus.OFFLINE.value->{
+                    UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
                             text = UserStatus.OFFLINE.value,
-                            style = TextStyle(color = grayscale3, fontSize = 14.sp)
+                            style = TextStyle(
+                                color = grayscale3,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
-                    else ->{
+                    else -> {
                         Text(
                             text = UserStatus.BUSY.value,
-                            style = TextStyle(color = errorDefault, fontSize = 14.sp)
+                            style = TextStyle(
+                                color = errorDefault,
+                                fontSize = defaultNonScalableTextSize()
+                            )
                         )
                     }
                 }
 
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                Box(modifier = Modifier.padding(horizontal = 8.sdp())) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_chev_down),
                         null,
-                        alignment = Alignment.Center
+                        alignment = Alignment.Center,
+                        modifier = Modifier.size(12.sdp()),
+                        contentScale = ContentScale.FillBounds,
+                        colorFilter = LocalColorMapping.current.textFieldIconFilter
                     )
                 }
             }
 
-            StatusDropdown(expanded, onDismiss = { expanded = false },{
+            StatusDropdown(expanded, onDismiss = { expanded = false }, {
                 expanded = false
-                homeViewModel.currentStatus.postValue(it.value)
+                homeViewModel.setUserStatus(it)
             })
 
             ConstraintLayout(Modifier.fillMaxWidth()) {
                 val text = createRef()
                 val image = createRef()
-                Text("Url: ${homeViewModel.getProfileLink()}", overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 12.sp, modifier = Modifier.constrainAs(text){
-                    linkTo(parent.start, image.start, endMargin = 4.dp)
-                    width = Dimension.fillToConstraints
-                })
+                Text(
+                    homeViewModel.getProfileLink(),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    fontSize = 12.sdp().toNonScalableTextSize(),
+                    modifier = Modifier.constrainAs(text) {
+                        linkTo(parent.start, image.start, endMargin = 4.dp)
+                        width = Dimension.fillToConstraints
+                    },
+                    color = LocalColorMapping.current.profileText
+                )
                 IconButton(
-                    onClick = { copyProfileLinkToClipBoard(context, "profile link", homeViewModel.getProfileLink()) },
+                    onClick = {
+                        copyProfileLinkToClipBoard(
+                            context,
+                            "profile link",
+                            homeViewModel.getProfileLink()
+                        )
+                    },
                     Modifier
-                        .size(18.dp)
+                        .size(18.sdp())
                         .constrainAs(image) {
                             end.linkTo(parent.end)
                         }
@@ -232,41 +281,29 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
 
 @Composable
 fun SettingServer(
-    serverName: String,
     onNavigateServerSetting: () -> Unit,
-    onNavigateNotificationSetting: () -> Unit,
-    onNavigateInvite: () -> Unit,
-    onNavigateBannedUser: () -> Unit
-    ) {
-    Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        CKHeaderText(
-            text = "Server Setting",
-            headerTextType = HeaderTextType.Normal,
-            color = grayscale2
-        )
-        ItemSiteSetting("Server", R.drawable.ic_adjustment, {
+    onNavigateNotificationSetting: () -> Unit
+) {
+    Column(Modifier.padding(bottom = 16.sdp())) {
+        ItemSiteSetting(stringResource(R.string.server), R.drawable.ic_adjustment, {
             onNavigateServerSetting()
         })
-        ItemSiteSetting("Notification", R.drawable.ic_server_notification, {
+        ItemSiteSetting(stringResource(R.string.notification), R.drawable.ic_server_notification, {
             onNavigateNotificationSetting()
         })
-        ItemSiteSetting("Invite", R.drawable.ic_user_plus, {
-            onNavigateInvite()
-        })
-        ItemSiteSetting("Banned", R.drawable.ic_user_off, {
-            onNavigateBannedUser()
-        })
-        ItemSiteSetting("Leave $serverName", R.drawable.ic_logout)
     }
 }
 
 @Composable
 fun SettingGeneral(
-    onLogout: () -> Unit,
     onNavigateAccountSetting: () -> Unit,
 ) {
-    Column(Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        ItemSiteSetting("Profile", R.drawable.ic_user, onNavigateAccountSetting)
+    Column {
+        ItemSiteSetting(
+            stringResource(R.string.profile),
+            R.drawable.ic_user,
+            onNavigateAccountSetting
+        )
     }
 }
 
@@ -277,37 +314,38 @@ fun ItemSiteSetting(
     onClickAction: (() -> Unit)? = null,
     textColor: Color? = null
 ) {
-    Row(modifier = Modifier
-        .padding(top = 16.dp, bottom = 18.dp)
-        .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
+    Row(
+        modifier = Modifier
+            .padding(top = 16.sdp(), bottom = 18.sdp())
+            .clickable { onClickAction?.invoke() }, verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(painter = painterResource(icon), contentDescription = null)
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.sdp()),
+            tint = LocalColorMapping.current.iconColorAlt
+        )
         SideBarLabel(
-            text = name, color = textColor, modifier = Modifier
+            text = name, color = LocalColorMapping.current.inputLabel, modifier = Modifier
                 .weight(0.66f)
-                .padding(start = 16.dp)
+                .padding(start = 16.sdp())
         )
     }
 }
 
 @Composable
-fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit,statusChoose: (UserStatus)->Unit) {
+fun StatusDropdown(expanded: Boolean, onDismiss: () -> Unit, statusChoose: (UserStatus) -> Unit) {
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         modifier = Modifier
-            .width(165.dp)
-            .background(Color.White, RoundedCornerShape(8.dp))
+            .width(165.sdp())
+            .background(LocalColorMapping.current.surfaceDialog, RoundedCornerShape(8.sdp()))
     ) {
         StatusItem(
             onClick = { statusChoose.invoke(UserStatus.ONLINE) },
             colorSuccessDefault,
             UserStatus.ONLINE.value
-        )
-        StatusItem(
-            onClick = { statusChoose.invoke(UserStatus.OFFLINE) },
-            grayscale3,
-            UserStatus.OFFLINE.value
         )
         StatusItem(
             onClick = { statusChoose.invoke(UserStatus.BUSY) },
@@ -323,19 +361,44 @@ fun StatusItem(onClick: () -> Unit, color: Color, text: String) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier
-                    .size(12.dp)
+                    .size(12.sdp())
                     .clip(CircleShape)
-                    .background(color))
-            Spacer(Modifier.width(7.dp))
+                    .background(color)
+            )
+            Spacer(Modifier.width(7.sdp()))
             Text(text, color = Color.Black)
         }
     }
 }
 
+@Composable
+fun LeaveServerConfirmDialog(
+    showReminder: Boolean,
+    setShowDialog: (Boolean) -> Unit,
+    onLeaveServer: () -> Unit,
+) {
+    if (showReminder) {
+        CKAlertDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(R.string.sign_out_dialog),
+            dismissTitle = stringResource(R.string.cancel),
+            confirmTitle = stringResource(R.string.sign_out),
+            onDismissButtonClick = {
+                setShowDialog(false)
+            },
+            onConfirmButtonClick = {
+                setShowDialog(false)
+                onLeaveServer.invoke()
+            },
+        )
+    }
+}
+
 private fun copyProfileLinkToClipBoard(context: Context, label: String, text: String) {
-    val clipboard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clipboard: ClipboardManager =
+        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
-    Toast.makeText(context, "You copied", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
 }
 

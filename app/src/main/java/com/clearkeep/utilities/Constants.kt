@@ -15,6 +15,7 @@ const val PORT = BuildConfig.PORT
 // janus
 const val EXTRA_OWNER_CLIENT = "to"
 const val EXTRA_GROUP_ID = "call_id"
+const val EXTRA_ID_MEMBER_CHANGE_KEY = "extra_id_member_change_key"
 const val EXTRA_OWNER_DOMAIN = "owner_domain"
 const val EXTRA_GROUP_NAME = "group_name"
 const val EXTRA_GROUP_TYPE = "group_type"
@@ -36,12 +37,14 @@ const val ACTION_CALL_SERVICE_AVAILABLE_STATE_CHANGED = "ck.action.end.service.c
 const val EXTRA_SERVICE_IS_AVAILABLE = "call_service_is_available"
 
 const val ACTION_CALL_CANCEL = "ck.action.end.call"
+const val ACTION_CALL_BUSY = "ck.action.busy.call"
 const val EXTRA_CALL_CANCEL_GROUP_ID = "call_cancel_group_id"
 const val EXTRA_CALL_CANCEL_GROUP_TYPE = "call_cancel_group_type"
 
 const val ACTION_CALL_SWITCH_VIDEO = "ck.action.switch.mode"
 const val ACTION_REMOVE_MEMBER = "ck.action.remove.member"
 const val ACTION_ADD_REMOVE_MEMBER = "ck.action.add.member"
+const val ACTION_MEMBER_CHANGE_KEY = "ck.action.member.change.key"
 const val EXTRA_CALL_SWITCH_VIDEO = "call_switch_mode"
 
 const val INCOMING_NOTIFICATION_ID = 123456
@@ -58,9 +61,23 @@ const val MESSAGE_HEADS_UP_NOTIFICATION_ID = 100
 const val MESSAGE_CHANNEL_ID = "message_channel_id_ck"
 const val MESSAGE_CHANNEL_NAME = "message_channel_name_ck"
 
+const val CALL_CHANNEL_ID = "channel_call"
+const val CALL_CHANNEL_NAME = "Calls"
+const val CALL_NOTIFICATION_ID = 1
+
+const val FILE_UPLOAD_CHANNEL_ID = "channel_file_upload"
+const val FILE_UPLOAD_CHANNEL_NAME = "Upload files"
+
 const val ACTION_MESSAGE_CANCEL = "ck.action_message_cancel"
 const val ACTION_MESSAGE_REPLY = "ck.action_message_reply"
 
 const val CALL_TYPE_AUDIO = "audio"
 const val CALL_TYPE_VIDEO = "video"
 const val CALL_UPDATE_TYPE_CANCEL = "cancel_request_call"
+const val CALL_UPDATE_TYPE_BUSY = "busy_request_call"
+
+const val ERROR_CODE_TIMEOUT = 504
+const val REQUEST_DEADLINE_SECONDS = 30L
+
+const val SENDER_DEVICE_ID = 111
+const val RECEIVER_DEVICE_ID = 222

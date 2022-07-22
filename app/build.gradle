@@ -15,22 +15,19 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 android {
-    compileSdkVersion 30
+    compileSdk 31
 
     defaultConfig {
         applicationId "com.clearkeep.ck"
         minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0.0"
+        targetSdkVersion 31
+        versionCode 5
+        versionName "1.0.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments["dagger.hilt.disableModulesHaveInstallInCheck"] = "true"
@@ -65,8 +62,8 @@ android {
         prod {
             dimension "version"
             resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_URL', "\"stag2.clearkeep.org\""
+            buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "8188"
         }
@@ -74,7 +71,7 @@ android {
             dimension "version"
             applicationIdSuffix ".staging"
             versionNameSuffix "-staging"
-            resValue 'string', 'app_name', "CK Stag"
+            resValue 'string', 'app_name', "ClearKeep"
             buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
@@ -85,8 +82,8 @@ android {
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "25000"
+            buildConfigField "String", 'BASE_URL', "\"prod1.clearkeep.org\""
+            buildConfigField "int", 'PORT', "5000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
         }
@@ -98,6 +95,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+        useIR = true
+        freeCompilerArgs += [
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+        ]
     }
     buildFeatures {
         compose true
@@ -118,7 +120,7 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    packagingOptions{
+    packagingOptions {
         exclude("META-INF/jersey-module-version")
     }
 }
@@ -160,22 +162,23 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 }
 
 dependencies {
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.3.0-beta01'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation('androidx.activity:activity-ktx:1.1.0')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.activity:activity-ktx:1.1.0'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+
+    implementation 'com.google.code.gson:gson:2.8.8'
 
     // architect components
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
 
     // Jetpack Compose
-    implementation "androidx.activity:activity-compose:1.3.0-alpha06"
+    implementation "androidx.activity:activity-compose:1.3.1"
     implementation "androidx.compose.compiler:compiler:$jetpack_compose_version"
     implementation("androidx.compose.runtime:runtime:$jetpack_compose_version")
     implementation "androidx.navigation:navigation-compose:$navComposeVersion"
@@ -187,7 +190,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
     implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
     implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-rc01"
     implementation "androidx.compose.ui:ui-tooling:$jetpack_compose_version"
 
     // gRPC
@@ -233,10 +236,10 @@ dependencies {
     // janus
     implementation project(':januswrapper')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation(name:'libwebrtc', ext:'aar')
+    implementation files('../januswrapper/libs/libwebrtc.aar')
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
-    implementation 'com.microsoft.identity.client:msal:2.0.8'
+    implementation 'com.microsoft.identity.client:msal:3.0.2'
     implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
 
     implementation 'com.github.bumptech.glide:glide:4.12.0'
@@ -244,10 +247,20 @@ dependencies {
     implementation 'jp.wasabeef:glide-transformations:4.0.0'
     implementation 'net.colindodd:toggleimagebutton:1.2'
 
-    implementation "com.google.accompanist:accompanist-coil:0.9.0"
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.9.0"
-    implementation "com.google.accompanist:accompanist-insets:0.9.0"
-    implementation "com.google.accompanist:accompanist-swiperefresh:0.9.0"
+    //Coil
+    implementation "io.coil-kt:coil:1.3.2"
+    implementation "io.coil-kt:coil-compose:1.3.2"
 
+    //Jetpack Accompanist
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
+
+    implementation 'com.googlecode.libphonenumber:libphonenumber:8.2.0'
+
+    implementation "net.gotev:uploadservice:4.6.0"
+
+    implementation project(':srp')
+
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
 }
-

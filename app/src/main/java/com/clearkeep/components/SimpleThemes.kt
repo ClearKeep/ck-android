@@ -1,19 +1,19 @@
 package com.clearkeep.components
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import com.google.accompanist.insets.ProvideWindowInsets
-import com.google.accompanist.insets.systemBarsPadding
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @SuppressLint("ConflictingOnColor")
 val simpleLightThemeColors = lightColors(
@@ -60,27 +60,36 @@ fun CKSimpleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     children: @Composable () -> Unit
 ) {
-    //todo disable dark mode
+    val localFocusManager = LocalFocusManager.current
+
     MaterialTheme(
-        colors = if (darkTheme) simpleLightThemeColors else simpleLightThemeColors,
+        colors = if (darkTheme) simpleDarkThemeColors else simpleLightThemeColors,
         shapes = Shapes,
         typography = ckTypography
     ) {
-        Surface(color= Color.White) {
-            children()
+        CompositionLocalProvider(LocalColorMapping provides provideColor(darkTheme)) {
+            Surface(
+                color = if (darkTheme) colorBackgroundDark else Color.White,
+                modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    localFocusManager.clearFocus()
+                })
+                }
+            ) {
+                children()
+            }
         }
     }
 }
 
 @Composable
-fun CKSimpleInsetTheme(children: @Composable () -> Unit) {
-    val systemUiController = rememberSystemUiController()
-    SideEffect {
-        systemUiController.setStatusBarColor(Color.Transparent, true)
-    }
-
+fun CKSimpleInsetTheme(enabled: Boolean = true, children: @Composable () -> Unit) {
     CKSimpleTheme {
-        ProvideWindowInsets {
+        if (enabled) {
+            ProvideWindowInsets {
+                children()
+            }
+        } else {
             children()
         }
     }

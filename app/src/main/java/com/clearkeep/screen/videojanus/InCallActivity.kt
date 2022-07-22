@@ -1,7 +1,7 @@
 package com.clearkeep.screen.videojanus
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,7 +18,11 @@ import android.util.TypedValue
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog.*
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.isVisible
 import androidx.core.view.iterator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -29,8 +33,8 @@ import com.clearkeep.db.clear_keep.model.Owner
 import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.januswrapper.*
 import com.clearkeep.repo.ServerRepository
-import com.clearkeep.screen.chat.repo.VideoCallRepository
-import com.clearkeep.screen.chat.repo.GroupRepository
+import com.clearkeep.repo.VideoCallRepository
+import com.clearkeep.repo.GroupRepository
 import com.clearkeep.screen.chat.utils.isGroup
 import com.clearkeep.screen.videojanus.common.CallState
 import com.clearkeep.screen.videojanus.common.createVideoCapture
@@ -76,6 +80,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private var mTimeStarted: Long = 0
 
     private var mIsAudioMode: Boolean = false
+    private var IsHeadPhone: Boolean = false
     private lateinit var mGroupId: String
     private lateinit var mGroupType: String
     private lateinit var mGroupName: String
@@ -84,6 +89,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private lateinit var mUserNameInConversation: String
     private var mIsGroupCall: Boolean = false
     private lateinit var binding: ActivityInCallBinding
+
+    private var screenWidth: Int = 0
+    private var screenHeight: Int = 0
 
     @Inject
     lateinit var videoCallRepository: VideoCallRepository
@@ -106,13 +114,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private val remoteRenders: MutableMap<BigInteger, RemoteInfo> = HashMap()
 
     private var endCallReceiver: BroadcastReceiver? = null
-    private var ourCameraView: RelativeLayout? = null
-    private var ourCameraViewWidth = 0
-    private var ourCameraViewHeight = 0
-    private var ourCameraViewMarginStart = 0
-    private var ourCameraViewMarginTop = 0
 
     private var switchVideoReceiver: BroadcastReceiver? = null
+
+    private var broadcastReceiver: BroadcastReceiver? = null
 
     private var group: ChatGroup? = null
 
@@ -122,16 +127,21 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     var isFromComingCall: Boolean = false
     var avatarInConversation = ""
     var groupName = ""
+    var isShowDialogCamera = false
 
     @SuppressLint("ResourceType", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
+        printlnCK("InCallActivity onCreate()")
         System.setProperty("java.net.preferIPv6Addresses", "false")
         System.setProperty("java.net.preferIPv4Stack", "true")
         super.onCreate(savedInstanceState)
         binding = ActivityInCallBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        screenWidth = resources.displayMetrics.widthPixels
+        screenHeight = resources.displayMetrics.heightPixels
+
         NotificationManagerCompat.from(this).cancel(null, INCOMING_NOTIFICATION_ID)
         if (environment.getServerCanNull() == null) {
             GlobalScope.launch(context = Dispatchers.Main) {
@@ -146,6 +156,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         mOwnerClientId = intent.getStringExtra(EXTRA_OWNER_CLIENT)!!
         mIsGroupCall = isGroup(mGroupType)
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
+        isShowDialogCamera = !mIsAudioMode
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME) ?: ""
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
 
@@ -156,11 +167,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             init(rootEglBase.eglBaseContext, null)
             setZOrderMediaOverlay(true)
             setEnableHardwareScaler(true)
-            setMirror(true)
         }
 
         initViews()
 
+        registerBroadcastReceiver()
         registerEndCallReceiver()
         if (mIsAudioMode) {
             configMedia(isSpeaker = false, isMuteVideo = true)
@@ -172,6 +183,39 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         requestCallPermissions()
         updateCallStatus(mCurrentCallState)
         dispatchCallStatus(true)
+
+        createInCallNotification(this, InCallActivity::class.java)
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        }
+    }
+
+    private fun registerBroadcastReceiver() {
+        Log.d("---", "registerBroadcastReceiver")
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_HEADSET_PLUG) {
+                    val state = intent.getIntExtra("state", -1)
+                    when (state) {
+                        0 -> {
+                            IsHeadPhone = true
+                            setSpeakerphoneOn(true)
+                            Log.d("---", "Headset is unplugged - In Call")
+                        }
+                        1 -> {
+                            IsHeadPhone = false
+                            setSpeakerphoneOn(false)
+                            Log.d("---", "Headset is plugged - In Call")
+                        }
+                    }
+                }
+            }
+        }
+        registerReceiver(
+            broadcastReceiver,
+            IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        )
     }
 
     private fun configMedia(isSpeaker: Boolean, isMuteVideo: Boolean) {
@@ -180,7 +224,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         mIsMuteVideo = isMuteVideo
         enableMuteVideo(mIsMuteVideo)
-
     }
 
     private fun initViews() {
@@ -207,15 +250,13 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     private fun initViewConnecting() {
         if (mIsAudioMode) viewConnecting.gone()
         if (isFromComingCall) {
-            tvCallStateVideo.text = "Connecting"
-            tvCallState.text = "Connecting"
+            tvCallStateVideo.text = getString(R.string.call_connecting)
+            tvCallState.text = getString(R.string.call_connecting)
             tvConnecting.visible()
-
-        }else{
-            tvCallStateVideo.text = "Calling Group"
-            tvCallState.text = "Calling Group"
+        } else {
+            tvCallStateVideo.text = getString(R.string.calling_group)
+            tvCallState.text = getString(R.string.calling_group)
             tvConnecting.gone()
-
         }
         Glide.with(this)
             .load(avatarInConversation)
@@ -224,7 +265,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 10)))
             .into(imageConnecting)
     }
-
 
     private fun runDelayToHideBottomButton() {
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
@@ -240,7 +280,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         isFromComingCall = intent.getBooleanExtra(EXTRA_FROM_IN_COMING_CALL, false)
         callScope.launch {
             // TODO
-            group = groupRepository.getGroupByID(intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(), mOwnerDomain, mOwnerClientId)
+            group = groupRepository.getGroupByID(
+                intent.getStringExtra(EXTRA_GROUP_ID)!!.toLong(),
+                mOwnerDomain,
+                mOwnerClientId
+            )?.data
             if (isFromComingCall) {
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
@@ -250,10 +294,19 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val webRtcGroupId = intent.getStringExtra(EXTRA_WEB_RTC_GROUP_ID)!!.toInt()
                 val webRtcUrl = intent.getStringExtra(EXTRA_WEB_RTC_URL) ?: ""
 
-                startVideo(webRtcGroupId, webRtcUrl, stunUrl, turnUrl, turnUserName, turnPassword, token)
+                startVideo(
+                    webRtcGroupId,
+                    webRtcUrl,
+                    stunUrl,
+                    turnUrl,
+                    turnUserName,
+                    turnPassword,
+                    token
+                )
             } else {
                 val groupId = intent.getStringExtra(EXTRA_GROUP_ID)!!.toInt()
-                val result = videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
+                val result =
+                    videoCallRepository.requestVideoCall(groupId, mIsAudioMode, getOwnerServer())
 
                 if (result != null) {
                     val turnConfig = result.turnServer
@@ -264,7 +317,15 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
                     val webRtcGroupId = result.groupRtcId
                     val webRtcUrl = result.groupRtcUrl
-                    startVideo(webRtcGroupId.toInt(), webRtcUrl, stunUrl, turnUrl, turnConfig.user, turnConfig.pwd, token)
+                    startVideo(
+                        webRtcGroupId.toInt(),
+                        webRtcUrl,
+                        stunUrl,
+                        turnUrl,
+                        turnConfig.user,
+                        turnConfig.pwd,
+                        token
+                    )
                 } else {
                     runOnUiThread {
                         updateCallStatus(CallState.CALL_NOT_READY)
@@ -272,13 +333,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                     return@launch
                 }
             }
-                delay(CALL_WAIT_TIME_OUT)
-                if (remoteRenders.isEmpty()) {
-                    runOnUiThread {
-                        updateCallStatus(CallState.CALL_NOT_READY)
-                    }
+            delay(CALL_WAIT_TIME_OUT)
+            if (remoteRenders.isEmpty()) {
+                runOnUiThread {
+                    updateCallStatus(CallState.CALL_NOT_READY)
                 }
-
+            }
         }
     }
 
@@ -295,6 +355,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     override fun onDestroy() {
+        dismissInCallNotification(this)
         super.onDestroy()
         dispatchCallStatus(false)
         if (chronometerTimeCall.visibility == View.VISIBLE) {
@@ -313,27 +374,18 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             controlCallAudioView.gone()
             imgEndWaiting.gone()
             tvEndButtonDescription.gone()
-            if (mIsMuteVideo) {
-                pipInfo.visible()
-                ourCameraView?.gone()
-            } else {
-                ourCameraView?.layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT)
-            }
+            pipInfo.visible()
+            surfaceRootContainer.gone()
         } else {
             // Restore the full-screen UI.
             includeToolbar.visible()
             imgEndWaiting.visible()
             tvEndButtonDescription.visible()
             pipInfo.gone()
+            updateRenders()
+            surfaceRootContainer.visible()
             if (!mIsAudioMode) {
                 controlCallVideoView.visible()
-                ourCameraView?.visible()
-                if (!mIsMuteVideo) {
-                    ourCameraView?.layoutParams = RelativeLayout.LayoutParams(ourCameraViewWidth, ourCameraViewHeight).apply {
-                        leftMargin = ourCameraViewMarginStart
-                        topMargin = ourCameraViewMarginTop
-                    }
-                }
             } else {
                 controlCallAudioView.visible()
             }
@@ -344,10 +396,19 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         handleBackPressed()
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            configLandscapeLayout()
+        } else {
+            configPortraitLayout()
+        }
+    }
+
     fun onAction() {
         imgEndWaiting.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
+            endCall()
         }
         includeToolbar.imgBack.setOnClickListener {
             handleBackPressed()
@@ -369,6 +430,10 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             switchToVideoMode()
         }
 
+        controlCallAudioView.imgEndWaiting.setOnClickListener {
+            endCall()
+        }
+
         controlCallVideoView.bottomToggleMute.setOnClickListener {
             mIsMute = !mIsMute
             enableMute(mIsMute)
@@ -380,7 +445,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             mIsMuteVideo = !mIsMuteVideo
             enableMuteVideo(mIsMuteVideo)
             runDelayToHideBottomButton()
-
         }
 
         controlCallVideoView.bottomToggleSwitchCamera.setOnClickListener {
@@ -388,9 +452,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         controlCallVideoView.bottomImgEndCall.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
-
+            endCall()
         }
         surfaceRootContainer.setOnClickListener {
             if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED)
@@ -405,8 +467,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         imgEndWaiting.setOnClickListener {
-            hangup()
-            finishAndReleaseResource()
+            endCall()
         }
     }
 
@@ -414,8 +475,17 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (hasSupportPIP()) {
             enterPIPMode()
         } else {
-            hangup()
-            finishAndReleaseResource()
+            Builder(this)
+                .setTitle(getString(R.string.warning))
+                .setMessage(getString(R.string.dialog_leave_call_title))
+                .setPositiveButton(getString(R.string.leave)) { _, _ ->
+                    endCall()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+
+                }
+                .create()
+                .show()
         }
     }
 
@@ -478,7 +548,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         when (mCurrentCallState) {
             CallState.CALLING -> {
                 if (!isFromComingCall)
-                playRingBackTone()
+                    playRingBackTone()
             }
             CallState.RINGING -> {
             }
@@ -488,15 +558,13 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 playBusySignalSound()
                 GlobalScope.launch {
                     delay(3 * 1000)
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
 
             CallState.ENDED -> {
                 tvCallState.text = getString(R.string.text_end)
-                hangup()
-                finishAndReleaseResource()
+                endCall()
             }
             CallState.ANSWERED -> {
                 tvCallState.text = getString(R.string.text_started)
@@ -509,7 +577,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun dispatchCallStatus(isStarted: Boolean) {
-        AppCall.listenerCallingState.postValue(CallingStateData(isStarted, mUserNameInConversation, false, mTimeStarted))
+        AppCall.listenerCallingState.postValue(
+            CallingStateData(
+                isStarted,
+                mUserNameInConversation,
+                false,
+                mTimeStarted
+            )
+        )
     }
 
     private fun switchToVideoMode() {
@@ -521,6 +596,20 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
     }
 
+    private fun showOpenCameraDialog() {
+        isShowDialogCamera = true
+        val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle(getString(R.string.call_request_video_dialog_title))
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                configMedia(isSpeaker = true, isMuteVideo = false)
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+            }
+            .setCancelable(false)
+            .create()
+            .show()
+    }
+
     private fun updateUIByStateAndMode() {
         if (mCurrentCallState == CallState.ANSWERED) {
             groupAudioWaiting.gone()
@@ -529,7 +618,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             if (mIsAudioMode) {
                 includeToolbar.visible()
                 controlCallVideoView.gone()
-                tvEndButtonDescription.text="End Call"
+                tvEndButtonDescription.text = getString(R.string.end_call)
             } else {
                 waitingCallView.gone()
                 includeToolbar.visible()
@@ -540,9 +629,9 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 waitingCallView.gone()
                 includeToolbar.gone()
                 controlCallVideoView.visible()
-                if (isFromComingCall){
+                if (isFromComingCall) {
                     waitingCallVideoView.gone()
-                }else {
+                } else {
                     waitingCallVideoView.visible()
                 }
             } else {
@@ -550,7 +639,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 groupAudioWaiting.visible()
                 waitingCallVideoView.gone()
             }
-
         }
     }
 
@@ -560,14 +648,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun enableMute(isMuting: Boolean) {
-        Log.e("antx","enableMute isMuting $isMuting")
+        Log.e("antx", "enableMute isMuting $isMuting")
         controlCallAudioView.toggleMute.isChecked = isMuting
         controlCallVideoView.bottomToggleMute.isChecked = isMuting
         peerConnectionClient?.setAudioEnabled(!isMuting)
     }
 
     private fun enableMuteVideo(isMuteVideo: Boolean) {
-        Log.e("antx","enableMute enableMuteVideo $isMuteVideo")
+        Log.e("antx", "enableMute enableMuteVideo $isMuteVideo")
 
         controlCallAudioView.toggleFaceTime.isChecked = isMuteVideo
         controlCallVideoView.bottomToggleFaceTime.isChecked = isMuteVideo
@@ -579,13 +667,17 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         try {
             val audioManager: AudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
             audioManager.mode = AudioManager.MODE_IN_CALL
-            audioManager.isSpeakerphoneOn = isOn
+            if (!IsHeadPhone) {
+                audioManager.isSpeakerphoneOn = isOn
+            } else audioManager.isSpeakerphoneOn = true
+
         } catch (e: Exception) {
-            printlnCK("setSpeakerphoneOn, $e")
+            printlnCK("setSpeakerphoneOn, exception!! $e")
         }
     }
 
     private fun hangup() {
+        dismissInCallNotification(this)
         callScope.cancel()
         mWebSocketChannel?.close()
         peerConnectionClient?.close()
@@ -595,10 +687,14 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         hideBottomButtonHandler.removeCallbacksAndMessages(null)
         unRegisterEndCallReceiver()
         unRegisterSwitchVideoReceiver()
+        unRegisterBroadcastReceiver()
         stopRingBackTone()
         stopBusySignalSound()
-        Log.e("antx","finishAndReleaseResource ${!isFromComingCall} ,mCurrentCallState : $mCurrentCallState   ${mCurrentCallState==CallState.CALLING}")
-        if (!isFromComingCall&& mCurrentCallState==CallState.CALLING) {
+        Log.e(
+            "antx",
+            "finishAndReleaseResource ${!isFromComingCall}, mCurrentCallState : $mCurrentCallState   ${mCurrentCallState == CallState.CALLING}"
+        )
+        if (!isFromComingCall && (mCurrentCallState == CallState.CALLING || mCurrentCallState == CallState.CALL_NOT_READY)) {
             cancelCallAPI()
         }
         if (Build.VERSION.SDK_INT >= 21) {
@@ -647,7 +743,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
+        peerConnectionClient?.subscriberHandleRemoteJsep(
+            janusHandle.handleId,
+            janusHandle.display,
+            sessionDescription
+        )
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -699,7 +799,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
             val remoteRender = SurfaceViewRenderer(this)
             remoteRender.init(rootEglBase.eglBaseContext, null)
-            remoteRender.setMirror(true)
             connection.videoTrack.addRenderer(VideoRenderer(remoteRender))
             remoteRenders[connection.handleId] = RemoteInfo(
                 connection.display,
@@ -730,6 +829,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun updateRenders() {
+        printlnCK("updateRenders()")
         for (child in binding.surfaceRootContainer.iterator()) {
             (child as RelativeLayout).removeAllViews()
         }
@@ -739,23 +839,29 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
         val me = group?.clientList?.find { it.userId == environment.getServer().profile.userId }
         val surfaceGenerator =
-            SurfacePositionFactory().createSurfaceGenerator(this, renders.size + 1)
+            SurfacePositionFactory().createSurfaceGenerator(
+                this,
+                renders.size + 1,
+                screenWidth,
+                screenHeight
+            )
 
         val localSurfacePosition = surfaceGenerator.getLocalSurface()
-        ourCameraView = createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
-        ourCameraViewHeight = localSurfacePosition.height
-        ourCameraViewWidth = localSurfacePosition.width
-        ourCameraViewMarginStart = localSurfacePosition.marginStart
-        ourCameraViewMarginTop = localSurfacePosition.marginTop
-        binding.surfaceRootContainer.addView(ourCameraView)
+        val cameraView =
+            createRemoteView(mLocalSurfaceRenderer, me?.userName ?: "", localSurfacePosition)
+        binding.surfaceRootContainer.addView(cameraView)
 
         // add remote streams
         val remoteSurfacePositions = surfaceGenerator.getRemoteSurfaces()
         remoteSurfacePositions.forEachIndexed { index, remoteSurfacePosition ->
             val remoteInfo = renders.elementAt(index)
             val user = group?.clientList?.find { it.userId == remoteInfo.clientId }
-            val view = createRemoteView(remoteInfo.surfaceViewRenderer, user?.userName ?: "unknown"
-                , remoteSurfacePosition)
+            printlnCK("updateRenders remoteSurfacePosition() user ${user?.userName} position remoteSurfacePosition $remoteSurfacePosition")
+            val view = createRemoteView(
+                remoteInfo.surfaceViewRenderer,
+                user?.userName ?: "unknown",
+                remoteSurfacePosition
+            )
             binding.surfaceRootContainer.addView(view)
         }
     }
@@ -776,7 +882,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         val tv = TextView(this)
         tv.text = remoteName
         tv.typeface = Typeface.DEFAULT_BOLD
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP,14f)
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
         tv.textAlignment = View.TEXT_ALIGNMENT_CENTER
         tv.setPadding(0, 0, 0, 24)
         tv.setTextColor(resources.getColor(R.color.grayscaleOffWhite))
@@ -806,15 +912,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
 
     private fun showAskPermissionDialog() {
         val alertDialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Permissions Required")
-            .setMessage(
-                "You have forcefully denied some of the required permissions " +
-                        "for this action. Please open settings, go to permissions and allow them."
-            )
-            .setPositiveButton("Settings") { _, _ ->
+        alertDialogBuilder.setTitle(getString(R.string.dialog_call_permission_denied_title))
+            .setMessage(getString(R.string.dialog_call_permission_denied_text))
+            .setPositiveButton(getString(R.string.settings)) { _, _ ->
                 openSettingScreen()
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
                 finishAndReleaseResource()
             }
             .setCancelable(false)
@@ -828,8 +931,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
                 val groupId = intent.getStringExtra(EXTRA_CALL_CANCEL_GROUP_ID)
                 printlnCK("receive a end call event with group id = $groupId")
                 if (mGroupId == groupId) {
-                    hangup()
-                    finishAndReleaseResource()
+                    endCall()
                 }
             }
         }
@@ -839,6 +941,11 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         )
     }
 
+    private fun endCall() {
+        hangup()
+        finishAndReleaseResource()
+    }
+
     private fun unRegisterEndCallReceiver() {
         if (endCallReceiver != null) {
             unregisterReceiver(endCallReceiver)
@@ -846,15 +953,25 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
     }
 
+    private fun unRegisterBroadcastReceiver() {
+        try {
+            unregisterReceiver(broadcastReceiver)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     private fun registerSwitchVideoReceiver() {
         printlnCK("registerSwitchVideoReceiver")
         switchVideoReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                val groupId = intent.getLongExtra(EXTRA_CALL_SWITCH_VIDEO, 0).toString()
+                val groupId = intent.getStringExtra(EXTRA_CALL_SWITCH_VIDEO).toString()
                 if (mGroupId == groupId && mIsAudioMode) {
                     printlnCK("switch group $groupId to video mode")
+                    if (mIsAudioMode && !isShowDialogCamera)
+                        showOpenCameraDialog()
                     mIsAudioMode = false
-                    configMedia(isSpeaker = true, isMuteVideo = mIsMuteVideo)
+                    configMedia(isSpeaker = mIsSpeaker, isMuteVideo = mIsMuteVideo)
                     updateUIByStateAndMode()
                 }
             }
@@ -893,6 +1010,66 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         busySignalPlayer?.stop()
         busySignalPlayer?.release()
         busySignalPlayer = null
+    }
+
+    private fun configPortraitLayout() {
+        controlCallAudioView.imgEndWaiting.gone()
+        controlCallAudioView.tvEndButtonDescription.gone()
+        tvEndButtonDescription.visible()
+        imgEndWaiting.visible()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.TOP,
+            R.id.parent,
+            ConstraintSet.TOP
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 0.532f
+        controlCallAudioView.layoutParams = layoutParams
+    }
+
+    private fun configLandscapeLayout() {
+        controlCallAudioView.imgEndWaiting.visible()
+        controlCallAudioView.tvEndButtonDescription.visible()
+        tvEndButtonDescription.gone()
+        imgEndWaiting.gone()
+
+        val mConstraintSet = ConstraintSet()
+        mConstraintSet.clone(controlCallAudioView as ConstraintLayout)
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.END,
+            R.id.parent,
+            ConstraintSet.END
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.START,
+            R.id.parent,
+            ConstraintSet.START
+        )
+        mConstraintSet.connect(
+            R.id.controlCallAudioView,
+            ConstraintSet.BOTTOM,
+            R.id.parent,
+            ConstraintSet.BOTTOM
+        )
+        mConstraintSet.applyTo(controlCallAudioView as ConstraintLayout)
+
+        val layoutParams = controlCallAudioView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.verticalBias = 1f
+        controlCallAudioView.layoutParams = layoutParams
     }
 
     data class RemoteInfo(

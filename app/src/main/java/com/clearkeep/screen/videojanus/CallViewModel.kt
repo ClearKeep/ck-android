@@ -18,7 +18,7 @@ import java.math.BigInteger
 import javax.inject.Inject
 
 class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
-    PeerConnectionClient.PeerConnectionEvents,IControlCall {
+    PeerConnectionClient.PeerConnectionEvents, IControlCall {
 
     val rootEglBase by lazy { EglBase.create() }
     private val peerConnectionClient by lazy { PeerConnectionClient() }
@@ -28,21 +28,25 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     var mCurrentCallState = MutableLiveData(CallState.CALLING)
     var listenerOnRemoteRenderAdd: ((JanusConnection) -> Unit)? = null
     var listenerOnPublisherJoined: (() -> Unit)? = null
-    var mIsAudioMode= MutableLiveData<Boolean>(null)
-    var totalTimeRun : Long=0
-    var totalTimeRunJob: Job?=null
+    var mIsAudioMode = MutableLiveData<Boolean>(null)
+    var totalTimeRun: Long = 0
+    var totalTimeRunJob: Job? = null
     var mIsMute = MutableLiveData<Boolean>(false)
 
-    fun startVideo(context: Context, mLocalSurfaceRenderer: SurfaceViewRenderer,
-                   ourClientId:String,
-                   janusGroupId: Int, janusUrl: String,
-                   stunUrl: String, turnUrl: String,
-                   turnUser: String, turnPass: String,
-                   token: String) {
-        printlnCK("startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
-                ", group = $janusGroupId, token = $token Janus URL: $janusUrl")
+    fun startVideo(
+        context: Context, mLocalSurfaceRenderer: SurfaceViewRenderer,
+        ourClientId: String,
+        janusGroupId: Int, janusUrl: String,
+        stunUrl: String, turnUrl: String,
+        turnUser: String, turnPass: String,
+        token: String
+    ) {
+        printlnCK(
+            "startVideo: stun = $stunUrl, turn = $turnUrl, username = $turnUser, pwd = $turnPass" +
+                    ", group = $janusGroupId, token = $token Janus URL: $janusUrl"
+        )
         this.mContext = WeakReference(context)
-        this.mLocalSurfaceRenderer=WeakReference(mLocalSurfaceRenderer)
+        this.mLocalSurfaceRenderer = WeakReference(mLocalSurfaceRenderer)
         mWebSocketChannel = WebSocketChannel(janusGroupId, ourClientId, token, janusUrl)
         mWebSocketChannel!!.initConnection()
         mWebSocketChannel!!.setDelegate(this)
@@ -52,14 +56,18 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
             false, false, false, false,
             turnUrl, turnUser, turnPass, stunUrl
         )
-        peerConnectionClient.createPeerConnectionFactory(mContext.get(), peerConnectionParameters, this)
+        peerConnectionClient.createPeerConnectionFactory(
+            mContext.get(),
+            peerConnectionParameters,
+            this
+        )
         peerConnectionClient.startVideoSource()
     }
 
 
     override fun onPublisherJoined(handleId: BigInteger) {
         offerPeerConnection(handleId)
-        Log.e("antx","onPublisherJoined")
+        Log.e("antx", "onPublisherJoined")
     }
 
     override fun onPublisherRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
@@ -73,7 +81,11 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         val type = SessionDescription.Type.fromCanonicalForm(jsep.optString("type"))
         val sdp = jsep.optString("sdp")
         val sessionDescription = SessionDescription(type, sdp)
-        peerConnectionClient?.subscriberHandleRemoteJsep(janusHandle.handleId, janusHandle.display, sessionDescription)
+        peerConnectionClient.subscriberHandleRemoteJsep(
+            janusHandle.handleId,
+            janusHandle.display,
+            sessionDescription
+        )
     }
 
     override fun onLeaving(handleId: BigInteger) {
@@ -119,9 +131,9 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     override fun onRemoteRenderAdded(connection: JanusConnection) {
         listenerOnRemoteRenderAdd?.invoke(connection)
         printlnCK("onRemoteRenderAdded: ${connection.handleId}")
-            if (mCurrentCallState.value != CallState.ANSWERED) {
-                mCurrentCallState.postValue(CallState.ANSWERED)
-            }
+        if (mCurrentCallState.value != CallState.ANSWERED) {
+            mCurrentCallState.postValue(CallState.ANSWERED)
+        }
     }
 
     override fun onRemoteRenderRemoved(connection: JanusConnection) {
@@ -133,7 +145,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     }
 
     private fun offerPeerConnection(handleId: BigInteger) {
-        peerConnectionClient?.createPeerConnection(
+        peerConnectionClient.createPeerConnection(
             rootEglBase.eglBaseContext,
             mLocalSurfaceRenderer.get(),
             mContext.get()?.let { createVideoCapture(it) },
@@ -143,7 +155,7 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         listenerOnPublisherJoined?.invoke()
     }
 
-    override fun onCameraChane(isOn: Boolean) {
+    override fun onCameraChange(isOn: Boolean) {
         peerConnectionClient.switchCamera()
     }
 
@@ -160,9 +172,9 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
     }
 
     private fun setSpeakerphoneOn(isOn: Boolean) {
-        printlnCK("setSpeakerphoneOn, isOn = $isOn")
         try {
-            val audioManager: AudioManager = mContext.get()?.getSystemService(AppCompatActivity.AUDIO_SERVICE) as AudioManager
+            val audioManager: AudioManager =
+                mContext.get()?.getSystemService(AppCompatActivity.AUDIO_SERVICE) as AudioManager
             audioManager.mode = AudioManager.MODE_IN_CALL
             audioManager.isSpeakerphoneOn = isOn
         } catch (e: Exception) {
@@ -175,9 +187,5 @@ class CallViewModel @Inject constructor() : ViewModel(), JanusRTCInterface,
         mWebSocketChannel?.close()
         peerConnectionClient.close()
         totalTimeRunJob?.cancel()
-    }
-
-    fun isAudioCall(){
-
     }
 }

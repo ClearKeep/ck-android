@@ -6,10 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 
 class ManagedChannelImpl : ChannelFactory {
+
     override fun createManagedChannel(domain: String): ManagedChannel {
         return ManagedChannelBuilder.forTarget(domain)
             .usePlaintext()
             .executor(Dispatchers.Default.asExecutor())
+            .enableRetry()
+            .intercept()
             .build()
     }
 }

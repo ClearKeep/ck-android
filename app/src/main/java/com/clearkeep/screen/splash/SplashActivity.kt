@@ -1,13 +1,12 @@
 package com.clearkeep.screen.splash
 
-import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import com.clearkeep.components.CKTheme
 import com.clearkeep.screen.auth.login.LoginActivity
 import com.clearkeep.screen.chat.home.MainActivity
@@ -19,7 +18,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class SplashActivity : AppCompatActivity() {
-
     private val splashViewModel: SplashViewModel by viewModels()
 
     @Inject
@@ -27,9 +25,6 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancelAll()
 
         setContent {
             OurView()

@@ -13,8 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
+import com.clearkeep.components.base.CKText
+import com.clearkeep.components.grayscaleDarkModeGreyLight2
 import com.clearkeep.components.primaryDefault
 import com.clearkeep.db.clear_keep.model.Server
 
@@ -23,7 +28,7 @@ import com.clearkeep.db.clear_keep.model.Server
 fun CircleAvatarWorkSpace(
     item: Server,
     isHighlight: Boolean,
-    contentSize: Dp = 32.dp
+    contentSize: Dp = dimensionResource(R.dimen._32sdp)
 ) {
     if (isHighlight) Highlight(item, contentSize) else Content(item, contentSize)
 }
@@ -32,11 +37,11 @@ fun CircleAvatarWorkSpace(
 fun Highlight(item: Server, contentSize: Dp) {
     Column(
         modifier = Modifier
-            .size(contentSize.plus(12.dp))
+            .size(contentSize.plus(dimensionResource(R.dimen._12sdp)))
             .background(color = Color.Transparent)
             .border(
-                BorderStroke(1.5.dp, primaryDefault),
-                shape = RoundedCornerShape(4.dp)
+                BorderStroke(dimensionResource(R.dimen._1sdp), if (LocalColorMapping.current.isDarkTheme) grayscaleDarkModeGreyLight2 else primaryDefault),
+                shape = RoundedCornerShape(dimensionResource(R.dimen._4sdp))
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -49,20 +54,23 @@ fun Highlight(item: Server, contentSize: Dp) {
 @Composable
 fun Content(item: Server, contentSize: Dp) {
     val displayName =
-        if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(0, 2) else item.serverName
+        if (item.serverName.isNotBlank() && item.serverName.length >= 2) item.serverName.substring(
+            0,
+            2
+        ) else item.serverName
     Surface(
-        shape = RoundedCornerShape(4.dp),
+        shape = RoundedCornerShape(dimensionResource(R.dimen._4sdp)),
         modifier = Modifier.size(contentSize)
     ) {
         Column(
             modifier = Modifier.background(
-                shape = RoundedCornerShape(4.dp),
+                shape = RoundedCornerShape(dimensionResource(R.dimen._4sdp)),
                 color = primaryDefault
             ),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
+            CKText(
                 displayName.capitalize(), style = MaterialTheme.typography.caption.copy(
                     color = MaterialTheme.colors.onSurface,
                 )

@@ -1,5 +1,6 @@
 package com.clearkeep.screen.auth.advance_setting
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -7,92 +8,109 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.shrinkOut
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.clearkeep.R
 import com.clearkeep.components.*
 import com.clearkeep.components.base.*
+import com.clearkeep.screen.auth.login.LoginViewModel
+import com.clearkeep.utilities.*
+import com.clearkeep.utilities.network.Status
 
 
 @ExperimentalAnimationApi
 @Composable
 fun CustomServerScreen(
-    onBackPress: (isCustom: Boolean, url: String) -> Unit,
+    loginViewModel: LoginViewModel,
+    onBackPress: () -> Unit,
     isCustom: Boolean,
     url: String,
 ) {
-    val useCustomServerChecked = remember { mutableStateOf(isCustom) }
-    val rememberServerUrl = remember { mutableStateOf(url) }
-    val (showDialog, setShowDialog) = remember { mutableStateOf("") }
+    val useCustomServerChecked = rememberSaveable { mutableStateOf(isCustom) }
+    val rememberServerUrl = rememberSaveable { mutableStateOf(url) }
+    val (showDialog, setShowDialog) = rememberSaveable { mutableStateOf("") }
+    val serverUrlValidateResponse = loginViewModel.serverUrlValidateResponse.observeAsState()
+    val isLoading = loginViewModel.isLoading.observeAsState()
+
+    BackHandler {
+        if (!useCustomServerChecked.value) {
+            loginViewModel.isCustomServer = false
+            loginViewModel.customDomain = ""
+        }
+        loginViewModel.clearLoading()
+        loginViewModel.cancelCheckValidServer()
+        onBackPress()
+    }
+
     Box(
         modifier = Modifier
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        //todo disable dark mode
-                        if (isSystemInDarkTheme()) backgroundGradientStart else backgroundGradientStart,
-                        if (isSystemInDarkTheme()) backgroundGradientEnd else backgroundGradientEnd,
-                    )
+                    colors = LocalColorMapping.current.backgroundBrush
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Spacer(Modifier.height(58.dp))
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())) {
+            Spacer(Modifier.height(58.sdp()))
             CKTopAppBarSample(
-                modifier = Modifier.padding(start = 6.dp),
-                title = stringResource(R.string.advance_server_settings),
-                onBackPressed = {
-                    if (useCustomServerChecked.value
-                        && (rememberServerUrl.value.isBlank())) {
-                        setShowDialog("Please enter server url and port")
-                    } else {
-                        onBackPress(
-                            useCustomServerChecked.value,
-                            rememberServerUrl.value,
-                        )
-                    }
+                modifier = Modifier.padding(start = 6.sdp()),
+                title = stringResource(R.string.advance_server_settings)
+            ) {
+                if (!useCustomServerChecked.value) {
+                    loginViewModel.isCustomServer = false
+                    loginViewModel.customDomain = ""
+                } else {
+                    loginViewModel.isCustomServer = isCustom
+                    loginViewModel.customDomain = url
                 }
-            )
-            Spacer(Modifier.height(26.dp))
+                loginViewModel.clearLoading()
+                loginViewModel.cancelCheckValidServer()
+                onBackPress()
+            }
+            Spacer(Modifier.height(26.sdp()))
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(16.sdp())
                     .clickable {
                         useCustomServerChecked.value = !useCustomServerChecked.value
+                        if (!useCustomServerChecked.value) {
+                            rememberServerUrl.value = ""
+                        }
                     }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(id = if (useCustomServerChecked.value) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
-                    ""
+                    "",
+                    Modifier.size(32.sdp()),
+                    contentScale = ContentScale.FillBounds
                 )
                 Text(
-                    text = "Use Custom Server",
-                    modifier = Modifier.padding(16.dp),
+                    text = stringResource(R.string.advance_server_settings_custom_server),
+                    modifier = Modifier.padding(16.sdp()),
                     style = MaterialTheme.typography.body1.copy(
                         color = grayscaleOffWhite,
-                        fontSize = 14.sp,
+                        fontSize = defaultNonScalableTextSize(),
                         fontWeight = FontWeight.Bold
                     )
                 )
             }
-            Column(Modifier.padding(start = 16.dp, end = 16.dp)) {
+            Column(Modifier.padding(start = 16.sdp(), end = 16.sdp())) {
                 AnimatedVisibility(
                     visible = useCustomServerChecked.value,
                     enter = expandIn(
@@ -113,49 +131,80 @@ fun CustomServerScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Please enter your server URL and Port to enter custom server",
+                            text = stringResource(R.string.use_custom_server),
                             style = MaterialTheme.typography.body1.copy(
                                 color = grayscaleOffWhite,
-                                fontSize = 16.sp,
+                                fontSize = 16.sdp().toNonScalableTextSize(),
                                 fontWeight = FontWeight.Normal
                             )
                         )
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(20.sdp()))
 
                         Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
                             Row(
                                 modifier = Modifier
-                                    .weight(0.66f).padding(end = 16.dp), verticalAlignment = Alignment.CenterVertically
+                                    .weight(0.66f)
+                                    .padding(end = 16.sdp()),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CKTextInputField(
-                                    "Server URL",
+                                    stringResource(R.string.server_url),
                                     rememberServerUrl,
                                     keyboardType = KeyboardType.Text,
                                     singleLine = true,
+                                    allowSpace = false
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(58.dp))
+                        Spacer(modifier = Modifier.height(50.sdp()))
 
                         CKButton(
-                            "Submit",
-                            { if (rememberServerUrl.value.isBlank()) {
-                                setShowDialog("Please enter server url and port")
-                            } else {
-                                onBackPress(
-                                    useCustomServerChecked.value,
-                                    rememberServerUrl.value,
-                                )
-                            }},
-                            modifier = Modifier.padding(start = 60.dp, end = 66.dp),
-                            buttonType = if (rememberServerUrl.value.isNotBlank()) ButtonType.White else ButtonType.BorderWhite
+                            stringResource(R.string.all_submit), {
+                                loginViewModel.checkValidServerUrl(rememberServerUrl.value.trim())
+                            },
+                            modifier = Modifier.padding(start = 60.sdp(), end = 66.sdp()),
+                            buttonType = ButtonType.White,
+                            enabled = rememberServerUrl.value.isNotBlank() && isLoading.value != true
                         )
                     }
                 }
             }
+            Spacer(Modifier.height(58.sdp()))
+        }
+        if (isLoading.value == true) {
+            CKCircularProgressIndicator(Modifier.align(Alignment.Center))
         }
         ErrorDialog(showDialog, setShowDialog)
+    }
+
+    if (serverUrlValidateResponse.value?.status == Status.SUCCESS) {
+        loginViewModel.isCustomServer = useCustomServerChecked.value
+        loginViewModel.customDomain = rememberServerUrl.value
+        loginViewModel.serverUrlValidateResponse.value = null
+        onBackPress()
+    } else if (serverUrlValidateResponse.value?.status == Status.ERROR) {
+        val (title, text, dismissText) = if (serverUrlValidateResponse.value!!.errorCode == ERROR_CODE_TIMEOUT) {
+            Triple(
+                stringResource(R.string.network_error_dialog_title),
+                stringResource(R.string.network_error_dialog_text),
+                stringResource(R.string.ok)
+            )
+        } else {
+            Triple(
+                stringResource(R.string.error),
+                stringResource(R.string.wrong_server_url_error),
+                stringResource(R.string.close)
+            )
+        }
+        CKAlertDialog(
+            title = title,
+            text = text,
+            dismissTitle = dismissText,
+            onDismissButtonClick = {
+                loginViewModel.serverUrlValidateResponse.value = null
+            }
+        )
     }
 }
 
@@ -163,7 +212,7 @@ fun CustomServerScreen(
 fun ErrorDialog(showDialog: String, setShowDialog: (String) -> Unit) {
     if (showDialog.isNotEmpty()) {
         CKAlertDialog(
-            title = "Error",
+            title = stringResource(R.string.error),
             text = showDialog,
             onDismissButtonClick = {
                 // Change the state to close the dialog

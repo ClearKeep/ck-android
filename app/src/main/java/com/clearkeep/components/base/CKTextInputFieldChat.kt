@@ -12,7 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.runtime.*
-import androidx.compose.ui.focus.isFocused
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
@@ -26,6 +26,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKTextInputFieldChat(
@@ -46,41 +48,33 @@ fun CKTextInputFieldChat(
     val focusManager = LocalFocusManager.current
 
     val isPasswordType = keyboardType == KeyboardType.Password
-    var passwordVisibility = remember { mutableStateOf(false) }
+    val passwordVisibility = rememberSaveable { mutableStateOf(false) }
 
-    var rememberBorderShow = remember { mutableStateOf(false)}
+    val rememberBorderShow = rememberSaveable { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
                 if (isError) {
-                    BorderStroke(1.dp, errorDefault)
+                    BorderStroke(1.sdp(), errorDefault)
                 } else {
-                    BorderStroke(1.dp, grayscaleBlack)
+                    BorderStroke(1.sdp(), grayscaleBlack)
                 }
             } else null,
             color = Color.Transparent,
-            elevation = 0.dp
+            elevation = 0.sdp()
         ) {
             TextField(
                 value = textValue.value ?: "",
                 onValueChange = { onChangeMessage.invoke(it) },
-                /*label = {
-                    if (label.isNotBlank()) {
-                        Text(
-                            label, style = MaterialTheme.typography.body2.copy(
-                                color = MaterialTheme.colors.secondaryVariant
-                            )
-                        )
-                    }
-                },*/
                 placeholder = {
                     if (placeholder.isNotBlank()) {
                         Text(
                             placeholder, style = MaterialTheme.typography.body1.copy(
-                                color = grayscale3,
-                                fontWeight = FontWeight.Normal
+                                color = LocalColorMapping.current.bodyTextDisabled,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = defaultNonScalableTextSize()
                             ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -88,23 +82,24 @@ fun CKTextInputFieldChat(
                     }
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = grayscaleBlack,
-                    cursorColor = grayscaleBlack,
+                    textColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = LocalColorMapping.current.bodyTextAlt,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
                     backgroundColor = if (!isError) {
                         if (rememberBorderShow.value) {
-                            grayscaleOffWhite
+                            LocalColorMapping.current.textFieldBackgroundAltFocused
                         } else {
-                            grayscale5
+                            LocalColorMapping.current.textFieldBackgroundAlt
                         }
-                    } else errorLight,
+                    } else LocalColorMapping.current.error,
                     leadingIconColor = pickledBlueWood,
-                    errorCursorColor = errorLight,
+                    errorCursorColor = LocalColorMapping.current.error,
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = grayscaleBlack,
-                    fontWeight = FontWeight.Normal
+                    color = LocalColorMapping.current.bodyTextAlt,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = defaultNonScalableTextSize()
                 ),
                 visualTransformation = if (isPasswordType) {
                     if (passwordVisibility.value) VisualTransformation.None else PasswordVisualTransformation()
@@ -121,17 +116,20 @@ fun CKTextInputFieldChat(
                 singleLine = singleLine,
                 maxLines = maxLines,
                 keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = imeAction, keyboardType = keyboardType),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = imeAction,
+                    keyboardType = keyboardType
+                ),
             )
         }
         if (isError) {
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.sdp()))
         }
         if (isError) error?.let {
-            Text(
+            CKText(
                 it,
                 style = MaterialTheme.typography.body2.copy(color = errorDefault),
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier.padding(start = 8.sdp())
             )
         }
     }

@@ -8,7 +8,7 @@ import com.clearkeep.db.clear_keep.model.Note
 @Dao
 interface NoteDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(note: Note) : Long
+    suspend fun insert(note: Note): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNotes(notes: List<Note>)
@@ -24,4 +24,7 @@ interface NoteDAO {
 
     @Query("DELETE FROM note WHERE isTemp=1")
     suspend fun deleteTempNotes()
+
+    @Query("DELETE FROM note WHERE generateId = :generateId")
+    suspend fun deleteNote(generateId: Long)
 }

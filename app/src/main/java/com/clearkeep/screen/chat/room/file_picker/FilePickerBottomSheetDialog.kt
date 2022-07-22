@@ -23,16 +23,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
+import com.clearkeep.components.base.ButtonType
+import com.clearkeep.components.base.CKButton
+import com.clearkeep.components.base.CKText
 import com.clearkeep.components.separatorDarkNonOpaque
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.utilities.files.getFileName
+import com.clearkeep.utilities.sdp
 
-@ExperimentalComposeUiApi
 @ExperimentalMaterialApi
 @Composable
 fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () -> Unit) {
@@ -59,71 +64,69 @@ fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () ->
     val mimeTypes = arrayOf(videoMime, applicationMime, audioMime, textMime, fontMime)
     val stagedFiles = roomViewModel.fileUriStaged.observeAsState()
 
-    Column(Modifier.padding(horizontal = 12.dp)) {
-        Spacer(Modifier.height(42.dp))
+    Column(Modifier.padding(horizontal = 12.sdp())) {
+        Spacer(Modifier.height(42.sdp()))
         Row(
             Modifier
                 .fillMaxWidth()
         ) {
             Box(Modifier.fillMaxWidth()) {
-                Text("Your File", Modifier.align(Alignment.CenterStart))
+                CKText(stringResource(R.string.file_picker_your_file), Modifier.align(Alignment.CenterStart), color = LocalColorMapping.current.bodyTextAlt)
                 Row(
                     Modifier
                         .align(Alignment.CenterEnd)
                         .clickable {
                             addFileLauncher.launch(mimeTypes)
-                        }, verticalAlignment = Alignment.CenterVertically) {
-                    Image(painterResource(R.drawable.ic_plus), null)
-                    Text("Add File")
+                        }, verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(painterResource(R.drawable.ic_plus), null, colorFilter = LocalColorMapping.current.closeIconFilter)
+                    CKText(stringResource(R.string.file_picker_add), color = LocalColorMapping.current.bodyTextAlt)
                 }
             }
         }
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(32.sdp()))
         if (!stagedFiles.value.isNullOrEmpty()) {
             LazyColumn {
                 itemsIndexed(stagedFiles.value!!.entries.toList()) { _: Int, entry: Map.Entry<Uri, Boolean> ->
                     FilePickerItem(
-                        Modifier.padding(vertical = 16.dp),
+                        Modifier.padding(vertical = 16.sdp()),
                         entry.key.getFileName(context),
                         isSelected = stagedFiles.value!![entry.key] ?: false
                     ) {
                         roomViewModel.toggleSelectedFile(entry.key)
                     }
-                    Divider(Modifier.height(1.dp), separatorDarkNonOpaque)
+                    Divider(Modifier.height(1.sdp()), separatorDarkNonOpaque)
                 }
                 item {
-                    Spacer(Modifier.height(18.dp))
+                    Spacer(Modifier.height(18.sdp()))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        Button(
+                        Spacer(Modifier.height(18.sdp()))
+                        CKButton(
+                            label = stringResource(R.string.btn_next),
                             onClick = { onClickNext() },
                             Modifier
-                                .height(52.dp)
-                                .width(210.dp)
-                                .clip(RoundedCornerShape(26.dp)),
-                            shape = RoundedCornerShape(26.dp),
-                            colors = ButtonDefaults.buttonColors(Color(0x80000000))
-                        ) {
-                            Text("Next", color = Color.White)
-                        }
+                                .height(52.sdp())
+                                .width(210.sdp())
+                                .clip(RoundedCornerShape(26.sdp())),
+                            buttonType = if (LocalColorMapping.current.isDarkTheme) ButtonType.Blue else ButtonType.Black
+                        )
                     }
                 }
             }
         } else {
-            Spacer(Modifier.height(18.dp))
-            Button(
+            Spacer(Modifier.height(18.sdp()))
+            CKButton(
+                label = stringResource(R.string.btn_next),
                 onClick = { onClickNext() },
                 Modifier
                     .align(Alignment.CenterHorizontally)
-                    .height(52.dp)
-                    .width(210.dp)
-                    .clip(RoundedCornerShape(26.dp)),
-                shape = RoundedCornerShape(26.dp),
-                colors = ButtonDefaults.buttonColors(Color(0x80000000))
-            ) {
-                Text("Next", color = Color.White)
-            }
+                    .height(52.sdp())
+                    .width(210.sdp())
+                    .clip(RoundedCornerShape(26.sdp())),
+                buttonType = if (LocalColorMapping.current.isDarkTheme) ButtonType.Blue else ButtonType.Black
+            )
         }
-        Spacer(Modifier.height(41.dp))
+        Spacer(Modifier.height(41.sdp()))
     }
 }
 
@@ -138,12 +141,12 @@ fun FilePickerItem(
         val (fileIcon, fileNameRef, checkBox) = createRefs()
         Image(painterResource(R.drawable.ic_file), null,
             Modifier
-                .size(45.dp)
+                .size(45.sdp())
                 .constrainAs(fileIcon) {
                     top.linkTo(parent.top)
                     start.linkTo(parent.start)
                 })
-        Text(
+        CKText(
             fileName,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -153,12 +156,14 @@ fun FilePickerItem(
                 start.linkTo(fileIcon.end, 14.dp)
                 end.linkTo(checkBox.start, 14.dp)
                 width = Dimension.fillToConstraints
-            })
+            },
+            color = LocalColorMapping.current.bodyTextAlt
+        )
         Image(
             painter = painterResource(id = if (isSelected) R.drawable.ic_checkbox else R.drawable.ic_ellipse_20),
             "",
             Modifier
-                .size(32.dp)
+                .size(32.sdp())
                 .constrainAs(checkBox) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)

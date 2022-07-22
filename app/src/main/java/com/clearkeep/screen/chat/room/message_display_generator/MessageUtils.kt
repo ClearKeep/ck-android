@@ -4,7 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.clearkeep.db.clear_keep.model.Message
 import com.clearkeep.db.clear_keep.model.User
-import kotlin.collections.ArrayList
+import com.clearkeep.utilities.printlnCK
 
 
 val roundSizeLarge = 18.dp
@@ -13,6 +13,7 @@ val roundSizeSmall = 4.dp
 fun convertMessageList(
     messages: List<Message>,
     clients: List<User>,
+    listAvatar: List<User>,
     myClientId: String,
     isGroup: Boolean,
 ): List<MessageDisplayInfo> {
@@ -20,17 +21,80 @@ fun convertMessageList(
 
     return groupedMessagesById.flatMap { subList ->
         val groupedSize = subList.size
-        subList.mapIndexed { index, message ->
-            val isOwner = myClientId == message.senderId
+        subList.mapIndexed { index, rawMessage ->
+            val isOwner = myClientId == rawMessage.senderId
             val showAvatarAndName = (index == groupedSize - 1) && isGroup && !isOwner
             val showSpacerTop = index == groupedSize - 1
             val userName = clients.firstOrNull {
-                it.userId == message.senderId
-            }?.userName ?: message.senderId
+                it.userId == rawMessage.senderId
+            }?.userName ?: rawMessage.senderId
+
+            val avatar = listAvatar.firstOrNull {
+                it.userId == rawMessage.senderId
+            }?.avatar ?: ""
+
+            val messageId = messages.firstOrNull {
+                it.messageId == rawMessage.messageId
+            }?.messageId ?: rawMessage.messageId
+
+            val isForwardedMessage = rawMessage.message.startsWith(">>>")
+            val isQuoteMessage = rawMessage.message.startsWith("```")
+
+            var quotedUser = ""
+            var quotedMessage = ""
+            var quotedMessageTimestamp = 0L
+            var quotedMessageID = messageId
+
+
+            val message = when {
+                isForwardedMessage -> {
+                    val content = rawMessage.message.substring(3)
+                    rawMessage.copy(message = content)
+                }
+                isQuoteMessage -> {
+                    val parts = rawMessage.message.substring(3).split("|")
+                    if (parts.size == 5) {
+                        quotedUser = parts[0]
+                        quotedMessage = parts[1]
+                        quotedMessageTimestamp = parts[2].toLongOrNull() ?: 0L
+                        quotedMessageID = parts[3]
+                        val newMessage = parts[4]
+
+                        printlnCK(
+                            "convertMessageList quotedUser $quotedUser " +
+                                    "quotedMessage $quotedMessage quotedMessageTimestamp $quotedMessageTimestamp newMsg $newMessage quotedMsgID $quotedMessageID"
+                        )
+
+                        rawMessage.copy(message = newMessage)
+                    } else {
+                        printlnCK("MessageUtils cannot parse quoted message")
+                        rawMessage
+                    }
+                }
+                else -> {
+                    rawMessage
+                }
+            }
+
             MessageDisplayInfo(
-                message, isOwner, showAvatarAndName, showSpacerTop, userName,
-                if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(index, groupedSize)
+                message,
+                isOwner,
+                showAvatarAndName,
+                showSpacerTop,
+                userName,
+                if (isOwner) getOwnerShape(index, groupedSize) else getOtherShape(
+                    index,
+                    groupedSize
+                ),
+                avatar,
+                isForwardedMessage,
+                isQuoteMessage,
+                quotedUser,
+                quotedMessage,
+                quotedMessageTimestamp,
+                quotedMessageID
             )
+
         }
     }
 }

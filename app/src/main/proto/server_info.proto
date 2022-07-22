@@ -3,12 +3,12 @@ package server_info;
 
 // Update Stun/turn server message struct
 message UpdateNTSReq {
-    string stun = 1;
-    string turn = 2;
+  string stun = 1;
+  string turn = 2;
 }
 
 message BaseResponse {
-    bool success = 1;
+  string error = 1;
 }
 
 
@@ -21,6 +21,6 @@ message GetThreadResponse {
 }
 
 service ServerInfo {
-    rpc update_nts(UpdateNTSReq) returns (BaseResponse) {};
-    rpc total_thread(Empty) returns (GetThreadResponse) {};
+  rpc update_nts(UpdateNTSReq) returns (BaseResponse) {};
+  rpc total_thread(Empty) returns (GetThreadResponse) {};
 }

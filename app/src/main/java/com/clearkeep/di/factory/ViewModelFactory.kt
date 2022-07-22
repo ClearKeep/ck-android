@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.setel.di.factory
+package com.clearkeep.di.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

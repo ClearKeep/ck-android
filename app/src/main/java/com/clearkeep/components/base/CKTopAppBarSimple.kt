@@ -5,44 +5,39 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import com.clearkeep.R
+import com.clearkeep.components.LocalColorMapping
+import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun CKTopAppBarSample(
     modifier: Modifier = Modifier,
     title: String = "",
-    onBackPressed: () -> Unit,
-    type: TopAppBarSampleType = TopAppBarSampleType.White
-    ) {
+    onBackPressed: () -> Unit
+) {
     Row(
-        modifier = modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+        modifier = modifier.padding(vertical = 8.sdp(), horizontal = 6.sdp()),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onBackPressed) {
+        IconButton(onClick = onBackPressed, modifier = Modifier.size(24.sdp())) {
             Icon(
                 painter = painterResource(R.drawable.ic_chev_left),
                 contentDescription = null,
-                tint = if (type == TopAppBarSampleType.White) Color.White else Color.Black
+                tint = LocalColorMapping.current.topAppBarTitle,
+                modifier = Modifier.fillMaxSize()
             )
         }
         Column {
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(2.sdp()))
             Text(
                 text = title,
                 style = MaterialTheme.typography.h5.copy(
-                    color = if (type == TopAppBarSampleType.White) Color.White else Color.Black,
-                    textAlign = TextAlign.Center
-                )
+                    color = LocalColorMapping.current.topAppBarContent,
+                ),
+                fontSize = 16.sdp().toNonScalableTextSize()
             )
         }
     }
-}
-
-enum class TopAppBarSampleType {
-    White,
-    Black,
 }

@@ -7,19 +7,18 @@ import android.net.*
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
+import com.clearkeep.db.clear_keep.model.*
 import com.clearkeep.utilities.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import message.MessageOuterClass
 import notification.NotifyOuterClass
 import javax.inject.Inject
-import com.clearkeep.db.clear_keep.model.Message
-import com.clearkeep.db.clear_keep.model.Owner
-import com.clearkeep.db.clear_keep.model.UserPreference
 import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.dynamicapi.ParamAPI
+import com.clearkeep.dynamicapi.ParamAPIProvider
 import com.clearkeep.dynamicapi.subscriber.DynamicSubscriberAPIProvider
 import com.clearkeep.repo.*
-import com.clearkeep.screen.chat.repo.*
 import com.clearkeep.screen.videojanus.showMessagingStyleNotification
 import com.clearkeep.services.utils.MessageChannelSubscriber
 import com.clearkeep.services.utils.NotificationChannelSubscriber
@@ -52,6 +51,12 @@ class ChatService : Service(),
     @Inject
     lateinit var dynamicAPIProvider: DynamicSubscriberAPIProvider
 
+    @Inject
+    lateinit var appStorage: AppStorage
+
+    @Inject
+    lateinit var apiProvider: ParamAPIProvider
+
     private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var isShouldRecreateChannel = false
@@ -82,8 +87,6 @@ class ChatService : Service(),
         } else {
             isShouldRecreateChannel = true
         }
-
-
         registerNetworkChange()
     }
 
@@ -117,24 +120,67 @@ class ChatService : Service(),
             val messageSubscriber = MessageChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                messageBlockingStub = dynamicAPIProvider.provideMessageBlockingStub(domain),
-                messageGrpc = dynamicAPIProvider.provideMessageStub(domain),
-                onMessageSubscriberListener = this
+                messageBlockingStub = apiProvider.provideMessageBlockingStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                messageGrpc = apiProvider.provideMessageStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                onMessageSubscriberListener = this,
+                appStorage
             )
             val notificationSubscriber = NotificationChannelSubscriber(
                 domain = domain,
                 clientId = server.profile.userId,
-                notifyBlockingStub = dynamicAPIProvider.provideNotifyBlockingStub(domain),
-                notifyStub = dynamicAPIProvider.provideNotifyStub(domain),
-                notificationChannelListener = this
+                notifyBlockingStub = apiProvider.provideNotifyBlockingStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                notifyStub = apiProvider.provideNotifyStub(
+                    ParamAPI(
+                        domain,
+                        environment.getServer().accessKey,
+                        environment.getServer().hashKey
+                    )
+                ),
+                notificationChannelListener = this,
+                appStorage
             )
             messageSubscriber.subscribeAndListen()
             notificationSubscriber.subscribeAndListen()
         }
+
     }
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         scope.launch {
+            printlnCK("chatService raw message ${value.message.toStringUtf8()}")
+            environment.setUpTempDomain(
+                Server(
+                    null,
+                    "",
+                    domain,
+                    value.clientId,
+                    "",
+                    0L,
+                    "",
+                    "",
+                    "",
+                    false,
+                    Profile(null, value.clientId, "", "", "", 0L, "")
+                )
+            )
             val res = messageRepository.decryptMessage(
                 value.id, value.groupId, value.groupType,
                 value.fromClientId, value.fromClientWorkspaceDomain,
@@ -142,9 +188,19 @@ class ChatService : Service(),
                 value.message,
                 Owner(domain, value.clientId)
             )
-            val roomId = chatRepository.getJoiningRoomId()
-            val groupId = value.groupId
-            handleShowNotification(joiningRoomId = roomId, groupId = groupId, res, domain, value.clientId)
+            val isShowNotification =
+                serverRepository.getOwnerClientIds().contains(value.fromClientId)
+            if (!isShowNotification) {
+                val roomId = chatRepository.getJoiningRoomId()
+                val groupId = value.groupId
+                handleShowNotification(
+                    joiningRoomId = roomId,
+                    groupId = groupId,
+                    res,
+                    domain,
+                    value.clientId
+                )
+            }
         }
     }
 
@@ -152,6 +208,7 @@ class ChatService : Service(),
         value: NotifyOuterClass.NotifyObjectResponse,
         domain: String
     ) {
+        printlnCK("chatService onNotificationReceived")
         scope.launch {
             when (value.notifyType) {
                 "new-group" -> {
@@ -163,7 +220,15 @@ class ChatService : Service(),
                     groupRepository.fetchGroups()
                 }
                 "peer-update-key" -> {
-                    chatRepository.processPeerKey(value.refClientId, value.refWorkspaceDomain)
+                    chatRepository.processPeerKey(
+                        value.refClientId,
+                        value.refWorkspaceDomain,
+                        value.clientId,
+                        value.clientWorkspaceDomain
+                    )
+                    val updateGroupIntent = Intent(ACTION_MEMBER_CHANGE_KEY)
+                    updateGroupIntent.putExtra(EXTRA_ID_MEMBER_CHANGE_KEY, value.refClientId)
+                    sendBroadcast(updateGroupIntent)
                 }
                 "member-add" -> {
                     groupRepository.fetchGroups()
@@ -173,13 +238,19 @@ class ChatService : Service(),
                 }
 
                 "member-removal", "member-leave" -> {
-                    groupRepository.getGroupFromAPIById(value.refGroupId,domain,value.clientId)
-                    groupRepository.removeGroupOnWorkSpace(value.refGroupId,domain,value.refClientId)
-
+                    groupRepository.getGroupFromAPIById(value.refGroupId, domain, value.clientId)
+                    groupRepository.removeGroupOnWorkSpace(
+                        value.refGroupId,
+                        domain,
+                        value.refClientId
+                    )
                     val updateGroupIntent = Intent(ACTION_ADD_REMOVE_MEMBER)
                     updateGroupIntent.putExtra(EXTRA_GROUP_ID, value.refGroupId)
                     sendBroadcast(updateGroupIntent)
 
+                }
+                "notify_type" -> {
+                    printlnCK("chatService Deactive account ref_client_id ${value.refClientId} ref_group_id ${value.refGroupId}")
                 }
                 CALL_TYPE_VIDEO -> {
                     val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
@@ -187,10 +258,17 @@ class ChatService : Service(),
                     sendBroadcast(switchIntent)
                 }
                 CALL_UPDATE_TYPE_CANCEL -> {
-                    val groupAsyncRes = async { groupRepository.getGroupByID(value.refGroupId, domain, value.clientId) }
+                    val groupAsyncRes = async {
+                        groupRepository.getGroupByID(
+                            value.refGroupId,
+                            domain,
+                            value.clientId
+                        )
+                    }
                     val group = groupAsyncRes.await()
-                    if (group != null ) {
-                        NotificationManagerCompat.from(applicationContext).cancel(null, INCOMING_NOTIFICATION_ID)
+                    if (group != null) {
+                        NotificationManagerCompat.from(applicationContext)
+                            .cancel(null, INCOMING_NOTIFICATION_ID)
                         val endIntent = Intent(ACTION_CALL_CANCEL)
                         endIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_ID, value.refGroupId.toString())
                         sendBroadcast(endIntent)
@@ -200,24 +278,33 @@ class ChatService : Service(),
         }
     }
 
-    private fun handleShowNotification(joiningRoomId: Long, groupId: Long, message: Message, domain: String, ownerClientId: String) {
+    private fun handleShowNotification(
+        joiningRoomId: Long,
+        groupId: Long,
+        message: Message,
+        domain: String,
+        ownerClientId: String
+    ) {
         scope.launch {
             printlnCK("handleShowNotification $groupId")
             val group = groupRepository.getGroupByID(groupId = groupId, domain, ownerClientId)
-            group?.let {
+            group?.data?.let {
                 val currentServer = environment.getServer()
                 if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
-                    val userPreference = userPreferenceRepository.getUserPreference(currentServer.serverDomain, currentServer.profile.userId) ?: UserPreference(
-                        "",
-                        "",
-                        true,
-                        false
+                    val userPreference =
+                        userPreferenceRepository.getUserPreference(domain, ownerClientId)
+                            ?: UserPreference.getDefaultUserPreference("", "", false)
+                    val senderUser = peopleRepository.getFriendFromID(
+                        message.senderId
                     )
+                    val avatar = senderUser?.avatar
+                    printlnCK("Notification service raw message $message")
                     showMessagingStyleNotification(
                         context = applicationContext,
                         chatGroup = it,
                         message,
-                        userPreference
+                        userPreference,
+                        avatar
                     )
                 }
             }
@@ -229,26 +316,41 @@ class ChatService : Service(),
     }
 
     private suspend fun updateMessageAndKeyInOnlineRoom() {
-        printlnCK("updateMessageAndKeyInOnlineRoom")
         val roomId = chatRepository.getJoiningRoomId()
         val currentServer = environment.getServer()
         if (roomId > 0 && currentServer != null) {
-            val group = groupRepository.getGroupByID(roomId, currentServer.serverDomain, currentServer.profile.userId)!!
-            messageRepository.updateMessageFromAPI(group.groupId, Owner(currentServer.serverDomain, currentServer.profile.userId), group.lastMessageSyncTimestamp)
+            val group = groupRepository.getGroupByID(
+                roomId,
+                currentServer.serverDomain,
+                currentServer.profile.userId
+            )
+            group?.data?.let {
+                messageRepository.updateMessageFromAPI(
+                    it.groupId,
+                    Owner(currentServer.serverDomain, currentServer.profile.userId),
+                    it.lastMessageSyncTimestamp
+                )
 
-            if (!group.isGroup()) {
-                val receiver = group.clientList.firstOrNull { client ->
-                    client.userId != currentServer.profile.userId
-                }
-                if (receiver != null) {
-                    chatRepository.processPeerKey(receiver.userId, receiver.domain)
+                if (!it.isGroup()) {
+                    val receiver = it.clientList.firstOrNull { client ->
+                        client.userId != currentServer.profile.userId
+                    }
+                    if (receiver != null) {
+                        chatRepository.processPeerKey(
+                            receiver.userId,
+                            receiver.domain,
+                            currentServer.profile.userId,
+                            currentServer.serverDomain
+                        )
+                    }
                 }
             }
         }
     }
 
     private fun registerNetworkChange() {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if (connectivityManager != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 connectivityManager.registerDefaultNetworkCallback(networkCallback)

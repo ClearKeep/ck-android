@@ -1,16 +1,29 @@
 syntax = "proto3";
-
 package upload_file;
 
-//errors response
-message ErrorRes {
-    int64 code = 1;
-    string message = 2;
-}
 
 message BaseResponse {
-    bool success = 1;
-    ErrorRes errors = 2;
+  string error = 1;
+}
+
+message GetUploadFileLinkRequest{
+  string file_name = 1;
+  string file_content_type = 2;
+  bool is_public = 3;
+}
+
+message GetUploadFileLinkResponse{
+  string uploaded_file_url = 1;
+  string download_file_url = 2;
+  string object_file_path = 3;
+}
+
+message GetDownloadFileLinkRequest{
+  string object_file_path = 1;
+}
+
+message GetDownloadFileLinkResponse{
+  string download_file_url = 1;
 }
 
 message FileUploadRequest {
@@ -21,11 +34,11 @@ message FileUploadRequest {
 }
 
 message FileDataBlockRequest {
-    string file_name = 1;
-    string file_content_type = 2;
-    bytes file_data_block = 3;
-    string file_data_block_hash = 4;
-    string file_hash = 5;
+  string file_name = 1;
+  string file_content_type = 2;
+  bytes file_data_block = 3;
+  string file_data_block_hash = 4;
+  string file_hash = 5;
 }
 
 message UploadFilesResponse {
@@ -33,7 +46,9 @@ message UploadFilesResponse {
 }
 
 service UploadFile {
-    rpc upload_image(FileUploadRequest) returns (UploadFilesResponse) {};
-    rpc upload_file(FileUploadRequest) returns (UploadFilesResponse) {};
-    rpc upload_chunked_file(stream FileDataBlockRequest) returns (UploadFilesResponse) {};
+  rpc upload_image(FileUploadRequest) returns (UploadFilesResponse) {};
+  rpc upload_file(FileUploadRequest) returns (UploadFilesResponse) {};
+  rpc upload_chunked_file(stream FileDataBlockRequest) returns (UploadFilesResponse) {};
+  rpc get_upload_file_link(GetUploadFileLinkRequest) returns (GetUploadFileLinkResponse) {};
+  rpc get_download_file_link(GetDownloadFileLinkRequest) returns (GetDownloadFileLinkResponse) {};
 }

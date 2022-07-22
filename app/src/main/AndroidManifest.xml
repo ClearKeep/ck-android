@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -38,11 +39,15 @@
             android:enabled="true"
             android:exported="false"></service>
 
-        <activity android:name="com.microsoft.identity.client.BrowserTabActivity">
+        <activity
+            android:name="com.microsoft.identity.client.BrowserTabActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="com.clearkeep"
                     android:path="/fBOt60bSb5qa58yoGD2M6HiecyY="
@@ -58,10 +63,11 @@
         <activity
             android:name="com.clearkeep.screen.chat.room.RoomActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".screen.splash.SplashActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar">
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -73,21 +79,23 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/btn_login"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
             android:name=".screen.auth.register.RegisterActivity"
             android:label="@string/btn_register"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".screen.auth.forgot.ForgotActivity"
             android:label="@string/btn_forgot_password"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"/>
         <activity
             android:name="com.clearkeep.screen.chat.home.MainActivity"
             android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
         <activity
             android:name="com.clearkeep.screen.chat.profile.ProfileActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name="com.clearkeep.screen.chat.settings.ServerSettingActivity"
@@ -120,23 +128,25 @@
         <activity
             android:name=".screen.videojanus.InCallActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
+            android:exported="true"
+            android:launchMode="singleInstance"
             android:supportsPictureInPicture="true"
+            android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
             android:name=".screen.videojanus.peer_to__peer.InCallPeerToPeerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
+            android:exported="true"
+            android:launchMode="singleInstance"
             android:supportsPictureInPicture="true"
+            android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
 
         <activity
             android:name=".screen.videojanus.InComingCallActivity"
-            android:screenOrientation="portrait"
             android:showOnLockScreen="true"
             android:theme="@style/Theme.FastGo.Call" />
-
 
 
         <receiver android:name=".screen.videojanus.DismissNotificationReceiver" />
@@ -174,8 +184,21 @@
         </activity>
 
         <activity
-            android:name=".screen.chat.change_pass_word.ChangePasswordActivity"
-            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar" />
+            android:name="com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity"
+            android:theme="@style/Theme.DemoJetpackCompose.NoActionBar"
+            android:launchMode="singleTop"
+            android:exported="true">
+            <intent-filter android:label="@string/change_password">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="clearkeep"
+                    android:pathPrefix="/resetpassword" />
+
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".screen.chat.otp.OtpActivity"
@@ -190,6 +213,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
     </application>
 
 </manifest>

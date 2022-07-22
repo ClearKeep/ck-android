@@ -12,7 +12,8 @@ class NotificationChannelSubscriber(
     private val clientId: String,
     private val notifyBlockingStub: NotifyGrpc.NotifyBlockingStub,
     private val notifyStub: NotifyGrpc.NotifyStub,
-    private val notificationChannelListener: NotificationSubscriberListener
+    private val notificationChannelListener: NotificationSubscriberListener,
+    private val userManager: AppStorage
 ) {
 
     interface NotificationSubscriberListener {
@@ -25,17 +26,17 @@ class NotificationChannelSubscriber(
 
     private suspend fun subscribe(): Boolean = withContext(Dispatchers.IO) {
         val request = NotifyOuterClass.SubscribeRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
         try {
             val res = notifyBlockingStub.subscribe(request)
-            if (res.success) {
+            if (res.error.isNullOrEmpty()) {
                 printlnCK("subscribeNotificationChannel, success")
                 listenNotificationChannel()
             } else {
-                printlnCK("subscribeNotificationChannel, ${res.errors}")
+                printlnCK("subscribeNotificationChannel, ${res.error}")
             }
-            return@withContext res.success
+            return@withContext res.error.isNullOrEmpty()
         } catch (e: Exception) {
             printlnCK("subscribeNotificationChannel, $e")
             return@withContext false
@@ -44,13 +45,15 @@ class NotificationChannelSubscriber(
 
     private fun listenNotificationChannel() {
         val request = NotifyOuterClass.ListenRequest.newBuilder()
-            .setClientId(clientId)
+            .setDeviceId(userManager.getUniqueDeviceID())
             .build()
 
         notifyStub.listen(request, object : StreamObserver<NotifyOuterClass.NotifyObjectResponse> {
             override fun onNext(value: NotifyOuterClass.NotifyObjectResponse) {
-                printlnCK("listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
-                        ", groupId = ${value.refGroupId} groupType = ${value.notifyType} to ${value.clientId} + ${value.clientWorkspaceDomain}")
+                printlnCK(
+                    "listenNotificationChannel, Receive a notification from : ${value.refClientId}" +
+                            ", groupId = ${value.refGroupId} groupType = ${value.notifyType} to ${value.clientId} + ${value.clientWorkspaceDomain}"
+                )
                 notificationChannelListener.onNotificationReceived(value, domain)
             }
 

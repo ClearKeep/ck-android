@@ -8,6 +8,8 @@ package com.clearkeep.screen.chat.signal_store
 import androidx.annotation.WorkerThread
 import com.clearkeep.db.signal_key.dao.SignalIdentityKeyDAO
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.dynamicapi.Environment
+import com.clearkeep.utilities.printlnCK
 import org.whispersystems.libsignal.state.SignalProtocolStore
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -19,16 +21,19 @@ import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 
 class InMemorySignalProtocolStore(
-        preKeyDAO: SignalPreKeyDAO,
-        signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    preKeyDAO: SignalPreKeyDAO,
+    signalIdentityKeyDAO: SignalIdentityKeyDAO,
+    environment: Environment
 ) : SignalProtocolStore, Closeable {
-    private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO)
+    private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO, environment)
 
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
 
-    private val signedPreKeyStore: InMemorySignedPreKeyStore = InMemorySignedPreKeyStore(preKeyDAO)
+    private val signedPreKeyStore: InMemorySignedPreKeyStore =
+        InMemorySignedPreKeyStore(preKeyDAO, environment)
 
-    private val identityKeyStore: InMemoryIdentityKeyStore = InMemoryIdentityKeyStore(signalIdentityKeyDAO)
+    private val identityKeyStore: InMemoryIdentityKeyStore =
+        InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
 
     @WorkerThread
     override fun getIdentityKeyPair(): IdentityKeyPair {
@@ -44,7 +49,11 @@ class InMemorySignalProtocolStore(
         return identityKeyStore.saveIdentity(address, identityKey)
     }
 
-    override fun isTrustedIdentity(address: SignalProtocolAddress, identityKey: IdentityKey, direction: IdentityKeyStore.Direction): Boolean {
+    override fun isTrustedIdentity(
+        address: SignalProtocolAddress,
+        identityKey: IdentityKey,
+        direction: IdentityKeyStore.Direction
+    ): Boolean {
         return identityKeyStore.isTrustedIdentity(address, identityKey, direction)
     }
 

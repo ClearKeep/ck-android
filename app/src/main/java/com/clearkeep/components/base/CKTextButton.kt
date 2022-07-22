@@ -1,5 +1,6 @@
 package com.clearkeep.components.base
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -7,10 +8,14 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
+import com.clearkeep.R
 import com.clearkeep.components.grayscale3
 import com.clearkeep.components.grayscaleOffWhite
+import com.clearkeep.components.primaryDefault
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun CKTextButton(
@@ -18,7 +23,7 @@ fun CKTextButton(
     title: String = "",
     onClick: () -> Unit,
     enabled: Boolean = true,
-    fontSize: TextUnit = 12.sp,
+    fontSize: TextUnit = dimensionResource(R.dimen._12sdp).toNonScalableTextSize(),
     textButtonType: TextButtonType = TextButtonType.White
 ) {
     TextButton(
@@ -30,7 +35,8 @@ fun CKTextButton(
         enabled = enabled,
         modifier = modifier,
     ) {
-        Text(title,
+        Text(
+            title,
             style = MaterialTheme.typography.body1.copy(
                 fontSize = fontSize
             )
@@ -40,9 +46,9 @@ fun CKTextButton(
 
 @Composable
 private fun getTextContentColor(textButtonType: TextButtonType): Color {
-    return when(textButtonType) {
-        TextButtonType.White -> grayscaleOffWhite
-        TextButtonType.Blue -> MaterialTheme.colors.primary
+    return when (textButtonType) {
+        TextButtonType.White -> if (isSystemInDarkTheme()) primaryDefault else grayscaleOffWhite
+        TextButtonType.Blue -> if (isSystemInDarkTheme()) primaryDefault else MaterialTheme.colors.primary
     }
 }
 

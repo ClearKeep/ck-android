@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/appCallBackgroundColor"
     tools:background="@color/appCallBackground">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,6 +28,7 @@
     </ScrollView>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/audioControl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true">
@@ -44,20 +46,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_bg_gradient" />
-
+                android:src="@drawable/ic_background_gradient_call" />
 
             <TextView
                 android:id="@+id/tvUserName2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="32dp"
+                android:layout_marginStart="@dimen/_32sdp"
+                android:layout_marginTop="@dimen/_8sdp"
+                android:layout_marginEnd="@dimen/_32sdp"
                 android:gravity="center"
                 android:textColor="@android:color/white"
-                android:textSize="32sp"
+                android:textSize="@dimen/_32sdp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -68,10 +69,10 @@
                 android:id="@+id/tvCallState"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
-                android:layout_marginTop="100dp"
+                android:layout_marginTop="@dimen/_100sdp"
                 android:text="Calling Group"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="@dimen/_18sdp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -80,7 +81,7 @@
                 android:id="@+id/imgEndWaiting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/_16sdp"
                 android:src="@drawable/ic_button_decline"
                 app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
                 app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
@@ -90,10 +91,10 @@
                 android:id="@+id/tvEndButtonDescription"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="60dp"
+                android:layout_marginBottom="@dimen/_60sdp"
                 android:text="Cancel"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="@dimen/_16sdp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -125,6 +126,7 @@
             layout="@layout/toolbar_call_default"
             android:visibility="visible"
             tools:visibility="visible" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/viewConnecting"
             android:layout_width="match_parent"
@@ -136,7 +138,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_bg_gradient" />
+                android:src="@drawable/ic_background_gradient_call" />
 
             <TextView
                 android:id="@+id/tvConnecting"
@@ -144,7 +146,7 @@
                 android:layout_height="wrap_content"
                 android:text="Connecting"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="@dimen/_18sdp"
                 android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -153,6 +155,7 @@
                 app:layout_constraintVertical_bias="0.23" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
         <include
             android:id="@+id/controlCallVideoView"
             layout="@layout/view_control_call_video"
@@ -168,12 +171,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginStart="@dimen/_32sdp"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_32sdp"
             android:gravity="center"
             android:textColor="@android:color/white"
-            android:textSize="32sp"
+            android:textSize="@dimen/_32sdp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -184,9 +187,9 @@
             android:id="@+id/tvCallStateVideo"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="@dimen/_100sdp"
             android:textColor="@android:color/white"
-            android:textSize="18sp"
+            android:textSize="@dimen/_18sdp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -195,7 +198,7 @@
             android:id="@+id/waitingCallVideoView"
             android:layout_width="wrap_content"
             app:constraint_referenced_ids="tvUserName,tvCallStateVideo"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -204,17 +207,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@drawable/ic_bg_gradient"
+        android:background="@drawable/ic_background_gradient_call"
         android:visibility="gone"
         tools:visibility="gone">
+
         <TextView
             android:id="@+id/pipCallName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textStyle="bold"
-            android:textSize="24sp"
+            android:textSize="@dimen/_24sdp"
             android:textColor="@android:color/white"
-            tools:text="Group A"/>
+            tools:text="Group A" />
     </FrameLayout>
 </RelativeLayout>

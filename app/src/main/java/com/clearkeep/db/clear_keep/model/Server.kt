@@ -4,7 +4,6 @@ import androidx.room.*
 import com.clearkeep.db.clear_keep.converter.ProfileConverter
 
 @Entity
-@TypeConverters(ProfileConverter::class)
 data class Server(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     @ColumnInfo(name = "server_name") val serverName: String,
@@ -18,7 +17,7 @@ data class Server(
     @ColumnInfo(name = "is_active") val isActive: Boolean = false,
     @ColumnInfo(name = "owner") val profile: Profile,
 ) {
-        override fun toString(): String {
-                return "${serverName}, $serverDomain, $accessKey, $hashKey"
-        }
+    override fun toString(): String {
+        return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
+    }
 }

@@ -71,8 +71,8 @@ public class JanusWebsocketMessenger implements IJanusMessenger {
                     if (ex1 != null) {
                         Log.d("JANUSCLIENT", "SOCKET EX " + ex1.getMessage());
                         StringWriter writer = new StringWriter();
-                        PrintWriter printWriter = new PrintWriter( writer );
-                        ex1.printStackTrace( printWriter );
+                        PrintWriter printWriter = new PrintWriter(writer);
+                        ex1.printStackTrace(printWriter);
                         printWriter.flush();
                         Log.d("JANUSCLIENT", "StackTrace \n\t" + writer.toString());
                     }

@@ -16,85 +16,143 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
-import androidx.compose.ui.focus.isFocused
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.*
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.clearkeep.R
 import com.clearkeep.components.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun CKSearchBox(
     textValue: MutableState<String>,
     modifier: Modifier = Modifier,
+    placeholder: String = stringResource(R.string.search),
+    maxChars: Int? = null,
+    focusRequester: FocusRequester? = null,
+    isDarkModeInvertedColor: Boolean = false,
+    onImeAction: () -> Unit = {}
 ) {
     val shape = MaterialTheme.shapes.large
     val focusManager = LocalFocusManager.current
 
-    var rememberBorderShow = remember { mutableStateOf(false) }
+    val keyboardFocusRequester = focusRequester ?: remember { FocusRequester() }
+
+    val rememberBorderShow = rememberSaveable { mutableStateOf(false) }
     Column {
         Surface(
             modifier = modifier,
             shape = shape,
             border = if (rememberBorderShow.value) {
-                BorderStroke(1.dp, MaterialTheme.colors.secondaryVariant)
+                BorderStroke(
+                    dimensionResource(R.dimen._1sdp),
+                    LocalColorMapping.current.bodyTextAlt
+                )
             } else null,
             color = Color.Transparent,
-            elevation = 0.dp
+            elevation = 0.sdp()
         ) {
             TextField(
                 value = textValue.value,
-                onValueChange = { textValue.value = it },
+                onValueChange = {
+                    textValue.value = if (maxChars != null && it.length > maxChars) {
+                        it.substring(0 until maxChars)
+                    } else {
+                        it
+                    }
+                },
                 placeholder = {
-                    Text(
-                        "Search", style = MaterialTheme.typography.body1.copy(
-                            color = MaterialTheme.colors.onSecondary,
+                    CKText(
+                        placeholder, style = MaterialTheme.typography.body1.copy(
+                            color = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                                grayscaleDarkModeDarkGrey2
+                            } else {
+                                LocalColorMapping.current.descriptionText
+                            },
                             fontWeight = FontWeight.Normal
                         )
                     )
                 },
                 colors = TextFieldDefaults.textFieldColors(
-                    textColor = MaterialTheme.colors.secondaryVariant,
-                    cursorColor = MaterialTheme.colors.secondaryVariant,
+                    textColor = LocalColorMapping.current.bodyTextAlt,
+                    cursorColor = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        grayscaleDarkModeDarkGrey2
+                    } else {
+                        LocalColorMapping.current.bodyTextAlt
+                    },
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    backgroundColor = if (rememberBorderShow.value) {
-                        grayscaleOffWhite
+                    backgroundColor = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        Color(0xFF9E9E9E)
+                    } else if (rememberBorderShow.value) {
+                        LocalColorMapping.current.textFieldBackgroundAltFocused
                     } else {
-                        MaterialTheme.colors.secondary
+                        LocalColorMapping.current.textFieldBackgroundAlt
                     },
-                    leadingIconColor = MaterialTheme.colors.secondaryVariant,
-                    trailingIconColor = MaterialTheme.colors.secondaryVariant,
-                    errorCursorColor = MaterialTheme.colors.error,
+                    leadingIconColor =  LocalColorMapping.current.textFieldIconColor,
+                    trailingIconColor =  LocalColorMapping.current.textFieldIconColor,
+                    errorCursorColor = LocalColorMapping.current.error
                 ),
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.secondaryVariant,
+                    color = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                        grayscaleDarkModeDarkGrey2
+                    } else {
+                        LocalColorMapping.current.bodyTextAlt
+                    },
+                    fontSize = defaultNonScalableTextSize(),
                     fontWeight = FontWeight.Normal
                 ),
                 modifier = modifier
                     .fillMaxWidth()
                     .onFocusChanged {
                         rememberBorderShow.value = it.isFocused
-                    },
+                    }
+                    .focusRequester(keyboardFocusRequester),
                 leadingIcon = {
                     Icon(
                         Icons.Filled.Search,
                         contentDescription = "",
+                        Modifier.size(dimensionResource(R.dimen._24sdp)),
+                        tint = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                            grayscaleDarkModeDarkGrey2
+                        } else {
+                            LocalColorMapping.current.textFieldIconColor
+                        }
                     )
                 },
                 trailingIcon = {
                     if (textValue.value.length > 1) {
-                        Icon(Icons.Filled.Close,
+                        Icon(
+                            Icons.Filled.Close,
                             contentDescription = "",
-                            modifier = Modifier.clickable {
-                                textValue.value = ""
-                            })
+                            modifier = Modifier
+                                .clickable {
+                                    textValue.value = ""
+                                }
+                                .size(dimensionResource(R.dimen._24sdp)),
+                            tint = if (LocalColorMapping.current.isDarkTheme && isDarkModeInvertedColor) {
+                                grayscaleDarkModeDarkGrey2
+                            } else {
+                                LocalColorMapping.current.textFieldIconColor
+                            }
+                        )
                     }
                 },
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done, keyboardType = KeyboardType.Text),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    onImeAction.invoke()
+                }),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Text
+                ),
             )
         }
     }

@@ -15,40 +15,49 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clearkeep.R
+import com.clearkeep.components.grayscale2
 import com.clearkeep.components.grayscale4
 import com.clearkeep.components.grayscaleOffWhite
-import com.clearkeep.utilities.fileSizeRegex
+import com.clearkeep.utilities.*
 import com.clearkeep.utilities.files.getFileName
 import com.clearkeep.utilities.files.getFileSize
-import com.clearkeep.utilities.getFileNameFromUrl
-import com.clearkeep.utilities.printlnCK
 
 @Composable
-fun FileMessageContent(fileUrls: List<String>, onClick: (uri: String) -> Unit) {
+fun FileMessageContent(fileUrls: List<String>, isQuote: Boolean, onClick: (uri: String) -> Unit) {
     Column {
         fileUrls.forEach {
-            MessageFileItem(it, onClick)
+            MessageFileItem(it, isQuote, onClick)
         }
     }
 }
 
 @Composable
-fun MessageFileItem(fileUrl: String, onClick: (uri: String) -> Unit) {
+fun MessageFileItem(fileUrl: String, isQuote: Boolean, onClick: (uri: String) -> Unit) {
     val context = LocalContext.current
-    val fileName = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(fileUrl)
-    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
-    val clickableModifier = if (!isTempFile(fileUrl)) Modifier.clickable { onClick.invoke(fileUrl) } else Modifier
+    val fileName =
+        if (isTempFile(fileUrl)) Uri.parse(fileUrl).getFileName(context) else getFileNameFromUrl(
+            fileUrl
+        )
+    val fileSize = if (isTempFile(fileUrl)) Uri.parse(fileUrl)
+        .getFileSize(context) else getFileSizeInBytesFromUrl(fileUrl)
+    val clickableModifier =
+        if (!isTempFile(fileUrl)) Modifier.clickable { onClick.invoke(fileUrl) } else Modifier
 
     Column(
         Modifier
-            .padding(28.dp, 8.dp, 54.dp, 8.dp)
-            .then(clickableModifier)) {
+            .padding(28.sdp(), 8.sdp(), 54.sdp(), 8.sdp())
+            .then(clickableModifier)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.dp))
-            Spacer(Modifier.width(12.dp))
+            Image(painterResource(R.drawable.ic_file_download), null, Modifier.size(20.sdp()))
+            Spacer(Modifier.width(12.sdp()))
             Text(fileName, color = grayscaleOffWhite)
         }
-        Text(getFileSizeInMegabytesString(fileSize), color = grayscale4, fontSize = 12.sp)
+        Text(
+            getFileSizeInMegabytesString(fileSize),
+            color = if (isQuote) grayscale2 else grayscale4,
+            fontSize = 12.sdp().toNonScalableTextSize()
+        )
     }
 }
 
@@ -60,6 +69,17 @@ private fun getFileSizeInBytesFromUrl(url: String): Long {
 }
 
 private fun getFileSizeInMegabytesString(fileSizeInBytes: Long): String {
-    val fileSizeInMegabytes = fileSizeInBytes.toDouble() / 1_000_000
-    return "%.2f MB".format(fileSizeInMegabytes)
+    val unit = when {
+        fileSizeInBytes < 1024 -> "B"
+        fileSizeInBytes < 1024 * 1_000 -> "kB"
+        else -> "MB"
+    }
+    val fileSizeInMegabytes = when {
+        fileSizeInBytes < 1024 -> fileSizeInBytes.toDouble()
+        fileSizeInBytes < 1024 * 1_000 -> fileSizeInBytes.toDouble() / 1_000
+        else -> fileSizeInBytes.toDouble() / 1_000_000
+    }
+    return if (fileSizeInBytes < 1024) "$fileSizeInBytes $unit" else "%.2f $unit".format(
+        fileSizeInMegabytes
+    )
 }

@@ -1,5 +1,6 @@
 package com.clearkeep.di
 
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.clearkeep.screen.auth.forgot.ForgotViewModel
@@ -7,23 +8,27 @@ import com.clearkeep.screen.chat.contact_list.PeopleViewModel
 import com.clearkeep.screen.chat.room.RoomViewModel
 import com.clearkeep.screen.auth.login.LoginViewModel
 import com.clearkeep.screen.auth.register.RegisterViewModel
+import com.clearkeep.screen.chat.change_pass_word.ChangePasswordViewModel
 import com.clearkeep.screen.chat.group_create.CreateGroupViewModel
 import com.clearkeep.screen.chat.group_invite.InviteGroupViewModel
 import com.clearkeep.screen.chat.profile.ProfileViewModel
 import com.clearkeep.screen.chat.contact_search.SearchViewModel
 import com.clearkeep.screen.chat.home.HomeViewModel
 import com.clearkeep.screen.chat.notification_setting.NotificationSettingsViewModel
+import com.clearkeep.screen.chat.otp.OtpViewModel
 import com.clearkeep.screen.chat.settings.ServerSettingViewModel
 import com.clearkeep.screen.videojanus.CallViewModel
-import com.setel.di.factory.ViewModelFactory
+import com.clearkeep.utilities.BaseViewModel
+import com.clearkeep.di.factory.ViewModelFactory
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import dagger.multibindings.IntoMap
 
+
 @Suppress("unused")
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 abstract class ViewModelModule {
     @Binds
@@ -90,6 +95,21 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(NotificationSettingsViewModel::class)
     abstract fun bindNotificationSettingsViewModel(notificationSettingsViewModel: NotificationSettingsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(OtpViewModel::class)
+    abstract fun bindOtpViewModel(otpViewModel: OtpViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(BaseViewModel::class)
+    abstract fun bindBaseViewModel(baseViewModel: BaseViewModel): BaseViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(ChangePasswordViewModel::class)
+    abstract fun bindChangePasswordViewModel(changePasswordViewModel: ChangePasswordViewModel): ViewModel
 
     @Binds
     abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

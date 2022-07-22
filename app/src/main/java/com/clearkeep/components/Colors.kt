@@ -19,7 +19,7 @@ val grayscale3 = Color(0xffA0A3BD)
 val grayscale4 = Color(0xffD9DBE9)
 
 /* Grayscale/Grey 5 */
-val grayscale5 = Color(0xffEFF0F7)
+val grayscale5 = Color(0xffEFF0F6)
 
 /* Grayscale/Off-white */
 val grayscaleOffWhite = Color(0xffFCFCFC)
@@ -30,6 +30,9 @@ val grayscaleBlack = Color(0xff000000)
 
 /* Primary/Default */
 val primaryDefault = Color(0xff6267FB)
+
+/* Primary/Light */
+val primaryLight = Color(0xFF898DFF)
 
 /* Secondary/Default */
 val colorSecondaryDefault = Color(0xffE06464)
@@ -58,8 +61,10 @@ val colorTiaMaria = Color(0xffDC3E15)
 
 val backgroundGradientStart = Color(0xff7773F3)
 val backgroundGradientEnd = Color(0xff8ABFF3)
+val backgroundGradientStartHalfTransparent = Color(0x807773F3)
+val backgroundGradientEndHalfTransparent = Color(0x808ABFF3)
 
-val colorWarningLight= Color(0xffFFD789)
+val colorWarningLight = Color(0xffFFD789)
 
 val separatorDarkNonOpaque = Color(0xA6545458)
 val tintsRedLight = Color(0xFFFF3B30)
@@ -67,3 +72,14 @@ val colorStatusBar = Color(0xFF090979)
 
 val colorDialogScrim = Color(0x66000000)
 val bottomSheetColor = Color(0xF3FFFFFF)
+
+val colorBackgroundDark = Color (0xFF121212)
+val colorBackgroundTextFieldDark = Color (0xFF424242)
+val colorTextDark = Color (0xFFC4C4C4)
+val colorTextFieldHighlightedDark = Color(0xFFC4C4C4)
+val colorSurfaceDark = Color(0xFF222222)
+val grayscaleDarkModeGreyLight = Color(0xFFC4C4C4)
+val grayscaleDarkModeGreyLight2 = Color(0xFFE0E0E0)
+val grayscaleDarkModeGreyLight2Transparent = Color(0x80E0E0E0)
+val grayscaleDarkModeDarkGrey2 = Color(0xFF3B3B3B)
+val grayscaleDarkModeDarkGrey3 = Color(0xFF424242)

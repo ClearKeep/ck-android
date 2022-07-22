@@ -35,12 +35,6 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -50,5 +44,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.squareup.okhttp3:okhttp:3.5.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:3.5.0'
-    implementation(name:'libwebrtc', ext:'aar')
+    implementation files('../januswrapper/libs/libwebrtc.aar')
 }

@@ -1,9 +1,12 @@
 package com.clearkeep.dynamicapi
 
 import android.text.TextUtils
+import android.util.Log
+import auth.AuthOuterClass
 import io.grpc.CallCredentials
 import io.grpc.Metadata
 import io.grpc.Status
+import kotlinx.coroutines.flow.callbackFlow
 import java.util.concurrent.Executor
 
 class CallCredentials(
@@ -38,12 +41,19 @@ class CallCredentials(
 
                 applier.apply(headers)
             } catch (e: Throwable) {
+                Log.d("antx: ", "CallCredentials applyRequestMetadata line = 41: ${e.message} " );
                 applier.fail(Status.UNAUTHENTICATED.withCause(e))
+
             }
         }
     }
 
     override fun thisUsesUnstableApi() {
+        Log.d("antx: ", "CallCredentials thisUsesUnstableApi line = 50: " );
+        var req=AuthOuterClass.RefreshTokenReq.newBuilder()
+            .setRefreshToken(accessKey)
+            .build()
+
     }
 
     companion object {

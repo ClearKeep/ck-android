@@ -18,15 +18,8 @@ message NotifyObjectResponse {
 }
 
 
-//errors response
-message ErrorRes {
-    int64 code = 1;
-    string message = 2;
-}
-
 message BaseResponse {
-    bool success = 1;
-    ErrorRes errors = 2;
+  string error = 1;
 }
 
 // Request: get list notify
@@ -40,19 +33,19 @@ message GetNotifiesResponse {
 
 // Request: subcribe
 message SubscribeRequest {
-  string client_id = 1;
+  string device_id = 1;
 }
 //response: BaseResponse
 
 // Request: un-subcribe
 message UnSubscribeRequest {
-  string client_id = 1;
+  string device_id = 1;
 }
 //response: BaseResponse
 
 // Request: listen
 message ListenRequest {
-  string client_id = 1;
+  string device_id = 1;
 }
 //response: NotifyObjectResponse stream
 
@@ -64,9 +57,9 @@ message ReadNotifyRequest {
 
 // Method
 service Notify {
-    rpc read_notify (ReadNotifyRequest) returns (BaseResponse);
-    rpc get_unread_notifies (Empty) returns (GetNotifiesResponse);
-    rpc subscribe (SubscribeRequest) returns (BaseResponse);
-    rpc un_subscribe (UnSubscribeRequest) returns (BaseResponse);
-    rpc listen (ListenRequest) returns (stream NotifyObjectResponse);
+  rpc read_notify (ReadNotifyRequest) returns (BaseResponse);
+  rpc get_unread_notifies (Empty) returns (GetNotifiesResponse);
+  rpc subscribe (SubscribeRequest) returns (BaseResponse);
+  rpc un_subscribe (UnSubscribeRequest) returns (BaseResponse);
+  rpc listen (ListenRequest) returns (stream NotifyObjectResponse);
 }

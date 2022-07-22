@@ -2,6 +2,7 @@ package com.clearkeep.screen.chat.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,10 +13,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleTheme
 import com.clearkeep.screen.auth.login.LoginActivity
@@ -29,6 +30,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import com.clearkeep.components.base.CKButton
 import com.clearkeep.components.base.CKCircularProgressIndicator
+import com.clearkeep.db.clear_keep.model.Owner
+import com.clearkeep.db.signal_key.CKSignalProtocolAddress
 import com.clearkeep.screen.chat.banned_users.BannedUserActivity
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.invite.InviteActivity
@@ -36,6 +39,9 @@ import com.clearkeep.screen.chat.notification_setting.NotificationSettingActivit
 import com.clearkeep.screen.chat.profile.ProfileActivity
 import com.clearkeep.screen.chat.settings.ServerSettingActivity
 import com.clearkeep.utilities.restartToRoot
+import com.clearkeep.utilities.sdp
+import org.whispersystems.libsignal.groups.SenderKeyName
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), LifecycleObserver {
@@ -53,7 +59,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                     val isDirectChat = intent.getBooleanExtra(EXTRA_IS_DIRECT_CHAT, true)
                     if (isDirectChat) {
                         val friendId = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_ID)
-                        val friendDomain = intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_DOMAIN)
+                        val friendDomain =
+                            intent.getStringExtra(CreateGroupActivity.EXTRA_PEOPLE_DOMAIN)
                         if (!friendId.isNullOrBlank() && !friendDomain.isNullOrBlank()) {
                             navigateToRoomScreenWithFriendId(friendId, friendDomain)
                         }
@@ -71,6 +78,12 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
+        homeViewModel.isLogout.observe(this) {
+            if (it) {
+                signOut()
+            }
+        }
+
         setContent {
             CKSimpleTheme {
                 homeViewModel.prepareState.observeAsState().value.let { prepareState ->
@@ -87,8 +100,8 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                                 gotoRoomById = {
                                     navigateToRoomScreen(it)
                                 },
-                                onLogout = {
-                                    logout()
+                                onSignOut = {
+                                    signOut()
                                 },
                                 onJoinServer = {
                                     navigateToJoinServer(it)
@@ -129,9 +142,10 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun LoadingComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -141,19 +155,20 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     @Composable
     private fun ErrorComposable() {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text("Please try again")
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.sdp()))
             CKButton(
                 "Try again",
                 onClick = {
                 },
-                modifier = Modifier.padding(vertical = 5.dp)
+                modifier = Modifier.padding(vertical = 5.sdp())
             )
         }
     }
@@ -184,11 +199,11 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun subscriberLogout() {
-        homeViewModel.isLogOutCompleted.observe(this, { completed ->
+        homeViewModel.isLogOutCompleted.observe(this) { completed ->
             if (completed) {
                 restartToRoot(this)
             }
-        })
+        }
 
         homeViewModel.servers.observe(this, Observer {
             printlnCK("homeViewModel servers: ${it.size}")
@@ -210,7 +225,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         CircularProgressIndicator(color = Color.Blue)
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.sdp()))
                         Text(
                             text = "Leave server...",
                             style = MaterialTheme.typography.body2.copy(fontWeight = FontWeight.Bold)
@@ -221,8 +236,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    private fun logout() {
-        homeViewModel.logOut()
+    private fun signOut() {
+        homeViewModel.deleteKey()
+        homeViewModel.signOut()
     }
 
     private fun navigateToProfileScreen() {
@@ -232,11 +248,6 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private fun navigateToServerSettingScreen() {
         val intent = Intent(this, ServerSettingActivity::class.java)
-        startActivity(intent)
-    }
-
-    private fun navigateToChangePassword(){
-        val intent = Intent(this, ChangePasswordActivity::class.java)
         startActivity(intent)
     }
 
@@ -267,6 +278,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         val intent = Intent(this, SearchUserActivity::class.java)
         startActivity(intent)
     }
+
 
     private fun navigateToJoinServer(domain: String) {
         val intent = Intent(this, LoginActivity::class.java)

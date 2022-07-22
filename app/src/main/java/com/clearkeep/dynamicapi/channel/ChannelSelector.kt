@@ -7,7 +7,7 @@ import javax.inject.Inject
 class ChannelSelector @Inject constructor() {
     private val mChannelMap = HashMap<String, Channel>()
 
-    fun getChannel(domain: String) : Channel {
+    fun getChannel(domain: String): Channel {
         var channel = mChannelMap[domain]
         if (channel == null) {
             channel = ManagedChannelImpl().createManagedChannel(domain)

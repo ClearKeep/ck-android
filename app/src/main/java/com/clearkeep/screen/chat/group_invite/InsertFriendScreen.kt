@@ -8,15 +8,19 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.clearkeep.R
 import com.clearkeep.components.base.*
 import com.clearkeep.db.clear_keep.model.User
 import com.clearkeep.screen.chat.utils.getPeopleFromLink
+import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun InsertFriendScreen(
@@ -24,8 +28,8 @@ fun InsertFriendScreen(
     navController: NavHostController,
     onInsertFriend: (people: User) -> Unit,
 ) {
-    val link = remember {mutableStateOf("")}
-    val context=LocalContext.current
+    val link = rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
 
     Surface(
         color = MaterialTheme.colors.background
@@ -33,10 +37,10 @@ fun InsertFriendScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.sdp())
         ) {
             Row(
-                modifier = Modifier.padding(start = 5.dp, end = 8.dp, top = 24.dp),
+                modifier = Modifier.padding(start = 5.sdp(), end = 8.sdp(), top = 24.sdp()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
@@ -46,7 +50,7 @@ fun InsertFriendScreen(
                 ) {
                     IconButton(
                         onClick = {
-                            navController.popBackStack(navController.graph.startDestination, false)
+                            navController.popBackStack(navController.graph.findStartDestination().id, false)
                         }
                     ) {
                         Icon(
@@ -58,26 +62,33 @@ fun InsertFriendScreen(
                 }
 
                 CKTextButton(
-                    title = "Create",
+                    title = stringResource(R.string.create),
                     onClick = {
                         val people = getPeopleFromLink(link.value)
                         if (people != null) {
                             if (people.userId != inviteGroupViewModel.getClientId()) {
                                 onInsertFriend(people)
                             } else {
-                                Toast.makeText(context,"Error user !",Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.insert_friend_error),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     },
-                    fontSize = 16.sp,
+                    fontSize = 16.sdp().toNonScalableTextSize(),
                     textButtonType = TextButtonType.Blue
                 )
             }
-            Spacer(modifier = Modifier.height(25.dp))
-            CKHeaderText("New User", headerTextType = HeaderTextType.Medium)
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(25.sdp()))
+            CKHeaderText(
+                stringResource(R.string.insert_friend_new_user),
+                headerTextType = HeaderTextType.Medium
+            )
+            Spacer(modifier = Modifier.height(24.sdp()))
             CKTextInputField(
-                "Profile url",
+                stringResource(R.string.insert_friend_profile_url),
                 link
             )
         }

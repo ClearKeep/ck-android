@@ -12,5 +12,24 @@ data class UserPreference(
     @ColumnInfo(name = "show_notification_preview")
     val showNotificationPreview: Boolean,
     @ColumnInfo(name = "do_not_disturb")
-    val doNotDisturb: Boolean
-)
+    val doNotDisturb: Boolean,
+    @ColumnInfo(name = "mfa")
+    val mfa: Boolean,
+    @ColumnInfo(name = "is_social_account")
+    val isSocialAccount: Boolean
+) {
+    companion object {
+        fun getDefaultUserPreference(
+            serverDomain: String,
+            userId: String,
+            isSocialAccount: Boolean
+        ) = UserPreference(
+            serverDomain,
+            userId,
+            showNotificationPreview = true,
+            doNotDisturb = false,
+            mfa = false,
+            isSocialAccount = isSocialAccount
+        )
+    }
+}

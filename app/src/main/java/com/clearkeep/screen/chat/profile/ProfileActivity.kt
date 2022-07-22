@@ -14,8 +14,16 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.screen.chat.change_pass_word.ChangePasswordActivity
 import com.clearkeep.screen.chat.otp.OtpActivity
+import com.clearkeep.screen.chat.room.image_picker.ImagePickerScreen
 
 
 @AndroidEntryPoint
@@ -27,23 +35,58 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
         viewModelFactory
     }
 
+
+    @ExperimentalMaterialApi
+        @ExperimentalFoundationApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
+        profileViewModel.getMfaDetail()
+
         setContent {
             CKSimpleTheme {
-                MainComposable()
+                val navController = rememberNavController()
+                NavHost(navController, startDestination = "profile") {
+                    composable("profile") {
+                        MainComposable(navController)
+                    }
+                    composable("pick_avatar") {
+                        ImagePickerScreen(
+                            profileViewModel.imageUriSelected.map { listOf(it) },
+                            navController,
+                            onlyPickOne = true,
+                            insetEnabled = false,
+                            onSetSelectedImages = {
+                                if (it.isNotEmpty()) {
+                                    profileViewModel.setSelectedImage(it[0])
+                                }
+                            })
+                    }
+                    composable("country_code_picker") {
+                        CountryCodePicker(onPick = {
+                            profileViewModel.setCountryCode(it)
+                            navController.popBackStack()
+                        }) {
+                            navController.popBackStack()
+                        }
+                    }
+                }
             }
         }
     }
 
+    @ExperimentalMaterialApi
+
     @Composable
-    private fun MainComposable() {
+    private fun MainComposable(navController: NavController) {
         ProfileScreen(
+            navController,
             profileViewModel = profileViewModel,
             onCloseView = {
-                finish()
+                if (!profileViewModel.hasUnsavedChanges()) {
+                    finish()
+                }
             },
             onChangePassword = {
                 navigateToChangePassword()
@@ -68,7 +111,8 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun copyProfileLinkToClipBoard(label: String, text: String) {
-        val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipboard: ClipboardManager =
+            getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(applicationContext, "You copied", Toast.LENGTH_SHORT).show()

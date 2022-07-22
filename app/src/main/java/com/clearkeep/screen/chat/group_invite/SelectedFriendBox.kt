@@ -12,10 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.clearkeep.components.grayscale1
-import com.clearkeep.components.grayscale5
-import com.clearkeep.components.grayscaleBlack
+import com.clearkeep.components.*
 import com.clearkeep.db.clear_keep.model.User
+import com.clearkeep.utilities.sdp
 
 @Composable
 fun SelectedFriendBox(
@@ -24,23 +23,25 @@ fun SelectedFriendBox(
 ) {
     Surface(
         shape = MaterialTheme.shapes.large,
-        color = grayscale5,
-        elevation = 0.dp,
+        color = if (LocalColorMapping.current.isDarkTheme) primaryDefault else grayscale5,
+        elevation = 0.sdp(),
         modifier = Modifier.clickable { onRemove(people) }
     ) {
         Row(
-            modifier = Modifier.padding(vertical = 5.dp, horizontal = 8.dp),
+            modifier = Modifier.padding(vertical = 5.sdp(), horizontal = 8.sdp()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(people.userName, style = MaterialTheme.typography.caption.copy(
-                color = grayscaleBlack
-            ))
-            Spacer(modifier = Modifier.width(13.dp))
+            Text(
+                people.userName, style = MaterialTheme.typography.caption.copy(
+                    color = LocalColorMapping.current.bodyTextAlt
+                )
+            )
+            Spacer(modifier = Modifier.width(13.sdp()))
             Icon(
                 Icons.Filled.Close,
                 contentDescription = "",
-                modifier = Modifier.size(12.dp),
-                tint = grayscale1
+                modifier = Modifier.size(12.sdp()),
+                tint = LocalColorMapping.current.iconColorAlt
             )
         }
     }

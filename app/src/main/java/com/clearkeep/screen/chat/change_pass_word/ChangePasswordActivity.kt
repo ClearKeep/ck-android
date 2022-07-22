@@ -1,18 +1,35 @@
 package com.clearkeep.screen.chat.change_pass_word
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.lifecycle.*
 import com.clearkeep.components.CKSimpleTheme
+import com.clearkeep.utilities.printlnCK
 import dagger.hilt.android.AndroidEntryPoint
+import java.net.URLDecoder
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val changePasswordViewModel: ChangePasswordViewModel by viewModels {
+        viewModelFactory
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+
+        val data: Uri? = intent?.data
+        val decodedURL: String = URLDecoder.decode(data.toString(), "UTF-8")
+        changePasswordViewModel.processDeepLinkUri(Uri.parse(decodedURL))
 
         setContent {
             CKSimpleTheme {
@@ -21,12 +38,13 @@ class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
         }
     }
 
-    @Composable
+        @Composable
     private fun MainComposable() {
-        ChangePassWordScreen(
+        ChangePasswordScreen(
+            changePasswordViewModel,
             onBackPress = {
                 finish()
-            })
+            }
+        )
     }
-
 }

@@ -7,8 +7,12 @@ import org.whispersystems.libsignal.IdentityKeyPair
 @Entity
 @TypeConverters(SignalIdentityKeyPairConverter::class)
 data class SignalIdentityKey(
-        @ColumnInfo(name = "identity_key_pair") val identityKeyPair: IdentityKeyPair,
-        @ColumnInfo(name = "registration_id") val registrationId: Int,
+    @ColumnInfo(name = "identity_key_pair") val identityKeyPair: IdentityKeyPair,
+    @ColumnInfo(name = "registration_id") val registrationId: Int,
+    @ColumnInfo(name = "domain") val domain: String,
+    @ColumnInfo(name = "user_id") val userId: String,
+    @ColumnInfo(name = "iv") val iv: String? = "",
+    @ColumnInfo(name = "salt") val salt: String? = ""
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0
@@ -29,6 +33,11 @@ data class SignalIdentityKey(
         var result = identityKeyPair.hashCode()
         result = 31 * result + registrationId
         return result
+    }
+
+    override fun toString(): String {
+        val keyPair = identityKeyPair.serialize()
+        return "key ${keyPair[0]} ${keyPair[1]} ${keyPair[2]} ${keyPair[keyPair.size - 1]} ${keyPair[keyPair.size - 2]} ${keyPair[keyPair.size - 3]} domain $domain userId $userId regId $registrationId"
     }
 }
 

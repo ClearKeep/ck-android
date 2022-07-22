@@ -3,40 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    tools:background="@color/black"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    tools:background="@color/black">
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/_16sdp"
         android:text="Mute"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="@dimen/_16sdp"
         app:layout_constraintEnd_toEndOf="@+id/toggleMute"
         app:layout_constraintStart_toStartOf="@+id/toggleMute"
         app:layout_constraintTop_toBottomOf="@+id/toggleMute" />
 
 
     <TextView
+        android:id="@+id/txtCamera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Facetime"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:text="@string/camera"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="@dimen/_16sdp"
         app:layout_constraintEnd_toEndOf="@+id/toggleFaceTime"
         app:layout_constraintStart_toStartOf="@+id/toggleFaceTime"
         app:layout_constraintTop_toBottomOf="@+id/toggleFaceTime" />
 
     <TextView
+        android:id="@+id/txtSpeaker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/_16sdp"
         android:text="Speaker"
         android:textColor="@color/white"
-        android:textSize="16sp"
+        android:textSize="@dimen/_16sdp"
         app:layout_constraintEnd_toEndOf="@+id/toggleSpeaker"
         app:layout_constraintStart_toStartOf="@+id/toggleSpeaker"
         app:layout_constraintTop_toBottomOf="@+id/toggleSpeaker" />
@@ -44,8 +46,8 @@
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleMute"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
         android:checked="false"
         app:layout_constraintEnd_toStartOf="@+id/toggleFaceTime"
         app:layout_constraintHorizontal_bias="0.5"
@@ -56,8 +58,8 @@
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleFaceTime"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
         android:checked="false"
         app:layout_constraintEnd_toStartOf="@+id/toggleSpeaker"
         app:layout_constraintHorizontal_bias="0.5"
@@ -68,14 +70,40 @@
 
     <net.colindodd.toggleimagebutton.ToggleImageButton
         android:id="@+id/toggleSpeaker"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        android:layout_width="@dimen/_64sdp"
+        android:layout_height="@dimen/_64sdp"
         android:checked="false"
+        app:layout_constraintEnd_toStartOf="@+id/imgEndWaiting"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/toggleFaceTime"
         app:layout_constraintTop_toTopOf="@+id/toggleFaceTime"
         app:tib_drawable_off="@drawable/ic_voice_call_speaker_off"
         app:tib_drawable_on="@drawable/ic_voice_call_speaker_on" />
+
+    <ImageView
+        android:id="@+id/imgEndWaiting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_button_decline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/toggleSpeaker"
+        app:layout_constraintTop_toTopOf="@id/toggleSpeaker"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/tvEndButtonDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:text="Cancel"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_16sdp"
+        app:layout_constraintEnd_toEndOf="@+id/imgEndWaiting"
+        app:layout_constraintStart_toStartOf="@+id/imgEndWaiting"
+        app:layout_constraintTop_toBottomOf="@+id/imgEndWaiting"
+        android:visibility="gone"/>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

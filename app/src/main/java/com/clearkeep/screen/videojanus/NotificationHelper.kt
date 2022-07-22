@@ -11,9 +11,10 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
-import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
+import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.screen.chat.room.RoomActivity
 import com.clearkeep.utilities.*
 import androidx.core.app.Person
@@ -34,17 +35,61 @@ fun showMessagingStyleNotification(
     context: Context,
     chatGroup: ChatGroup,
     message: Message,
-    preference: UserPreference
+    preference: UserPreference,
+    avatar: String? = ""
 ) {
-    val sender = chatGroup.clientList.find { it.userId == message.senderId } ?: User(userId = message.senderId, userName = "unknown", domain = "")
-    showHeadsUpMessageWithNoAutoLaunch(context, sender, message, preference)
+    printlnCK("Notification showMessagingStyleNotification message $message")
+    val sender = if (chatGroup.isGroup()) {
+        chatGroup.groupName
+    } else {
+        chatGroup.clientList.find { it.userId == message.senderId }?.userName ?: "unknown"
+    }
+
+    val groupSender = if (chatGroup.isGroup()) {
+        chatGroup.clientList.find { it.userId == message.senderId }?.userName ?: "unknown"
+    } else {
+        ""
+    }
+
+    val messageNotificationContent = when {
+        isImageMessage(message.message) -> {
+            val messageSender = if (groupSender.isNotBlank()) groupSender else sender
+            getImageNotificationContent(
+                context,
+                message.message,
+                messageSender,
+                chatGroup.isGroup()
+            )
+        }
+        isFileMessage(message.message) -> {
+            val messageSender = if (groupSender.isNotBlank()) groupSender else sender
+            getFileNotificationContent(context, message.message, messageSender, chatGroup.isGroup())
+        }
+        isForwardedMessage(message.message) -> {
+            message.message.substring(3)
+        }
+        else -> {
+            message.message
+        }
+    }
+
+    showHeadsUpMessageWithNoAutoLaunch(
+        context,
+        sender,
+        message.copy(message = messageNotificationContent),
+        preference,
+        avatar,
+        groupSender
+    )
 }
 
 private fun showHeadsUpMessageWithNoAutoLaunch(
     context: Context,
-    sender: User,
+    sender: String,
     message: Message,
-    preference: UserPreference
+    preference: UserPreference,
+    avatar: String? = "",
+    groupSender: String = "",
 ) {
     if (!preference.doNotDisturb) {
         val channelId = MESSAGE_HEADS_UP_CHANNEL_ID
@@ -85,20 +130,19 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
         val headsUpLayout =
             RemoteViews(context.packageName, R.layout.notification_message_view_expand)
         val messageContent =
-            if (preference.showNotificationPreview) message.message else "You have new message"
-        val messageFrom =
-            if (preference.showNotificationPreview) "New message from ${sender.userName}" else ""
+            if (preference.showNotificationPreview) message.message else context.getString(R.string.notification_content_no_preview)
+        val messageFrom = context.getString(R.string.notification_sender_no_preview, sender)
         smallLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
-            setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
+            setViewVisibility(R.id.imageButton, View.VISIBLE)
         }
         headsUpLayout.apply {
             setTextViewText(R.id.tvFrom, messageFrom)
             setTextViewText(R.id.tvMessage, messageContent)
-            setViewVisibility(R.id.imageButton, if (preference.showNotificationPreview) View.VISIBLE else View.GONE)
-            setOnClickPendingIntent(R.id.tvMute, pendingDismissIntent)
-            setOnClickPendingIntent(R.id.tvReply, pendingIntent)
+            if (groupSender.isNotBlank()) setViewVisibility(R.id.tvGroupSenderName, View.VISIBLE)
+            setTextViewText(R.id.tvGroupSenderName, "$groupSender:")
+            setViewVisibility(R.id.imageButton, View.VISIBLE)
         }
 
         val notificationManager =
@@ -133,20 +177,18 @@ private fun showHeadsUpMessageWithNoAutoLaunch(
             .setVibrate(longArrayOf(Notification.DEFAULT_VIBRATE.toLong()))
             .build()
 
-        if (preference.showNotificationPreview) {
-            val target = NotificationTarget(
-                context,
-                R.id.imageButton,
-                headsUpLayout,
-                notification,
-                notificationId
-            )
-            Glide.with(context.applicationContext)
-                .asBitmap()
-                .circleCrop()
-                .load("https://i.ibb.co/WBKb3zf/Thumbnail.png")
-                .into(target)
-        }
+        val target = NotificationTarget(
+            context,
+            R.id.imageButton,
+            headsUpLayout,
+            notification,
+            notificationId
+        )
+        Glide.with(context.applicationContext)
+            .asBitmap()
+            .circleCrop()
+            .load(avatar)
+            .into(target)
 
         notificationManager.notify(notificationId, notification)
     }
@@ -159,11 +201,10 @@ fun showMessageNotificationToSystemBar(
     messages: List<Message>,
     userPreference: UserPreference
 ) {
-    if (userPreference.doNotDisturb) {
+    if (!userPreference.doNotDisturb) {
         val channelId = MESSAGE_CHANNEL_ID
         val channelName = MESSAGE_CHANNEL_NAME
         val notificationId = chatGroup.groupId.toInt()
-
         val contentTitle = chatGroup.groupName
         val participants = chatGroup.clientList
         val userName = if (me.userName.isEmpty()) "me" else me.userName
@@ -178,11 +219,39 @@ fun showMessageNotificationToSystemBar(
 
         for (message in messages) {
             val people = participants.find { it.userId == message.senderId }
+            val messageContent =
+                if (userPreference.showNotificationPreview) {
+                    when {
+                        isImageMessage(message.message) -> {
+                            getImageNotificationContent(
+                                context,
+                                message.message,
+                                people?.userName ?: "",
+                                chatGroup.isGroup()
+                            )
+                        }
+                        isFileMessage(message.message) -> {
+                            getFileNotificationContent(
+                                context,
+                                message.message,
+                                people?.userName ?: "",
+                                chatGroup.isGroup()
+                            )
+                        }
+                        isForwardedMessage(message.message) -> {
+                            message.message.substring(3)
+                        }
+                        else -> {
+                            message.message
+                        }
+                    }
+                } else context.getString(R.string.notification_content_no_preview)
+            val username = people?.userName
             messagingStyle.addMessage(
                 NotificationCompat.MessagingStyle.Message(
-                    message.message,
+                    messageContent,
                     message.createdTime,
-                    Person.Builder().setName(people?.userName ?: "unknown").setKey(message.senderId)
+                    Person.Builder().setName(username).setKey(message.senderId)
                         .build()
                 )
             )
@@ -219,7 +288,11 @@ fun showMessageNotificationToSystemBar(
                     .build()
                 val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                 mChannel =
-                    NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+                    NotificationChannel(
+                        channelId,
+                        channelName,
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    )
                 mChannel.setSound(notification, attributes)
                 notificationManager.createNotificationChannel(mChannel)
             }
@@ -229,8 +302,14 @@ fun showMessageNotificationToSystemBar(
         builder // MESSAGING_STYLE sets title and content for API 16 and above devices.
             .setStyle(messagingStyle) // Title for API < 16 devices.
             .setContentTitle(contentTitle) // Content for API < 16 devices.
-            .setContentTitle("${messages.size} new messages with " + me.userName)
-            .setContentText("new messages")
+            .setContentTitle(
+                context.getString(
+                    R.string.notification_new_messages_title,
+                    messages.size,
+                    me.userName
+                )
+            )
+            .setContentText(context.getString(R.string.notification_new_messages_content))
             .setSmallIcon(R.drawable.ic_logo)
             .setContentIntent(mainPendingIntent)
             .setColor(
@@ -247,4 +326,80 @@ fun showMessageNotificationToSystemBar(
         val notification: Notification = builder.build()
         notificationManager.notify(notificationId, notification)
     }
+}
+
+fun createInCallNotification(context: Context, activityToLaunchOnClick: Class<*>) {
+    val intent = Intent(context, activityToLaunchOnClick)
+    intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+    val pendingIntent =
+        PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+    val channelId = CALL_CHANNEL_ID
+    val channelName = CALL_CHANNEL_NAME
+    val notification = NotificationCompat.Builder(context, channelId)
+        .setContentTitle(context.getString(R.string.notification_return_call_title))
+        .setContentText(context.getString(R.string.notification_return_call_content))
+        .setSmallIcon(R.drawable.ic_logo)
+        .setContentIntent(pendingIntent)
+        .setOngoing(true)
+        .build()
+
+    val notificationManager =
+        context.getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel =
+            notificationManager.getNotificationChannel(channelId) ?: NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_LOW
+            )
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    notificationManager.notify(1, notification)
+}
+
+fun dismissInCallNotification(context: Context) {
+    NotificationManagerCompat.from(context).cancel(null, CALL_NOTIFICATION_ID)
+}
+
+private fun getImageNotificationContent(
+    context: Context,
+    message: String,
+    sender: String,
+    isGroup: Boolean
+): String {
+    val imageCount = getImageUriStrings(message).size
+
+    val pluralString = if (imageCount > 1) "s" else ""
+
+    val messageContent =
+        if (getMessageContent(message).isNotBlank()) "\n${getMessageContent(message)}" else ""
+    val senderString = if (isGroup) "" else "$sender "
+
+    return context.getString(
+        R.string.notification_new_message_image_content,
+        senderString,
+        imageCount,
+        pluralString,
+        messageContent
+    )
+}
+
+private fun getFileNotificationContent(
+    context: Context,
+    message: String,
+    sender: String,
+    isGroup: Boolean
+): String {
+    val fileCount = getFileUriStrings(message).size
+    val pluralString = if (fileCount > 1) "s" else ""
+    val senderString = if (isGroup) "" else "$sender "
+    return context.getString(
+        R.string.notification_new_message_file_content,
+        senderString,
+        fileCount,
+        pluralString
+    )
 }

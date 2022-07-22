@@ -2,80 +2,52 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvFrom"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_22sdp"
+        android:maxLines="1"
+        android:textColor="@color/grey3"
+        android:textSize="@dimen/_14sdp"
+        tools:text="New message from Alex" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:layout_marginStart="@dimen/_22sdp"
+        android:layout_marginEnd="@dimen/_22sdp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:id="@+id/imageButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:layout_gravity="center_vertical"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvFrom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:maxLines="1"
-                    tools:text="New message from Alex"
-                    android:textColor="@color/grey3"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/tvMessage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="32dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    tools:text="Where are you? Pick up the..."
-                    android:textColor="@color/grey1"
-                    android:textSize="16sp"
-                    android:textStyle="normal"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvGroupSenderName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp">
-            <Button
-                android:id="@+id/tvReply"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:text="Reply"
-                android:textColor="@color/primaryDefault"
-                android:textSize="14sp"
-                android:textStyle="normal"
-                android:textFontWeight="600" />
+            tools:text="Alex:"
+            android:textColor="@color/grey1"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:textSize="@dimen/_16sdp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
-            <Button
-                android:id="@+id/tvMute"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:background="@android:color/transparent"
-                android:text="Mute"
-                android:textColor="@color/primaryDefault"
-                android:textSize="14sp"
-                android:textStyle="normal"
-                android:textFontWeight="600" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/grey1"
+            android:textSize="@dimen/_16sdp"
+            android:textStyle="normal"
+            tools:text="Where are you? Pick up the..." />
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_10sdp" />
+
 </LinearLayout>

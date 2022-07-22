@@ -9,39 +9,47 @@ import com.clearkeep.R
 import com.clearkeep.screen.auth.repo.AuthRepository
 import com.clearkeep.utilities.isValidEmail
 import com.clearkeep.utilities.network.Resource
+import java.util.regex.Pattern
 import javax.inject.Inject
 
 class RegisterViewModel @Inject constructor(
     private val authRepository: AuthRepository
-): ViewModel() {
+) : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
 
     val isLoading: LiveData<Boolean>
         get() = _isLoading
 
-    private val _emailError = MutableLiveData<String>()
+    private val _email = MutableLiveData<String>()
+    val email: LiveData<String> get() = _email
 
+    private val _emailError = MutableLiveData<String>()
     val emailError: LiveData<String>
         get() = _emailError
 
     private val _passError = MutableLiveData<String>()
-
     val passError: LiveData<String>
         get() = _passError
 
     private val _confirmPassError = MutableLiveData<String>()
-
     val confirmPassError: LiveData<String>
         get() = _confirmPassError
 
     private val _displayNameError = MutableLiveData<String>()
-
     val displayNameError: LiveData<String>
         get() = _displayNameError
 
     var domain: String = ""
 
-    suspend fun register(context: Context, email: String, displayName: String, password: String, confirmPassword: String ): Resource<AuthOuterClass.RegisterRes>? {
+    private val regexUppercase = "^[A-Z0-9]" //alpha uppercase
+
+    suspend fun register(
+        context: Context,
+        email: String,
+        displayName: String,
+        password: String,
+        confirmPassword: String
+    ): Resource<AuthOuterClass.RegisterSRPRes>? {
         _isLoading.value = true
 
         _emailError.value = ""
@@ -50,6 +58,10 @@ class RegisterViewModel @Inject constructor(
         _displayNameError.value = ""
 
         var isValid = true
+        if (isUpperCase(email)){
+            _emailError.value = context.getString(R.string.email_uppercase)
+            isValid = false
+        }
         if (email.isBlank()) {
             _emailError.value = context.getString(R.string.email_empty)
             isValid = false
@@ -64,6 +76,9 @@ class RegisterViewModel @Inject constructor(
         if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             isValid = false
+        } else if (password.length !in 6..12) {
+            _passError.value = context.getString(R.string.password_length_invalid)
+            isValid = false
         }
         if (confirmPassword.isBlank()) {
             _confirmPassError.value = context.getString(R.string.confirm_password_empty)
@@ -73,8 +88,10 @@ class RegisterViewModel @Inject constructor(
             isValid = false
         }
 
+        _email.value = email
+
         val result = if (isValid) {
-            authRepository.register(displayName.trim(), password.trim(), email.trim(), domain)
+            authRepository.register(displayName.trim(), password, email.trim(), domain)
         } else {
             null
         }
@@ -82,4 +99,9 @@ class RegisterViewModel @Inject constructor(
         _isLoading.value = false
         return result
     }
+
+    private fun isUpperCase(str: String): Boolean {
+        return Pattern.compile(regexUppercase).matcher(str).find()
+    }
+
 }

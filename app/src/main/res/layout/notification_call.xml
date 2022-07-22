@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="24dp"
-    android:paddingVertical="16dp"
+    android:paddingHorizontal="@dimen/_24sdp"
+    android:paddingVertical="@dimen/_16sdp"
     android:orientation="vertical">
 
     <LinearLayout
@@ -14,10 +14,10 @@
 
         <ImageView
             android:id="@+id/imageButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="16dp"
-            tools:visibility="visible"/>
+            android:layout_width="@dimen/_40sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_marginEnd="@dimen/_16sdp"
+            tools:visibility="visible" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
                 android:maxLines="1"
                 tools:text="Incoming Voice Call"
                 android:textColor="@color/colorSuccessDefault"
-                android:textSize="14sp" />
+                android:textSize="@dimen/_14sdp" />
 
             <TextView
                 android:id="@+id/tvCallGroupName"
@@ -43,8 +43,8 @@
                 android:maxLines="1"
                 tools:text="Alex"
                 android:textColor="@color/grey1"
-                android:textSize="20sp"
-                android:textStyle="normal"/>
+                android:textSize="@dimen/_20sdp"
+                android:textStyle="normal" />
         </LinearLayout>
     </LinearLayout>
 
@@ -52,35 +52,38 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp">
+
         <Button
             android:id="@+id/tvDecline"
             android:layout_width="0dp"
             android:layout_weight="5"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="@dimen/_8sdp"
+            android:paddingVertical="@dimen/_8sdp"
             android:background="@drawable/button_background_red"
             android:text="@string/btn_decline"
             android:textColor="@color/grayscaleBackground"
             tools:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"/>
+            android:textSize="@dimen/_14sdp"
+            android:textStyle="bold" />
+
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/tvAnswer"
             android:layout_width="0dp"
             android:layout_weight="5"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="@dimen/_8sdp"
+            android:paddingVertical="@dimen/_8sdp"
             android:background="@drawable/button_background_green"
             android:text="@string/btn_answer"
             android:textColor="@color/grayscaleBackground"
             tools:textColor="@color/black"
-            android:textSize="14sp"
-            android:textStyle="bold"/>
+            android:textSize="@dimen/_14sdp"
+            android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>

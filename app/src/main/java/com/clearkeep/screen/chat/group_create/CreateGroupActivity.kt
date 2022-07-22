@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,18 +53,15 @@ class CreateGroupActivity : AppCompatActivity() {
                         InviteGroupScreen(
                             InviteMemberUIType,
                             inviteGroupViewModel,
-                            listMemberInGroup = listOf(),
                             selectedItem = selectedItem,
+                            chatGroup = MutableLiveData(),
                             onFriendSelected = { friends ->
                                 createGroupViewModel.setFriendsList(friends)
                                 navController.navigate("enter_group_name")
                             },
-
                             onDirectFriendSelected = {
                                 inviteGroupViewModel.insertFriend(it)
-                                handleDirectChat(it) },
-                            onInsertFriend = {
-                                navController.navigate("insert_friend")
+                                handleDirectChat(it)
                             },
                             onBackPressed = {
                                 finish()
@@ -73,8 +71,8 @@ class CreateGroupActivity : AppCompatActivity() {
                     }
                     composable("enter_group_name") {
                         EnterGroupNameScreen(
-                                navController,
-                                createGroupViewModel,
+                            navController,
+                            createGroupViewModel,
                         )
                     }
                     composable("insert_friend") {

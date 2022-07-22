@@ -1,28 +1,32 @@
 package com.clearkeep.screen.auth.register
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
-import androidx.compose.material.Text
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.clearkeep.R
-import com.clearkeep.components.base.CKButton
-import com.clearkeep.components.base.CKTextButton
-import com.clearkeep.components.base.CKTextInputField
-import com.clearkeep.components.base.TextButtonType
-import com.clearkeep.components.grayscaleBlack
+import com.clearkeep.components.*
+import com.clearkeep.components.base.*
+import com.clearkeep.utilities.defaultNonScalableTextSize
+import com.clearkeep.utilities.sdp
+import com.clearkeep.utilities.toNonScalableTextSize
 
 @Composable
 fun RegisterScreen(
@@ -31,10 +35,12 @@ fun RegisterScreen(
     onBackPress: () -> Unit,
     isLoading: Boolean = false
 ) {
-    val email = remember { mutableStateOf("") }
-    val displayName = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val confirmPassword = remember { mutableStateOf("") }
+    val localFocusManager = LocalFocusManager.current
+
+    val email = rememberSaveable { mutableStateOf("") }
+    val displayName = rememberSaveable { mutableStateOf("") }
+    val password = rememberSaveable { mutableStateOf("") }
+    val confirmPassword = rememberSaveable { mutableStateOf("") }
 
     val emailError = registerViewModel.emailError.observeAsState()
     val passError = registerViewModel.passError.observeAsState()
@@ -45,68 +51,92 @@ fun RegisterScreen(
 
     Column(
         modifier = Modifier
-            .padding(horizontal = 20.dp)
-            .fillMaxSize(),
+            .padding(horizontal = 20.sdp())
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(Modifier.height(28.sdp()))
         Box(contentAlignment = Alignment.TopCenter) {
             Image(image, contentDescription = "")
         }
-        Spacer(Modifier.height(24.dp))
-        Card(shape = RoundedCornerShape(16.dp)) {
+        Spacer(Modifier.height(24.sdp()))
+        Card(shape = RoundedCornerShape(16.sdp())) {
             Column(
                 modifier = Modifier
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
+                    .background(if (isSystemInDarkTheme()) colorSurfaceDark else Color.White)
+                    .padding(horizontal = 16.sdp(), vertical = 24.sdp())
             ) {
-                Text(
+                CKText(
                     text = stringResource(R.string.sign_up_fill_information),
-                    color = grayscaleBlack
+                    color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
+                    fontSize = defaultNonScalableTextSize()
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.sdp()))
                 CKTextInputField(
-                    "Email",
+                    stringResource(R.string.tv_email),
                     email,
                     keyboardType = KeyboardType.Email,
                     error = emailError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_mail),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
                     }
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
                     stringResource(R.string.display_name),
                     displayName,
                     error = displayNameError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_user_check),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    }
-
+                    },
+                    maxChars = 30
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
-                    "Password",
+                    stringResource(R.string.tv_password),
                     password,
                     keyboardType = KeyboardType.Password,
                     error = passError.value,
                     singleLine = true,
+                    imeAction = ImeAction.Next,
+                    onNext = {
+                        localFocusManager.moveFocus(FocusDirection.Down)
+                    },
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
                     }
                 )
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(10.sdp()))
                 CKTextInputField(
                     stringResource(R.string.confirm_password),
                     confirmPassword,
@@ -116,11 +146,14 @@ fun RegisterScreen(
                     leadingIcon = {
                         Image(
                             painterResource(R.drawable.ic_icon_lock),
-                            contentDescription = null
+                            contentDescription = null,
+                            Modifier.size(24.sdp()),
+                            contentScale = ContentScale.FillBounds,
+                            colorFilter = LocalColorMapping.current.textFieldIconFilter
                         )
-                    }
+                    },
                 )
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(24.sdp()))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Row(
                         modifier = Modifier
@@ -128,9 +161,10 @@ fun RegisterScreen(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         CKTextButton(
-                            title = "Sign in instead",
+                            title = stringResource(R.string.register_sign_in_instead),
                             onClick = onBackPress,
-                            textButtonType = TextButtonType.Blue
+                            textButtonType = TextButtonType.Blue,
+                            fontSize = 12.sdp().toNonScalableTextSize()
                         )
                     }
 
@@ -144,13 +178,14 @@ fun RegisterScreen(
                                 confirmPassword.value
                             )
                         },
-                        enabled = !isLoading,
+                        enabled = !isLoading && email.value.isNotBlank() && displayName.value.isNotBlank() && password.value.isNotBlank() && confirmPassword.value.isNotBlank(),
                         modifier = Modifier
-                            .width(120.dp)
-                            .height(40.dp)
+                            .width(120.sdp())
+                            .height(40.sdp())
                     )
                 }
             }
         }
+        Spacer(Modifier.height(28.sdp()))
     }
 }

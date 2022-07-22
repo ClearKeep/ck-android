@@ -43,6 +43,6 @@ interface DynamicAPIProvider {
     fun provideUploadFileBlockingStub(): UploadFileGrpc.UploadFileBlockingStub
 
     fun provideUploadFileStub(): UploadFileGrpc.UploadFileStub
-    
-    fun provideWorkSpaceBlockingStub():WorkspaceGrpc.WorkspaceBlockingStub
+
+    fun provideWorkSpaceBlockingStub(): WorkspaceGrpc.WorkspaceBlockingStub
 }

@@ -8,15 +8,16 @@ import com.clearkeep.db.signal_key.dao.SignalKeyDAO
 import com.clearkeep.db.SignalKeyDatabase
 import com.clearkeep.db.clear_keep.dao.*
 import com.clearkeep.db.signal_key.dao.SignalPreKeyDAO
+import com.clearkeep.dynamicapi.Environment
 import com.clearkeep.screen.chat.signal_store.InMemorySenderKeyStore
 import com.clearkeep.screen.chat.signal_store.InMemorySignalProtocolStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
+import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 @Module
 class DatabaseModule {
     @Singleton
@@ -26,12 +27,6 @@ class DatabaseModule {
             .databaseBuilder(app, ClearKeepDatabase::class.java, "ck_database.db")
             .fallbackToDestructiveMigration()
             .build()
-    }
-
-    @Singleton
-    @Provides
-    fun provideUserDao(db: ClearKeepDatabase): ProfileDao {
-        return db.profileDao()
     }
 
     @Singleton
@@ -54,7 +49,7 @@ class DatabaseModule {
 
     @Singleton
     @Provides
-    fun providePeopleDAO(db: ClearKeepDatabase): UserDao {
+    fun providePeopleDAO(db: ClearKeepDatabase): UserDAO {
         return db.userDao()
     }
 
@@ -72,11 +67,17 @@ class DatabaseModule {
 
     @Singleton
     @Provides
+    fun provideUserKeyDao(db: ClearKeepDatabase): UserKeyDAO {
+        return db.userKeyDao()
+    }
+
+    @Singleton
+    @Provides
     fun provideSignalKeyDatabase(app: Application): SignalKeyDatabase {
         return Room
-                .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
-                .fallbackToDestructiveMigration()
-                .build()
+            .databaseBuilder(app, SignalKeyDatabase::class.java, "ck_signal_database.db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Singleton
@@ -102,8 +103,9 @@ class DatabaseModule {
     fun provideInMemorySignalProtocolStore(
         preKeyDAO: SignalPreKeyDAO,
         signalIdentityKeyDAO: SignalIdentityKeyDAO,
+        environment: Environment,
     ): InMemorySignalProtocolStore {
-        return InMemorySignalProtocolStore(preKeyDAO, signalIdentityKeyDAO)
+        return InMemorySignalProtocolStore(preKeyDAO, signalIdentityKeyDAO, environment)
     }
 
     @Singleton
