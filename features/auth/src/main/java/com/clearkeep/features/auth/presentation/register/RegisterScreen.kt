@@ -170,7 +170,7 @@ fun RegisterScreen(
                         onClick = {
                             onRegisterPressed(
                                 email.value,
-                                displayName.value,
+                                displayName.value.trim(),
                                 password.value,
                                 confirmPassword.value
                             )
