@@ -87,7 +87,6 @@ class CallViewModel @Inject constructor(
 
     override fun onPublisherJoined(handleId: BigInteger) {
         offerPeerConnection(handleId)
-        Log.e("antx", "onPublisherJoined")
     }
 
     override fun onPublisherRemoteJsep(handleId: BigInteger, jsep: JSONObject) {
