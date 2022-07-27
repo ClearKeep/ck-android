@@ -80,8 +80,8 @@ class LoginUseCase @Inject constructor(
                     "",
                     "",
                     "",
-                    response.errorCode,
-                    response.message ?: ""
+                    authResponse.errorCode,
+                    authResponse.message ?: ""
                 )
             )
         }
