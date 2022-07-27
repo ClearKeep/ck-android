@@ -1,17 +1,24 @@
 package com.clearkeep.data.services
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
-import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.UserPreference
+import com.clearkeep.domain.repository.PeopleRepository
+import com.clearkeep.domain.repository.SenderKeyStore
+import com.clearkeep.domain.repository.SignalKeyRepository
+import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
-import com.clearkeep.domain.usecase.group.*
+import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
+import com.clearkeep.domain.usecase.group.DisableChatOfDeactivatedUserUseCase
+import com.clearkeep.domain.usecase.group.GetGroupByIdUseCase
+import com.clearkeep.domain.usecase.group.GetListClientInGroupUseCase
 import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
 import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
 import com.clearkeep.domain.usecase.people.DeleteFriendUseCase
@@ -19,6 +26,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
+import com.clearkeep.features.chat.presentation.home.MainActivity
 import com.clearkeep.features.shared.showMessagingStyleNotification
 import com.google.common.reflect.TypeToken
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -32,7 +40,6 @@ import org.json.JSONObject
 import org.whispersystems.libsignal.groups.SenderKeyName
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import java.util.HashMap
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -88,6 +95,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         printlnCK("MyFirebaseMessagingService onMessageReceived: ${remoteMessage.data}")
         handleNotification(remoteMessage)
+        if (remoteMessage.data["notify_type"] =="deactive_account" || remoteMessage.data["notify_type"]=="reset_pincode"){
+            val intentNotiType = Intent (applicationContext, MainActivity::class.java)
+            intentNotiType.putExtra("notify_type", remoteMessage.data["notify_type"])
+            intentNotiType.flags = FLAG_ACTIVITY_NEW_TASK
+            applicationContext.startActivity(intentNotiType)
+        }
+        Log.e("hungnv", "onMessageReceived: ${remoteMessage.data}" )
     }
 
     private fun handleNotification(remoteMessage: RemoteMessage) {
@@ -255,7 +269,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 }
                 if (getOwnerClientIdsUseCase().contains(removedMember)) {
                     getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
-                        Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it");
+                        Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it")
                         val senderAddress2 = CKSignalProtocolAddress(
                             Owner(
                                 clientDomain,
@@ -275,7 +289,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                     deleteGroupUseCase(groupId, clientDomain, removedMember)
                 } else {
-                    Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 274: ");
+                    Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 274: ")
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
@@ -350,10 +364,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
-
-    override fun onNewToken(token: String) {
-        super.onNewToken(token)
-    }
 
     companion object {
         private const val TAG = "MyFirebaseService"
