@@ -13,7 +13,6 @@ import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.repository.PeopleRepository
 import com.clearkeep.domain.repository.SenderKeyStore
 import com.clearkeep.domain.repository.SignalKeyRepository
-import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
 import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
 import com.clearkeep.domain.usecase.group.DisableChatOfDeactivatedUserUseCase
@@ -95,13 +94,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         printlnCK("MyFirebaseMessagingService onMessageReceived: ${remoteMessage.data}")
         handleNotification(remoteMessage)
-        if (remoteMessage.data["notify_type"] =="deactive_account" || remoteMessage.data["notify_type"]=="reset_pincode"){
-            val intentNotiType = Intent (applicationContext, MainActivity::class.java)
-            intentNotiType.putExtra("notify_type", remoteMessage.data["notify_type"])
-            intentNotiType.flags = FLAG_ACTIVITY_NEW_TASK
-            applicationContext.startActivity(intentNotiType)
-        }
-        Log.e("hungnv", "onMessageReceived: ${remoteMessage.data}" )
     }
 
     private fun handleNotification(remoteMessage: RemoteMessage) {
@@ -133,6 +125,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "deactive_account" -> {
                         printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
                         handleRequestDeactiveAccount(remoteMessage)
+                        val intentNotiType = Intent(applicationContext, MainActivity::class.java)
+                        intentNotiType.putExtra("notify_type", "deactive_account")
+                        intentNotiType.flags = FLAG_ACTIVITY_NEW_TASK
+                        applicationContext.startActivity(intentNotiType)
+                    }
+                    "reset_pincode" ->{
+                        val intentNotiType = Intent(applicationContext, MainActivity::class.java)
+                        intentNotiType.putExtra("notify_type", "deactive_account")
+                        intentNotiType.flags = FLAG_ACTIVITY_NEW_TASK
+                        applicationContext.startActivity(intentNotiType)
                     }
                     CALL_TYPE_VIDEO -> {
                         val switchIntent = Intent(ACTION_CALL_SWITCH_VIDEO)
