@@ -199,10 +199,10 @@ class HomeViewModel @Inject constructor(
                 )
             )
             listUserRequest.addAll(getListUserEntityUseCase())
-            val listClientStatus = getListClientStatusUseCase(listUserRequest)
+            val listClientStatus = getListClientStatusUseCase(listUserRequest)?.filter { !it.userName.isEmpty() }
             _listUserStatus.postValue(listClientStatus)
             val status =
-                listClientStatus?.filter { it.userId == server.profile.userId }?.get(0)?.userStatus
+                listClientStatus?.filter { it.userId == server.profile.userId && it.userName.isEmpty() }?.get(0)?.userStatus
             _currentStatus.postValue(status)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
