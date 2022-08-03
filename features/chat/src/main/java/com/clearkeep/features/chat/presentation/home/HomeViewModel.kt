@@ -1,3 +1,5 @@
+@file:Suppress("DeferredResultUnused")
+
 package com.clearkeep.features.chat.presentation.home
 
 import android.util.Log
@@ -5,6 +7,7 @@ import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.ChatGroup
+import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.repository.Environment
@@ -93,16 +96,18 @@ class HomeViewModel @Inject constructor(
     private var checkValidServerJob: Job? = null
     init {
         viewModelScope.launch {
-            clearTempMessageUseCase()
-            val fetchGroupResponse = fetchGroupsUseCase()
-            handleResponse(fetchGroupResponse)
-        }
-        viewModelScope.launch {
-            getStatusUserInDirectGroup()
+            async { clearTempMessageUseCase.invoke() }.await()
+//            val fetchGroupResponse = fetchGroupsUseCase() 
+//            handleResponse(fetchGroupResponse)
+            async { fetchGroupsUseCase.invoke() }.await()
+            async { getStatusUserInDirectGroup() }
         }
         getAllSenderKey()
         sendPing()
     }
+    fun getClientIdOfActiveServer() = environment.getServer().profile.userId
+
+    fun getDomainOfActiveServer() = environment.getServer().serverDomain
 
     private fun getAllSenderKey(){
         viewModelScope.launch {
@@ -175,7 +180,7 @@ class HomeViewModel @Inject constructor(
         try {
             val listUserRequest = arrayListOf<User>()
             getAllPeerGroupByDomainUseCase(
-                owner = com.clearkeep.domain.model.Owner(
+                owner = Owner(
                     getDomainOfActiveServer(),
                     getClientIdOfActiveServer()
                 )
@@ -252,10 +257,6 @@ class HomeViewModel @Inject constructor(
     fun showJoinServer() {
         selectingJoinServer.value = true
     }
-
-    fun getClientIdOfActiveServer() = environment.getServer().profile.userId
-
-    fun getDomainOfActiveServer() = environment.getServer().serverDomain
 
     private val _isLogOutProcessing = MutableLiveData<Boolean>()
 
