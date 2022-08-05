@@ -39,6 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import de.hdodenhof.circleimageview.CircleImageView
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.android.synthetic.main.activity_in_coming_call.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -63,6 +64,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var imgThumb: CircleImageView
     private lateinit var tvUserName: TextView
     private var broadcastReceiver: BroadcastReceiver? = null
+    private var acceptCallReceiver: BroadcastReceiver? = null
     private var ringtone: Ringtone? = null
 
     @Inject
@@ -81,6 +83,19 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
                 finishAndRemoveFromTask()
             }
         }
+    }
+
+    private fun registerAcceptCallReceiver() {
+        acceptCallReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                Log.e("hungnv", "onCreate: cancel_call")
+                finish()
+            }
+        }
+        registerReceiver(
+            acceptCallReceiver,
+            IntentFilter("CANCEL_CALL")
+        )
     }
 
     private fun registerBroadcastReceiver() {
@@ -129,22 +144,22 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
-
         mUserNameInConversation = intent.getStringExtra(EXTRA_USER_NAME)
         mAvatarInConversation = intent.getStringExtra(EXTRA_AVATAR_USER_IN_CONVERSATION)
         printlnCK("mAvatarInConversation: $mAvatarInConversation")
-        mGroupId = intent.getStringExtra(EXTRA_GROUP_ID)!!
-        mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME)!!
-        mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE)!!
+        mGroupId = intent.getStringExtra(EXTRA_GROUP_ID).orEmpty()
+        mGroupName = intent.getStringExtra(EXTRA_GROUP_NAME).orEmpty()
+        mGroupType = intent.getStringExtra(EXTRA_GROUP_TYPE).orEmpty()
         mIsGroupCall = isGroup(mGroupType)
         mOwnerId = intent.getStringExtra(EXTRA_OWNER_CLIENT) ?: ""
         mDomain = intent.getStringExtra(EXTRA_OWNER_DOMAIN) ?: ""
-        mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN)!!
+        mToken = intent.getStringExtra(EXTRA_GROUP_TOKEN).orEmpty()
         mIsAudioMode = intent.getBooleanExtra(EXTRA_IS_AUDIO_MODE, false)
         initViews()
 
         registerEndCallReceiver()
         registerBroadcastReceiver()
+        registerAcceptCallReceiver()
         GlobalScope.launch {
             delay(CALL_WAIT_TIME_OUT)
             if (isInComingCall) {
@@ -295,6 +310,7 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
             }
             R.id.imgAnswer -> {
                 isInComingCall = false
+                acceptCallAPI(mGroupId.toInt())
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
@@ -575,9 +591,20 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun cancelCallAPI(groupId: Int) {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             viewModel.cancelCall(groupId, com.clearkeep.domain.model.Owner(mDomain, mOwnerId))
+            Log.e("hungnv", "cancelCallAPI: ImcomingAct" )
         }
+    }
+
+    private fun acceptCallAPI(groupId: Int) {
+        GlobalScope.launch(Dispatchers.Main) {
+//            async {
+                viewModel.acceptCall(groupId, com.clearkeep.domain.model.Owner(mDomain, mOwnerId))
+                Log.e("hungnv", "acceptCallAPI: ImcomingAct")
+//            }.await()
+        }
+
     }
 
     private fun configPortraitLayout() {
