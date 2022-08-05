@@ -20,6 +20,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
+import com.clearkeep.features.calls.presentation.InComingCallActivity
 import com.clearkeep.features.chat.presentation.home.MainActivity
 import com.clearkeep.features.shared.presentation.AppCall
 import com.clearkeep.features.shared.showMessagingStyleNotification
@@ -104,6 +105,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         printlnCK("notification $clientId")
         GlobalScope.launch {
             val server = getServerUseCase(clientDomain, clientId)
+            Log.e("hungnv", "handleNotification: sever: $server ,notify_type: ${remoteMessage.data["notify_type"]}" )
             printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
@@ -123,6 +125,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                     "member_leave", "new_member" -> {
                         handlerRequestAddRemoteMember(remoteMessage)
+                    }
+                    "accept_request_call" -> {
+                        Log.e("hungnv", "handleNotification: accept_request_call")
+                        val groupId = remoteMessage.data["group_id"]
+                        NotificationManagerCompat.from(applicationContext)
+                            .cancel(null, INCOMING_NOTIFICATION_ID)
+                        val endIntent = Intent(applicationContext, InComingCallActivity::class.java)
+                        endIntent.action = "CANCEL_CALL"
+                        sendBroadcast(endIntent)
                     }
                     "deactive_account" -> {
                         printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
@@ -145,6 +156,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         sendBroadcast(switchIntent)
                     }
                 }
+            } else if (remoteMessage.data["notify_type"] == "accept_request_call"){
+                Log.e("hungnv", "handleNotification: accept_request_call sever null")
+                val groupId = remoteMessage.data["group_id"]
+                NotificationManagerCompat.from(applicationContext)
+                    .cancel(null, INCOMING_NOTIFICATION_ID)
+                val endIntent = Intent("CANCEL_CALL")
+                sendBroadcast(endIntent)
             }
         }
     }

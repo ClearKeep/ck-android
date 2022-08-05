@@ -109,6 +109,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
         isShowedDialogCamera = !mIsAudioMode
 
         initViews()
+        callViewModel.acceptCall(mGroupId.toInt(), getOwnerServer())
 
         registerEndCallReceiver()
         registerBroadcastReceiver()

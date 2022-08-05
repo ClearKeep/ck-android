@@ -60,10 +60,23 @@ class VideoCallRepositoryImpl @Inject constructor(
             try {
                 val response = videoCallService.setBusy(groupId, server)
                 val success = response.error.isNullOrEmpty()
-                printlnCK("cancelCall, success = $success")
+                printlnCK("busyCall, success = $success")
                 return@withContext success
             } catch (e: Exception) {
-                printlnCK("cancelCall: $e")
+                printlnCK("busyCall: $e")
+                return@withContext false
+            }
+        }
+
+    override suspend fun acceptCall(groupId: Int, server: Server): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = videoCallService.acceptCall(groupId, server)
+                val success = response.error.isNullOrEmpty()
+                printlnCK("acceptCall, success = $success")
+                return@withContext success
+            } catch (e: Exception) {
+                printlnCK("acceptCall: $e")
                 return@withContext false
             }
         }
