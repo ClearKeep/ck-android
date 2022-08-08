@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import com.clearkeep.features.chat.R
 import com.clearkeep.common.presentation.components.*
@@ -179,9 +179,9 @@ fun ImageItem(
         )
     ) {
         Image(
-            rememberImagePainter(
+            rememberAsyncImagePainter(
                 uri,
-                imageLoader = context.imageLoader,
+                imageLoader = context.imageLoader
             ),
             null,
             contentScale = ContentScale.Crop,

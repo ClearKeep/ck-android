@@ -109,7 +109,7 @@ object Modules {
 }
 
 object Version {
-    const val coil = "1.3.2"
+    const val coil = "2.1.0"
     const val accompanist = "0.18.0"
 
     const val androidUploadService = "4.6.0"

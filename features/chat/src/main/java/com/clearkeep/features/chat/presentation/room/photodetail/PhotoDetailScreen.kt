@@ -34,7 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.constraintlayout.compose.ConstraintLayout
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import com.clearkeep.features.chat.R
 import com.clearkeep.common.presentation.components.colorDialogScrim
@@ -106,7 +106,7 @@ fun PhotoDetailScreen(roomViewModel: RoomViewModel, onDismiss: () -> Unit) {
                 color = Color.White
             )
             Image(
-                rememberImagePainter(selectedImageUri.value, context.imageLoader),
+                rememberAsyncImagePainter(selectedImageUri.value, context.imageLoader),
                 null,
                 Modifier
                     .fillMaxSize(),
@@ -176,7 +176,7 @@ fun SelectableImageItem(
         )
     ) {
         Image(
-            rememberImagePainter(uri, context.imageLoader),
+            rememberAsyncImagePainter(uri, context.imageLoader),
             null,
             contentScale = ContentScale.Crop,
             modifier = modifier.then(Modifier.align(Alignment.Center)),

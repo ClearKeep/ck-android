@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import com.clearkeep.common.presentation.components.backgroundGradientEnd
 import com.clearkeep.common.presentation.components.backgroundGradientStart
@@ -51,9 +51,9 @@ fun CircleAvatar(
         val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
         if (url.isNotEmpty() && url[0].isNotBlank()) {
             Image(
-                rememberImagePainter(
+                rememberAsyncImagePainter(
                     "${url[0]}?cache=$cacheKey", // Force recomposition when cache key changes
-                    imageLoader = context.imageLoader,
+                    imageLoader = context.imageLoader
                 ),
                 null,
                 contentScale = ContentScale.Crop,

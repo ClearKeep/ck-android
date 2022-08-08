@@ -12,9 +12,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.clearkeep.common.presentation.components.*
 import com.clearkeep.common.presentation.components.base.CKText
 import com.clearkeep.domain.model.UserStatus
@@ -47,11 +49,11 @@ fun CircleAvatarStatus(
         Column(Modifier.size(size)) {
             if (!url.isNullOrEmpty()) {
                 Image(
-                    rememberImagePainter(
-                        "$url", //Force reload when cache key changes
-                        builder = {
-                            memoryCachePolicy(CachePolicy.DISABLED)
-                        }
+                    rememberAsyncImagePainter(ImageRequest.Builder(LocalContext.current).data(
+                        "$url" //Force reload when cache key changes
+                    ).apply(block = fun ImageRequest.Builder.() {
+                        memoryCachePolicy(CachePolicy.DISABLED)
+                    }).build()
                     ),
                     null,
                     contentScale = ContentScale.Crop,

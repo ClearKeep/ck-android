@@ -17,10 +17,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.ImagePainter
-import coil.compose.rememberImagePainter
-import coil.imageLoader
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.memory.MemoryCache
+import coil.request.ImageRequest
 import com.clearkeep.common.presentation.components.grayscaleOffWhite
 import com.clearkeep.common.utilities.isTempMessage
 import com.clearkeep.common.utilities.printlnCK
@@ -120,10 +120,11 @@ fun ImageMessageItem(
     val clickableModifier =
         if (isTempMessage(uri)) Modifier else Modifier.clickable { onClick.invoke(uri) }
     val sizeModifier = if (cropped) Modifier.fillMaxWidth().height(120.sdp()) else Modifier.fillMaxSize().aspectRatio(1f)
-    val painter = rememberImagePainter(uri, context.imageLoader) {
-        placeholderMemoryCacheKey(lastUri.value)
-        crossfade(250)
-    }
+    val painter = rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+        .data(uri)
+        .crossfade(250)
+        .placeholderMemoryCacheKey(lastUri.value)
+        .build())
 
     Box(modifier) {
         Image(
@@ -136,11 +137,11 @@ fun ImageMessageItem(
                 .then(clickableModifier)
         )
         when (painter.state) {
-            is ImagePainter.State.Loading -> {
+            is AsyncImagePainter.State.Loading -> {
                 Box(Modifier.fillMaxSize())
             }
-            is ImagePainter.State.Success -> {
-                val memoryCacheKey = (painter.state as ImagePainter.State.Success).metadata.memoryCacheKey
+            is AsyncImagePainter.State.Success -> {
+                val memoryCacheKey = (painter.state as AsyncImagePainter.State.Success).result.memoryCacheKey
                 lastUri.value = memoryCacheKey
             }
             else -> {

@@ -24,7 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.imageLoader
 import com.clearkeep.features.chat.R
 import com.clearkeep.common.presentation.components.*
@@ -228,7 +228,7 @@ fun ItemImage(uri: String, onRemove: (uri: String) -> Unit) {
             .size(56.sdp())
     ) {
         Image(
-            painter = rememberImagePainter(
+            painter = rememberAsyncImagePainter(
                 uri,
                 imageLoader = context.imageLoader,
             ), contentDescription = "", contentScale = ContentScale.Crop,

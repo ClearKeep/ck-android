@@ -12,10 +12,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.clearkeep.features.chat.R
 import com.clearkeep.common.presentation.components.backgroundGradientEnd
 import com.clearkeep.common.presentation.components.backgroundGradientStart
@@ -34,11 +36,11 @@ fun CircleAvatarSite(
     Column(Modifier.size(size)) {
         if (!url.isNullOrEmpty()) {
             Image(
-                rememberImagePainter(
-                    "$url?cache=$cacheKey", //Force reload when cache key changes
-                    builder = {
-                        memoryCachePolicy(CachePolicy.DISABLED)
-                    }
+                rememberAsyncImagePainter(ImageRequest.Builder(LocalContext.current).data(
+                    "$url?cache=$cacheKey" //Force reload when cache key changes
+                ).apply(block = fun ImageRequest.Builder.() {
+                    memoryCachePolicy(CachePolicy.DISABLED)
+                }).build()
                 ),
                 null,
                 contentScale = ContentScale.Crop,
