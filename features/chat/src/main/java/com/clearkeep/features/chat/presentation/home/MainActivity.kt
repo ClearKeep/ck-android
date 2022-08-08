@@ -113,6 +113,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                         PrepareError -> {
                             ErrorComposable()
                         }
+                        else -> {}
                     }
                 }
             }

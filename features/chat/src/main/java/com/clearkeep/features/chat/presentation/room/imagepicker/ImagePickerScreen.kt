@@ -6,9 +6,9 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.*
@@ -106,10 +106,10 @@ fun ImagePickerScreen(
                 isDarkTheme = LocalColorMapping.current.isDarkTheme
             )
             Box(Modifier.padding(16.sdp())) {
-                LazyVerticalGrid(cells = GridCells.Fixed(2)) {
+                LazyVerticalGrid(columns = GridCells.Fixed(2)) {
                     items(uris) {
                         ImageItem(
-                            Modifier.fillParentMaxWidth(0.5f),
+                            Modifier.fillMaxWidth(0.5f),
                             it.toString(),
                             urisSelected.contains(it.toString())
                         ) { uri: String, isSelected: Boolean ->

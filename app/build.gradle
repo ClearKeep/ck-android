@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         applicationId "com.clearkeep.ck"
@@ -105,7 +105,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
-        useIR = true
+//        useIR = true
     }
     buildFeatures {
         compose true
@@ -163,8 +163,11 @@ dependencies {
     implementation Dependencies.gson
 
     //Architecture components
-    implementation Dependencies.lifecycleLiveData
     implementation Dependencies.lifecycleExtensions
+    implementation Dependencies.lifecycleLiveData
+    implementation Dependencies.lifecycleLiveDataKtx
+    implementation Dependencies.lifecycleViewModel
+    implementation Dependencies.lifecycleViewModelKtx
 
     // Jetpack Compose
     implementation Dependencies.composeActivity

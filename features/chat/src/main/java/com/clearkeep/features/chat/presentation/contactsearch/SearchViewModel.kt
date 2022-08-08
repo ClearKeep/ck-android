@@ -115,6 +115,7 @@ class SearchViewModel @Inject constructor(
                 SearchMode.MESSAGES -> {
                     searchMessages(server, text.trim())
                 }
+                else -> {}
             }
             isShowLoading.postValue(false)
         }

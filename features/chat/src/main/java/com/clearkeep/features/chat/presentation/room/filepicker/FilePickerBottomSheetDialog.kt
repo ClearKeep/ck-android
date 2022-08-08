@@ -41,7 +41,7 @@ import com.clearkeep.features.chat.presentation.room.RoomViewModel
 fun FilePickerBottomSheetDialog(roomViewModel: RoomViewModel, onClickNext: () -> Unit) {
     val context = LocalContext.current
     val addFileContract = object : ActivityResultContracts.OpenDocument() {
-        override fun createIntent(context: Context, input: Array<out String>): Intent {
+        override fun createIntent(context: Context, input: Array<String>): Intent {
             return super.createIntent(context, input)
                 .addCategory(Intent.CATEGORY_OPENABLE)
                 .addFlags(FLAG_GRANT_READ_URI_PERMISSION)

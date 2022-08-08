@@ -48,6 +48,9 @@ object Dependencies {
 
     //Architecture components
     const val lifecycleLiveData = "androidx.lifecycle:lifecycle-livedata-ktx:${Version.lifecycleLiveData}"
+    const val lifecycleLiveDataKtx = "androidx.lifecycle:lifecycle-livedata:${Version.lifecycleLiveData}"
+    const val lifecycleViewModel = "androidx.lifecycle:lifecycle-viewmodel:${Version.lifecycleViewModel}"
+    const val lifecycleViewModelKtx = "androidx.lifecycle:lifecycle-viewmodel-ktx:${Version.lifecycleViewModel}"
     const val lifecycleExtensions = "androidx.lifecycle:lifecycle-extensions:${Version.lifecycleExtensions}"
 
     //Jetpack Compose
@@ -110,7 +113,7 @@ object Modules {
 
 object Version {
     const val coil = "2.1.0"
-    const val accompanist = "0.18.0"
+    const val accompanist = "0.25.0"
 
     const val androidUploadService = "4.6.0"
 
@@ -134,7 +137,7 @@ object Version {
     const val toggleImageButton = "1.2"
     const val coroutines = "1.5.2"
 
-    const val kotlin = "1.5.31"
+    const val kotlin = "1.7.0"
 
     const val androidCore = "1.6.0"
 
@@ -142,15 +145,16 @@ object Version {
     const val materialDesign = "1.4.0"
     const val activity = "1.1.0"
     const val lifecycleLiveData = "2.2.0"
+    const val lifecycleViewModel = "2.5.1"
 
     const val lifecycleExtensions = "2.0.0"
-    const val jetpackCompose = "1.0.4"
+    const val jetpackCompose = "1.2.0"
 
-    const val jetpackComposeNav = "2.4.0-alpha10"
-    const val composeConstraintLayout = "1.0.0-rc01"
+    const val jetpackComposeNav = "2.5.1"
+    const val composeConstraintLayout = "1.0.1"
     const val signal = "0.18.1"
 
-    const val hilt = "2.38.1"
+    const val hilt = "2.43.1"
 
     const val circleImageView = "3.1.0"
 

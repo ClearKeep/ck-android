@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ToggleButton
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.NotificationManagerCompat
@@ -249,10 +250,12 @@ class InCallPeerToPeerActivity : BaseActivity() {
         super.onDestroy()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
         newConfig: Configuration
     ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         if (isInPictureInPictureMode) {
             controlCallVideoView.visibility = View.GONE
             controlCallAudioView.visibility = View.GONE
@@ -538,6 +541,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                     updateUIbyStateView(CallStateView.CALLED_VIDEO)
                 }
             }
+            else -> {}
         }
     }
 

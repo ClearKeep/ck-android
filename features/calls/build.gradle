@@ -17,5 +17,5 @@ dependencies {
     implementation project(':januswrapper')
     implementation Dependencies.circleImageView
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation files('../../januswrapper/libs/libwebrtc.aar')
+    implementation 'org.webrtc:google-webrtc:1.0.20284'
 }
