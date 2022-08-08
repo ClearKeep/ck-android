@@ -119,9 +119,9 @@ object Version {
 
     const val gson = "2.8.8"
 
-    const val firebaseMessaging = "21.0.0"
+    const val firebaseMessaging = "23.0.6"
 
-    const val firebaseAnalytics = "18.0.0"
+    const val firebaseAnalytics = "21.1.0"
     const val googleAuth = "19.0.0"
 
     const val microsoftAuth = "2.0.8"
