@@ -115,7 +115,7 @@ object Version {
     const val coil = "2.1.0"
     const val accompanist = "0.25.0"
 
-    const val androidUploadService = "4.6.0"
+    const val androidUploadService = "4.7.0"
 
     const val gson = "2.8.8"
 
