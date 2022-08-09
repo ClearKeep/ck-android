@@ -122,10 +122,10 @@ object Version {
     const val firebaseMessaging = "23.0.6"
 
     const val firebaseAnalytics = "21.1.0"
-    const val googleAuth = "19.0.0"
+    const val googleAuth = "20.2.0"
 
-    const val microsoftAuth = "2.0.8"
-    const val facebookAuth = "8.2.0"
+    const val microsoftAuth = "4.0.0"
+    const val facebookAuth = "14.1.0"
     const val javaxAnnotations = "1.3.2"
 
     const val okhttp = "2.7.5"
@@ -154,13 +154,13 @@ object Version {
     const val composeConstraintLayout = "1.0.1"
     const val signal = "0.18.1"
 
-    const val hilt = "2.43.1"
+    const val hilt = "2.43.2"
 
     const val circleImageView = "3.1.0"
 
     const val junit = "4.+"
     const val junitExt = "1.1.2"
-    const val espresso = "3.3.0"
+    const val espresso = "3.4.0"
 
     const val room = "2.3.0-alpha02"
 

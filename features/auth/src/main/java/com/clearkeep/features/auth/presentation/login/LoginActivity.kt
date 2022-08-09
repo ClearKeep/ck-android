@@ -20,36 +20,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.clearkeep.common.presentation.components.CKTheme
 import com.clearkeep.common.presentation.components.base.CKAlertDialog
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.common.utilities.ERROR_CODE_TIMEOUT
-import com.clearkeep.features.auth.presentation.advancedsettings.CustomServerScreen
-import com.clearkeep.features.auth.presentation.forgot.ForgotActivity
-import com.clearkeep.features.auth.presentation.register.RegisterActivity
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.response.SocialLoginRes
 import com.clearkeep.features.auth.R
-import com.clearkeep.navigation.NavigationUtils
+import com.clearkeep.features.auth.presentation.advancedsettings.CustomServerScreen
+import com.clearkeep.features.auth.presentation.forgot.ForgotActivity
+import com.clearkeep.features.auth.presentation.register.RegisterActivity
 import com.clearkeep.features.auth.presentation.sociallogin.ConfirmSocialLoginPhraseScreen
 import com.clearkeep.features.auth.presentation.sociallogin.EnterSocialLoginPhraseScreen
 import com.clearkeep.features.auth.presentation.sociallogin.SetSocialLoginPhraseScreen
 import com.clearkeep.features.shared.presentation.EnterOtpScreen
-import com.facebook.*
+import com.clearkeep.navigation.NavigationUtils
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import com.microsoft.identity.client.*
+import com.microsoft.identity.client.AuthenticationCallback
+import com.microsoft.identity.client.IAuthenticationResult
 import com.microsoft.identity.client.exception.MsalException
-import com.facebook.login.LoginResult
-import com.google.android.gms.common.ConnectionResult.NETWORK_ERROR
 import com.microsoft.identity.client.exception.MsalServiceException
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
@@ -453,16 +459,21 @@ class LoginActivity : AppCompatActivity() {
 
     private fun loginFacebook(navController: NavController) {
         loginViewModel.loginFacebookManager.logIn(this, arrayListOf("email", "public_profile"))
-        loginViewModel.loginFacebookManager.registerCallback(callbackManager,
-            object : FacebookCallback<LoginResult?> {
-                override fun onSuccess(loginResult: LoginResult?) {
-                    loginViewModel.getFacebookProfile(AccessToken.getCurrentAccessToken()) { name ->
-                        lifecycleScope.launch {
-                            val res = loginViewModel.loginByFacebook(
-                                token = AccessToken.getCurrentAccessToken().token,
-                            )
-                            loginViewModel.loginFacebookManager.logOut()
-                            onSignInResult(navController, res)
+        loginViewModel.loginFacebookManager.registerCallback(
+            callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    AccessToken.getCurrentAccessToken()?.let {
+                        loginViewModel.getFacebookProfile(it) {
+                            lifecycleScope.launch {
+                                val res = AccessToken.getCurrentAccessToken()?.let { accessToken ->
+                                    loginViewModel.loginByFacebook(
+                                        token = accessToken.token,
+                                    )
+                                }
+                                loginViewModel.loginFacebookManager.logOut()
+                                onSignInResult(navController, res)
+                            }
                         }
                     }
                 }
@@ -470,15 +481,15 @@ class LoginActivity : AppCompatActivity() {
                 override fun onCancel() {
                 }
 
-                override fun onError(exception: FacebookException) {
-                    printlnCK("login with FB error $exception")
-                    val (title, text) = if (exception.message != null && exception.message!!.contains(
+                override fun onError(error: FacebookException) {
+                    printlnCK("login with FB error $error")
+                    val (title, text) = if (error.message != null && error.message!!.contains(
                             "CONNECTION_FAILURE"
                         )
                     ) {
                         getString(R.string.network_error_dialog_title) to getString(R.string.network_error_dialog_text)
                     } else {
-                        getString(R.string.error) to (exception.message ?: "unknown")
+                        getString(R.string.error) to (error.message ?: "unknown")
                     }
                     showErrorDiaLog?.invoke(ErrorMessage(title, text))
                 }

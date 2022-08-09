@@ -177,7 +177,7 @@ class LoginViewModel @Inject constructor(
             accessToken, "me"
         ) {
             try {
-                val name = it.jsonObject.get("name").toString()
+                val name = it.jsonObject?.get("name").toString()
                 getName.invoke(name)
             } catch (e: Exception) {
                 getName.invoke("")
