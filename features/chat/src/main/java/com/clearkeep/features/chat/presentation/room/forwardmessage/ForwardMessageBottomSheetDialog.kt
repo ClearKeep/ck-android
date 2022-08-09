@@ -44,8 +44,8 @@ fun ForwardMessageBottomSheetDialog(
 
     printlnCK("ForwardMessageBottomSheetDialog forwardMessageResponse $forwardMessageResponse")
 
-    val groups = allGroups.filter { it.isGroup() && it.groupName.contains(query.value, true) }
-    val users = allGroups.filter { !it.isGroup() && it.groupName.contains(query.value, true) }
+    val groups = allGroups.filter { it.isGroup() && it.groupName.contains(query.value.trim(), true) }
+    val users = allGroups.filter { !it.isGroup() && it.groupName.contains(query.value.trim(), true) }
 
     LazyColumn(Modifier.padding(horizontal = 16.sdp())) {
         item {
