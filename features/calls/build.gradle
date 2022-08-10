@@ -14,8 +14,8 @@ dependencies {
     implementation Dependencies.toggleImageButton
 
     //Janus
-    implementation project(':januswrapper')
+    implementation project(Modules.janus)
     implementation Dependencies.circleImageView
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'org.webrtc:google-webrtc:1.0.20284'
+    implementation Dependencies.webRtc
 }

@@ -41,8 +41,10 @@ object Dependencies {
     const val coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Version.coroutines}"
 
     const val jdk8 = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Version.kotlin}"
+    const val kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib:${Version.kotlin}"
     const val androidCore = "androidx.core:core-ktx:$${Version.androidCore}"
     const val appCompat = "androidx.appcompat:appcompat:${Version.appCompat}"
+    const val appCompatV7 = "com.android.support:appcompat-v7:${Version.appCompatV7}"
     const val materialDesign = "com.google.android.material:material:${Version.materialDesign}"
     const val activity = "androidx.activity:activity-ktx:${Version.activity}"
 
@@ -90,8 +92,16 @@ object Dependencies {
     const val roomTesting = "androidx.room:room-testing:${Version.room}"
 
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:${Version.constraintLayout}"
+    const val constraint = "com.android.support.constraint:constraint-layout:${Version.constraint}"
 
     const val libPhoneNumber = "com.googlecode.libphonenumber:libphonenumber:${Version.libPhoneNumber}"
+
+    //WebRtc
+    const val webRtc = "org.webrtc:google-webrtc:${Version.webRtc}"
+
+    //Okhttp3
+    const val okhttp3 = "com.squareup.okhttp3:okhttp:${Version.okhttp3}"
+    const val okhttp3Logging = "com.squareup.okhttp3:logging-interceptor:${Version.okhttp3Logging}"
 }
 
 object Modules {
@@ -129,6 +139,8 @@ object Version {
     const val javaxAnnotations = "1.3.2"
 
     const val okhttp = "2.7.5"
+    const val okhttp3 = "3.5.0"
+    const val okhttp3Logging = "3.5.0"
 
     const val grpc = "1.29.0"
     const val glide = "4.12.0"
@@ -142,6 +154,8 @@ object Version {
     const val androidCore = "1.6.0"
 
     const val appCompat = "1.3.1"
+    const val appCompatV7 = "28.0.0"
+
     const val materialDesign = "1.4.0"
     const val activity = "1.1.0"
     const val lifecycleLiveData = "2.2.0"
@@ -165,6 +179,8 @@ object Version {
     const val room = "2.3.0-alpha02"
 
     const val constraintLayout = "1.1.3"
+    const val constraint = "1.0.2"
 
     const val libPhoneNumber = "8.2.0"
+    const val webRtc = "1.0.20284"
 }
