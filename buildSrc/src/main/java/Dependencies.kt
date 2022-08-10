@@ -29,6 +29,7 @@ object Dependencies {
     const val grpcOkhttp = "io.grpc:grpc-okhttp:${Version.grpc}"
     const val grpcProtoBufUtil = "io.grpc:grpc-protobuf-lite:${Version.grpc}"
     const val javaxAnnotations = "javax.annotation:javax.annotation-api:${Version.javaxAnnotations}"
+    const val protoParser = "com.squareup:protoparser:${Version.protoParser}"
 
     //Glide
     const val glide = "com.github.bumptech.glide:glide:${Version.glide}"
@@ -76,9 +77,15 @@ object Dependencies {
 
     //Hilt
     const val hilt = "com.google.dagger:hilt-android:${Version.hilt}"
+    const val dagger = "com.google.dagger:dagger:${Version.hilt}"
+    const val daggerAndroidProcessor = "com.google.dagger:dagger-android-processor:${Version.hilt}"
+    const val daggerAndroidSupport = "com.google.dagger:dagger-android-support:${Version.hilt}"
+    const val daggerCompiler = "com.google.dagger:dagger-compiler:${Version.hilt}"
     const val hiltCompiler = "com.google.dagger:hilt-compiler:${Version.hilt}"
+    const val hiltCompilerAndroidx = "androidx.hilt:hilt-compiler:${Version.hiltCompilerAndroidxVersion}"
+    const val dagger2InjectAnnotation = "com.squareup.inject:assisted-inject-annotations-dagger2:${Version.assistedInjectVersion}"
+    const val dagger2InjectProcessor = "com.squareup.inject:assisted-inject-processor-dagger2:${Version.assistedInjectVersion}"
 
-    const val circleImageView = "de.hdodenhof:circleimageview:${Version.circleImageView}"
 
     //Test dependencies
     const val junit = "junit:junit:${Version.junit}"
@@ -93,9 +100,14 @@ object Dependencies {
 
     const val constraintLayout = "androidx.constraintlayout:constraintlayout:${Version.constraintLayout}"
     const val constraint = "com.android.support.constraint:constraint-layout:${Version.constraint}"
-
     const val libPhoneNumber = "com.googlecode.libphonenumber:libphonenumber:${Version.libPhoneNumber}"
+    const val circleImageView = "de.hdodenhof:circleimageview:${Version.circleImageView}"
 
+    const val buildGradle = "com.android.tools.build:gradle:${Version.buildGradle}"
+    const val kotlinGradlePlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Version.kotlin}"
+    const val protobufGradlePlugin = "com.google.protobuf:protobuf-gradle-plugin:0.8.13"
+    const val hiltGradlePlugin = "com.google.dagger:hilt-android-gradle-plugin:${Version.hilt}"
+    const val googleService = "com.google.gms:google-services:${Version.googleService}"
     //WebRtc
     const val webRtc = "org.webrtc:google-webrtc:${Version.webRtc}"
 
@@ -127,7 +139,7 @@ object Version {
 
     const val androidUploadService = "4.7.0"
 
-    const val gson = "2.8.8"
+    const val gson = "2.9.1"
 
     const val firebaseMessaging = "23.0.6"
 
@@ -143,11 +155,12 @@ object Version {
     const val okhttp3Logging = "3.5.0"
 
     const val grpc = "1.29.0"
-    const val glide = "4.12.0"
+    const val protoParser = "4.0.3"
+    const val glide = "4.13.2"
 
-    const val glideTransformations = "4.0.0"
+    const val glideTransformations = "4.3.0"
     const val toggleImageButton = "1.2"
-    const val coroutines = "1.5.2"
+    const val coroutines = "1.6.4"
 
     const val kotlin = "1.7.0"
 
@@ -155,7 +168,6 @@ object Version {
 
     const val appCompat = "1.3.1"
     const val appCompatV7 = "28.0.0"
-
     const val materialDesign = "1.4.0"
     const val activity = "1.1.0"
     const val lifecycleLiveData = "2.2.0"
@@ -169,18 +181,20 @@ object Version {
     const val signal = "0.18.1"
 
     const val hilt = "2.43.2"
-
+    const val googleService = "4.3.13"
+    const val hiltCompilerAndroidxVersion = "1.0.0"
+    const val assistedInjectVersion = "0.8.1"
     const val circleImageView = "3.1.0"
 
     const val junit = "4.+"
     const val junitExt = "1.1.2"
     const val espresso = "3.4.0"
 
-    const val room = "2.3.0-alpha02"
+    const val room = "2.4.3"
 
-    const val constraintLayout = "1.1.3"
+    const val constraintLayout = "2.1.4"
     const val constraint = "1.0.2"
-
     const val libPhoneNumber = "8.2.0"
     const val webRtc = "1.0.20284"
+    const val buildGradle = "7.0.4"
 }

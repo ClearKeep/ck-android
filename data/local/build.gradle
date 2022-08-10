@@ -74,23 +74,20 @@ dependencies {
     testImplementation Dependencies.junit
     androidTestImplementation Dependencies.junitExt
     androidTestImplementation Dependencies.espresso
-
     implementation Dependencies.roomRuntime
     implementation Dependencies.roomKtx
     kapt Dependencies.roomCompiler
     androidTestImplementation Dependencies.roomTesting
-
-
-    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
-    implementation "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
-    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:$rootProject.assistedInjectVersion"
-    kapt "com.squareup.inject:assisted-inject-processor-dagger2:$rootProject.assistedInjectVersion"
-    implementation "com.google.dagger:hilt-android:$rootProject.hiltVersion"
-    kapt "com.google.dagger:hilt-android-compiler:$rootProject.hiltVersion"
-    kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
-
+    implementation Dependencies.dagger
+    kapt Dependencies.daggerAndroidProcessor
+    implementation Dependencies.daggerAndroidSupport
+    kapt Dependencies.daggerCompiler
+    compileOnly Dependencies.dagger2InjectAnnotation
+    kapt Dependencies.dagger2InjectProcessor
+    implementation Dependencies.hilt
+    kapt Dependencies.hiltCompiler
+    kapt Dependencies.hiltCompilerAndroidx
+    implementation Dependencies.gson
     //Signal
     implementation("org.signal:libsignal-client:$signal_version")
 

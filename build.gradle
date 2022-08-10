@@ -2,15 +2,15 @@
 buildscript {
     ext {
         kotlin_version = "1.7.0"
-        room_db_version = "2.3.0-alpha02"
+        room_db_version = "2.4.3"
         jetpack_compose_version = '1.2.0'
         signal_version = '0.18.1'
         grpcVersion = '1.29.0'
-        daggerVersion = "2.29.1"
-        assistedInjectVersion = '0.6.0'
+        daggerVersion = "2.43.2"
+        assistedInjectVersion = '0.8.1'
         hiltVersion = '2.43.2'
         hiltViewModelVersion = '1.0.0-alpha01'
-        navComposeVersion = "2.4.0-alpha10"
+        navComposeVersion = "2.5.1"
         agp_version = '7.2.1'
     }
 
@@ -21,11 +21,11 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.13'
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
-        classpath 'com.google.gms:google-services:4.3.13'
+        classpath Dependencies.buildGradle
+        classpath Dependencies.kotlinGradlePlugin
+        classpath Dependencies.protobufGradlePlugin
+        classpath Dependencies.hiltGradlePlugin
+        classpath Dependencies.googleService
     }
 }
 
