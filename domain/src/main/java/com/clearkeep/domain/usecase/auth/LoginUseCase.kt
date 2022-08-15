@@ -1,27 +1,29 @@
 package com.clearkeep.domain.usecase.auth
 
+import android.util.Log
 import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.common.utilities.decodeHex
 import com.clearkeep.common.utilities.getCurrentDateTime
-import com.clearkeep.domain.model.*
-import com.clearkeep.domain.repository.*
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
+import com.clearkeep.domain.model.*
 import com.clearkeep.domain.model.response.AuthRes
 import com.clearkeep.domain.model.response.LoginResponse
 import com.clearkeep.domain.model.response.SrpCreateAccountResponse
+import com.clearkeep.domain.repository.*
 import com.clearkeep.srp.NativeLibWrapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.IdentityKeyPair
-import org.whispersystems.libsignal.ecc.Curve
-import org.whispersystems.libsignal.ecc.ECPrivateKey
-import org.whispersystems.libsignal.ecc.ECPublicKey
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
-import org.whispersystems.libsignal.util.KeyHelper
+import org.signal.libsignal.protocol.*
+import org.signal.libsignal.protocol.ecc.Curve
+import org.signal.libsignal.protocol.ecc.ECKeyPair
+import org.signal.libsignal.protocol.ecc.ECPrivateKey
+import org.signal.libsignal.protocol.ecc.ECPublicKey
+import org.signal.libsignal.protocol.state.PreKeyBundle
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.util.KeyHelper
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(
@@ -127,25 +129,32 @@ class LoginUseCase @Inject constructor(
         val (saltHex, verificatorHex) = createAccountSrp(email, rawNewPassword)
 
         val decrypter = DecryptsPBKDF2(rawNewPassword)
-        val key = KeyHelper.generateIdentityKeyPair()
-
-        val preKeys = KeyHelper.generatePreKeys(1, 1)
-        val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
-        val transitionID = KeyHelper.generateRegistrationId(false)
-        val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+        val bobPreKey = Curve.generateKeyPair()
+        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        val registrationId = KeyHelper.generateRegistrationId(false)
+        val bobSignedPreKey: SignedPreKeyRecord = generateSignedPreKey(bobIdentityKey, (email + domain).hashCode())
+        val bobBundle = PreKeyBundle(registrationId, 111, 1, bobPreKey.publicKey, (email + domain).hashCode(), bobSignedPreKey.keyPair.publicKey, bobSignedPreKey.signature, bobIdentityKey.publicKey)
+        val preKey = bobBundle.preKey
+        val signedPreKey = generateSignedPreKey(bobIdentityKey, (email + domain).hashCode())
+        val identityKeyPublic = bobIdentityKey.publicKey.serialize()
+        val preKeyId = bobBundle.preKeyId
+        val identityKeyEncrypted = decrypter.encrypt(bobIdentityKey.privateKey.serialize(), saltHex)?.let {
             DecryptsPBKDF2.toHex(it)
         }
 
         val response = authRepository.resetPassword(
-            transitionID, key.publicKey.serialize(), preKey.serialize(), preKey.id, signedPreKey.id,
+            registrationId,
+            identityKeyPublic,
+            preKey.serialize(),
+            preKeyId,
+            signedPreKeyId = signedPreKey.id,
             signedPreKey.serialize(),
-            decryptResult,
+            identityKeyEncrypted,
             signedPreKey.signature,
-            preAccessToken,
+            preAccessToken = preAccessToken,
             email,
-            verificatorHex,
             saltHex,
+            verificatorHex,
             DecryptsPBKDF2.toHex(decrypter.getIv()),
             domain
         )
@@ -166,27 +175,29 @@ class LoginUseCase @Inject constructor(
         val (saltHex, verificatorHex) = createAccountSrp(userName, rawPin)
 
         val decrypter = DecryptsPBKDF2(rawPin)
-        val key = KeyHelper.generateIdentityKeyPair()
-
-        val preKeys = KeyHelper.generatePreKeys(1, 1)
-        val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, (userName + domain).hashCode())
-        val transitionID = KeyHelper.generateRegistrationId(false)
-        val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+        // create registrationId
+        val registrationId = KeyHelper.generateRegistrationId(false)
+        //PreKeyRecord
+        val bobPreKeyPair = Curve.generateKeyPair()
+        val preKeyRecord = PreKeyRecord(1,bobPreKeyPair)
+        //SignedPreKey
+        val signedPreKeyId = (userName + domain).hashCode()
+        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        val signedPreKey = generateSignedPreKey(bobIdentityKey, signedPreKeyId)
+        val identityKeyPublic = bobIdentityKey.publicKey.serialize()
+        //Encrypt private key
+        val identityKeyEncrypted = decrypter.encrypt(bobIdentityKey.privateKey.serialize(), saltHex)?.let {
             DecryptsPBKDF2.toHex(it)
         }
 
-        val identityKeyPublic = key.publicKey.serialize()
-        val preKeyId = preKey.id
-        val signedPreKeyId = signedPreKey.id
         val response = authRepository.registerSocialPin(
-            transitionID,
+            registrationId,
             identityKeyPublic,
-            preKey.serialize(),
-            preKeyId,
-            signedPreKeyId,
+            preKeyRecord.serialize(),
+            preKeyRecord.id,
+            signedPreKeyId = signedPreKey.id,
             signedPreKey.serialize(),
-            decryptResult,
+            identityKeyEncrypted,
             signedPreKey.signature,
             userName,
             saltHex,
@@ -199,6 +210,7 @@ class LoginUseCase @Inject constructor(
         }
         return Resource.error("", null, error = response.error)
     }
+
 
     suspend fun verifySocialPin(
         domain: String,
@@ -250,32 +262,35 @@ class LoginUseCase @Inject constructor(
 
         val salt = nativeLib.getSalt(userName, rawPin)
         val saltHex = salt.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
         val verificator = nativeLib.getVerificator()
         val verificatorHex =
             verificator.joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }
-
         nativeLib.freeMemoryCreateAccount()
-
         val decrypter = DecryptsPBKDF2(rawPin)
-        val key = KeyHelper.generateIdentityKeyPair()
 
-        val preKeys = KeyHelper.generatePreKeys(1, 1)
-        val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, (userName + domain).hashCode())
-        val transitionID = KeyHelper.generateRegistrationId(false)
-        val decryptResult = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+        // create registrationId
+        val registrationId = KeyHelper.generateRegistrationId(false)
+        //PreKeyRecord
+        val bobPreKeyPair = Curve.generateKeyPair()
+        val preKeyRecord = PreKeyRecord(1,bobPreKeyPair)
+        //SignedPreKey
+        val signedPreKeyId = (userName + domain).hashCode()
+        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        val signedPreKey = generateSignedPreKey(bobIdentityKey, signedPreKeyId)
+        val identityKeyPublic = bobIdentityKey.publicKey.serialize()
+        //Encrypt private key
+        val identityKeyEncrypted = decrypter.encrypt(bobIdentityKey.privateKey.serialize(), saltHex)?.let {
             DecryptsPBKDF2.toHex(it)
         }
 
         val response = authRepository.resetSocialPin(
-            transitionID,
-            key.publicKey.serialize(),
-            preKey.serialize(),
-            preKey.id,
-            signedPreKey.serialize(),
-            signedPreKey.id,
-            decryptResult,
+            transitionID = registrationId,
+            publicKey = identityKeyPublic,
+            preKey = preKeyRecord.serialize(),
+            preKeyId = preKeyRecord.id,
+            signedPreKey = signedPreKey.serialize(),
+            signedPreKeyId = signedPreKey.id,
+            identityKeyEncrypted,
             signedPreKey.signature,
             userName,
             resetPincodeToken,
@@ -284,6 +299,7 @@ class LoginUseCase @Inject constructor(
             DecryptsPBKDF2.toHex(decrypter.getIv()),
             domain
         )
+
         if (response.isSuccess() && response.data != null) {
             return onLoginSuccess(
                 domain,
@@ -423,4 +439,20 @@ class LoginUseCase @Inject constructor(
 
         return SrpCreateAccountResponse(saltHex, verificatorHex)
     }
+
+    private fun generateIdentityKeyPair(): IdentityKeyPair {
+        val identityKeyPairKeys = Curve.generateKeyPair()
+        return IdentityKeyPair(
+            IdentityKey(identityKeyPairKeys.publicKey),
+            identityKeyPairKeys.privateKey
+        )
+    }
+
+    @Throws(InvalidKeyException::class)
+    private fun generateSignedPreKey(identityKeyPair: IdentityKeyPair, signedPreKeyId: Int): SignedPreKeyRecord {
+        val keyPair = Curve.generateKeyPair()
+        val signature = Curve.calculateSignature(identityKeyPair.privateKey, keyPair.publicKey.serialize())
+        return SignedPreKeyRecord(signedPreKeyId, System.currentTimeMillis(), keyPair, signature)
+    }
+
 }

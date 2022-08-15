@@ -8,9 +8,9 @@ package com.clearkeep.data.local.signal.store
 import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
 import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.domain.repository.Environment
-import org.whispersystems.libsignal.InvalidKeyIdException
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyStore
+import org.signal.libsignal.protocol.InvalidKeyIdException
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyStore
 import java.io.IOException
 import java.util.*
 import javax.inject.Singleton

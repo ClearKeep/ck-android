@@ -9,14 +9,13 @@ import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.DuplicateMessageException
-import org.whispersystems.libsignal.SessionCipher
-import org.whispersystems.libsignal.groups.GroupCipher
-import org.whispersystems.libsignal.groups.GroupSessionBuilder
-import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyRecord
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage
-import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
+import org.signal.libsignal.protocol.DuplicateMessageException
+import org.signal.libsignal.protocol.SessionCipher
+import org.signal.libsignal.protocol.groups.GroupCipher
+import org.signal.libsignal.protocol.groups.GroupSessionBuilder
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
+import org.signal.libsignal.protocol.message.PreKeySignalMessage
+import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
@@ -140,19 +139,16 @@ class DecryptMessageUseCase @Inject constructor(
         }
 
         val bobGroupCipher: GroupCipher
-        val groupSender: SenderKeyName
+        val senderAddress: CKSignalProtocolAddress
         if (sender.clientId == owner.clientId) {
-            val senderAddress = CKSignalProtocolAddress(sender, 111)
-            groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            senderAddress = CKSignalProtocolAddress(sender, groupId, SENDER_DEVICE_ID)
+            bobGroupCipher = GroupCipher(senderKeyStore, senderAddress)
         } else {
-            val senderAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
-            groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            senderAddress = CKSignalProtocolAddress(sender, groupId, RECEIVER_DEVICE_ID)
+            bobGroupCipher = GroupCipher(senderKeyStore, senderAddress)
         }
-
         initSessionUserInGroup(
-            groupId, sender.clientId, groupSender, senderKeyStore, false, owner
+            groupId, sender.clientId, senderAddress, senderKeyStore, false, owner
         )
 
         val plaintextFromAlice = try {
@@ -162,7 +158,7 @@ class DecryptMessageUseCase @Inject constructor(
             throw messageEx
         } catch (e: Exception) {
                         val initSessionAgain = initSessionUserInGroup(
-               groupId, sender.clientId, groupSender, senderKeyStore, true, owner
+               groupId, sender.clientId, senderAddress, senderKeyStore, true, owner
             )
             if (!initSessionAgain) {
                 throw java.lang.Exception("can not init session in group $groupId")
@@ -172,7 +168,6 @@ class DecryptMessageUseCase @Inject constructor(
         }
         return@withContext String(plaintextFromAlice, StandardCharsets.UTF_8)
     }
-
     @Throws(java.lang.Exception::class, DuplicateMessageException::class)
     private suspend fun decryptPeerMessage(
         sender: Owner, message: ByteString,
@@ -181,9 +176,9 @@ class DecryptMessageUseCase @Inject constructor(
             return@withContext ""
         }
 
-        val signalProtocolAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
+        val signalProtocolAddress = CKSignalProtocolAddress(sender,null, RECEIVER_DEVICE_ID)
+        Log.d("antx: ", "DecryptMessageUseCase decryptPeerMessage line = 185: $signalProtocolAddress" );
         val preKeyMessage = PreKeySignalMessage(message.toByteArray())
-
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
         val message = sessionCipher.decrypt(preKeyMessage)
         return@withContext String(message, StandardCharsets.UTF_8)
@@ -191,23 +186,22 @@ class DecryptMessageUseCase @Inject constructor(
 
     private suspend fun initSessionUserInGroup(
         groupId: Long, fromClientId: String,
-        groupSender: SenderKeyName,
+        groupSender: CKSignalProtocolAddress,
         senderKeyStore: SenderKeyStore,
         isForceProcess: Boolean,
         owner: Owner
     ): Boolean {
-        val senderKeyRecord: SenderKeyRecord = signalKeyRepository.loadSenderKey(groupSender)
-        if (senderKeyRecord.isEmpty || isForceProcess) {
+        val senderKeyRecord: SenderKeyRecord? = signalKeyRepository.loadSenderKey(groupSender)
+        if (senderKeyRecord == null || isForceProcess) {
             val server = serverRepository.getServerByOwner(owner)
             if (server == null) {
                 printlnCK("initSessionUserInGroup: server must be not null")
                 return false
             }
-            printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} $fromClientId")
             val senderKeyDistribution =
                 signalKeyRepository.getGroupClientKey(server, groupId, fromClientId)
             if (senderKeyDistribution != null) {
-                printlnCK("")
+                printlnCK("process key")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution)
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)

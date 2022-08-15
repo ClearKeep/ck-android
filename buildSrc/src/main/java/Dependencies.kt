@@ -67,7 +67,7 @@ object Dependencies {
     const val composeUiTooling = "androidx.compose.ui:ui-tooling:${Version.jetpackCompose}"
 
     //Signal
-    const val signal = "org.whispersystems:signal-protocol-android:${Version.signal}"
+    const val signal = "org.signal:libsignal-client:${Version.signal}"
 
     //Hilt
     const val hilt = "com.google.dagger:hilt-android:${Version.hilt}"
@@ -148,7 +148,7 @@ object Version {
 
     const val jetpackComposeNav = "2.4.0-alpha10"
     const val composeConstraintLayout = "1.0.0-rc01"
-    const val signal = "2.8.1"
+    const val signal = "0.18.1"
 
     const val hilt = "2.38.1"
 

@@ -92,9 +92,7 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
 
     //Signal
-    implementation("org.whispersystems:signal-protocol-android:$signal_version") {
-        exclude group: 'com.google.protobuf', module: 'protobuf-java'
-    }
+    implementation("org.signal:libsignal-client:$signal_version")
 
     implementation 'com.google.code.gson:gson:2.8.8'
 }

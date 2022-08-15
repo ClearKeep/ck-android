@@ -6,23 +6,28 @@ import com.clearkeep.common.utilities.SENDER_DEVICE_ID
 import com.clearkeep.common.utilities.getCurrentDateTime
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
-import org.whispersystems.libsignal.SessionCipher
-import org.whispersystems.libsignal.protocol.CiphertextMessage
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Message
-import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.response.MessageObjectResponse
 import com.clearkeep.domain.repository.*
+import com.clearkeep.domain.usecase.auth.AuthenticationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.SessionBuilder
-import org.whispersystems.libsignal.groups.GroupCipher
-import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.state.PreKeyBundle
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
-import java.lang.Exception
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.SessionBuilder
+import org.signal.libsignal.protocol.SessionCipher
+import org.signal.libsignal.protocol.ecc.Curve
+import org.signal.libsignal.protocol.ecc.ECKeyPair
+import org.signal.libsignal.protocol.ecc.ECPrivateKey
+import org.signal.libsignal.protocol.ecc.ECPublicKey
+import org.signal.libsignal.protocol.groups.GroupCipher
+import org.signal.libsignal.protocol.groups.state.InMemorySenderKeyStore
+import org.signal.libsignal.protocol.message.CiphertextMessage
+import org.signal.libsignal.protocol.state.PreKeyBundle
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import java.util.*
 import javax.inject.Inject
 
 class SendMessageUseCase @Inject constructor(
@@ -57,20 +62,20 @@ class SendMessageUseCase @Inject constructor(
 
         val signalProtocolAddress =
             CKSignalProtocolAddress(
-                Owner(receiverWorkspaceDomain, receiverId),
+                Owner(receiverWorkspaceDomain, receiverId),groupId,
                 SENDER_DEVICE_ID
             )
 
         if (isForceProcessKey || !signalProtocolStore.containsSession(signalProtocolAddress)) {
             val processSuccess =
-                processPeerKey(receiverId, receiverWorkspaceDomain, senderId, ownerWorkSpace)
+                processPeerKey(receiverId, receiverWorkspaceDomain, senderId, ownerWorkSpace,groupId)
             if (!processSuccess) {
                 printlnCK("sendMessageInPeer, init session failed with message \"$plainMessage\"")
                 return Resource.error("init session failed", null)
             }
         }
         val signalProtocolAddressPublishRequest =
-            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), groupId,SENDER_DEVICE_ID)
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
         val message: CiphertextMessage =
             sessionCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
@@ -107,13 +112,13 @@ class SendMessageUseCase @Inject constructor(
     ): Resource<Nothing> =
         withContext(Dispatchers.IO) {
             val senderAddress =
-                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
-            println("toGroup sender address init ok")
-            val groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            printlnCK("toGroup: senderAddress : $senderAddress  groupSender: ${groupSender.groupId}")
-            val aliceGroupCipher = GroupCipher(senderKeyStore, groupSender)
-            val ciphertextFromAlice: ByteArray =
-                aliceGroupCipher.encrypt(plainMessage.toByteArray(charset("UTF-8")))
+                CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId),groupId, SENDER_DEVICE_ID)
+            println("toGroup sender address init ok senderId: $senderId")
+            val distributionId = AuthenticationHelper.getUUID(senderAddress.groupId.toString(), senderId)
+            val aliceGroupCipher = GroupCipher(senderKeyStore, senderAddress)
+            Log.d("antx: ", "SendMessageUseCase toGroup line = 119:distributionId: $distributionId " );
+            val ciphertextFromAlice: CiphertextMessage =
+                aliceGroupCipher.encrypt(distributionId,plainMessage.toByteArray(charset("UTF-8")))
             printlnCK("toGroup: encrypt ok")
             val server = serverRepository.getServerByOwner(
                 Owner(
@@ -128,10 +133,9 @@ class SendMessageUseCase @Inject constructor(
             }
 
             val response = messageRepository.sendMessageToGroup(
-                server,
-                userRepository.getUniqueDeviceID(),
+                server, userRepository.getUniqueDeviceID(),
                 groupId,
-                ciphertextFromAlice
+                ciphertextFromAlice.serialize()
             )
             printlnCK("toGroup: send message to server ok")
 
@@ -175,17 +179,18 @@ class SendMessageUseCase @Inject constructor(
         receiverId: String,
         receiverWorkspaceDomain: String,
         senderId: String,
-        ownerWorkSpace: String
+        ownerWorkSpace: String,
+        groupId:Long
     ): Boolean {
         val signalProtocolAddress =
             CKSignalProtocolAddress(
                 Owner(
                     receiverWorkspaceDomain,
                     receiverId
-                ), SENDER_DEVICE_ID
+                ), groupId,SENDER_DEVICE_ID
             )
         val signalProtocolAddress2 =
-            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId),groupId, SENDER_DEVICE_ID)
         initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,

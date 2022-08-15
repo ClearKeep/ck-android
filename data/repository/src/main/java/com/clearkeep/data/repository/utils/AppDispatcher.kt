@@ -1,4 +1,4 @@
-package com.clearkeep.data.repository
+package com.clearkeep.data.repository.utils
 
 import kotlinx.coroutines.CoroutineDispatcher
 

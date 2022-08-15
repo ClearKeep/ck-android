@@ -1,5 +1,6 @@
 package com.clearkeep.domain.repository
 
-import org.whispersystems.libsignal.state.SignalProtocolStore
+import org.signal.libsignal.protocol.state.SignalProtocolStore
+
 
 interface SignalProtocolStore: SignalProtocolStore

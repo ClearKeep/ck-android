@@ -33,9 +33,7 @@ dependencies {
     implementation Dependencies.lifecycleExtensions
 
     //Signal
-    implementation(Dependencies.signal) {
-        exclude group: 'com.google.protobuf', module: 'protobuf-java'
-    }
+    implementation(Dependencies.signal)
 
     implementation Dependencies.androidUploadService
 }

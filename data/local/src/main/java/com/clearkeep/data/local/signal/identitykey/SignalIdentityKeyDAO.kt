@@ -2,7 +2,6 @@ package com.clearkeep.data.local.signal.identitykey
 
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
-import com.clearkeep.data.local.signal.model.SignalIdentityKeyLocal
 
 @Dao
 interface SignalIdentityKeyDAO {

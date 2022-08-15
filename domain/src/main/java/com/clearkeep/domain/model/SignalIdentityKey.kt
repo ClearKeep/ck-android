@@ -1,6 +1,7 @@
 package com.clearkeep.domain.model
 
-import org.whispersystems.libsignal.IdentityKeyPair
+import org.signal.libsignal.protocol.IdentityKeyPair
+
 
 data class SignalIdentityKey(
     val identityKeyPair: IdentityKeyPair,

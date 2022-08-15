@@ -8,7 +8,6 @@ import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.groups.SenderKeyName
 import javax.inject.Inject
 
 class LeaveGroupUseCase @Inject constructor(
@@ -20,22 +19,18 @@ class LeaveGroupUseCase @Inject constructor(
 
         if (response.isEmpty()) {
             groupRepository.getListClientInGroup(groupId, owner.domain)?.forEach {
-                val senderAddress2 = CKSignalProtocolAddress(
-                    Owner(
-                        owner.domain,
-                        it
-                    ), RECEIVER_DEVICE_ID
+                val addressReceiver = CKSignalProtocolAddress(
+                    Owner(owner.domain, it),
+                    groupId,
+                    RECEIVER_DEVICE_ID
                 )
-                val senderAddress1 = CKSignalProtocolAddress(
-                    Owner(
-                        owner.domain,
-                        it
-                    ), SENDER_DEVICE_ID
+                val addressSender = CKSignalProtocolAddress(
+                    Owner(owner.domain, it),
+                    groupId,
+                    SENDER_DEVICE_ID
                 )
-                val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
-                val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
-                signalKeyRepository.deleteGroupSenderKey(groupSender2)
-                signalKeyRepository.deleteGroupSenderKey(groupSender)
+                signalKeyRepository.deleteGroupSenderKey(addressReceiver)
+                signalKeyRepository.deleteGroupSenderKey(addressSender)
             }
             groupRepository.deleteGroup(groupId, owner.domain, owner.clientId)
             return@withContext true

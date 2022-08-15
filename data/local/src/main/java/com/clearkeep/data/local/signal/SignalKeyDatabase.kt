@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
 import com.clearkeep.data.local.signal.senderkey.SignalKeyDAO
 import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
-import com.clearkeep.data.local.signal.model.SignalIdentityKeyLocal
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyLocal
 import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.data.local.signal.senderkey.SignalSenderKey
 

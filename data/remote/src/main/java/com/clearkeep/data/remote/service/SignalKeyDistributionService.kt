@@ -7,15 +7,16 @@ import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.ecc.ECKeyPair
-import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
+import org.signal.libsignal.protocol.ecc.ECKeyPair
+import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage
 import signal.Signal
 import javax.inject.Inject
 
 class SignalKeyDistributionService @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
 ) {
-    suspend fun groupRegisterClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?, key: ECKeyPair, senderKeyId: Int, senderKey: ByteArray) = withContext(Dispatchers.IO) {
+    suspend fun groupRegisterClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?,
+                                       key: ECKeyPair?, senderKeyId: Int?, senderKey: ByteArray?) = withContext(Dispatchers.IO) {
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
@@ -23,8 +24,8 @@ class SignalKeyDistributionService @Inject constructor(
             .setGroupId(groupId)
             .setClientKeyDistribution(ByteString.copyFrom(clientKeyDistribution.serialize()))
             .setPrivateKey(DecryptsPBKDF2.toHex(encryptedGroupPrivateKey!!))
-            .setPublicKey(ByteString.copyFrom(key.publicKey.serialize()))
-            .setSenderKeyId(senderKeyId.toLong())
+            .setPublicKey(ByteString.copyFrom(key?.publicKey?.serialize()))
+            .setSenderKeyId(senderKeyId?.toLong()?:0L)
             .setSenderKey(ByteString.copyFrom(senderKey))
             .build()
 

@@ -5,9 +5,11 @@
  */
 package com.clearkeep.data.local.signal.store
 
-import org.whispersystems.libsignal.SignalProtocolAddress
-import org.whispersystems.libsignal.state.SessionRecord
-import org.whispersystems.libsignal.state.SessionStore
+import org.signal.libsignal.protocol.InvalidMessageException
+import org.signal.libsignal.protocol.NoSessionException
+import org.signal.libsignal.protocol.SignalProtocolAddress
+import org.signal.libsignal.protocol.state.SessionRecord
+import org.signal.libsignal.protocol.state.SessionStore
 import java.io.IOException
 import java.util.*
 import javax.inject.Singleton
@@ -27,6 +29,19 @@ class InMemorySessionStore : SessionStore, Closeable {
         } catch (e: IOException) {
             throw AssertionError(e)
         }
+    }
+
+    override fun loadExistingSessions(addresses: MutableList<SignalProtocolAddress>?): MutableList<SessionRecord> {
+        val resultSessions: MutableList<SessionRecord> = LinkedList()
+        for (remoteAddress in addresses!!) {
+            val serialized = sessions[remoteAddress] ?: throw NoSessionException("no session for $remoteAddress")
+            try {
+                resultSessions.add(SessionRecord(serialized))
+            } catch (e: InvalidMessageException) {
+                throw java.lang.AssertionError(e)
+            }
+        }
+        return resultSessions
     }
 
     @Synchronized

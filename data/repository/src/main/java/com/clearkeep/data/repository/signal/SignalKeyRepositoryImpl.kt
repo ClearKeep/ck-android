@@ -1,14 +1,14 @@
 package com.clearkeep.data.repository.signal
 
-import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
-import com.clearkeep.data.remote.service.SignalKeyDistributionService
-import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
-import com.clearkeep.data.local.signal.senderkey.SignalKeyDAO
-import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
-import com.clearkeep.domain.repository.SignalKeyRepository
+import android.util.Log
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.data.local.signal.model.toLocal
+import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
+import com.clearkeep.data.local.signal.identitykey.toLocal
+import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
+import com.clearkeep.data.local.signal.senderkey.SignalKeyDAO
+import com.clearkeep.data.remote.service.SignalKeyDistributionService
 import com.clearkeep.data.repository.userkey.toModel
 import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.*
@@ -16,13 +16,15 @@ import com.clearkeep.domain.model.response.GroupClientKeyObject
 import com.clearkeep.domain.model.response.GroupGetClientKeyResponse
 import com.clearkeep.domain.model.response.PeerGetClientKeyResponse
 import com.clearkeep.domain.repository.SenderKeyStore
+import com.clearkeep.domain.repository.SignalKeyRepository
+import com.clearkeep.domain.usecase.auth.AuthenticationHelper.Companion.getUUID
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.ecc.ECKeyPair
-import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyRecord
-import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
+import org.signal.libsignal.protocol.ecc.ECKeyPair
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
+import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage
+import java.util.*
 import javax.inject.Inject
 
 class SignalKeyRepositoryImpl @Inject constructor(
@@ -54,31 +56,39 @@ class SignalKeyRepositoryImpl @Inject constructor(
             signalPreKeyDAO.deleteSignalSenderKey(domain = domain, userId = clientId)
         }
 
-    override suspend fun deleteGroupSenderKey(senderKeyName: SenderKeyName) =
-        withContext(Dispatchers.IO) {
+    override suspend fun deleteGroupSenderKey(senderKeyName: CKSignalProtocolAddress) {
+        withContext(Dispatchers.IO){
             senderKeyStore.deleteSenderKey(senderKeyName)
         }
+    }
 
     override suspend fun deleteGroupSenderKey(groupId: String, groupSender: String): Unit =
         withContext(Dispatchers.IO) {
-            signalKeyDAO.deleteSignalSenderKey(groupId, groupSender)
+            printlnCK("deleteGroupSenderKey: groupId $groupId groupSender: $groupSender")
+            signalKeyDAO.deleteSignalSenderKey(groupSender)
         }
 
-    override suspend fun hasSenderKey(senderKeyName: SenderKeyName): Boolean =
+    override suspend fun hasSenderKey(senderKeyName: CKSignalProtocolAddress): Boolean =
         withContext(Dispatchers.IO) {
-            printlnCK("SignalKeyRepositoryImpl hasSenderKey ${senderKeyName.serialize()}")
+            printlnCK("SignalKeyRepositoryImpl hasSenderKey ${senderKeyName.name}")
             return@withContext senderKeyStore.hasSenderKey(senderKeyName)
         }
 
-    override suspend fun storeSenderKey(senderKeyName: SenderKeyName, record: SenderKeyRecord) =
+    override suspend fun storeSenderKey(senderKeyName: CKSignalProtocolAddress, record: SenderKeyRecord) =
         withContext(Dispatchers.IO) {
-            printlnCK("SignalKeyRepositoryImpl storeSenderKey ${senderKeyName.serialize()}")
-            senderKeyStore.storeSenderKey(senderKeyName, record)
+            printlnCK("SignalKeyRepositoryImpl storeSenderKey name: ${senderKeyName.name}")
+            senderKeyStore.storeSenderKey(
+                senderKeyName, getUUID(
+                    groupId = senderKeyName.groupId.toString(),
+                    senderKeyName.owner.clientId
+                ),
+                record
+            )
         }
 
-    override suspend fun loadSenderKey(senderKeyName: SenderKeyName): SenderKeyRecord =
+    override suspend fun loadSenderKey(senderKeyName: CKSignalProtocolAddress): SenderKeyRecord? =
         withContext(Dispatchers.IO) {
-            return@withContext senderKeyStore.loadSenderKey(senderKeyName)
+            return@withContext senderKeyStore.loadSenderKey(senderKeyName,getUUID(senderKeyName.groupId.toString(),senderKeyName.owner.clientId))
         }
 
     override suspend fun getUserKey(serverDomain: String, userId: String): UserKey =
@@ -97,9 +107,9 @@ class SignalKeyRepositoryImpl @Inject constructor(
         groupId: Long,
         clientKeyDistribution: SenderKeyDistributionMessage,
         encryptedGroupPrivateKey: ByteArray?,
-        key: ECKeyPair,
-        senderKeyId: Int,
-        senderKey: ByteArray
+        key: ECKeyPair?,
+        senderKeyId: Int?,
+        senderKey: ByteArray?
     ): Resource<Any> =
         withContext(Dispatchers.IO) {
             try {
@@ -168,6 +178,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
         return@withContext try {
             val rawResponse =
                 signalKeyDistributionService.getPeerClientKey(server, clientId, domain)
+            Log.d("antx: ", "SignalKeyRepositoryImpl getPeerClientKey line = 169: ");
             rawResponse.run {
                 PeerGetClientKeyResponse(
                     clientId,

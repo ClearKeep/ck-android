@@ -5,12 +5,13 @@
  */
 package com.clearkeep.data.local.signal.store
 
+import android.util.Log
 import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
 import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.domain.repository.Environment
-import org.whispersystems.libsignal.InvalidKeyIdException
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.PreKeyStore
+import org.signal.libsignal.protocol.InvalidKeyIdException
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.PreKeyStore
 import java.io.IOException
 import java.util.*
 import javax.inject.Singleton
@@ -33,7 +34,7 @@ class InMemoryPreKeyStore(
                     preKeyId,
                     server.serverDomain,
                     server.profile.userId
-                )?.preKeyRecord ?: null
+                )?.preKeyRecord
                 if (record != null) {
                     store[index] = record
                 }
@@ -42,6 +43,7 @@ class InMemoryPreKeyStore(
             if (record == null) {
                 throw InvalidKeyIdException("CKLog_InMemoryPreKeyStore, No such prekeyrecord for $preKeyId")
             }
+            Log.d("antx: ", "InMemoryPreKeyStore loadPreKey line = 45:$record $preKeyId" );
             PreKeyRecord(record)
         } catch (e: IOException) {
             throw AssertionError(e)

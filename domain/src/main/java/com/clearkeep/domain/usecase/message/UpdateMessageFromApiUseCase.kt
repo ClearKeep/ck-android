@@ -9,15 +9,15 @@ import com.clearkeep.domain.repository.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.DuplicateMessageException
-import org.whispersystems.libsignal.SessionCipher
-import org.whispersystems.libsignal.groups.GroupCipher
-import org.whispersystems.libsignal.groups.GroupSessionBuilder
-import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyRecord
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage
-import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
+import org.signal.libsignal.protocol.DuplicateMessageException
+import org.signal.libsignal.protocol.SessionCipher
+import org.signal.libsignal.protocol.groups.GroupCipher
+import org.signal.libsignal.protocol.groups.GroupSessionBuilder
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
+import org.signal.libsignal.protocol.message.PreKeySignalMessage
+import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.inject.Inject
 
 class UpdateMessageFromApiUseCase @Inject constructor(
@@ -122,7 +122,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
                     decryptPeerMessage(sender, encryptedMessage)
                 }
             } else {
-                Log.d("antx: ", "UpdateMessageFromApiUseCase decryptMessage line = 125:decryptGroupMessage " );
+                Log.d("antx: ", "UpdateMessageFromApiUseCase decryptMessage line = 125:decryptGroupMessage: ${sender.clientId} ");
                 decryptGroupMessage(
                     sender,
                     groupId,
@@ -203,19 +203,16 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         }
 
         val bobGroupCipher: GroupCipher
-        val groupSender: SenderKeyName
+        val senderAddress: CKSignalProtocolAddress
         if (sender.clientId == owner.clientId) {
-            val senderAddress = CKSignalProtocolAddress(sender, SENDER_DEVICE_ID)
-            groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            senderAddress = CKSignalProtocolAddress(sender, groupId, SENDER_DEVICE_ID)
+            bobGroupCipher = GroupCipher(senderKeyStore, senderAddress)
         } else {
-            val senderAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
-            groupSender = SenderKeyName(groupId.toString(), senderAddress)
-            bobGroupCipher = GroupCipher(senderKeyStore, groupSender)
+            senderAddress = CKSignalProtocolAddress(sender, groupId, RECEIVER_DEVICE_ID)
+            bobGroupCipher = GroupCipher(senderKeyStore, senderAddress)
         }
-
         initSessionUserInGroup(
-            groupId, sender.clientId, groupSender, senderKeyStore, false, owner
+            groupId, sender.clientId, senderKeyStore, senderAddress, false, owner
         )
 
         val plaintextFromAlice = try {
@@ -225,8 +222,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
         } catch (ex: Exception) {
             printlnCK("decryptGroupMessage, $ex")
             val initSessionAgain = initSessionUserInGroup(
-                groupId, sender.clientId, groupSender, senderKeyStore, true, owner
-            )
+                groupId, sender.clientId, senderKeyStore, senderAddress,true, owner)
             if (!initSessionAgain) {
                 throw java.lang.Exception("can not init session in group $groupId")
             }
@@ -248,7 +244,7 @@ class UpdateMessageFromApiUseCase @Inject constructor(
             return@withContext ""
         }
 
-        val signalProtocolAddress = CKSignalProtocolAddress(sender, RECEIVER_DEVICE_ID)
+        val signalProtocolAddress = CKSignalProtocolAddress(sender, null, RECEIVER_DEVICE_ID)
         val preKeyMessage = PreKeySignalMessage(message)
 
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
@@ -307,29 +303,27 @@ class UpdateMessageFromApiUseCase @Inject constructor(
 
     private suspend fun initSessionUserInGroup(
         groupId: Long, fromClientId: String,
-        groupSender: SenderKeyName,
         senderKeyStore: SenderKeyStore,
+        senderAddress:CKSignalProtocolAddress,
         isForceProcess: Boolean,
         owner: Owner
     ): Boolean {
-        val senderKeyRecord: SenderKeyRecord = signalKeyRepository.loadSenderKey(groupSender)
-        if (senderKeyRecord.isEmpty || isForceProcess) {
+        val senderKeyRecord: SenderKeyRecord? = signalKeyRepository.loadSenderKey(senderAddress)
+        if (senderKeyRecord == null || isForceProcess) {
+            Log.d("antx: ", "UpdateMessageFromApiUseCase initSessionUserInGroup line = 315:${owner} " );
             val server = serverRepository.getServerByOwner(owner)
             if (server == null) {
-                printlnCK("initSessionUserInGroup: server must be not null")
                 return false
             }
             val senderKeyDistribution =
                 signalKeyRepository.getGroupClientKey(server, groupId, fromClientId)
-            printlnCK("initSessionUserInGroup, process new session: group id = $groupId, server = ${server.serverDomain} ${senderKeyDistribution != null}")
 
             if (senderKeyDistribution != null) {
                 printlnCK("")
                 val receivedAliceDistributionMessage =
                     SenderKeyDistributionMessage(senderKeyDistribution.clientKey.clientKeyDistribution)
-                Log.d("antx: ", "UpdateMessageFromApiUseCase initSessionUserInGroup line = 327:groupId ${groupId} ${senderKeyDistribution.clientKey.clientKeyDistribution} " );
                 val bobSessionBuilder = GroupSessionBuilder(senderKeyStore)
-                bobSessionBuilder.process(groupSender, receivedAliceDistributionMessage)
+                bobSessionBuilder.process(senderAddress, receivedAliceDistributionMessage)
             } else {
                 return false
             }

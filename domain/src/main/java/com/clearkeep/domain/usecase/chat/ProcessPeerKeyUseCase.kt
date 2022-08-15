@@ -10,11 +10,11 @@ import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.domain.repository.SignalProtocolStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.SessionBuilder
-import org.whispersystems.libsignal.state.PreKeyBundle
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.SessionBuilder
+import org.signal.libsignal.protocol.state.PreKeyBundle
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import java.lang.Exception
 import javax.inject.Inject
 
@@ -34,10 +34,10 @@ class ProcessPeerKeyUseCase @Inject constructor(
                 Owner(
                     receiverWorkspaceDomain,
                     receiverId
-                ), SENDER_DEVICE_ID
+                ), null,SENDER_DEVICE_ID
             )
         val signalProtocolAddress2 =
-            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId), SENDER_DEVICE_ID)
+            CKSignalProtocolAddress(Owner(ownerWorkSpace, senderId),null, SENDER_DEVICE_ID)
         initSessionUserPeer(
             signalProtocolAddress2,
             signalProtocolStore,

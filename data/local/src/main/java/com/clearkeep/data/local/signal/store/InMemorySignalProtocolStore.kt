@@ -10,14 +10,17 @@ import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
 import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
 import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.repository.SignalProtocolStore
-import org.whispersystems.libsignal.IdentityKeyPair
-import org.whispersystems.libsignal.SignalProtocolAddress
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.state.IdentityKeyStore
-import org.whispersystems.libsignal.InvalidKeyIdException
-import org.whispersystems.libsignal.state.PreKeyRecord
-import org.whispersystems.libsignal.state.SessionRecord
-import org.whispersystems.libsignal.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.IdentityKeyPair
+import org.signal.libsignal.protocol.InvalidKeyIdException
+import org.signal.libsignal.protocol.SignalProtocolAddress
+import org.signal.libsignal.protocol.groups.state.InMemorySenderKeyStore
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
+import org.signal.libsignal.protocol.state.IdentityKeyStore
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SessionRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,14 +31,14 @@ class InMemorySignalProtocolStore @Inject constructor(
     environment: Environment
 ) : SignalProtocolStore, Closeable {
     private val preKeyStore: InMemoryPreKeyStore = InMemoryPreKeyStore(preKeyDAO, environment)
-
     private val sessionStore: InMemorySessionStore = InMemorySessionStore()
-
     private val signedPreKeyStore: InMemorySignedPreKeyStore =
         InMemorySignedPreKeyStore(preKeyDAO, environment)
 
     private val identityKeyStore: InMemoryIdentityKeyStore =
         InMemoryIdentityKeyStore(signalIdentityKeyDAO, environment)
+    private val senderKeyStore = InMemorySenderKeyStore()
+
 
     @WorkerThread
     override fun getIdentityKeyPair(): IdentityKeyPair {
@@ -84,6 +87,10 @@ class InMemorySignalProtocolStore @Inject constructor(
         return sessionStore.loadSession(address)
     }
 
+    override fun loadExistingSessions(addresses: MutableList<SignalProtocolAddress>?): MutableList<SessionRecord> {
+        return sessionStore.loadExistingSessions(addresses)
+    }
+
     override fun getSubDeviceSessions(name: String): List<Int> {
         return sessionStore.getSubDeviceSessions(name)
     }
@@ -123,6 +130,14 @@ class InMemorySignalProtocolStore @Inject constructor(
 
     override fun removeSignedPreKey(signedPreKeyId: Int) {
         signedPreKeyStore.removeSignedPreKey(signedPreKeyId)
+    }
+
+    override fun storeSenderKey(sender: SignalProtocolAddress?, distributionId: UUID?, record: SenderKeyRecord?) {
+        senderKeyStore.storeSenderKey(sender, distributionId, record)
+    }
+
+    override fun loadSenderKey(sender: SignalProtocolAddress?, distributionId: UUID?): SenderKeyRecord {
+        return senderKeyStore.loadSenderKey(sender, distributionId)
     }
 
     override fun clear() {

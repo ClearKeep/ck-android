@@ -29,7 +29,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.whispersystems.libsignal.groups.SenderKeyName
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import java.util.HashMap
@@ -260,18 +259,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                             Owner(
                                 clientDomain,
                                 it
-                            ), RECEIVER_DEVICE_ID
+                            ),groupId, RECEIVER_DEVICE_ID
                         )
                         val senderAddress1 = CKSignalProtocolAddress(
                             Owner(
                                 clientDomain,
                                 it
-                            ), SENDER_DEVICE_ID
+                            ), groupId,SENDER_DEVICE_ID
                         )
-                        val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
-                        val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
-                        senderKeyStore.deleteSenderKey(groupSender2)
-                        senderKeyStore.deleteSenderKey(groupSender)
+                        senderKeyStore.deleteSenderKey(senderAddress2)
+                        senderKeyStore.deleteSenderKey(senderAddress1)
                     }
                     deleteGroupUseCase(groupId, clientDomain, removedMember)
                 } else {
@@ -280,19 +277,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         Owner(
                             clientDomain,
                             removedMember
-                        ), RECEIVER_DEVICE_ID
+                        ), groupId,RECEIVER_DEVICE_ID
                     )
                     val senderAddress1 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,
                             removedMember
-                        ), SENDER_DEVICE_ID
+                        ), groupId,SENDER_DEVICE_ID
                     )
-                    val groupSender2 = SenderKeyName(groupId.toString(), senderAddress2)
-                    val groupSender = SenderKeyName(groupId.toString(), senderAddress1)
-                    senderKeyStore.deleteSenderKey(groupSender2)
-                    senderKeyStore.deleteSenderKey(groupSender)
-                    signalKeyRepository.deleteGroupSenderKey(groupSender.groupId, groupSender.sender.name)
+
+                    senderKeyStore.deleteSenderKey(senderAddress2)
+                    senderKeyStore.deleteSenderKey(senderAddress1)
+                    signalKeyRepository.deleteGroupSenderKey(groupId.toString(), senderAddress1.name)
+                    signalKeyRepository.deleteGroupSenderKey(groupId.toString(), senderAddress2.name)
 
                 }
 

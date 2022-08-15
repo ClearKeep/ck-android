@@ -1,10 +1,11 @@
 package com.clearkeep.domain.repository
 
-import org.whispersystems.libsignal.groups.SenderKeyName
-import org.whispersystems.libsignal.groups.state.SenderKeyStore
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import org.signal.libsignal.protocol.groups.state.SenderKeyStore
+
 
 interface SenderKeyStore: SenderKeyStore {
-    fun hasSenderKey(senderKeyName: SenderKeyName): Boolean
-    suspend fun deleteSenderKey(senderKeyName: SenderKeyName)
+    fun hasSenderKey(senderKeyName: CKSignalProtocolAddress): Boolean
+    suspend fun deleteSenderKey(senderKeyName: CKSignalProtocolAddress)
     suspend fun getAllSenderKey()
 }

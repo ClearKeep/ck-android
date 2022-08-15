@@ -1,9 +1,9 @@
-package com.clearkeep.data.local.signal.model
+package com.clearkeep.data.local.signal.identitykey
 
 import android.util.Base64
 import androidx.room.*
 import com.clearkeep.domain.model.SignalIdentityKey
-import org.whispersystems.libsignal.IdentityKeyPair
+import org.signal.libsignal.protocol.IdentityKeyPair
 
 @Entity(tableName = "SignalIdentityKey")
 @TypeConverters(SignalIdentityKeyPairConverter::class)

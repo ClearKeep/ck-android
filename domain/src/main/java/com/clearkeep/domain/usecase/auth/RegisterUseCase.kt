@@ -4,7 +4,13 @@ import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.domain.repository.AuthRepository
 import com.clearkeep.srp.NativeLibWrapper
-import org.whispersystems.libsignal.util.KeyHelper
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.IdentityKeyPair
+import org.signal.libsignal.protocol.InvalidKeyException
+import org.signal.libsignal.protocol.ecc.Curve
+import org.signal.libsignal.protocol.state.PreKeyRecord
+import org.signal.libsignal.protocol.state.SignedPreKeyRecord
+import org.signal.libsignal.protocol.util.KeyHelper
 import javax.inject.Inject
 
 class RegisterUseCase @Inject constructor(private val authRepository: AuthRepository) {
@@ -26,33 +32,53 @@ class RegisterUseCase @Inject constructor(private val authRepository: AuthReposi
         nativeLib.freeMemoryCreateAccount()
 
         val decrypter = DecryptsPBKDF2(password)
-        val key = KeyHelper.generateIdentityKeyPair()
-        val preKeys = KeyHelper.generatePreKeys(1, 1)
-        val preKey = preKeys[0]
-        val signedPreKey = KeyHelper.generateSignedPreKey(key, (email + domain).hashCode())
-        val transitionID = KeyHelper.generateRegistrationId(false)
-        val identityKeyPublic = key.publicKey.serialize()
-        val preKeyId = preKey.id
-        val identityKeyEncrypted = decrypter.encrypt(key.privateKey.serialize(), saltHex)?.let {
+
+        // create registrationId
+        val registrationId = KeyHelper.generateRegistrationId(false)
+        //PreKeyRecord
+        val bobPreKeyPair = Curve.generateKeyPair()
+        val preKeyRecord = PreKeyRecord(1, bobPreKeyPair)
+        //SignedPreKey
+        val signedPreKeyId = (email + domain).hashCode()
+        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        val signedPreKey = generateSignedPreKey(bobIdentityKey, signedPreKeyId)
+        val identityPublicKey = bobIdentityKey.publicKey.serialize()
+        //Encrypt private key
+        val identityKeyEncrypted = decrypter.encrypt(bobIdentityKey.privateKey.serialize(), saltHex)?.let {
             DecryptsPBKDF2.toHex(it)
         }
         val iv = DecryptsPBKDF2.toHex(decrypter.getIv())
-
         return authRepository.register(
-            domain,
-            email,
-            verificatorHex,
-            saltHex,
-            displayName,
-            iv,
-            transitionID,
-            identityKeyPublic,
-            preKeyId,
-            preKey.serialize(),
-            signedPreKey.id,
-            signedPreKey.serialize(),
-            identityKeyEncrypted,
-            signedPreKey.signature
+            domain = domain,
+            email = email,
+            verificatorHex = verificatorHex,
+            saltHex = saltHex,
+            displayName = displayName,
+            iv = iv,
+            transitionID = registrationId,
+            identityKeyPublic = identityPublicKey,
+            preKeyId = preKeyRecord.id,
+            preKey = preKeyRecord.serialize(),
+            signedPreKeyId = signedPreKey.id,
+            signedPreKey = signedPreKey.serialize(),
+            identityKeyEncrypted = identityKeyEncrypted,
+            signedPreKeySignature = signedPreKey.signature
         )
     }
+
+    private fun generateIdentityKeyPair(): IdentityKeyPair {
+        val identityKeyPairKeys = Curve.generateKeyPair()
+        return IdentityKeyPair(
+            IdentityKey(identityKeyPairKeys.publicKey),
+            identityKeyPairKeys.privateKey
+        )
+    }
+
+    @Throws(InvalidKeyException::class)
+    private fun generateSignedPreKey(identityKeyPair: IdentityKeyPair, signedPreKeyId: Int): SignedPreKeyRecord {
+        val keyPair = Curve.generateKeyPair()
+        val signature = Curve.calculateSignature(identityKeyPair.privateKey, keyPair.publicKey.serialize())
+        return SignedPreKeyRecord(signedPreKeyId, System.currentTimeMillis(), keyPair, signature)
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.clearkeep.data.repository.group
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.*
@@ -20,12 +19,11 @@ import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.repository.GroupRepository
 import com.clearkeep.domain.repository.SignalKeyRepository
 import io.grpc.StatusRuntimeException
-import kotlinx.coroutines.*
-import org.whispersystems.libsignal.ecc.Curve
-import org.whispersystems.libsignal.ecc.ECKeyPair
-import org.whispersystems.libsignal.ecc.ECPrivateKey
-import org.whispersystems.libsignal.ecc.ECPublicKey
-import org.whispersystems.libsignal.groups.SenderKeyName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
 import javax.inject.Inject
 
 class GroupRepositoryImpl @Inject constructor(
@@ -34,7 +32,7 @@ class GroupRepositoryImpl @Inject constructor(
     private val userKeyDAO: UserKeyDAO,
     private val signalIdentityKeyDAO: SignalIdentityKeyDAO,
     private val environment: Environment,
-    private val groupService: GroupService
+    private val groupService: GroupService,
 ) : GroupRepository {
     override fun getAllRoomsAsState() = groupDAO.getRoomsAsState().map { it.map { it.toModel() } }
 
@@ -318,7 +316,6 @@ class GroupRepositoryImpl @Inject constructor(
     ): ChatGroup = withContext(Dispatchers.IO) {
         val oldGroup = groupDAO.getGroupById(response.groupId, serverDomain, ownerId)
         var isRegisteredKey = oldGroup?.isJoined ?: false
-        Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 316:$isRegisteredKey " );
         val lastMessageSyncTime =
             oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
@@ -335,17 +332,11 @@ class GroupRepositoryImpl @Inject constructor(
                 client.userId != ownerId
             }?.userName ?: ""
         }
-
         try {
             val senderAddress =
-                CKSignalProtocolAddress(Owner(serverDomain, ownerId), SENDER_DEVICE_ID)
-            val groupSender = SenderKeyName(response.groupId.toString(), senderAddress)
-            Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337:isRegisteredKey ${!isRegisteredKey} senderKeyId: ${response.clientKey.senderKeyId} groupType: ${response.groupType == "group"}" );
+                CKSignalProtocolAddress(Owner(serverDomain, ownerId), response.groupId,SENDER_DEVICE_ID)
             if (response.clientKey.senderKeyId > 0 && response.groupType == "group" && !isRegisteredKey) {
-                Log.d("antx: ", "GroupRepositoryImpl convertGroupFromResponse line = 337: " );
-                val senderKeyID = response.clientKey.senderKeyId
-                val senderKey = response.clientKey.senderKey
-                val privateKeyEncrypt = response.clientKey.privateKey
+                val senderKeyEncrypt = response.clientKey.senderKey
                 val userKey =
                     userKeyDAO.getKey(serverDomain, ownerId) ?: UserKeyEntity(
                         serverDomain,
@@ -355,30 +346,16 @@ class GroupRepositoryImpl @Inject constructor(
                     )
                 val identityKey = signalIdentityKeyDAO.getIdentityKey(ownerId, serverDomain)
                 val privateKey = identityKey?.identityKeyPair?.privateKey
-
                 val decryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
                 printlnCK("convertGroupFromResponse PK ${toHex(privateKey.serialize())} salt ${userKey.salt} iv ${userKey.iv}")
                 val privateSenderKey = decryptor.decrypt(
-                    fromHex(privateKeyEncrypt),
+                    fromHex(senderKeyEncrypt.toString()),
                     fromHex(userKey.salt),
                     fromHex(userKey.iv)
                 )
 
-                val eCPublicKey: ECPublicKey =
-                    Curve.decodePoint(response.clientKey.publicKey, 0)
-                val eCPrivateKey: ECPrivateKey =
-                    Curve.decodePrivatePoint(privateSenderKey)
-                val identityKeyPair = ECKeyPair(eCPublicKey, eCPrivateKey)
-                val senderKeyRecord = signalKeyRepository.loadSenderKey(groupSender)
-
-                senderKeyRecord.setSenderKeyState(
-                    senderKeyID.toInt(),
-                    0,
-                    senderKey,
-                    identityKeyPair
-                )
-
-                signalKeyRepository.storeSenderKey(groupSender, senderKeyRecord)
+                val senderKeyRecord = SenderKeyRecord(privateSenderKey)
+                signalKeyRepository.storeSenderKey(senderAddress, senderKeyRecord)
                 isRegisteredKey = true
             }
         } catch (e: Exception) {

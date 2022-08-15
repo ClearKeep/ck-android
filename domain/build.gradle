@@ -12,10 +12,14 @@ dependencies {
 
     implementation Dependencies.coroutinesCore
     implementation Dependencies.coroutinesAndroid
-
+    implementation(Dependencies.grpcProtoBufUtil) {
+        exclude module: "protobuf-lite"
+    }
     //Signal
-    implementation(Dependencies.signal) {
+    implementation(Dependencies.signal){
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation Dependencies.javaxAnnotations
+
+    implementation files('/Users/apple/Work/VMO/android/ck-android/domain/libs/libsignal-android-debug.aar')
 }

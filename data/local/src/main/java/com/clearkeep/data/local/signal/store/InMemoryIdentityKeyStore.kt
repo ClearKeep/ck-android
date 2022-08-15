@@ -7,14 +7,14 @@ package com.clearkeep.data.local.signal.store
 
 import androidx.annotation.WorkerThread
 import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyDAO
-import com.clearkeep.data.local.signal.model.SignalIdentityKeyLocal
+import com.clearkeep.data.local.signal.identitykey.SignalIdentityKeyLocal
 import com.clearkeep.domain.repository.Environment
-import org.whispersystems.libsignal.IdentityKeyPair
-import org.whispersystems.libsignal.state.IdentityKeyStore
-import org.whispersystems.libsignal.SignalProtocolAddress
-import org.whispersystems.libsignal.IdentityKey
-import org.whispersystems.libsignal.util.KeyHelper
-import java.util.HashMap
+import org.signal.libsignal.protocol.IdentityKey
+import org.signal.libsignal.protocol.IdentityKeyPair
+import org.signal.libsignal.protocol.SignalProtocolAddress
+import org.signal.libsignal.protocol.ecc.Curve
+import org.signal.libsignal.protocol.state.IdentityKeyStore
+import org.signal.libsignal.protocol.util.KeyHelper
 import javax.inject.Singleton
 
 @Singleton
@@ -74,11 +74,14 @@ class InMemoryIdentityKeyStore(
     }
 
     fun generateIdentityKeyPair(clientId: String, domain: String): SignalIdentityKeyLocal {
-        val identityKeyPair = KeyHelper.generateIdentityKeyPair()
+        val identityKeyPairKeys = Curve.generateKeyPair()
+        val identityKeyPair=IdentityKeyPair(
+            IdentityKey(identityKeyPairKeys.publicKey),
+            identityKeyPairKeys.privateKey
+        )
         val registrationID = KeyHelper.generateRegistrationId(false)
         return SignalIdentityKeyLocal(identityKeyPair, registrationID, domain, clientId)
     }
-
 
     @WorkerThread
     private fun getOrGenerateIdentityKey(clientId: String, domain: String): SignalIdentityKeyLocal {
