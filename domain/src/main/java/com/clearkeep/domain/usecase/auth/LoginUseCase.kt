@@ -129,24 +129,27 @@ class LoginUseCase @Inject constructor(
         val (saltHex, verificatorHex) = createAccountSrp(email, rawNewPassword)
 
         val decrypter = DecryptsPBKDF2(rawNewPassword)
-        val bobPreKey = Curve.generateKeyPair()
-        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        // create registrationId
         val registrationId = KeyHelper.generateRegistrationId(false)
-        val bobSignedPreKey: SignedPreKeyRecord = generateSignedPreKey(bobIdentityKey, (email + domain).hashCode())
-        val bobBundle = PreKeyBundle(registrationId, 111, 1, bobPreKey.publicKey, (email + domain).hashCode(), bobSignedPreKey.keyPair.publicKey, bobSignedPreKey.signature, bobIdentityKey.publicKey)
-        val preKey = bobBundle.preKey
-        val signedPreKey = generateSignedPreKey(bobIdentityKey, (email + domain).hashCode())
+        //PreKeyRecord
+        val bobPreKeyPair = Curve.generateKeyPair()
+        val preKeyRecord = PreKeyRecord(1,bobPreKeyPair)
+        //SignedPreKey
+        val signedPreKeyId = (email + domain).hashCode()
+        val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
+        val signedPreKey = generateSignedPreKey(bobIdentityKey, signedPreKeyId)
         val identityKeyPublic = bobIdentityKey.publicKey.serialize()
-        val preKeyId = bobBundle.preKeyId
+        //Encrypt private key
         val identityKeyEncrypted = decrypter.encrypt(bobIdentityKey.privateKey.serialize(), saltHex)?.let {
             DecryptsPBKDF2.toHex(it)
         }
 
+
         val response = authRepository.resetPassword(
             registrationId,
             identityKeyPublic,
-            preKey.serialize(),
-            preKeyId,
+            preKeyRecord.serialize(),
+            preKeyRecord.id,
             signedPreKeyId = signedPreKey.id,
             signedPreKey.serialize(),
             identityKeyEncrypted,
