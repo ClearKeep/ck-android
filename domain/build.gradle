@@ -21,5 +21,5 @@ dependencies {
     }
     implementation Dependencies.javaxAnnotations
 
-    implementation files('/Users/apple/Work/VMO/android/ck-android/domain/libs/libsignal-android-debug.aar')
+    implementation files('../domain/libs/libsignal-android-debug.aar')
 }

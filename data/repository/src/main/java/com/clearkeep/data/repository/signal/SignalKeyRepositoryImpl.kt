@@ -178,7 +178,6 @@ class SignalKeyRepositoryImpl @Inject constructor(
         return@withContext try {
             val rawResponse =
                 signalKeyDistributionService.getPeerClientKey(server, clientId, domain)
-            Log.d("antx: ", "SignalKeyRepositoryImpl getPeerClientKey line = 169: ");
             rawResponse.run {
                 PeerGetClientKeyResponse(
                     clientId,
