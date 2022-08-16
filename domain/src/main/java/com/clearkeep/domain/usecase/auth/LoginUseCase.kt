@@ -186,7 +186,7 @@ class LoginUseCase @Inject constructor(
         val bobPreKeyPair = Curve.generateKeyPair()
         val preKeyRecord = PreKeyRecord(1,bobPreKeyPair)
         //SignedPreKey
-        val signedPreKeyId = (userName + domain).hashCode()
+        val signedPreKeyId = userName.hashCode()
         val bobIdentityKey: IdentityKeyPair = generateIdentityKeyPair()
         val signedPreKey = generateSignedPreKey(bobIdentityKey, signedPreKeyId)
         val identityKeyPublic = bobIdentityKey.publicKey.serialize()
@@ -457,7 +457,7 @@ class LoginUseCase @Inject constructor(
     private fun generateSignedPreKey(identityKeyPair: IdentityKeyPair, signedPreKeyId: Int): SignedPreKeyRecord {
         val keyPair = Curve.generateKeyPair()
         val signature = Curve.calculateSignature(identityKeyPair.privateKey, keyPair.publicKey.serialize())
-        return SignedPreKeyRecord(signedPreKeyId, System.currentTimeMillis(), keyPair, signature)
+        return SignedPreKeyRecord(kotlin.math.abs(signedPreKeyId), System.currentTimeMillis(), keyPair, signature)
     }
 
 }
