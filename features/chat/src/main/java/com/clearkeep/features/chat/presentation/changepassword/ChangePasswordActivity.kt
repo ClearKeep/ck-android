@@ -20,8 +20,13 @@ class ChangePasswordActivity : AppCompatActivity(), LifecycleObserver {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
 
         val data: Uri? = intent?.data
-        val decodedURL: String = URLDecoder.decode(data.toString(), "UTF-8")
-        changePasswordViewModel.processDeepLinkUri(Uri.parse(decodedURL))
+        data?.let {
+            val decodedURL: String = URLDecoder.decode(data.toString(), "UTF-8")
+            changePasswordViewModel.processDeepLinkUri(Uri.parse(decodedURL))
+        } ?: kotlin.run {
+            changePasswordViewModel.processDeepLinkUri(null)
+        }
+
         setContent {
             CKSimpleTheme {
                 MainComposable()

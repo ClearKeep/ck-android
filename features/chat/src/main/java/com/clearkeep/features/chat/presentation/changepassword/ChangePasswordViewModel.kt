@@ -1,6 +1,7 @@
 package com.clearkeep.features.chat.presentation.changepassword
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -71,7 +72,10 @@ class ChangePasswordViewModel @Inject constructor(
     }
 
     fun processDeepLinkUri(uri: Uri?) {
-        val isResetPassword = uri != null && uri.toString().isNotBlank()
+        var isResetPassword = true
+        if (uri == null || uri.toString().isBlank()) {
+            isResetPassword = false
+        }
         _isResetPassword.value = isResetPassword
 
         if (isResetPassword) {

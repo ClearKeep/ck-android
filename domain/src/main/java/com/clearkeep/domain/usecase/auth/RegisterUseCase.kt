@@ -12,6 +12,7 @@ import org.signal.libsignal.protocol.state.PreKeyRecord
 import org.signal.libsignal.protocol.state.SignedPreKeyRecord
 import org.signal.libsignal.protocol.util.KeyHelper
 import javax.inject.Inject
+import kotlin.math.abs
 
 class RegisterUseCase @Inject constructor(private val authRepository: AuthRepository) {
     suspend operator fun invoke(
@@ -78,7 +79,7 @@ class RegisterUseCase @Inject constructor(private val authRepository: AuthReposi
     private fun generateSignedPreKey(identityKeyPair: IdentityKeyPair, signedPreKeyId: Int): SignedPreKeyRecord {
         val keyPair = Curve.generateKeyPair()
         val signature = Curve.calculateSignature(identityKeyPair.privateKey, keyPair.publicKey.serialize())
-        return SignedPreKeyRecord(signedPreKeyId, System.currentTimeMillis(), keyPair, signature)
+        return SignedPreKeyRecord(abs(signedPreKeyId), System.currentTimeMillis(), keyPair, signature)
     }
 
 }
