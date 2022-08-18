@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 class RegisterActivity : AppCompatActivity() {
     private val registerViewModel: RegisterViewModel by viewModels()
 
-    @ExperimentalAnimationApi
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

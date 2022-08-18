@@ -203,7 +203,7 @@ class PeopleRepositoryImpl @Inject constructor(
                 printlnCK("username: ${user.userName}")
             }
             printlnCK("list: ${list}")
-            return@withContext list
+            return@withContext list.filter { it.userName.isNotEmpty() }
         } catch (e: StatusRuntimeException) {
             return@withContext emptyList()
         } catch (e: Exception) {
