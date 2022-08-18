@@ -42,6 +42,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     lateinit var disableChatOfDeactivatedUserUseCase: DisableChatOfDeactivatedUserUseCase
 
     @Inject
+    lateinit var fetchGroupsUseCase: FetchGroupsUseCase
+
+    @Inject
     lateinit var getGroupByIdUseCase: GetGroupByIdUseCase
 
     @Inject
@@ -305,6 +308,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private suspend fun handleRequestDeactiveAccount(remoteMessage: RemoteMessage) {
+        fetchGroupsUseCase.invoke()
         val data: Map<String, String> = Gson().fromJson(
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
