@@ -349,7 +349,7 @@ class GroupRepositoryImpl @Inject constructor(
                 val decryptor = DecryptsPBKDF2(toHex(privateKey!!.serialize()))
                 printlnCK("convertGroupFromResponse PK ${toHex(privateKey.serialize())} salt ${userKey.salt} iv ${userKey.iv}")
                 val privateSenderKey = decryptor.decrypt(
-                    fromHex(senderKeyEncrypt.toString()),
+                    senderKeyEncrypt,
                     fromHex(userKey.salt),
                     fromHex(userKey.iv)
                 )

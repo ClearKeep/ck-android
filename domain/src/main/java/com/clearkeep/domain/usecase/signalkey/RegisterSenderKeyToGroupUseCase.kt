@@ -5,6 +5,7 @@ import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.common.utilities.SENDER_DEVICE_ID
 import com.clearkeep.common.utilities.network.Resource
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.repository.SenderKeyStore
@@ -50,13 +51,14 @@ class RegisterSenderKeyToGroupUseCase @Inject constructor(
                 senderAddress.deviceId,
                 groupID,
                 sentAliceDistributionMessage,
-                sentAliceDistributionMessage.serialize(),
+                privateKey.serialize(),
                 bobPreKeyPair,
                 1,
                 encryptedGroupSenderKey
             )
         }
-        return@withContext Resource.success("")
+        printlnCK("RegisterSenderKeyToGroupUseCase invoke line = 59: not need register ")
+        return@withContext Resource.success(senderAddress.name)
     }
 
     private suspend fun getIdentityPrivateKey(
