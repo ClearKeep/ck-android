@@ -246,37 +246,40 @@ fun ItemListDirectMessage(
         client.userId != clintId
     }
     val roomName: String =
-        if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
-            client.userId == partnerUser?.userId
-        }?.userName ?: stringResource(id = R.string.deleted_user)
-    Row(
-        modifier = modifier
-            .clickable {
-                onItemClickListener?.invoke(chatGroup.groupId, roomName)
-            }
-    ) {
-        val userStatus = listUserStatus?.firstOrNull { client ->
-            client.userId == partnerUser?.userId
-        }?.userStatus ?: ""
-        val avatar = listUserStatus?.firstOrNull { client ->
-            client.userId == partnerUser?.userId
-        }?.avatar ?: ""
 
+            listUserStatus?.firstOrNull { client ->
+            client.userId == partnerUser?.userId
+        }?.userName ?: partnerUser?.userName ?: stringResource(id = R.string.deleted_user)
+    if(roomName.isNotEmpty()) {
         Row(
-            modifier = Modifier.padding(top = 16.sdp()),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = modifier
+                .clickable {
+                    onItemClickListener?.invoke(chatGroup.groupId, roomName)
+                }
         ) {
-            CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
-            Text(
-                text = roomName, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.sdp()),
-                maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
-                    color = LocalColorMapping.current.descriptionText,
-                    fontSize = defaultNonScalableTextSize(),
-                    fontWeight = FontWeight.Bold
+            val userStatus = listUserStatus?.firstOrNull { client ->
+                client.userId == partnerUser?.userId
+            }?.userStatus ?: ""
+            val avatar = listUserStatus?.firstOrNull { client ->
+                client.userId == partnerUser?.userId
+            }?.avatar ?: ""
+
+            Row(
+                modifier = Modifier.padding(top = 16.sdp()),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
+                Text(
+                    text = roomName, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.sdp()),
+                    maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
+                        color = LocalColorMapping.current.descriptionText,
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+            }
         }
     }
 }

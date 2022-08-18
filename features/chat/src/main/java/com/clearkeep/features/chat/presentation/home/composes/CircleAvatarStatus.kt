@@ -35,11 +35,14 @@ fun CircleAvatarStatus(
         UserStatus.ONLINE.value -> {
             colorSuccessDefault
         }
-        UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
+        UserStatus.OFFLINE.value -> {
             grayscale3
         }
-        else -> {
+        UserStatus.BUSY.value -> {
             errorDefault
+        }
+        else -> {
+            grayscale3
         }
     }
     Box(

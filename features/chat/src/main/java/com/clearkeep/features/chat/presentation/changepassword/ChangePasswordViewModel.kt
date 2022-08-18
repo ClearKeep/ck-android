@@ -173,6 +173,6 @@ class ChangePasswordViewModel @Inject constructor(
     }
 
     companion object {
-        val DEEP_LINK_URI_PREFIX = "http://www.clearkeep.com/resetpassword([?]?)".toRegex()
+        const val DEEP_LINK_URI_PREFIX = "clearkeep://?"
     }
 }
