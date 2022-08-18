@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.clearkeep.common.utilities.FILE_UPLOAD_CHANNEL_ID
+import com.clearkeep.data.services.ChatService
 import dagger.hilt.android.HiltAndroidApp
 import net.gotev.uploadservice.UploadService
 import net.gotev.uploadservice.UploadServiceConfig
@@ -45,5 +46,11 @@ open class MyApplication : Application(), LifecycleObserver {
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onApplicationClosed() {
         UploadService.stopAllUploads()
+        ChatService.isBackGround = true
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onApplicationStart() {
+        ChatService.isBackGround = false
     }
 }

@@ -124,6 +124,7 @@ class HomeViewModel @Inject constructor(
         getAllSenderKey()
         viewModelScope.launch {
             val fetchGroupResponse = fetchGroupsUseCase()
+            getStatusUserInDirectGroup()
             handleResponse(fetchGroupResponse)
             isRefreshing.postValue(false)
         }

@@ -3,24 +3,22 @@ package com.clearkeep.data.services
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.net.*
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
-import com.clearkeep.domain.repository.*
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
-import message.MessageOuterClass
-import notification.NotifyOuterClass
-import javax.inject.Inject
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
 import com.clearkeep.data.remote.dynamicapi.subscriber.DynamicSubscriberAPIProvider
-import com.clearkeep.domain.model.*
 import com.clearkeep.data.services.utils.MessageChannelSubscriber
 import com.clearkeep.data.services.utils.NotificationChannelSubscriber
+import com.clearkeep.domain.model.*
+import com.clearkeep.domain.repository.UserRepository
 import com.clearkeep.domain.usecase.chat.GetJoiningRoomUseCase
 import com.clearkeep.domain.usecase.chat.ProcessPeerKeyUseCase
 import com.clearkeep.domain.usecase.group.DeleteGroupUseCase
@@ -33,6 +31,11 @@ import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServersUseCase
 import com.clearkeep.features.shared.showMessagingStyleNotification
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import message.MessageOuterClass
+import notification.NotifyOuterClass
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ChatService : Service(),
@@ -86,6 +89,10 @@ class ChatService : Service(),
     private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO)
 
     private var isShouldRecreateChannel = false
+
+    companion object {
+        var isBackGround = false
+    }
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -311,7 +318,11 @@ class ChatService : Service(),
                 val group = getGroupByIdUseCase(groupId = groupId, domain, ownerClientId)
                 group?.data?.let {
                     val currentServer = environment.getServer()
-                    if (joiningRoomId != groupId || currentServer.serverDomain != domain || currentServer.profile.userId != ownerClientId) {
+                    if (joiningRoomId != groupId ||
+                        currentServer.serverDomain != domain ||
+                        currentServer.profile.userId != ownerClientId ||
+                        isBackGround
+                    ) {
                         val userPreference =
                             getUserPreferenceUseCase(domain, ownerClientId)
                                 ?: UserPreference.getDefaultUserPreference("", "", false)
