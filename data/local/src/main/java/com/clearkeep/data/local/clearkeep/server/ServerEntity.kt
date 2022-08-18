@@ -19,6 +19,6 @@ data class ServerEntity(
     @ColumnInfo(name = "owner") val profile: ProfileEntity,
 ) {
     override fun toString(): String {
-        return "${serverName}, $serverDomain, $ownerClientId   \n profile.userId: ${profile.userId}"
+        return "${serverName}, $serverDomain, $ownerClientId   \n : ${profile.userId}, accessToken : $accessKey"
     }
 }
