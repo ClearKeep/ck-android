@@ -22,6 +22,10 @@
         android:glEsVersion="0x00020000"
         android:required="true" />
 
+    <queries>
+        <provider android:authorities="com.facebook.katana.provider.PlatformProvider" />
+    </queries>
+
     <application
         android:name=".MyApplication"
         android:allowBackup="false"
