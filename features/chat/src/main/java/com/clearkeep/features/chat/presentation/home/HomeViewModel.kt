@@ -149,6 +149,7 @@ class HomeViewModel @Inject constructor(
                 it.ownerDomain == server.serverDomain
                         && it.ownerClientId == server.profile.userId
                         && it.isGroup()
+                        && it.clientList.firstOrNull { it.userId == server.profile.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
             }
         }
         emitSource(result)
