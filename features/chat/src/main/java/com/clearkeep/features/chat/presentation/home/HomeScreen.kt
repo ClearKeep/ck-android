@@ -246,9 +246,9 @@ fun ItemListDirectMessage(
         client.userId != clintId
     }
     val roomName: String =
-        if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else listUserStatus?.firstOrNull { client ->
-            client.userId == partnerUser?.userId
-        }?.userName ?: stringResource(id = R.string.deleted_user)
+        if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user)
+        else
+            partnerUser?.userName ?: stringResource(id = R.string.deleted_user)
     Row(
         modifier = modifier
             .clickable {
