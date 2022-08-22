@@ -1,6 +1,7 @@
 package com.clearkeep.features.auth.presentation.register
 
 import android.content.Context
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -73,6 +74,10 @@ class RegisterViewModel @Inject constructor(
         }
         if (displayName.isBlank()) {
             _displayNameError.value = context.getString(R.string.display_empty)
+            isValid = false
+        }
+        if (displayName == context.getString(R.string.deleted_user)) {
+            _displayNameError.value = context.getString(R.string.display_invalid)
             isValid = false
         }
         if (password.isBlank()) {
