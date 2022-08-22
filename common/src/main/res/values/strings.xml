@@ -46,7 +46,6 @@
     <string name="confirm_password_empty">Confirm password must not be blank</string>
     <string name="confirm_password_is_not_match">Password and Confirm password do not match. Please try again!</string>
     <string name="display_empty">Display name must not be blank</string>
-    <string name="display_invalid">Display name is invalid</string>
     <string name="email_invalid">Email is invalid</string>
     <string name="tv_email">Email</string>
     <string name="tv_password">Password</string>
@@ -110,7 +109,7 @@
     <string name="otp_verify_password_title">Enter Your Current Password</string>
     <string name="otp_verify_password_description">Please enter your password to enable 2FA</string>
     <string name="country_codes">Country Codes</string>
-    <string name="profile_username_error">This field is invalid</string>
+    <string name="profile_username_error">This field is required</string>
     <string name="profile_phone_number_error">Invalid phone number</string>
     <string name="profile_new_call_warning">You have a call that is currently in-progress. Please end it to start a new call.</string>
     <string name="two_factors_auth">Two-factor authentication</string>

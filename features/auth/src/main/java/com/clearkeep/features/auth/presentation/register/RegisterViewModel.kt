@@ -76,10 +76,6 @@ class RegisterViewModel @Inject constructor(
             _displayNameError.value = context.getString(R.string.display_empty)
             isValid = false
         }
-        if (displayName == context.getString(R.string.deleted_user)) {
-            _displayNameError.value = context.getString(R.string.display_invalid)
-            isValid = false
-        }
         if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             isValid = false
