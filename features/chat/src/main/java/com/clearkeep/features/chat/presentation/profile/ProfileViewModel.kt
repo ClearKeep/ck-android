@@ -326,7 +326,7 @@ class ProfileViewModel @Inject constructor(
         return uri.getFileSize(context, false) <= AVATAR_MAX_SIZE
     }
 
-    private fun isValidUsername(username: String?): Boolean = !username.isNullOrBlank()
+    private fun isValidUsername(username: String?): Boolean = !username.isNullOrBlank() && username != "Deleted User"
 
     private fun isValidPhoneNumber(countryCode: String, phoneNumber: String): Boolean {
         if (countryCode.isBlank() && phoneNumber.isNotBlank()) {

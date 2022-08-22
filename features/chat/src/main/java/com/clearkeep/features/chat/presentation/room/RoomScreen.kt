@@ -199,7 +199,7 @@ fun RoomScreen(
                     avatars = listPeerAvatars.value,
                     isGroup = group?.isGroup() ?: false,
                     isNote = isNote.value ?: false,
-                    isDeletedUserChat = group?.isDeletedUserPeer ?: false,
+                    isDeletedUserChat = groupName == stringResource(id = R.string.deleted_user),
                     onBackClick = {
                         onFinishActivity()
                     },
