@@ -1,7 +1,6 @@
 package com.clearkeep.features.auth.presentation.register
 
 import android.content.Context
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
