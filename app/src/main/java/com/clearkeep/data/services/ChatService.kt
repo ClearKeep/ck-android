@@ -196,39 +196,22 @@ class ChatService : Service(),
 
     override fun onMessageReceived(value: MessageOuterClass.MessageObjectResponse, domain: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            if (environment.getServerCanNull() == null) {
-                environment.setUpDomain(
-                    Server(
-                        null,
-                        "",
-                        domain,
-                        value.clientId,
-                        "",
-                        0L,
-                        "",
-                        "",
-                        "",
-                        false,
-                        Profile(null, value.clientId, "", "", "", 0L, "")
-                    )
-                )
-            }
-                printlnCK("chatService raw message ${value.message.toStringUtf8()}")
-                environment.setUpTempDomain(
-                    Server(
-                        null,
-                        "",
-                        domain,
-                        value.clientId,
-                        "",
-                        0L,
-                        "",
-                        "",
-                        "",
-                        false,
-                        Profile(null, value.clientId, "", "", "", 0L, "")
-                    )
-                )
+            val server = Server(
+                null,
+                "",
+                domain,
+                value.clientId,
+                "",
+                0L,
+                "",
+                "",
+                "",
+                false,
+                Profile(null, value.clientId, "", "", "", 0L, "")
+            )
+            if (environment.getServerCanNull() == null) environment.setUpDomain(server)
+            printlnCK("chatService raw message ${value.message.toStringUtf8()}")
+            environment.setUpTempDomain(server)
                 val messageEncrypt =
                     if (!isGroup(value.groupType) && getOwnerClientIdsUseCase().contains(value.fromClientId)) value.senderMessage else value.message
                 val res = decryptMessageUseCase(
