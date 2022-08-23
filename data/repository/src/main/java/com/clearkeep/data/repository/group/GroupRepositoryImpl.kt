@@ -1,5 +1,6 @@
 package com.clearkeep.data.repository.group
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.*
@@ -7,6 +8,7 @@ import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.fromHex
 import com.clearkeep.common.utilities.DecryptsPBKDF2.Companion.toHex
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.TokenExpiredException
+import com.clearkeep.data.local.clearkeep.group.ChatGroupEntity
 import com.clearkeep.data.local.clearkeep.group.GroupDAO
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyEntity
@@ -23,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.signal.libsignal.protocol.ecc.ECPrivateKey
 import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
 import javax.inject.Inject
 
@@ -189,6 +192,21 @@ class GroupRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllGroupByDomain(ownerDomain: String, ownerClientId: String): List<ChatGroup> =
+        withContext(Dispatchers.IO){
+            Log.d("antx: ", "GroupRepositoryImpl getAllGroupByDomain line = 197: $ownerDomain $ownerClientId " );
+            val result=groupDAO.getAllGroupByDomain(ownerDomain,ownerClientId).map {
+                it.toModel()
+            }
+            Log.d("antx: ", "GroupRepositoryImpl getAllGroupByDomain line = 199: ${result.size}" );
+            return@withContext result
+
+        }
+
+    override suspend fun updateGroupSenderKey(ownerDomain: String, ownerClientId: String) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getGroupByGroupId(groupId: Long): ChatGroup? =
         withContext(Dispatchers.IO) {
             return@withContext groupDAO.getGroupById(groupId, getDomain(), getClientId())
@@ -320,7 +338,7 @@ class GroupRepositoryImpl @Inject constructor(
             oldGroup?.lastMessageSyncTimestamp ?: server?.loginTime ?: getCurrentDateTime().time
 
         val clientList = response.lstClient.map {
-            User(
+            User( 
                 userId = it.id,
                 userName = it.displayName,
                 domain = it.workspaceDomain,
@@ -353,6 +371,8 @@ class GroupRepositoryImpl @Inject constructor(
                     fromHex(userKey.salt),
                     fromHex(userKey.iv)
                 )
+                printlnCK("privateSenderKey: senderKeyEncrypt : ${senderKeyEncrypt}")
+                printlnCK("privateSenderKey: decrypt: ${privateSenderKey}")
 
                 val senderKeyRecord = SenderKeyRecord(privateSenderKey)
                 signalKeyRepository.storeSenderKey(senderAddress, senderKeyRecord)
@@ -383,5 +403,12 @@ class GroupRepositoryImpl @Inject constructor(
             lastMessageSyncTimestamp = lastMessageSyncTime,
             isDeletedUserPeer = false
         )
+    }
+    private suspend fun getIdentityPrivateKey(
+        clientId: String,
+        domain: String
+    ): ECPrivateKey {
+        val identityKey = signalKeyRepository.getIdentityKey(clientId, domain)
+        return identityKey?.identityKeyPair?.privateKey!!
     }
 }

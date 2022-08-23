@@ -10,6 +10,9 @@ import com.clearkeep.data.repository.utils.parseError
 import com.clearkeep.domain.model.response.MfaAuthChallengeResponse
 import com.clearkeep.domain.model.response.RequestChangePasswordRes
 import com.clearkeep.domain.model.Server
+import com.clearkeep.domain.model.UserKey
+import com.clearkeep.domain.repository.UserKeyRepository
+import com.clearkeep.domain.repository.UserRepository
 import com.google.protobuf.ByteString
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +22,8 @@ import javax.inject.Inject
 
 class ProfileRepositoryImpl @Inject constructor(
     private val userPreferenceDAO: UserPreferenceDAO,
-    private val userService: UserService
+    private val userService: UserService,
+    private val userKeyRepository: UserKeyRepository
 ) : ProfileRepository {
     override suspend fun updateProfile(
         server: Server,
@@ -154,18 +158,14 @@ class ProfileRepositoryImpl @Inject constructor(
             Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 154: " );
             try {
                 val response = userService.mfaValidateOtp(server, otp)
-                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 157:${response} " );
                 printlnCK("antx mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
                 return@withContext if (response.success) {
                     userPreferenceDAO.updateMfa(owner.domain, owner.clientId, true)
                     Resource.success(null)
                 } else {
-                    Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 161: " );
                     Resource.error(response.error, null)
                 }
             } catch (exception: StatusRuntimeException) {
-                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 164: ${server.serverDomain} " );
-                Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 163: ${exception.message}" );
                 val parsedError = parseError(exception)
                 val message = when (parsedError.code) {
                     1071 -> "Authentication failed. Please retry."
@@ -235,6 +235,16 @@ class ProfileRepositoryImpl @Inject constructor(
                     ivParam,
                     identityKeyEncrypted
                 )
+                if (changePasswordResponse.error.isNullOrEmpty()) {
+                    userKeyRepository.insert(
+                        UserKey(
+                            server.serverDomain,
+                            server.ownerClientId,
+                            newSaltHex,
+                            ivParam
+                        )
+                    )
+                }
                 return@withContext if (changePasswordResponse.error.isNullOrBlank()) Resource.success(
                     null
                 ) else Resource.error(

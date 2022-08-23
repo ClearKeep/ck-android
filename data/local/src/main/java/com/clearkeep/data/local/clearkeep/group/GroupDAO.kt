@@ -53,6 +53,9 @@ interface GroupDAO {
     @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" ")
     fun getGroupsByDomain(ownerDomain: String, ownerClientId: String): LiveData<List<ChatGroupEntity>>
 
+    @Query("SELECT * FROM chatgroup WHERE owner_domain=:ownerDomain AND owner_client_id=:ownerClientId AND group_type = \"group\" ")
+    suspend fun getAllGroupByDomain(ownerDomain: String, ownerClientId: String):List<ChatGroupEntity>
+
     @Query("SELECT * FROM chatgroup WHERE group_id = :groupId AND owner_domain = :domain LIMIT 1")
     suspend fun getGroupById(groupId: Long, domain: String): ChatGroupEntity?
 }

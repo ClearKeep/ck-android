@@ -3,6 +3,7 @@ package com.clearkeep.data.local.signal.senderkey
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.OnConflictStrategy.REPLACE
+import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
 
 @Dao
 interface SignalKeyDAO {

@@ -8,6 +8,7 @@ apply from: '../../android_feature_dependencies.gradle'
 dependencies {
     //Glide
     implementation Dependencies.glide
+    implementation project(path: ':data:local')
     annotationProcessor Dependencies.glideCompiler
     implementation Dependencies.glideTransformations
     implementation Dependencies.toggleImageButton

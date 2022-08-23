@@ -15,8 +15,10 @@ import javax.inject.Inject
 class SignalKeyDistributionService @Inject constructor(
     private val paramAPIProvider: ParamAPIProvider,
 ) {
-    suspend fun groupRegisterClientKey(server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?,
-                                       key: ECKeyPair?, senderKeyId: Int?, senderKey: ByteArray?) = withContext(Dispatchers.IO) {
+    suspend fun groupRegisterClientKey(
+        server: Server, deviceId: Int, groupId: Long, clientKeyDistribution: SenderKeyDistributionMessage, encryptedGroupPrivateKey: ByteArray?,
+        key: ECKeyPair?, senderKeyId: Int?, senderKey: ByteArray?
+    ) = withContext(Dispatchers.IO) {
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
 
         val request = Signal.GroupRegisterClientKeyRequest.newBuilder()
@@ -25,7 +27,7 @@ class SignalKeyDistributionService @Inject constructor(
             .setClientKeyDistribution(ByteString.copyFrom(clientKeyDistribution.serialize()))
             .setPrivateKey(DecryptsPBKDF2.toHex(encryptedGroupPrivateKey!!))
             .setPublicKey(ByteString.copyFrom(key?.publicKey?.serialize()))
-            .setSenderKeyId(senderKeyId?.toLong()?:0L)
+            .setSenderKeyId(senderKeyId?.toLong() ?: 0L)
             .setSenderKey(ByteString.copyFrom(senderKey))
             .build()
 
@@ -61,5 +63,29 @@ class SignalKeyDistributionService @Inject constructor(
             .setClientId(clientId)
             .build()
         return@withContext signalGrpc.groupGetClientKey(request)
+    }
+
+    suspend fun updateGroupSenderKey(server: Server, arrayList: ArrayList<Pair<Long, ByteArray>>): Signal.BaseResponse = withContext(Dispatchers.IO) {
+        val signalGrpc = paramAPIProvider.provideSignalKeyDistributionBlockingStub(
+            ParamAPI(
+                server.serverDomain,
+                server.accessKey,
+                server.hashKey
+            )
+        )
+        val listGroupClientKey = arrayListOf<Signal.GroupRegisterClientKeyRequest>()
+        arrayList.forEach {
+            val itemRequest = Signal.GroupRegisterClientKeyRequest.newBuilder()
+                .setGroupId(it.first)
+                .setSenderKey(ByteString.copyFrom(it.second))
+                .build()
+            listGroupClientKey.add(itemRequest)
+        }
+        val request = Signal.GroupUpdateClientKeyRequest
+            .newBuilder()
+            .addAllListGroupClientKey(listGroupClientKey)
+            .build()
+        return@withContext signalGrpc.groupUpdateClientKey(request)
+
     }
 }

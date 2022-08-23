@@ -6,20 +6,28 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.clearkeep.common.utilities.DecryptsPBKDF2
+import com.clearkeep.common.utilities.SENDER_DEVICE_ID
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
-import com.clearkeep.domain.usecase.auth.LoginUseCase
-import com.clearkeep.domain.usecase.profile.ChangePasswordUseCase
+import com.clearkeep.domain.model.CKSignalProtocolAddress
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.response.AuthRes
 import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.usecase.auth.LoginUseCase
+import com.clearkeep.domain.usecase.group.GetAllGroupsByDomainUseCase
+import com.clearkeep.domain.usecase.profile.ChangePasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.security.interfaces.ECPrivateKey
 import javax.inject.Inject
 
 @HiltViewModel
 class ChangePasswordViewModel @Inject constructor(
     private val environment: Environment,
     private val changePasswordUseCase: ChangePasswordUseCase,
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val getGroupsByDomainUseCase: GetAllGroupsByDomainUseCase
 ) : ViewModel() {
     private val _oldPassword = MutableLiveData<String>()
     private val _oldPasswordError = MutableLiveData<String>()
@@ -98,7 +106,7 @@ class ChangePasswordViewModel @Inject constructor(
         val oldPassword = _oldPassword.value ?: ""
         val newPassword = _newPassword.value ?: ""
         val server = environment.getServer()
-        val owner = com.clearkeep.domain.model.Owner(server.serverDomain, server.profile.userId)
+        val owner = Owner(server.serverDomain, server.profile.userId)
 
         viewModelScope.launch {
             val response = changePasswordUseCase(
@@ -110,6 +118,7 @@ class ChangePasswordViewModel @Inject constructor(
             if (response.status == Status.ERROR) {
                 _oldPasswordError.value = response.message
             } else {
+                updateSenderKeyGroup()
                 changePasswordResponse.value = response
             }
         }
@@ -170,6 +179,29 @@ class ChangePasswordViewModel @Inject constructor(
                 null
             }
         }
+    }
+
+    private fun updateSenderKeyGroup(){
+        viewModelScope.launch {
+            val server = environment.getServer()
+            val listGroup = getGroupsByDomainUseCase.invoke(ownerDomain = server.serverDomain, ownerClientId = server.ownerClientId)
+            val listSenderKeyNeedUpdate= arrayListOf<Pair<Long,ByteArray>>()
+            listGroup.forEach {
+                val senderAddress = CKSignalProtocolAddress(
+                    Owner(
+                        server.serverDomain,
+                        server.ownerClientId
+                    ), it.groupId, SENDER_DEVICE_ID
+                )
+                val senderKey = changePasswordUseCase.loadSenderKey(senderAddress,it.groupId)
+
+                senderKey?.let {
+                    listSenderKeyNeedUpdate.add(senderKey)
+                }
+            }
+           changePasswordUseCase.updateKey(server,listSenderKeyNeedUpdate)
+        }
+
     }
 
     companion object {

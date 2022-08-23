@@ -34,4 +34,6 @@ interface SignalKeyRepository {
     suspend fun getUserKey(serverDomain: String, userId: String): UserKey
     suspend fun getGroupClientKey(server: Server, groupId: Long, fromClientId: String): GroupGetClientKeyResponse?
     suspend fun getPeerClientKey(server: Server, clientId: String, domain: String): PeerGetClientKeyResponse?
+    suspend fun getSenderKey(senderKeyName: CKSignalProtocolAddress): Pair<Long?, ByteArray>?
+    suspend fun updateGroupSenderKey(server: Server, arrayList: ArrayList<Pair<Long, ByteArray>>): Resource<String>
 }

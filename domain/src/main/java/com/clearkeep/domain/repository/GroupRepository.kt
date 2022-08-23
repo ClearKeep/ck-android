@@ -64,4 +64,8 @@ interface GroupRepository {
         owner: Owner,
         server: Server?
     ): Resource<ChatGroup>
+
+    suspend fun getAllGroupByDomain(ownerDomain: String, ownerClientId: String): List<ChatGroup>
+
+    suspend fun updateGroupSenderKey(ownerDomain: String, ownerClientId: String)
 }

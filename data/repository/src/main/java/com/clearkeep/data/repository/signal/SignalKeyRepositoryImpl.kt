@@ -1,6 +1,5 @@
 package com.clearkeep.data.repository.signal
 
-import android.util.Log
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.clearkeep.userkey.UserKeyDAO
@@ -24,7 +23,7 @@ import kotlinx.coroutines.withContext
 import org.signal.libsignal.protocol.ecc.ECKeyPair
 import org.signal.libsignal.protocol.groups.state.SenderKeyRecord
 import org.signal.libsignal.protocol.message.SenderKeyDistributionMessage
-import java.util.*
+import signal.Signal
 import javax.inject.Inject
 
 class SignalKeyRepositoryImpl @Inject constructor(
@@ -57,7 +56,7 @@ class SignalKeyRepositoryImpl @Inject constructor(
         }
 
     override suspend fun deleteGroupSenderKey(senderKeyName: CKSignalProtocolAddress) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             senderKeyStore.deleteSenderKey(senderKeyName)
         }
     }
@@ -88,8 +87,44 @@ class SignalKeyRepositoryImpl @Inject constructor(
 
     override suspend fun loadSenderKey(senderKeyName: CKSignalProtocolAddress): SenderKeyRecord? =
         withContext(Dispatchers.IO) {
-            return@withContext senderKeyStore.loadSenderKey(senderKeyName,getUUID(senderKeyName.groupId.toString(),senderKeyName.owner.clientId))
+            return@withContext senderKeyStore.loadSenderKey(senderKeyName, getUUID(senderKeyName.groupId.toString(), senderKeyName.owner.clientId))
         }
+
+    override suspend fun getSenderKey(senderKeyName: CKSignalProtocolAddress): Pair<Long, ByteArray>? = withContext(Dispatchers.IO) {
+        val sender = senderKeyStore.loadSenderKey(senderKeyName, getUUID(senderKeyName.groupId.toString(), senderKeyName.owner.clientId))
+        if (senderKeyName.groupId == null) return@withContext null
+        senderKeyName.groupId?.let { groupId ->
+            sender?.let {
+                return@withContext Pair(first = groupId, second = sender.serialize())
+            }
+        }
+        return@withContext null
+    }
+
+    override suspend fun updateGroupSenderKey(
+        server: Server, arrayList: ArrayList<Pair<Long, ByteArray>>
+    ): Resource<String> = withContext(Dispatchers.IO) {
+        try {
+            val response = signalKeyDistributionService.updateGroupSenderKey(server, arrayList)
+            if (response.error.isNullOrEmpty()) {
+                return@withContext Resource.success(null)
+            }
+            return@withContext Resource.error("", null)
+        } catch (e: StatusRuntimeException) {
+            printlnCK("updateGroupSenderKey: $e")
+
+            val parsedError = parseError(e)
+            return@withContext Resource.error(
+                parsedError.message,
+                null,
+                parsedError.code,
+                parsedError.cause
+            )
+        } catch (e: Exception) {
+            printlnCK("updateGroupSenderKey: $e")
+            return@withContext Resource.error("", null, error = e)
+        }
+    }
 
     override suspend fun getUserKey(serverDomain: String, userId: String): UserKey =
         withContext(Dispatchers.IO) {
