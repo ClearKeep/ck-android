@@ -11,6 +11,7 @@ import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.UserPreference
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
+import com.clearkeep.domain.usecase.chat.GetJoiningRoomUseCase
 import com.clearkeep.domain.usecase.group.*
 import com.clearkeep.domain.usecase.message.DecryptMessageUseCase
 import com.clearkeep.domain.usecase.message.DeleteMessageUseCase
@@ -85,6 +86,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var signalKeyRepository: SignalKeyRepository
+
+    @Inject
+    lateinit var getJoiningRoomUseCase: GetJoiningRoomUseCase
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
@@ -192,6 +196,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private suspend fun handleNewMessage(remoteMessage: RemoteMessage) {
+        val roomId = getJoiningRoomUseCase()
+        val currentServer = environment.getServer()
+        currentServer.serverDomain
+        currentServer.profile.userId
         val data: Map<String, String> = Gson().fromJson(
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
@@ -218,7 +226,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 Owner(clientDomain, clientId)
             )
             val isShowNotification = getOwnerClientIdsUseCase().contains(fromClientID)
-            if (!isShowNotification) {
+            if (!isShowNotification && roomId != groupId) {
                 val userPreference =
                     getUserPreferenceUseCase(clientDomain, clientId)
                 val group = getGroupByIdUseCase(groupId, clientDomain, clientId)
