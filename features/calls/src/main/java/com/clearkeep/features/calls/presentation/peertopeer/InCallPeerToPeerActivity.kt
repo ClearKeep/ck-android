@@ -162,7 +162,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
             setEnableHardwareScaler(true)
         }
 
-        pipCallNamePeer.text = mCurrentUsername
+        pipCallNamePeer.text = mUserNameInConversation
         callViewModel.listenerOnRemoteRenderAdd = listenerOnRemoteRenderAdd
         callViewModel.listenerOnPublisherJoined = listenerOnPublisherJoined
         initWaitingCallView()
@@ -456,7 +456,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
                 .into(imgThumb2)
 
             Glide.with(this)
-                .load(mCurrentUserAvatar)
+                .load(mPeerUserAvatar)
                 .circleCrop()
                 .into(pipCallAvatar)
 
