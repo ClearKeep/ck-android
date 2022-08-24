@@ -263,18 +263,18 @@ class InCallPeerToPeerActivity : BaseActivity() {
             tvEndButtonDescription.visibility = View.GONE
             tvVideoTimeCall.visibility = View.GONE
             tvUserName.visibility = View.GONE
-            remoteRender.visibility = View.GONE
+            localRender.visibility = View.GONE
             imgVideoCallBack.visibility = View.GONE
             imgWaitingBack.visibility = View.GONE
             if (mIsMuteVideo) {
                 pipInfoPeer.visible()
                 localRender.gone()
             } else {
-                remoteRender.visibility = View.GONE
+                localRender.visibility = View.GONE
                 setLocalViewFullScreen()
             }
         } else {
-            remoteRender.visibility = View.VISIBLE
+            localRender.visibility = View.VISIBLE
             imgEndWaiting.visibility = View.VISIBLE
             tvVideoTimeCall.visibility = View.VISIBLE
             tvEndButtonDescription.visibility = View.VISIBLE

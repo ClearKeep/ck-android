@@ -132,6 +132,12 @@ fun RoomScreen(
             group?.groupType == "peer" && !roomViewModel.groupName.value.isNullOrEmpty() -> (roomViewModel.groupName.value.toString())
             else -> group?.groupName ?: ""
         }
+    val isDeletedGroupPeer = when {
+        (group?.clientList?.size ?: 0) <= 1 && group?.groupType == "peer" -> true
+        else -> {
+            false
+        }
+    }
     val requestCallViewState = roomViewModel.requestCallState.observeAsState()
     ModalBottomSheetLayout(
         sheetState = bottomSheetState,
@@ -199,7 +205,7 @@ fun RoomScreen(
                     avatars = listPeerAvatars.value,
                     isGroup = group?.isGroup() ?: false,
                     isNote = isNote.value ?: false,
-                    isDeletedUserChat = group?.isDeletedUserPeer ?: false,
+                    isDeletedUserChat = isDeletedGroupPeer,
                     onBackClick = {
                         onFinishActivity()
                     },

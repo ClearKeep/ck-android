@@ -6,10 +6,7 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.domain.model.ChatGroup
-import com.clearkeep.domain.model.Owner
-import com.clearkeep.domain.model.Server
-import com.clearkeep.domain.model.User
+import com.clearkeep.domain.model.*
 import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.repository.SenderKeyStore
 import com.clearkeep.domain.repository.SignalKeyRepository
@@ -51,7 +48,7 @@ class HomeViewModel @Inject constructor(
     private val getListUserEntityUseCase: GetListUserEntityUseCase,
     private val signalKeyRepository: SignalKeyRepository,
 
-    getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
+    private val getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
     getIsLogoutUseCase: GetIsLogoutUseCase,
     getAllRoomsAsStateUseCase: GetAllRoomsAsStateUseCase,
 
@@ -65,7 +62,7 @@ class HomeViewModel @Inject constructor(
     val currentServer = getActiveServerUseCase()
     val servers: LiveData<List<Server>> = getServersAsStateUseCase()
 
-    var profile = getDefaultServerProfileAsStateUseCase()
+    var profile: LiveData<Profile> = getDefaultServerProfileAsStateUseCase()
 
     val isLogout = getIsLogoutUseCase()
 
@@ -120,6 +117,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onPullToRefresh() {
+        profile = getDefaultServerProfileAsStateUseCase()
         isRefreshing.postValue(true)
         getAllSenderKey()
         viewModelScope.launch {
