@@ -1,4 +1,4 @@
-package com.clearkeep.features.calls.presentation
+package com.clearkeep.features.shared.presentation
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -49,9 +49,12 @@ object AppCall {
         dismissIntent.putExtra(EXTRA_CALL_CANCEL_GROUP_TYPE, groupType)
         dismissIntent.putExtra(EXTRA_OWNER_DOMAIN, ownerDomain)
         dismissIntent.putExtra(EXTRA_OWNER_CLIENT, ownerClientId)
-        val dismissPendingIntent =
-            PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_ONE_SHOT)
 
+        val dismissPendingIntent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_IMMUTABLE)
+            else
+                PendingIntent.getBroadcast(context, 0, dismissIntent, PendingIntent.FLAG_ONE_SHOT)
         val waitIntent = createIncomingCallIntent(
             context,
             isAudioMode,
@@ -73,10 +76,17 @@ object AppCall {
             currentUserName,
             currentUserAvatar
         )
-        val pendingWaitIntent = PendingIntent.getActivity(
-            context, groupId.toIntOrNull() ?: 0, waitIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        val pendingWaitIntent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                PendingIntent.getActivity(
+                    context, groupId.toIntOrNull() ?: 0, waitIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            else
+                PendingIntent.getActivity(
+                    context, groupId.toIntOrNull() ?: 0, waitIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
 
         val inCallIntent = createIncomingCallIntent(
             context,
@@ -99,11 +109,17 @@ object AppCall {
             currentUserName,
             currentUserAvatar
         )
-        val pendingInCallIntent = PendingIntent.getActivity(
-            context, groupId.toIntOrNull() ?: 0, inCallIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
+        val pendingInCallIntent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                PendingIntent.getActivity(
+                    context, groupId.toIntOrNull() ?: 0, inCallIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            else
+                PendingIntent.getActivity(
+                    context, groupId.toIntOrNull() ?: 0, inCallIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                )
         val titleCallResource = if (isGroup(groupType)) {
             if (isAudioMode) R.string.notification_incoming_group else R.string.notification_incoming_video_group
         } else {

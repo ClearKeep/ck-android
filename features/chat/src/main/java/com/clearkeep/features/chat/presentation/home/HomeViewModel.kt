@@ -7,9 +7,7 @@ import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.*
-import com.clearkeep.domain.repository.Environment
-import com.clearkeep.domain.repository.SenderKeyStore
-import com.clearkeep.domain.repository.SignalKeyRepository
+import com.clearkeep.domain.repository.*
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
@@ -30,6 +28,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val environment: Environment,
+    private val authRepository: AuthRepository,
+    private val serverRepository: ServerRepository,
     private val setFirebaseTokenUseCase: SetFirebaseTokenUseCase,
     private val registerTokenUseCase: RegisterTokenUseCase,
     private val fetchGroupsUseCase: FetchGroupsUseCase,
@@ -135,7 +135,12 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onPullToRefresh() {
-        profile = getDefaultServerProfileAsStateUseCase()
+        viewModelScope.launch {
+            val newProfile = authRepository.getProfile(environment.getServer().serverDomain, environment.getServer().accessKey, environment.getServer().hashKey)
+            if (newProfile != null) {
+                serverRepository.updateServerProfile(environment.getServer().serverDomain, newProfile)
+            }
+        }
         isRefreshing.postValue(true)
         getAllSenderKey()
         viewModelScope.launch {

@@ -30,10 +30,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.clearkeep.common.utilities.*
 import com.clearkeep.features.calls.R
-import com.clearkeep.features.calls.presentation.AppCall
+import com.clearkeep.features.shared.presentation.AppCall
 import com.clearkeep.features.calls.presentation.BaseActivity
 import com.clearkeep.features.calls.presentation.CallViewModel
-import com.clearkeep.features.calls.presentation.CallingStateData
+import com.clearkeep.features.shared.presentation.CallingStateData
 import com.clearkeep.features.calls.presentation.common.CallState
 import com.clearkeep.features.calls.presentation.common.CallStateView
 import com.clearkeep.features.shared.createInCallNotification
