@@ -20,7 +20,6 @@ import com.clearkeep.domain.usecase.notification.SetFirebaseTokenUseCase
 import com.clearkeep.domain.usecase.people.*
 import com.clearkeep.domain.usecase.server.*
 import com.clearkeep.domain.usecase.workspace.GetWorkspaceInfoUseCase
-import com.clearkeep.features.chat.presentation.utils.SingleLiveEvent
 import com.clearkeep.features.chat.presentation.utils.getLinkFromPeople
 import com.clearkeep.features.shared.presentation.BaseViewModel
 import com.google.firebase.messaging.FirebaseMessaging
@@ -77,7 +76,7 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing = MutableLiveData(false)
 
-    private val _currentStatus = SingleLiveEvent<String>()
+    private val _currentStatus = MutableLiveData<String>()
     val currentStatus: LiveData<String>
         get() = _currentStatus
     private val _listUserStatus = MutableLiveData<List<User>>()
@@ -100,8 +99,27 @@ class HomeViewModel @Inject constructor(
             async { getStatusUserInDirectGroup() }
         }
         getAllSenderKey()
-        sendPing()
+        viewModelScope.launch {
+            async { sendPing() } .await()
+            async {  getOwnerStatus() }
+        }
     }
+
+    private suspend fun getOwnerStatus() {
+        val server = environment.getServer()
+        val status = getListClientStatusUseCase(
+            listOf(
+                User(
+                    server.profile.userId,
+                    server.profile.userName ?: "",
+                    server.serverDomain
+                )
+            )
+        )?.get(0)?.userStatus
+        Log.e("hungnv:", "Owner Status: $status")
+        _currentStatus.value = status
+    }
+
     fun getClientIdOfActiveServer() = environment.getServer().profile.userId
 
     fun getDomainOfActiveServer() = environment.getServer().serverDomain
@@ -195,20 +213,9 @@ class HomeViewModel @Inject constructor(
                         }
                     }
                 }
-            val server = environment.getServer()
-            listUserRequest.add(
-                User(
-                    server.profile.userId,
-                    server.profile.userName ?: "",
-                    server.serverDomain
-                )
-            )
             listUserRequest.addAll(getListUserEntityUseCase())
             val listClientStatus = getListClientStatusUseCase(listUserRequest)?.filter { !it.userName.isEmpty() }
             _listUserStatus.postValue(listClientStatus)
-            val status =
-                listClientStatus?.filter { it.userId == server.profile.userId && it.userName.isEmpty() }?.get(0)?.userStatus
-            _currentStatus.postValue(status)
             listClientStatus?.forEach {
                 currentServer.value?.serverDomain?.let { it1 ->
                     currentServer.value?.ownerClientId?.let { it2 ->
@@ -235,6 +242,7 @@ class HomeViewModel @Inject constructor(
     fun setUserStatus(status: com.clearkeep.domain.model.UserStatus) {
         viewModelScope.launch {
             val result = updateStatusUseCase(status.value)
+            Log.e("hungnv:", "setStatus $result")
             if (result) _currentStatus.postValue(status.value)
         }
     }

@@ -431,7 +431,17 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         controlCallVideoView.bottomImgEndCall.setOnClickListener {
-            endCall()
+            Builder(this)
+                .setTitle(getString(R.string.warning))
+                .setMessage(getString(R.string.dialog_leave_call_title))
+                .setPositiveButton(getString(R.string.leave)) { _, _ ->
+                    endCall()
+                }
+                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+
+                }
+                .create()
+                .show()
         }
         surfaceRootContainer.setOnClickListener {
             if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED)
