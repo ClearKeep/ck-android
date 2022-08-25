@@ -20,6 +20,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
+import com.clearkeep.features.shared.presentation.AppCall
 import com.clearkeep.features.shared.showMessagingStyleNotification
 import com.google.common.reflect.TypeToken
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -175,9 +176,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             val server = getServerUseCase(clientDomain, clientId)
             server?.profile?.avatar ?: ""
         }
-        if (com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling == false || com.clearkeep.features.calls.presentation.AppCall.listenerCallingState.value?.isCalling == null) {
+        if (AppCall.listenerCallingState.value?.isCalling == false || AppCall.listenerCallingState.value?.isCalling == null) {
             val groupNameExactly = if (isGroup(groupType)) groupName else fromClientName
-            com.clearkeep.features.calls.presentation.AppCall.inComingCall(
+            AppCall.inComingCall(
                 this, isAudioMode, rtcToken, groupId!!, groupType, groupNameExactly ?: "",
                 clientDomain, clientId,
                 fromClientName, avatar,

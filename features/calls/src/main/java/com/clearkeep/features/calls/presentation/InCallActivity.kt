@@ -38,6 +38,8 @@ import com.clearkeep.features.calls.presentation.surfacegenerator.SurfacePositio
 import com.clearkeep.features.calls.presentation.surfacegenerator.SurfacePositionFactory
 import com.clearkeep.features.shared.createInCallNotification
 import com.clearkeep.features.shared.dismissInCallNotification
+import com.clearkeep.features.shared.presentation.AppCall
+import com.clearkeep.features.shared.presentation.CallingStateData
 import com.clearkeep.januswrapper.*
 import dagger.hilt.android.AndroidEntryPoint
 import jp.wasabeef.glide.transformations.BlurTransformation
@@ -311,7 +313,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
             }
 
             delay(CALL_WAIT_TIME_OUT)
-            if (remoteRenders.isEmpty()) {
+            if (mCurrentCallState.name == CallState.CALLING.toString()) {
                 runOnUiThread {
                     updateCallStatus(CallState.CALL_NOT_READY)
                 }
@@ -338,6 +340,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         if (chronometerTimeCall.visibility == View.VISIBLE) {
             chronometerTimeCall.stop()
         }
+        
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
