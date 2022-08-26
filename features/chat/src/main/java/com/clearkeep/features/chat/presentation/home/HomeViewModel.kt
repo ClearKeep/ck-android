@@ -136,19 +136,18 @@ class HomeViewModel @Inject constructor(
 
     fun onPullToRefresh() {
         viewModelScope.launch {
+            isRefreshing.postValue(true)
+
             val newProfile = authRepository.getProfile(environment.getServer().serverDomain, environment.getServer().accessKey, environment.getServer().hashKey)
             if (newProfile != null) {
                 serverRepository.updateServerProfile(environment.getServer().serverDomain, newProfile)
             }
-        }
-        isRefreshing.postValue(true)
-        getAllSenderKey()
-        viewModelScope.launch {
             val fetchGroupResponse = fetchGroupsUseCase()
             getStatusUserInDirectGroup()
             handleResponse(fetchGroupResponse)
             isRefreshing.postValue(false)
         }
+        getAllSenderKey()
     }
 
 
@@ -228,8 +227,8 @@ class HomeViewModel @Inject constructor(
                     }
                 }?.let { it2 -> updateAvatarUserEntityUseCase(it, owner = it2) }
             }
-            delay(300 * 1000)
-            getStatusUserInDirectGroup()
+//            delay(300 * 1000)
+//            getStatusUserInDirectGroup()
 
         } catch (e: Exception) {
             printlnCK("getStatusUserInDirectGroup error: ${e.message}")
