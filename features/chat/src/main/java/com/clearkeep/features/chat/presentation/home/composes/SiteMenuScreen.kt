@@ -3,6 +3,7 @@ package com.clearkeep.features.chat.presentation.home.composes
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -192,6 +193,7 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 modifier = Modifier.clickable { expanded = true },
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Log.e("hungnv:status Side", "${statusUse.value}")
                 when (statusUse.value) {
                     UserStatus.ONLINE.value -> {
                         Text(
@@ -204,14 +206,14 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                     }
                     UserStatus.OFFLINE.value, UserStatus.UNDEFINED.value -> {
                         Text(
-                            text = UserStatus.OFFLINE.value,
+                            text = "",
                             style = TextStyle(
                                 color = grayscale3,
                                 fontSize = defaultNonScalableTextSize()
                             )
                         )
                     }
-                    else -> {
+                    UserStatus.BUSY.value -> {
                         Text(
                             text = UserStatus.BUSY.value,
                             style = TextStyle(
