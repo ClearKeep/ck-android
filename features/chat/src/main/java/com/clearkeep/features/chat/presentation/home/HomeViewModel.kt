@@ -100,8 +100,8 @@ class HomeViewModel @Inject constructor(
         }
         getAllSenderKey()
         viewModelScope.launch {
-            async { sendPing() } .await()
-            async {  getOwnerStatus() }
+            sendPing()
+            getOwnerStatus()
         }
     }
 
@@ -116,8 +116,15 @@ class HomeViewModel @Inject constructor(
                 )
             )
         )?.get(0)?.userStatus
-        Log.e("hungnv:", "Owner Status: $status")
-        _currentStatus.value = status
+        Log.e("hungnv:", "get status: ${server.profile.userName} - $status")
+        if (status != "Online" && status != "Busy"){
+            sendPingUseCase()
+            delay(5*1000)
+            getOwnerStatus()
+        } else {
+            _currentStatus.postValue(status)
+            Log.e("hungnv:", "Owner Status: $status")
+        }
     }
 
     fun getClientIdOfActiveServer() = environment.getServer().profile.userId
@@ -237,8 +244,8 @@ class HomeViewModel @Inject constructor(
 
     private fun sendPing() {
         viewModelScope.launch {
-            delay(60 * 1000)
             sendPingUseCase()
+            delay(45 * 1000)
             sendPing()
         }
     }
@@ -260,9 +267,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun selectChannel(server: Server) {
+        Log.e("hungnv: ", "Select Server :$server")
         viewModelScope.launch {
             setActiveServerUseCase(server)
             selectingJoinServer.value = false
+            async { getOwnerStatus() }.await()
         }
     }
 
