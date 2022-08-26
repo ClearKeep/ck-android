@@ -434,17 +434,7 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         controlCallVideoView.bottomImgEndCall.setOnClickListener {
-            Builder(this)
-                .setTitle(getString(R.string.warning))
-                .setMessage(getString(R.string.dialog_leave_call_title))
-                .setPositiveButton(getString(R.string.leave)) { _, _ ->
-                    endCall()
-                }
-                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
-
-                }
-                .create()
-                .show()
+            showDialogConfirmLeaveCall()
         }
         surfaceRootContainer.setOnClickListener {
             if (!mIsAudioMode && mCurrentCallState == CallState.ANSWERED)
@@ -459,25 +449,29 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         }
 
         imgEndWaiting.setOnClickListener {
-            endCall()
+            showDialogConfirmLeaveCall()
         }
+    }
+
+    private fun showDialogConfirmLeaveCall() {
+        Builder(this)
+            .setTitle(getString(R.string.warning))
+            .setMessage(getString(R.string.dialog_leave_call_title))
+            .setPositiveButton(getString(R.string.leave)) { _, _ ->
+                endCall()
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ ->
+
+            }
+            .create()
+            .show()
     }
 
     private fun handleBackPressed() {
         if (hasSupportPIP()) {
             enterPIPMode()
         } else {
-            Builder(this)
-                .setTitle(getString(R.string.warning))
-                .setMessage(getString(R.string.dialog_leave_call_title))
-                .setPositiveButton(getString(R.string.leave)) { _, _ ->
-                    endCall()
-                }
-                .setNegativeButton(getString(R.string.cancel)) { _, _ ->
-
-                }
-                .create()
-                .show()
+            showDialogConfirmLeaveCall()
         }
     }
 
