@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.usecase.call.CancelCallUseCase
 import com.clearkeep.domain.usecase.call.RequestVideoCallUseCase
@@ -13,8 +14,10 @@ import com.clearkeep.domain.usecase.call.SwitchAudioToVideoCallUseCase
 import com.clearkeep.januswrapper.*
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.response.ServerResponse
+import com.clearkeep.domain.usecase.call.AcceptCallUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.webrtc.*
 import java.lang.ref.WeakReference
@@ -25,7 +28,8 @@ import javax.inject.Inject
 class CallViewModel @Inject constructor(
     private val requestVideoCallUseCase: RequestVideoCallUseCase,
     private val switchAudioToVideoCallUseCase: SwitchAudioToVideoCallUseCase,
-    private val cancelCallUseCase: CancelCallUseCase
+    private val cancelCallUseCase: CancelCallUseCase,
+    private val acceptCallUseCase: AcceptCallUseCase
 ) : ViewModel(), JanusRTCInterface,
     PeerConnectionClient.PeerConnectionEvents, IControlCall {
 
@@ -41,6 +45,13 @@ class CallViewModel @Inject constructor(
     var totalTimeRun: Long = 0
     var totalTimeRunJob: Job? = null
     var mIsMute = MutableLiveData(false)
+
+    fun acceptCall(groupId: Int, owner: Owner) {
+        viewModelScope.launch{
+            acceptCallUseCase(groupId, owner)
+        }
+
+    }
 
     fun startVideo(
         context: Context, mLocalSurfaceRenderer: SurfaceViewRenderer,

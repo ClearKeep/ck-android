@@ -68,6 +68,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
                 homeViewModel.signOut()
             }
         }
+        if (intent.getStringExtra("notify_type") == "deactive_account"){
+            homeViewModel.signOut()
+        }
 
         setContent {
             CKSimpleTheme {

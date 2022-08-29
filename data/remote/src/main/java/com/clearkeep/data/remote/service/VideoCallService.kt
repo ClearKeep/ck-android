@@ -1,11 +1,8 @@
 package com.clearkeep.data.remote.service
 
+import com.clearkeep.common.utilities.*
 import com.clearkeep.data.remote.dynamicapi.ParamAPI
 import com.clearkeep.data.remote.dynamicapi.ParamAPIProvider
-import com.clearkeep.common.utilities.CALL_TYPE_AUDIO
-import com.clearkeep.common.utilities.CALL_TYPE_VIDEO
-import com.clearkeep.common.utilities.CALL_UPDATE_TYPE_BUSY
-import com.clearkeep.common.utilities.CALL_UPDATE_TYPE_CANCEL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import video_call.VideoCallOuterClass
@@ -29,6 +26,16 @@ class VideoCallService @Inject constructor(
         val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
             .setGroupId(groupId.toLong())
             .setUpdateType(CALL_UPDATE_TYPE_CANCEL)
+            .build()
+        val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
+        val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
+        return@withContext videoCallGrpc.updateCall(request)
+    }
+
+    suspend fun acceptCall(groupId: Int, server: com.clearkeep.domain.model.Server): VideoCallOuterClass.BaseResponse = withContext(Dispatchers.IO) {
+        val request = VideoCallOuterClass.UpdateCallRequest.newBuilder()
+            .setGroupId(groupId.toLong())
+            .setUpdateType(CALL_UPDATE_TYPE_ACCEPT)
             .build()
         val paramAPI = ParamAPI(server.serverDomain, server.accessKey, server.hashKey)
         val videoCallGrpc = apiProvider.provideVideoCallBlockingStub(paramAPI)
