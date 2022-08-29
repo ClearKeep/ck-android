@@ -13,7 +13,6 @@ import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.get
 
 @Singleton
 class InMemorySenderKeyStore @Inject constructor(
@@ -24,7 +23,6 @@ class InMemorySenderKeyStore @Inject constructor(
 
     override fun hasSenderKey(senderKeyName: CKSignalProtocolAddress): Boolean {
         try {
-            senderKeyName.name
             val senderKey = signalKeyDAO.getSignalSenderKey(
                 senderKeyName.name,
                 senderKeyName.deviceId
@@ -42,15 +40,13 @@ class InMemorySenderKeyStore @Inject constructor(
     }
 
     override suspend fun getAllSenderKey() {
-        signalKeyDAO.getSignalSenderKeys().forEach {
-            Log.d("CKL_: ", "getAllSenderKey groupId: ${it.groupId} ${it.senderKey} ");
-        }
+        signalKeyDAO.getSignalSenderKeys()
     }
 
     override fun storeSenderKey(sender: SignalProtocolAddress?, distributionId: UUID?, record: SenderKeyRecord?) {
         signalKeyDAO.insert(
             SignalSenderKey(
-                id = distributionId.toString(), groupId = "groupId", senderName = sender?.name ?: "",
+                id = distributionId.toString() + sender?.name, groupId = "groupId", senderName = sender?.name ?: "",
                 deviceId = sender?.deviceId ?: -1,
                 senderKey = record?.serialize() ?: "".toByteArray()
             )
@@ -59,7 +55,7 @@ class InMemorySenderKeyStore @Inject constructor(
 
     override fun loadSenderKey(sender: SignalProtocolAddress, distributionId: UUID?): SenderKeyRecord? {
         return try {
-            Log.d("CKL_: ", "InMemorySenderKeyStore loadSenderKey line = 63:sender: ${sender.name} " );
+            Log.d("CKL_: ", "InMemorySenderKeyStore loadSenderKey line = 63:sender name: ${sender.name} distributionId: $distributionId" );
             var record = store[Pair<SignalProtocolAddress, UUID>(sender, distributionId)]
             if (record == null) {
                 val senderKey = signalKeyDAO.getSignalSenderKey(
