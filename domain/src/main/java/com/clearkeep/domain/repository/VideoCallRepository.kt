@@ -12,5 +12,6 @@ interface VideoCallRepository {
 
     suspend fun cancelCall(groupId: Int, server: Server): Boolean
     suspend fun busyCall(groupId: Int, server: Server): Boolean
+    suspend fun acceptCall(groupId: Int, server: Server): Boolean
     suspend fun switchAudioToVideoCall(groupId: Int, server: Server): Boolean
 }
