@@ -92,9 +92,13 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
                 navigateToOtp()
             },
             onDeleteUser = {
-                //todo: delete user
-                homeViewModel.signOut()
-                NavigationUtils.navigateToStartActivity(this)
+                profileViewModel.deleteUser()
+                profileViewModel.deleteUserSuccess.observe(this){
+                    if(it){
+                        homeViewModel.signOut()
+                        NavigationUtils.navigateToSplashActivity(this)
+                    }
+                }
             }
         )
     }

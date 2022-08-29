@@ -23,6 +23,7 @@ import java.util.*
 import javax.inject.Inject
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlin.Exception
 
 @HiltViewModel
@@ -94,7 +95,9 @@ class ProfileViewModel @Inject constructor(
         get() = _countryCode
 
     val unsavedChangeDialogVisible = MutableLiveData<Boolean>()
-
+    val deleteUserDialogVisible = MutableLiveData<Boolean>()
+    val deleteUserSuccess : MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
+    val isLoading = MutableLiveData(false)
     fun getMfaDetail() {
         val server = environment.getServer()
         viewModelScope.launch {
@@ -350,6 +353,16 @@ class ProfileViewModel @Inject constructor(
         }
         return true
     }
+
+    fun deleteUser(){
+         viewModelScope.launch{
+             deleteUserDialogVisible.value = false
+             isLoading.value = true
+             delay(2000L) //TODO handle delete user function
+             isLoading.value = false
+             deleteUserSuccess.value = true
+         }
+     }
 
     companion object {
         private const val AVATAR_MAX_SIZE = 4_000_000 //4MB

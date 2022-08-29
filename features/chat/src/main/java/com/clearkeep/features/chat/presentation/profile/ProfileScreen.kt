@@ -68,13 +68,14 @@ fun ProfileScreen(
         val countryCode = profileViewModel.countryCode.observeAsState()
         val otpErrorDialogVisible = rememberSaveable { mutableStateOf(false) }
         val pickAvatarDialogVisible = rememberSaveable { mutableStateOf(false) }
-        val deleteUserDialogVisible = rememberSaveable { mutableStateOf(false) }
+        val deleteUserDialogVisible = profileViewModel.deleteUserDialogVisible.observeAsState()
         val unsavedChangesDialogVisible =
             profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
+        val isLoading = profileViewModel.isLoading.observeAsState()
 
         Column(
             Modifier
@@ -265,7 +266,7 @@ fun ProfileScreen(
                                 }
                             }
                             Spacer(Modifier.height(24.sdp()))
-                            DeleteUser { deleteUserDialogVisible.value = true }
+                            DeleteUser { profileViewModel.deleteUserDialogVisible.value = true }
                             Spacer(Modifier.height(24.sdp()))
                             Column(
                                 modifier = Modifier
@@ -284,6 +285,8 @@ fun ProfileScreen(
                         }
                     }
                 }
+                if (isLoading.value == true)
+                    CKCircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
         if (otpErrorDialogVisible.value) {
@@ -323,18 +326,17 @@ fun ProfileScreen(
                 }
             )
         }
-        if (deleteUserDialogVisible.value) {
+        if (deleteUserDialogVisible.value == true) {
             CKAlertDialog(
                 title = stringResource(R.string.warning),
                 text = stringResource(R.string.delete_user_warning),
                 dismissTitle = stringResource(R.string.cancel),
                 confirmTitle = stringResource(R.string.delete),
                 onDismissButtonClick = {
-                    deleteUserDialogVisible.value = false
+                    profileViewModel.deleteUserDialogVisible.value = false
                 },
                 onConfirmButtonClick = {
                     onDeleteUser.invoke()
-                    onCloseView()
                 }
             )
         }
