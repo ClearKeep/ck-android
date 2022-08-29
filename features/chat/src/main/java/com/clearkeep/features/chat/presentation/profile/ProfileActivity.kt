@@ -20,12 +20,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.clearkeep.features.chat.presentation.changepassword.ChangePasswordActivity
+import com.clearkeep.features.chat.presentation.home.HomeViewModel
 import com.clearkeep.features.chat.presentation.otp.OtpActivity
 import com.clearkeep.features.chat.presentation.room.imagepicker.ImagePickerScreen
+import com.clearkeep.navigation.NavigationUtils
 
 @AndroidEntryPoint
 class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     private val profileViewModel: ProfileViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
 
     @ExperimentalMaterialApi
         @ExperimentalFoundationApi
@@ -87,6 +90,11 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
             },
             onNavigateToOtp = {
                 navigateToOtp()
+            },
+            onDeleteUser = {
+                //todo: delete user
+                homeViewModel.signOut()
+                NavigationUtils.navigateToStartActivity(this)
             }
         )
     }

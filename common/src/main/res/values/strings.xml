@@ -101,10 +101,12 @@
     <string name="sign_out_dialog">Are you sure you want to sign out from the server?</string>
     <string name="cancel">Cancel</string>
     <string name="leave">Leave</string>
+    <string name="delete">Delete</string>
     <string name="search_people">Search people</string>
     <string name="take_photo">Take a photo</string>
     <string name="albums">Albums</string>
     <string name="profile_unsaved_change_warning">You have unsaved changes that will be lost</string>
+    <string name="delete_user_warning">Deleting your account will delete all your data.</string>
     <string name="close">Close</string>
     <string name="otp_verify_password_title">Enter Your Current Password</string>
     <string name="otp_verify_password_description">Please enter your password to enable 2FA</string>
@@ -135,6 +137,7 @@
     <string name="profile_settings">Profile Settings</string>
     <string name="copy_profile_link">Copy profile link</string>
     <string name="change_password">Change Password</string>
+    <string name="delete_user">Delete User</string>
     <string name="profile_phone_number">Phone number</string>
     <string name="username">Username</string>
     <string name="call_connecting">Connecting</string>
