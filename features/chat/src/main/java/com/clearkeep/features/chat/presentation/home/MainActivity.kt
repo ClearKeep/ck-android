@@ -22,6 +22,7 @@ import com.clearkeep.common.presentation.components.base.CKButton
 import com.clearkeep.common.presentation.components.base.CKCircularProgressIndicator
 import com.clearkeep.features.chat.presentation.bannedusers.BannedUserActivity
 import com.clearkeep.common.utilities.sdp
+import com.clearkeep.features.chat.R
 import com.clearkeep.features.chat.presentation.contactsearch.SearchUserActivity
 import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupActivity
 import com.clearkeep.features.chat.presentation.groupcreate.CreateGroupActivity.Companion.EXTRA_IS_DIRECT_CHAT
@@ -67,6 +68,9 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
             if (it) {
                 homeViewModel.signOut()
             }
+        }
+        if (intent.getStringExtra("notify_type") == "deactive_account"){
+            homeViewModel.signOut()
         }
 
         setContent {
