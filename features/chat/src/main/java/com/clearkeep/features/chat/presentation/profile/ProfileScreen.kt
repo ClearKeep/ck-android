@@ -8,8 +8,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -25,14 +26,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.navigation.NavController
-import com.clearkeep.features.chat.R
-import com.clearkeep.common.presentation.components.*
+import com.clearkeep.common.presentation.components.LocalColorMapping
 import com.clearkeep.common.presentation.components.base.*
-import com.clearkeep.features.chat.presentation.composes.CircleAvatar
+import com.clearkeep.common.presentation.components.primaryDefault
 import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.sdp
 import com.clearkeep.common.utilities.toNonScalableTextSize
 import com.clearkeep.features.chat.BuildConfig
+import com.clearkeep.features.chat.R
+import com.clearkeep.features.chat.presentation.composes.CircleAvatar
 import com.clearkeep.features.chat.presentation.home.composes.SideBarLabel
 import com.clearkeep.features.chat.presentation.room.UploadPhotoDialog
 
@@ -44,7 +46,8 @@ fun ProfileScreen(
     onCloseView: () -> Unit,
     onChangePassword: () -> Unit,
     onCopyToClipBoard: () -> Unit,
-    onNavigateToOtp: () -> Unit
+    onNavigateToOtp: () -> Unit,
+    onDeleteUser: () -> Unit
 ) {
     val versionName = BuildConfig.VERSION_NAME
     val env = BuildConfig.FLAVOR
@@ -65,12 +68,14 @@ fun ProfileScreen(
         val countryCode = profileViewModel.countryCode.observeAsState()
         val otpErrorDialogVisible = rememberSaveable { mutableStateOf(false) }
         val pickAvatarDialogVisible = rememberSaveable { mutableStateOf(false) }
+        val deleteUserDialogVisible = profileViewModel.deleteUserDialogVisible.observeAsState()
         val unsavedChangesDialogVisible =
             profileViewModel.unsavedChangeDialogVisible.observeAsState()
         val uploadAvatarResponse = profileViewModel.uploadAvatarResponse.observeAsState()
         val updateMfaResponse = profileViewModel.updateMfaSettingResponse.observeAsState()
         val selectedAvatar = profileViewModel.imageUriSelected.observeAsState()
         val userPreference = profileViewModel.userPreference.observeAsState()
+        val isLoading = profileViewModel.isLoading.observeAsState()
 
         Column(
             Modifier
@@ -261,6 +266,8 @@ fun ProfileScreen(
                                 }
                             }
                             Spacer(Modifier.height(24.sdp()))
+                            DeleteUser { profileViewModel.deleteUserDialogVisible.value = true }
+                            Spacer(Modifier.height(24.sdp()))
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -278,6 +285,8 @@ fun ProfileScreen(
                         }
                     }
                 }
+                if (isLoading.value == true)
+                    CKCircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
         if (otpErrorDialogVisible.value) {
@@ -314,6 +323,20 @@ fun ProfileScreen(
                     profileViewModel.unsavedChangeDialogVisible.value = false
                     profileViewModel.undoProfileChanges()
                     onCloseView()
+                }
+            )
+        }
+        if (deleteUserDialogVisible.value == true) {
+            CKAlertDialog(
+                title = stringResource(R.string.warning),
+                text = stringResource(R.string.delete_user_warning),
+                dismissTitle = stringResource(R.string.cancel),
+                confirmTitle = stringResource(R.string.delete),
+                onDismissButtonClick = {
+                    profileViewModel.deleteUserDialogVisible.value = false
+                },
+                onConfirmButtonClick = {
+                    onDeleteUser.invoke()
                 }
             )
         }
@@ -577,6 +600,35 @@ fun TwoFaceAuthView(
             ),
             modifier = Modifier.fillMaxWidth(0.8f)
         )
+    }
+}
+
+@Composable
+fun DeleteUser(onShowDialogDeleteUser: () -> Unit) {
+    Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+        SideBarLabel(
+            text = stringResource(R.string.delete_user),
+            modifier = Modifier
+                .weight(0.66f),
+            fontSize = defaultNonScalableTextSize(),
+            color = primaryDefault
+        )
+        Column(
+            modifier = Modifier.clickable {
+            },
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            IconButton(
+                onClick = { onShowDialogDeleteUser.invoke() }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    contentDescription = "",
+                    tint = primaryDefault
+                )
+            }
+        }
     }
 }
 
