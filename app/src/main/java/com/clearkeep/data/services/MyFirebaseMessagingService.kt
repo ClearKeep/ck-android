@@ -20,6 +20,7 @@ import com.clearkeep.domain.usecase.people.GetFriendUseCase
 import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
 import com.clearkeep.domain.usecase.server.GetOwnerClientIdsUseCase
 import com.clearkeep.domain.usecase.server.GetServerUseCase
+import com.clearkeep.features.chat.presentation.home.MainActivity
 import com.clearkeep.features.shared.presentation.AppCall
 import com.clearkeep.features.shared.showMessagingStyleNotification
 import com.google.common.reflect.TypeToken
@@ -95,6 +96,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         printlnCK("MyFirebaseMessagingService onMessageReceived: ${remoteMessage.data}")
         handleNotification(remoteMessage)
+        if (remoteMessage.data["notify_type"] =="deactive_account" || remoteMessage.data["notify_type"]=="reset_pincode"){
+            val intentNotiType = Intent (applicationContext, MainActivity::class.java)
+            intentNotiType.putExtra("notify_type", remoteMessage.data["notify_type"])
+            intentNotiType.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            applicationContext.startActivity(intentNotiType)
+        }
+        Log.e("hungnv", "onMessageReceived: ${remoteMessage.data}" )
     }
 
     private fun handleNotification(remoteMessage: RemoteMessage) {
