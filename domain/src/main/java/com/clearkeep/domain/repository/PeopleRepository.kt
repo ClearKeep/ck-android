@@ -20,4 +20,5 @@ interface PeopleRepository {
     suspend fun getUserInfo(userId: String, userDomain: String): Resource<User>
     suspend fun getFriendByEmail(emailHard:String): List<User>
     suspend fun getListUserEntity(): List<User>
+    suspend fun deleteAccount(): Boolean
 }

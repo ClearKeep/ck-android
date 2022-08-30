@@ -1,29 +1,32 @@
 package com.clearkeep.features.chat.presentation.profile
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.*
-import androidx.lifecycle.*
-import com.clearkeep.common.presentation.components.CKSimpleTheme
-import dagger.hilt.android.AndroidEntryPoint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.map
+import androidx.lifecycle.observe
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.clearkeep.common.presentation.components.CKSimpleTheme
 import com.clearkeep.features.chat.presentation.changepassword.ChangePasswordActivity
 import com.clearkeep.features.chat.presentation.home.HomeViewModel
 import com.clearkeep.features.chat.presentation.otp.OtpActivity
 import com.clearkeep.features.chat.presentation.room.imagepicker.ImagePickerScreen
 import com.clearkeep.navigation.NavigationUtils
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ProfileActivity : AppCompatActivity(), LifecycleObserver {
@@ -93,11 +96,11 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
             },
             onDeleteUser = {
                 profileViewModel.deleteUser()
-                profileViewModel.deleteUserSuccess.observe(this){
-                    if(it){
-                        homeViewModel.signOut()
-                        NavigationUtils.navigateToSplashActivity(this)
-                    }
+                profileViewModel.deleteUserSuccess.observe(this) {
+                    if (it) profileViewModel.signOut()
+                }
+                profileViewModel.shouldReLogin.observe(this) {
+                    if (it) NavigationUtils.navigateToSplashActivity(this)
                 }
             }
         )

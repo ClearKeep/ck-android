@@ -173,6 +173,19 @@ class PeopleRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteAccount(): Boolean  = withContext(Dispatchers.IO){
+       try {
+            val response = groupService.deleteAccount()
+           Log.e("hungnv:", "deleteAccount: $response")
+            return@withContext response.error.isNullOrEmpty()
+        } catch (e: StatusRuntimeException) {
+            return@withContext false
+        } catch (e: Exception) {
+            printlnCK("deleteAccount: $e")
+            return@withContext false
+        }
+    }
+
     override suspend fun updateStatus(status: String?): Boolean = withContext(Dispatchers.IO) {
         printlnCK("updateStatus")
         try {
