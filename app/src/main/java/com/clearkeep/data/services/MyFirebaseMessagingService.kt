@@ -138,10 +138,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "deactive_account" -> {
                         printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
                         handleRequestDeactiveAccount(remoteMessage)
-                        val intentNotiType = Intent(applicationContext, MainActivity::class.java)
-                        intentNotiType.putExtra("notify_type", "deactive_account")
-                        intentNotiType.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        applicationContext.startActivity(intentNotiType)
                     }
                     "reset_pincode" ->{
                         val intentNotiType = Intent(applicationContext, MainActivity::class.java)
@@ -354,6 +350,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val deactivatedAccountId = data["deactive_account_id"] ?: ""
         printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
+        if (deactivatedAccountId == clientId) {
+            val intentNotiType = Intent(applicationContext, MainActivity::class.java)
+            intentNotiType.putExtra("notify_type", "deactive_account")
+            intentNotiType.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            applicationContext.startActivity(intentNotiType)
+        }
         disableChatOfDeactivatedUserUseCase(clientId, clientDomain, deactivatedAccountId)
     }
 
