@@ -5,11 +5,13 @@ import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.clearkeep.common.utilities.*
-import com.clearkeep.domain.repository.*
 import com.clearkeep.data.remote.dynamicapi.Environment
 import com.clearkeep.domain.model.CKSignalProtocolAddress
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.UserPreference
+import com.clearkeep.domain.repository.PeopleRepository
+import com.clearkeep.domain.repository.SenderKeyStore
+import com.clearkeep.domain.repository.SignalKeyRepository
 import com.clearkeep.domain.usecase.call.BusyCallUseCase
 import com.clearkeep.domain.usecase.chat.GetJoiningRoomUseCase
 import com.clearkeep.domain.usecase.group.*
@@ -35,7 +37,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import java.util.HashMap
 
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
@@ -287,7 +288,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                 if (getOwnerClientIdsUseCase().contains(removedMember)) {
                     deleteMessageUseCase(groupId, clientDomain, removedMember)
                 }
-                if (getOwnerClientIdsUseCase().contains(removedMember)) {
+
+                if (getOwnerClientIdsUseCase().contains(removedMember) &&  clientId == removedMember) {
                     getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
                         Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it");
                         val senderAddress2 = CKSignalProtocolAddress(
