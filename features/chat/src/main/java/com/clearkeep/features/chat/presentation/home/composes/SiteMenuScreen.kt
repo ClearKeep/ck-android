@@ -193,7 +193,6 @@ fun HeaderSite(profile: Profile, homeViewModel: HomeViewModel) {
                 modifier = Modifier.clickable { expanded = true },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Log.e("hungnv:status Side", "${statusUse.value}")
                 when (statusUse.value) {
                     UserStatus.ONLINE.value -> {
                         Text(

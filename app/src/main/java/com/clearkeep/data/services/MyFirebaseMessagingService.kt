@@ -105,7 +105,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         printlnCK("notification $clientId")
         GlobalScope.launch {
             val server = getServerUseCase(clientDomain, clientId)
-            Log.e("hungnv", "handleNotification: sever: $server ,notify_type: ${remoteMessage.data["notify_type"]}" )
             printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
@@ -127,7 +126,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
                     "accept_request_call" -> {
-                        Log.e("hungnv", "handleNotification: accept_request_call")
+                        printlnCK("CKLog_handleNotification: accept_request_call")
                         val groupId = remoteMessage.data["group_id"]
                         NotificationManagerCompat.from(applicationContext)
                             .cancel(null, INCOMING_NOTIFICATION_ID)
@@ -153,7 +152,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                 }
             } else if (remoteMessage.data["notify_type"] == "accept_request_call"){
-                Log.e("hungnv", "handleNotification: accept_request_call sever null")
                 val groupId = remoteMessage.data["group_id"]
                 NotificationManagerCompat.from(applicationContext)
                     .cancel(null, INCOMING_NOTIFICATION_ID)

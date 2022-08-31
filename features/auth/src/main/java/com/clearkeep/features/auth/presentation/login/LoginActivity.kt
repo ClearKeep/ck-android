@@ -384,7 +384,6 @@ class LoginActivity : AppCompatActivity() {
     ) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
-            Log.e("antx", "onSignInGoogleResult: ${account.toString()}")
             lifecycleScope.launch {
                 account?.serverAuthCode
                 val res = account?.idToken?.let {

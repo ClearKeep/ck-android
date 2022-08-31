@@ -88,7 +88,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private fun registerAcceptCallReceiver() {
         acceptCallReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                Log.e("hungnv", "onCreate: cancel_call")
                 finish()
             }
         }
@@ -607,7 +606,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
     private fun cancelCallAPI(groupId: Int) {
         GlobalScope.launch(Dispatchers.Main) {
             viewModel.cancelCall(groupId, com.clearkeep.domain.model.Owner(mDomain, mOwnerId))
-            Log.e("hungnv", "cancelCallAPI: ImcomingAct" )
         }
     }
 
@@ -615,7 +613,6 @@ class InComingCallActivity : AppCompatActivity(), View.OnClickListener {
         GlobalScope.launch(Dispatchers.Main) {
 //            async {
                 viewModel.acceptCall(groupId, com.clearkeep.domain.model.Owner(mDomain, mOwnerId))
-                Log.e("hungnv", "acceptCallAPI: ImcomingAct")
 //            }.await()
         }
 
