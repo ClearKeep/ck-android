@@ -109,7 +109,6 @@ class InCallPeerToPeerActivity : BaseActivity() {
         isShowedDialogCamera = !mIsAudioMode
 
         initViews()
-        callViewModel.acceptCall(mGroupId.toInt(), getOwnerServer())
 
         registerEndCallReceiver()
         registerBroadcastReceiver()
@@ -175,6 +174,7 @@ class InCallPeerToPeerActivity : BaseActivity() {
 
         callScope.launch {
             if (isFromComingCall) {
+                callViewModel.acceptCall(mGroupId.toInt(), getOwnerServer())
                 val turnUserName = intent.getStringExtra(EXTRA_TURN_USER_NAME) ?: ""
                 val turnPassword = intent.getStringExtra(EXTRA_TURN_PASS) ?: ""
                 val turnUrl = intent.getStringExtra(EXTRA_TURN_URL) ?: ""
