@@ -15,7 +15,11 @@ import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.User
 import com.clearkeep.domain.repository.Environment
+import com.clearkeep.domain.usecase.auth.LogoutUseCase
+import com.clearkeep.domain.usecase.people.DeleteAccountUseCase
+import com.clearkeep.domain.usecase.server.GetIsLogoutUseCase
 import com.clearkeep.features.chat.presentation.utils.getLinkFromPeople
+import com.clearkeep.features.shared.presentation.BaseViewModel
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,8 +38,10 @@ class ProfileViewModel @Inject constructor(
     private val getMfaSettingsUseCase: GetMfaSettingsUseCase,
     private val updateMfaSettingsUseCase: UpdateMfaSettingsUseCase,
     private val getUserPreferenceUseCase: GetUserPreferenceUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
     getDefaultServerProfileAsStateUseCase: GetDefaultServerProfileAsStateUseCase,
-) : ViewModel() {
+    logoutUseCase: LogoutUseCase,
+    ) : BaseViewModel(logoutUseCase) {
     private val phoneUtil = PhoneNumberUtil.getInstance()
 
     val profile: LiveData<com.clearkeep.domain.model.Profile?> = getDefaultServerProfileAsStateUseCase().map {
@@ -358,9 +364,12 @@ class ProfileViewModel @Inject constructor(
          viewModelScope.launch{
              deleteUserDialogVisible.value = false
              isLoading.value = true
-             delay(2000L) //TODO handle delete user function
-             isLoading.value = false
-             deleteUserSuccess.value = true
+             val result = deleteAccountUseCase.invoke()
+             if (result){
+                 isLoading.value = false
+                 deleteUserSuccess.value = true
+             }
+
          }
      }
 

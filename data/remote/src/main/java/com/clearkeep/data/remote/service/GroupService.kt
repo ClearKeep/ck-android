@@ -133,7 +133,12 @@ class GroupService @Inject constructor(
         return dynamicAPIProvider.provideUserBlockingStub().getUsers(request)
     }
 
-    suspend fun sendPing(): UserOuterClass.BaseResponse = withContext(Dispatchers.IO) {
+    suspend fun deleteAccount(): UserOuterClass.BaseResponse  = withContext(Dispatchers.IO){
+        val request = UserOuterClass.Empty.newBuilder().build()
+        return@withContext dynamicAPIProvider.provideUserBlockingStub().deleteAccount(request)
+    }
+
+    suspend fun  sendPing(): UserOuterClass.BaseResponse = withContext(Dispatchers.IO) {
         val request = UserOuterClass.PingRequest.newBuilder().build()
         return@withContext dynamicAPIProvider.provideUserBlockingStub().pingRequest(request)
     }

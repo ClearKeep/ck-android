@@ -634,14 +634,12 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
     }
 
     private fun enableMute(isMuting: Boolean) {
-        Log.e("antx", "enableMute isMuting $isMuting")
         controlCallAudioView.toggleMute.isChecked = isMuting
         controlCallVideoView.bottomToggleMute.isChecked = isMuting
         peerConnectionClient?.setAudioEnabled(!isMuting)
     }
 
     private fun enableMuteVideo(isMuteVideo: Boolean) {
-        Log.e("antx", "enableMute enableMuteVideo $isMuteVideo")
         controlCallAudioView.toggleFaceTime.isChecked = isMuteVideo
         controlCallVideoView.bottomToggleFaceTime.isChecked = isMuteVideo
         peerConnectionClient?.setLocalVideoEnable(!isMuteVideo)
@@ -675,10 +673,6 @@ class InCallActivity : BaseActivity(), JanusRTCInterface,
         unRegisterBroadcastReceiver()
         stopRingBackTone()
         stopBusySignalSound()
-        Log.e(
-            "antx",
-            "finishAndReleaseResource ${!isFromComingCall}, mCurrentCallState : $mCurrentCallState   ${mCurrentCallState == CallState.CALLING}"
-        )
         if (!isFromComingCall && (mCurrentCallState == CallState.CALLING || mCurrentCallState == CallState.CALL_NOT_READY)) {
             cancelCallAPI()
         }

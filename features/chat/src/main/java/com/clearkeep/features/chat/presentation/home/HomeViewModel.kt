@@ -106,24 +106,26 @@ class HomeViewModel @Inject constructor(
     }
 
     private suspend fun getOwnerStatus() {
-        val server = environment.getServer()
-        val status = getListClientStatusUseCase(
-            listOf(
+        if (environment.getServerCanNull() != null) {
+            val server = environment.getServer()
+            val ownerUser = listOf(
                 User(
                     server.profile.userId,
                     server.profile.userName ?: "",
                     server.serverDomain
                 )
             )
-        )?.get(0)?.userStatus
-        Log.e("hungnv:", "get status: ${server.profile.userName} - $status")
-        if (status != "Online" && status != "Busy"){
-            sendPingUseCase()
-            delay(5*1000)
-            getOwnerStatus()
-        } else {
-            _currentStatus.postValue(status)
-            Log.e("hungnv:", "Owner Status: $status")
+            if (ownerUser.size>0) {
+                val status = getListClientStatusUseCase(ownerUser)?.firstOrNull()?.userStatus
+                printlnCK("getStatus: $status")
+                if (status != "Online" && status != "Busy") {
+                    sendPingUseCase()
+                    delay(5 * 1000)
+                    getOwnerStatus()
+                } else {
+                    _currentStatus.postValue(status)
+                }
+            }
         }
     }
 
@@ -253,7 +255,6 @@ class HomeViewModel @Inject constructor(
     fun setUserStatus(status: com.clearkeep.domain.model.UserStatus) {
         viewModelScope.launch {
             val result = updateStatusUseCase(status.value)
-            Log.e("hungnv:", "setStatus $result")
             if (result) _currentStatus.postValue(status.value)
         }
     }
@@ -267,7 +268,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun selectChannel(server: Server) {
-        Log.e("hungnv: ", "Select Server :$server")
+        printlnCK("SelectServer: $server")
         viewModelScope.launch {
             setActiveServerUseCase(server)
             selectingJoinServer.value = false

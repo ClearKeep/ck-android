@@ -105,7 +105,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         printlnCK("notification $clientId")
         GlobalScope.launch {
             val server = getServerUseCase(clientDomain, clientId)
-            Log.e("hungnv", "handleNotification: sever: $server ,notify_type: ${remoteMessage.data["notify_type"]}" )
             printlnCK("handleNotification server  clientDomain: $clientDomain clientId: $clientId notify_type ${remoteMessage.data["notify_type"]}")
 
             if (server != null) {
@@ -127,7 +126,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                         handlerRequestAddRemoteMember(remoteMessage)
                     }
                     "accept_request_call" -> {
-                        Log.e("hungnv", "handleNotification: accept_request_call")
+                        printlnCK("CKLog_handleNotification: accept_request_call")
                         val groupId = remoteMessage.data["group_id"]
                         NotificationManagerCompat.from(applicationContext)
                             .cancel(null, INCOMING_NOTIFICATION_ID)
@@ -138,10 +137,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     "deactive_account" -> {
                         printlnCK("Deactive account ref_client_id ${remoteMessage.data["ref_client_id"]} ref_group_id ${remoteMessage.data["ref_group_id"]}")
                         handleRequestDeactiveAccount(remoteMessage)
-                        val intentNotiType = Intent(applicationContext, MainActivity::class.java)
-                        intentNotiType.putExtra("notify_type", "deactive_account")
-                        intentNotiType.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        applicationContext.startActivity(intentNotiType)
                     }
                     "reset_pincode" ->{
                         val intentNotiType = Intent(applicationContext, MainActivity::class.java)
@@ -157,7 +152,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                 }
             } else if (remoteMessage.data["notify_type"] == "accept_request_call"){
-                Log.e("hungnv", "handleNotification: accept_request_call sever null")
                 val groupId = remoteMessage.data["group_id"]
                 NotificationManagerCompat.from(applicationContext)
                     .cancel(null, INCOMING_NOTIFICATION_ID)
@@ -354,6 +348,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val clientDomain = remoteMessage.data["client_workspace_domain"] ?: ""
         val deactivatedAccountId = data["deactive_account_id"] ?: ""
         printlnCK("handleRequestDeactiveAccount clientId $clientId clientDomain $clientDomain deactivatedAccountId $deactivatedAccountId")
+        if (deactivatedAccountId == clientId) {
+            val intentNotiType = Intent(applicationContext, MainActivity::class.java)
+            intentNotiType.putExtra("notify_type", "deactive_account")
+            intentNotiType.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            applicationContext.startActivity(intentNotiType)
+        }
         disableChatOfDeactivatedUserUseCase(clientId, clientDomain, deactivatedAccountId)
     }
 
