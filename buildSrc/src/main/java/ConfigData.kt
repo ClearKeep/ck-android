@@ -3,6 +3,6 @@ object ConfigData {
     const val buildTools = "30.0.3"
     const val minSdk = 21
     const val targetSdk = 31
-    const val versionCode = 43
-    const val versionName = "1.1.4"
+    const val versionCode = 44
+    const val versionName = "1.1.5"
 }
