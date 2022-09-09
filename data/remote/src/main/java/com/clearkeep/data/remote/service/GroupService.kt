@@ -1,6 +1,5 @@
 package com.clearkeep.data.remote.service
 
-import android.util.Log
 import com.clearkeep.common.utilities.REQUEST_DEADLINE_SECONDS
 import com.clearkeep.common.utilities.getGroupType
 import com.clearkeep.data.remote.dynamicapi.DynamicAPIProvider
@@ -172,12 +171,12 @@ class GroupService @Inject constructor(
             .withDeadlineAfter(30, TimeUnit.SECONDS).getUserInfo(request)
     }
 
-    suspend fun findUserByEmail(emailHard: String): List<User> = withContext(Dispatchers.IO) {
+    suspend fun findUserByEmail(email: String): List<User> = withContext(Dispatchers.IO) {
         try {
             val request = UserOuterClass
                 .FindUserByEmailRequest
                 .newBuilder()
-                .setEmailHash(emailHard)
+                .setEmail(email)
                 .build()
             val response = dynamicAPIProvider.provideUserBlockingStub().findUserByEmail(request)
             return@withContext response.lstUserOrBuilderList.map {

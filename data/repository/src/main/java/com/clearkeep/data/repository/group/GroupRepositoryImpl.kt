@@ -116,13 +116,18 @@ class GroupRepositoryImpl @Inject constructor(
             try {
                 val addMember = invitedUsers.map { user ->
                     async {
-                        groupService.addMember(
-                            groupId,
-                            user,
-                            getClientId(),
-                            owner.domain,
-                            environment.getServer().profile.userName
-                        )
+                        try{
+                            groupService.addMember(
+                                groupId,
+                                user,
+                                getClientId(),
+                                owner.domain,
+                                environment.getServer().profile.userName
+                            )
+                        }catch (e:Exception){
+                            Log.e("TAG", "inviteUserToGroup: ${e.printStackTrace()}" )
+                            return@async null
+                        }
                     }
                 }
 
