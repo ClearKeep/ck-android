@@ -253,19 +253,19 @@ fun ProfileScreen(
                                 ChangePassword(onChangePassword)
                                 Spacer(Modifier.height(24.sdp()))
                             }
-                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
-                                focusManager.clearFocus()
-                                if (it) {
-                                    if (profileViewModel.getMfaErrorMessage().first.isEmpty()) {
-                                        profileViewModel.updateMfaSettings(it)
-                                    } else {
-                                        otpErrorDialogVisible.value = true
-                                    }
-                                } else {
-                                    profileViewModel.updateMfaSettings(it)
-                                }
-                            }
-                            Spacer(Modifier.height(24.sdp()))
+//                            TwoFaceAuthView(userPreference.value?.mfa ?: false) {
+//                                focusManager.clearFocus()
+//                                if (it) {
+//                                    if (profileViewModel.getMfaErrorMessage().first.isEmpty()) {
+//                                        profileViewModel.updateMfaSettings(it)
+//                                    } else {
+//                                        otpErrorDialogVisible.value = true
+//                                    }
+//                                } else {
+//                                    profileViewModel.updateMfaSettings(it)
+//                                }
+//                            }
+//                            Spacer(Modifier.height(24.sdp()))
                             DeleteUser { profileViewModel.deleteUserDialogVisible.value = true }
                             Spacer(Modifier.height(24.sdp()))
                             Column(
