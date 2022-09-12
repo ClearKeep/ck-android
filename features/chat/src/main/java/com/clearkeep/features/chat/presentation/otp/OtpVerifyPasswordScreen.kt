@@ -98,7 +98,6 @@ fun OtpVerifyPasswordScreen(
                 )
             }
             Status.SUCCESS -> {
-                Log.d("antx: ", " OtpVerifyPasswordScreen line = 100: SUCCESS" );
                 otpViewModel.verifyPasswordResponse.value = null
                 onClickNext()
             }

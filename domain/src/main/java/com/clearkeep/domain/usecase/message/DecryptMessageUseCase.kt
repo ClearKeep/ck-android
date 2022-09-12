@@ -154,7 +154,7 @@ class DecryptMessageUseCase @Inject constructor(
         val plaintextFromAlice = try {
             bobGroupCipher.decrypt(message.toByteArray())
         } catch (messageEx: DuplicateMessageException) {
-            Log.d("antx: ", "DecryptMessageUseCase DuplicateMessageException line = 161: " );
+            printlnCK("DecryptMessageUseCase DuplicateMessageException line = 161: " )
             throw messageEx
         } catch (e: Exception) {
                         val initSessionAgain = initSessionUserInGroup(
@@ -177,7 +177,6 @@ class DecryptMessageUseCase @Inject constructor(
         }
 
         val signalProtocolAddress = CKSignalProtocolAddress(sender,null, RECEIVER_DEVICE_ID)
-        Log.d("antx: ", "DecryptMessageUseCase decryptPeerMessage line = 185: $signalProtocolAddress" );
         val preKeyMessage = PreKeySignalMessage(message.toByteArray())
         val sessionCipher = SessionCipher(signalProtocolStore, signalProtocolAddress)
         val message = sessionCipher.decrypt(preKeyMessage)

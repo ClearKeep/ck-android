@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.usecase.profile.MfaResendOtpUseCase
 import com.clearkeep.domain.usecase.profile.MfaValidateOtpUseCase
@@ -30,7 +31,7 @@ class OtpViewModel @Inject constructor(
     val isAccountLocked: LiveData<Boolean> get() = _isAccountLocked
 
     fun verifyPassword(password: String) {
-        Log.d("antx: ", "OtpViewModel verifyPassword line = 33: " );
+        printlnCK("OtpViewModel verifyPassword line = 33: " );
         if (password.isBlank()) {
             verifyPasswordResponse.value =
                 Resource.error("Current Password must not be blank", null)
@@ -42,22 +43,20 @@ class OtpViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            Log.d("antx: ", "OtpViewModel verifyPassword line = 45: " );
+            printlnCK("OtpViewModel verifyPassword line = 45: " );
             val response = mfaValidatePasswordUseCase(getOwner(), password)
             verifyPasswordResponse.value = response
         }
     }
 
     fun verifyOtp(otp: String) {
-        Log.d("antx: ", "OtpViewModel verifyOtp line = 52: $otp " );
-        Log.d("antx: ", "OtpViewModel verifyOtp line = 54:$otp ${otp.length}  ${otp.isBlank()}" );
         if (otp.isBlank()) {
             verifyOtpResponse.value = Resource.error("Authentication failed. Please retry.", null)
             return
         }
 
         viewModelScope.launch {
-            Log.d("antx: ", "OtpViewModel verifyOtp line = 60: " );
+            printlnCK("OtpViewModel verifyOtp line = 60: " );
             val response = mfaValidateOtpUseCase(getOwner(), otp)
             if (response.status == Status.ERROR) {
                 verifyOtpResponse.value = Resource.error(
@@ -72,7 +71,7 @@ class OtpViewModel @Inject constructor(
 
     fun requestResendOtp() {
         viewModelScope.launch {
-            Log.d("antx: ", "OtpViewModel requestResendOtp line = 69: " );
+            printlnCK("OtpViewModel requestResendOtp line = 69: " );
             val response = mfaResendOtpUseCase(getOwner())
             val errorCode = response.data?.first
             if (response.status == Status.ERROR) {

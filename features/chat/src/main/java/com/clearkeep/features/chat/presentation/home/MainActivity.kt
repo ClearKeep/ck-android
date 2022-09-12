@@ -189,7 +189,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
     }
 
     private fun signOut() {
-        Log.d("antx: ", "MainActivity signOut line = 186: ");
+        printlnCK("MainActivity signOut line = 186: ");
         homeViewModel.signOut()
     }
 

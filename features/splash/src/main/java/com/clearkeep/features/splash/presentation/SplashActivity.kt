@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import com.clearkeep.common.presentation.components.CKTheme
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.navigation.NavigationUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -36,7 +37,7 @@ class SplashActivity : AppCompatActivity() {
         GlobalScope.launch(context = Dispatchers.Main) {
             delay(1000)
             if (splashViewModel.isUserRegistered()) {
-                Log.d("antx: ", "SplashActivity nextNavigation line = 38:setupEnvironment " );
+                printlnCK("SplashActivity nextNavigation line = 38:setupEnvironment " );
                 splashViewModel.setupEnvironment()
                 navigateToHomeActivity()
             } else navigateToLoginActivity()

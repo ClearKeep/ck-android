@@ -549,7 +549,7 @@ class RoomViewModel @Inject constructor(
                         getOwner().clientId
                     )
                     /*getListClientInGroupUseCase(it, getOwner().domain)?.forEach {
-                        Log.d("antx: ", "RoomViewModel leaveGroup line = 543: " );
+                        printlnCK("RoomViewModel leaveGroup line = 543: " );
                         val senderAddress2 = CKSignalProtocolAddress(
                             Owner(
                                 getOwner().domain,

@@ -155,10 +155,10 @@ class ProfileRepositoryImpl @Inject constructor(
         otp: String
     ): Resource<String> =
         withContext(Dispatchers.IO) {
-            Log.d("antx: ", "ProfileRepositoryImpl mfaValidateOtp line = 154: " );
+            printlnCK("ProfileRepositoryImpl mfaValidateOtp line = 154: " );
             try {
                 val response = userService.mfaValidateOtp(server, otp)
-                printlnCK("antx mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
+                printlnCK("mfaValidateOtp success? ${response.success} error? ${response.error} code ${response.error}")
                 return@withContext if (response.success) {
                     userPreferenceDAO.updateMfa(owner.domain, owner.clientId, true)
                     Resource.success(null)

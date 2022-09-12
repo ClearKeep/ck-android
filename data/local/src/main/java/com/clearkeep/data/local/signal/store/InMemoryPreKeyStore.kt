@@ -6,6 +6,7 @@
 package com.clearkeep.data.local.signal.store
 
 import android.util.Log
+import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.signal.prekey.SignalPreKeyDAO
 import com.clearkeep.data.local.signal.prekey.SignalPreKey
 import com.clearkeep.domain.repository.Environment
@@ -43,7 +44,6 @@ class InMemoryPreKeyStore(
             if (record == null) {
                 throw InvalidKeyIdException("CKLog_InMemoryPreKeyStore, No such prekeyrecord for $preKeyId")
             }
-            Log.d("antx: ", "InMemoryPreKeyStore loadPreKey line = 45:$record $preKeyId" );
             PreKeyRecord(record)
         } catch (e: IOException) {
             throw AssertionError(e)

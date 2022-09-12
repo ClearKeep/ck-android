@@ -138,7 +138,6 @@ class HomeViewModel @Inject constructor(
             launch(Dispatchers.IO){
                 //senderKeyStore.getAllSenderKey()
             }
-            Log.d("antx: ", "HomeViewModel getAllSenderKey line = 103: ")
         }
 
     }

@@ -85,11 +85,11 @@ class InviteGroupViewModel @Inject constructor(
 
     fun findEmail(email: String) {
         viewModelScope.launch {
-            Log.d("antx: ", "InviteGroupViewModel findEmail line = 97:$email " );
+            printlnCK("InviteGroupViewModel findEmail line = 97:$email " )
 //            var hashUser = sha256(email)
             val result = getFriendUseCase.getFriendByEmail(email)
             result.forEach {
-                Log.d("antx: ", "InviteGroupViewModel findEmail line = 93: $it");
+                printlnCK("InviteGroupViewModel findEmail line = 93: $it")
             }
             friendsByEmail.postValue(result.filter { return@filter it.userId!=getClientId() })
         }

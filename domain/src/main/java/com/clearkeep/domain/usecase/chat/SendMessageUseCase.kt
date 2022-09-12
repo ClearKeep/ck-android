@@ -116,7 +116,7 @@ class SendMessageUseCase @Inject constructor(
             println("toGroup sender address init ok senderId: $senderId")
             val distributionId = AuthenticationHelper.getUUID(senderAddress.groupId.toString(), senderId)
             val aliceGroupCipher = GroupCipher(senderKeyStore, senderAddress)
-            Log.d("antx: ", "SendMessageUseCase toGroup line = 119:distributionId: $distributionId " );
+            printlnCK("SendMessageUseCase toGroup line = 119:distributionId: $distributionId " );
             val ciphertextFromAlice: CiphertextMessage =
                 aliceGroupCipher.encrypt(distributionId,plainMessage.toByteArray(charset("UTF-8")))
             printlnCK("toGroup: encrypt ok")

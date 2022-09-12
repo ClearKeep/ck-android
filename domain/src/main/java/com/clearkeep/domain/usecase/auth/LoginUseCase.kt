@@ -126,11 +126,8 @@ class LoginUseCase @Inject constructor(
         domain: String,
         rawNewPassword: String
     ): Resource<AuthRes> {
-        Log.d("antx: ", "LoginUseCase resetPassword line = 129:$preAccessToken \n$email \n$domain \n$rawNewPassword " );
         val (saltHex, verificatorHex) = createAccountSrp(email, rawNewPassword)
-        Log.d("antx: ", "LoginUseCase resetPassword line = 131:$saltHex $verificatorHex" );
         val decrypter = DecryptsPBKDF2(rawNewPassword)
-        Log.d("antx: ", "LoginUseCase resetPassword line = 133: decrypter: $decrypter" );
         // create registrationId
         val registrationId = KeyHelper.generateRegistrationId(false)
         //PreKeyRecord

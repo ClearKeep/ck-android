@@ -199,11 +199,10 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun getAllGroupByDomain(ownerDomain: String, ownerClientId: String): List<ChatGroup> =
         withContext(Dispatchers.IO){
-            Log.d("antx: ", "GroupRepositoryImpl getAllGroupByDomain line = 197: $ownerDomain $ownerClientId " );
             val result=groupDAO.getAllGroupByDomain(ownerDomain,ownerClientId).map {
                 it.toModel()
             }
-            Log.d("antx: ", "GroupRepositoryImpl getAllGroupByDomain line = 199: ${result.size}" );
+            printlnCK("GroupRepositoryImpl getAllGroupByDomain line = 199: ${result.size}" );
             return@withContext result
 
         }

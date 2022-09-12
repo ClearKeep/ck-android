@@ -20,11 +20,10 @@ class FetchGroupsUseCase @Inject constructor(
         val servers = serverRepository.getServers()
 
         servers.forEach { server ->
-            Log.d("antx: ", "FetchGroupsUseCase invoke line = 22: ${getDomain()} " );
-            Log.d("antx: ", "FetchGroupsUseCase invoke line = 22:serverDomain: ${server.serverDomain} userId: ${server.profile.userId} " );
+            printlnCK("FetchGroupsUseCase invoke line = 22: ${getDomain()} " );
             val svr = serverRepository.getServer(getDomain(), server.profile.userId)
             if (svr == null) {
-                printlnCK("antx: null server ${server.serverDomain}")
+                printlnCK("null server ${server.serverDomain}")
                // throw NullPointerException("fetchGroup null server")
             }
             else {

@@ -122,7 +122,6 @@ class UpdateMessageFromApiUseCase @Inject constructor(
                     decryptPeerMessage(sender, encryptedMessage)
                 }
             } else {
-                Log.d("antx: ", "UpdateMessageFromApiUseCase decryptMessage line = 125:decryptGroupMessage: ${sender.clientId} ");
                 decryptGroupMessage(
                     sender,
                     groupId,
@@ -310,7 +309,6 @@ class UpdateMessageFromApiUseCase @Inject constructor(
     ): Boolean {
         val senderKeyRecord: SenderKeyRecord? = signalKeyRepository.loadSenderKey(senderAddress)
         if (senderKeyRecord == null || isForceProcess) {
-            Log.d("antx: ", "UpdateMessageFromApiUseCase initSessionUserInGroup line = 315:${owner} " );
             val server = serverRepository.getServerByOwner(owner)
             if (server == null) {
                 return false

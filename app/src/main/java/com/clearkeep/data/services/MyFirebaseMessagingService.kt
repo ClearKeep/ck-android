@@ -291,7 +291,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
                 if (getOwnerClientIdsUseCase().contains(removedMember) &&  clientId == removedMember) {
                     getListClientInGroupUseCase(groupId, clientDomain)?.forEach {
-                        Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it");
+                        printlnCK("MyFirebaseMessagingService handlerRequestAddRemoteMember line = 255: $it");
                         val senderAddress2 = CKSignalProtocolAddress(
                             Owner(
                                 clientDomain,
@@ -309,7 +309,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                     deleteGroupUseCase(groupId, clientDomain, removedMember)
                 } else {
-                    Log.d("antx: ", "MyFirebaseMessagingService handlerRequestAddRemoteMember line = 274: ");
+                    printlnCK("MyFirebaseMessagingService handlerRequestAddRemoteMember line = 274: ");
                     val senderAddress2 = CKSignalProtocolAddress(
                         Owner(
                             clientDomain,

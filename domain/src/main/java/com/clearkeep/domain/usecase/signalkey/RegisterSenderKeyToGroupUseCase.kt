@@ -33,7 +33,7 @@ class RegisterSenderKeyToGroupUseCase @Inject constructor(
             ), groupID,SENDER_DEVICE_ID
         )
         if (!signalKeyRepository.hasSenderKey(senderAddress)) {
-            Log.d("antx: ", "RegisterSenderKeyToGroupUseCase invoke line = 33: " );
+            printlnCK("RegisterSenderKeyToGroupUseCase invoke line = 33: " );
             val aliceSessionBuilder = GroupSessionBuilder(senderKeyStore)
             val sentAliceDistributionMessage = aliceSessionBuilder.create(senderAddress,getUUID(groupId = groupID.toString(),senderAddress.owner.clientId))
             val senderKey = senderKeyStore.loadSenderKey(senderAddress, getUUID(groupId = groupID.toString(),senderAddress.owner.clientId))
