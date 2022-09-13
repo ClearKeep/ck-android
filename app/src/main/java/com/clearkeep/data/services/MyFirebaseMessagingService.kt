@@ -222,9 +222,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private suspend fun handleNewMessage(remoteMessage: RemoteMessage) {
         val roomId = getJoiningRoomUseCase()
-        val currentServer = environment.getServer()
-        currentServer.serverDomain
-        currentServer.profile.userId
         val data: Map<String, String> = Gson().fromJson(
             remoteMessage.data["data"], object : TypeToken<HashMap<String, String>>() {}.type
         )
