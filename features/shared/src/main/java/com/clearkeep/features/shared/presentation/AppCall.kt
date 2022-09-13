@@ -151,6 +151,8 @@ object AppCall {
             }
         }
 
+        val ringtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+
         val builder: NotificationCompat.Builder = NotificationCompat.Builder(context, channelId)
         builder.setSmallIcon(R.drawable.ic_logo)
             .setCustomHeadsUpContentView(headsUpLayout)
@@ -162,7 +164,10 @@ object AppCall {
             .setAutoCancel(true)
             .setTimeoutAfter(60 * 1000)
             .setOngoing(true)
+            .setSound(ringtone)
+
         val notification: Notification = builder.build()
+        notification.flags = Notification.FLAG_INSISTENT
 
         if (!isGroup(groupType)) {
             val target = NotificationTarget(
