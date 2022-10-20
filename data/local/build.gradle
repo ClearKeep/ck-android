@@ -47,7 +47,7 @@ android {
             dimension "version"
             versionNameSuffix "-dev"
             resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"develop1.clearkeep.org\""
+            buildConfigField "String", 'BASE_URL', "\"ckserver.org\""
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
