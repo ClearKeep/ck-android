@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.clearkeep.common.utilities.isValidEmail
+import com.clearkeep.common.utilities.isValidPassword
 import com.clearkeep.domain.usecase.auth.RegisterUseCase
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.features.auth.R
@@ -78,8 +79,11 @@ class RegisterViewModel @Inject constructor(
         if (password.isBlank()) {
             _passError.value = context.getString(R.string.password_empty)
             isValid = false
-        } else if (password.length !in 6..12) {
+        } else if (password.length !in 8..64) {
             _passError.value = context.getString(R.string.password_length_invalid)
+            isValid = false
+        } else if(!password.isValidPassword()){
+            _passError.value = context.getString(R.string.password_invalid)
             isValid = false
         }
         if (confirmPassword.isBlank()) {

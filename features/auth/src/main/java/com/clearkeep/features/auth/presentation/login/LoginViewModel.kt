@@ -220,7 +220,7 @@ class LoginViewModel @Inject constructor(
                 )
             )
             null
-        } else if (password.isBlank()) {
+        } else if (password.isValidPassword()) {
             _passError.value = context.getString(R.string.password_empty)
             loginErrorMess.postValue(
                 LoginActivity.ErrorMessage(

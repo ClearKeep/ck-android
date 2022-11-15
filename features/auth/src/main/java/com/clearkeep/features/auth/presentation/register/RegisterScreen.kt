@@ -6,16 +6,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.Icon
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.common.presentation.components.*
@@ -43,7 +46,7 @@ fun RegisterScreen(
     val passError = registerViewModel.passError.observeAsState()
     val confirmPassError = registerViewModel.confirmPassError.observeAsState()
     val displayNameError = registerViewModel.displayNameError.observeAsState()
-
+    val passwordRulesInfo = rememberSaveable { mutableStateOf(false) }
     val image = painterResource(R.drawable.ic_logo)
 
     Column(
@@ -54,10 +57,6 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(28.sdp()))
-        Box(contentAlignment = Alignment.TopCenter) {
-            Image(image, contentDescription = "")
-        }
         Spacer(Modifier.height(24.sdp()))
         Card(shape = RoundedCornerShape(16.sdp())) {
             Column(
@@ -71,6 +70,11 @@ fun RegisterScreen(
                     fontSize = defaultNonScalableTextSize()
                 )
                 Spacer(Modifier.height(24.sdp()))
+                CKText(
+                    text = stringResource(R.string.tv_email),
+                    color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
+                    fontSize = defaultNonScalableTextSize()
+                )
                 CKTextInputField(
                     stringResource(R.string.tv_email),
                     email,
@@ -92,6 +96,11 @@ fun RegisterScreen(
                     }
                 )
                 Spacer(Modifier.height(10.sdp()))
+                CKText(
+                    text = stringResource(R.string.display_name),
+                    color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
+                    fontSize = defaultNonScalableTextSize()
+                )
                 CKTextInputField(
                     stringResource(R.string.display_name),
                     displayName,
@@ -113,6 +122,21 @@ fun RegisterScreen(
                     maxChars = 30
                 )
                 Spacer(Modifier.height(10.sdp()))
+                Row(verticalAlignment = Alignment.CenterVertically){
+                    CKText(
+                        text = stringResource(R.string.tv_password),
+                        color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
+                        fontSize = defaultNonScalableTextSize()
+                    )
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_info),
+                        contentDescription = null,
+                        Modifier.padding(5.sdp()).size(18.sdp()).clickable {
+                            passwordRulesInfo.value = true
+                        },
+                        tint = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack
+                    )
+                }
                 CKTextInputField(
                     stringResource(R.string.tv_password),
                     password,
@@ -134,6 +158,11 @@ fun RegisterScreen(
                     }
                 )
                 Spacer(Modifier.height(10.sdp()))
+                CKText(
+                    text = stringResource(R.string.confirm_password),
+                    color = if (isSystemInDarkTheme()) grayscaleDarkModeGreyLight2 else grayscaleBlack,
+                    fontSize = defaultNonScalableTextSize()
+                )
                 CKTextInputField(
                     stringResource(R.string.confirm_password),
                     confirmPassword,
@@ -184,5 +213,15 @@ fun RegisterScreen(
             }
         }
         Spacer(Modifier.height(28.sdp()))
+    }
+    if (passwordRulesInfo.value) {
+        CKAlertDialog(
+            title = stringResource(R.string.password_notice),
+            text = stringResource(R.string.password_rules),
+            dismissTitle = stringResource(R.string.ok),
+            onDismissButtonClick = {
+                passwordRulesInfo.value = false
+            }
+        )
     }
 }
