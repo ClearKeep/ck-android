@@ -3,6 +3,7 @@ package com.clearkeep.features.chat.presentation.changepassword
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -16,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.clearkeep.features.chat.R
@@ -61,7 +64,7 @@ fun ChangePasswordScreen(
         val confirmPassWordError = viewModel.newPasswordConfirmError.observeAsState()
         val changePasswordResponse = viewModel.changePasswordResponse.observeAsState()
         val isResetPassword = viewModel.isResetPassword.observeAsState()
-
+        val passwordRulesInfo = rememberSaveable { mutableStateOf(false) }
         Spacer(Modifier.height(58.sdp()))
         CKTopAppBarSample(
             modifier = Modifier.padding(start = 6.sdp()),
@@ -74,7 +77,7 @@ fun ChangePasswordScreen(
             modifier = Modifier
                 .padding(horizontal = 16.sdp())
                 .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Text(
                 text = stringResource(R.string.enter_detail_change_pass),
@@ -84,6 +87,12 @@ fun ChangePasswordScreen(
             )
             Spacer(Modifier.height(16.sdp()))
             if (isResetPassword.value != true) {
+                Text(
+                    text = stringResource(R.string.current_password),
+                    style = MaterialTheme.typography.caption,
+                    color = LocalColorMapping.current.topAppBarContent,
+                    fontSize = 16.sdp().toNonScalableTextSize()
+                )
                 CKTextInputField(
                     placeholder = stringResource(R.string.current_password),
                     textValue = currentPassWord,
@@ -107,6 +116,25 @@ fun ChangePasswordScreen(
                 ) { viewModel.setOldPassword(it) }
                 Spacer(Modifier.height(24.sdp()))
             }
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(
+                    text = stringResource(R.string.new_password),
+                    style = MaterialTheme.typography.caption,
+                    color = LocalColorMapping.current.topAppBarContent,
+                    fontSize = 16.sdp().toNonScalableTextSize()
+                )
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_info),
+                    contentDescription = null,
+                    Modifier
+                        .padding(5.sdp())
+                        .size(18.sdp())
+                        .clickable {
+                            passwordRulesInfo.value = true
+                        },
+                    tint = LocalColorMapping.current.topAppBarContent
+                )
+            }
             CKTextInputField(
                 placeholder = stringResource(R.string.new_password),
                 textValue = newPassWord,
@@ -129,6 +157,12 @@ fun ChangePasswordScreen(
                 }
             ) { viewModel.setNewPassword(it) }
             Spacer(Modifier.height(24.sdp()))
+            Text(
+                text = stringResource(R.string.confirm_password),
+                style = MaterialTheme.typography.caption,
+                color = LocalColorMapping.current.topAppBarContent,
+                fontSize = 16.sdp().toNonScalableTextSize()
+            )
             CKTextInputField(
                 placeholder = stringResource(R.string.confirm_password),
                 textValue = confirmPassWord,
@@ -189,5 +223,16 @@ fun ChangePasswordScreen(
             }
             Spacer(Modifier.height(58.sdp()))
         }
+        if (passwordRulesInfo.value) {
+            CKAlertDialog(
+                title = stringResource(R.string.password_notice),
+                text = stringResource(R.string.password_rules),
+                dismissTitle = stringResource(R.string.ok),
+                onDismissButtonClick = {
+                    passwordRulesInfo.value = false
+                }
+            )
+        }
     }
+
 }

@@ -3,7 +3,6 @@ package com.clearkeep.common.utilities
 import android.Manifest
 import android.app.ActivityManager
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.ConnectivityManager
@@ -24,7 +23,6 @@ import com.clearkeep.common.BuildConfig
 import com.clearkeep.common.R
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.system.exitProcess
 
 fun getTimeAsString(timeMs: Long, includeTime: Boolean = false): String {
     val nowTime = Calendar.getInstance()
@@ -74,6 +72,29 @@ fun getDateAsString(timeMs: Long): String {
 
 fun CharSequence?.isValidEmail() =
     !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
+
+fun CharSequence.isValidPassword(): Boolean {
+    var sawUpper = false
+    var sawLower = false
+    var sawDigit = false
+    var sawSpecial = false
+    for (i in 0 until this.length) {
+        val c = this[i]
+        if (("!@#$%^&*-_").contains(c)) {
+            sawSpecial = true
+        }
+        if (Character.isDigit(c)) {
+            sawDigit = true
+        }
+        if (Character.isUpperCase(c)) {
+            sawUpper = true
+        }
+        if (Character.isLowerCase(c)) {
+            sawLower = true
+        }
+    }
+    return (sawSpecial && sawUpper && sawLower && sawDigit)
+}
 
 fun isServiceRunning(context: Context, serviceName: String): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager

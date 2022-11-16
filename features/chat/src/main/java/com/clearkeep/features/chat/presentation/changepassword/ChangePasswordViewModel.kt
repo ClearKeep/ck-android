@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clearkeep.common.utilities.DecryptsPBKDF2
 import com.clearkeep.common.utilities.SENDER_DEVICE_ID
+import com.clearkeep.common.utilities.isValidPassword
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.domain.model.CKSignalProtocolAddress
@@ -138,8 +139,8 @@ class ChangePasswordViewModel @Inject constructor(
             password.isEmpty() -> {
                 null
             }
-            password.length !in 6..12 && password.length > 1 -> {
-                "Password must be between 6–12 characters"
+            password.length !in 8..64 && password.length > 1 -> {
+                "Password must be between 8–64 characters"
             }
             else -> {
                 null
@@ -152,8 +153,11 @@ class ChangePasswordViewModel @Inject constructor(
             newPassword.isEmpty() -> {
                 null
             }
-            newPassword.length !in 6..12 -> {
-                "Password must be between 6–12 characters"
+            newPassword.length !in 8..64 -> {
+                "Password must be between 8–64 characters"
+            }
+            !newPassword.isValidPassword() -> {
+                "Password is invalid"
             }
             oldPassword.trim() == newPassword.trim() -> {
                 "The new password must be different from the previous one!"
@@ -169,8 +173,8 @@ class ChangePasswordViewModel @Inject constructor(
             confirmPassword.isEmpty() -> {
                 null
             }
-            confirmPassword.length !in 6..12 -> {
-                "Password must be between 6–12 characters"
+            confirmPassword.length !in 8..64 -> {
+                "Password must be between 8–64 characters"
             }
             password.trim() != confirmPassword.trim() -> {
                 "New Password and Confirm password do not match. Please try again!"
