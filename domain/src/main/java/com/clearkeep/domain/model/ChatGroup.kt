@@ -19,7 +19,7 @@ data class ChatGroup(
     val isJoined: Boolean = false,
     val ownerDomain: String,
     val ownerClientId: String,
-    val lastMessage: Message?,
+    var lastMessage: Message?,
     val lastMessageAt: Long,
     val lastMessageSyncTimestamp: Long,
     val isDeletedUserPeer: Boolean

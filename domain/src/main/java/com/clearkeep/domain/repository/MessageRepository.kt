@@ -2,10 +2,10 @@ package com.clearkeep.domain.repository
 
 import androidx.lifecycle.LiveData
 import com.clearkeep.common.utilities.network.Resource
-import com.clearkeep.domain.model.response.GetMessagesInGroupResponse
 import com.clearkeep.domain.model.Message
 import com.clearkeep.domain.model.Owner
 import com.clearkeep.domain.model.Server
+import com.clearkeep.domain.model.response.GetMessagesInGroupResponse
 import com.clearkeep.domain.model.response.MessageObjectResponse
 
 interface MessageRepository {
@@ -57,4 +57,6 @@ interface MessageRepository {
     ): Resource<MessageObjectResponse>
 
     suspend fun updateMessage(message: Message)
+
+    suspend fun getLastMessageByGroupName(groupId: Long): Message?
 }
