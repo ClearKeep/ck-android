@@ -2,6 +2,7 @@
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,16 +33,32 @@ fun UploadPhotoDialog(
     isOpen: Boolean,
     getPhotoUri: () -> Uri,
     onDismiss: () -> Unit,
-    onNavigateToAlbums: () -> Unit,
+    onNavigateToAlbums: (uri:Uri) -> Unit,
     onTakePhoto: () -> Unit
 ) {
     val context = LocalContext.current
+
+    val addFileContract = object : ActivityResultContracts.OpenDocument() {
+        override fun createIntent(context: Context, input: Array<String>): Intent {
+            return super.createIntent(context, input)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
+    }
+    val MIME_IMAGE = "image/*"
+    val addFileLauncher =
+        rememberLauncherForActivityResult(addFileContract) {
+            if (it != null) {
+                onNavigateToAlbums.invoke(it)
+            }
+        }
 
     val requestStoragePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            onNavigateToAlbums()
+            addFileLauncher.launch(arrayOf(MIME_IMAGE))
         } else {
             onDismiss()
         }
@@ -91,6 +108,7 @@ fun UploadPhotoDialog(
                             .clickable {
                                 if (isCameraPermissionGranted(context)) {
                                     takePhotoLauncher.launch(getPhotoUri())
+                                    onDismiss()
                                 } else {
                                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                                 }
@@ -104,11 +122,12 @@ fun UploadPhotoDialog(
                             .padding(16.sdp())
                             .clickable {
                                 if (isFilePermissionGranted(context)) {
-                                    onNavigateToAlbums()
+                                    addFileLauncher.launch(arrayOf(MIME_IMAGE))
+                                    onDismiss()
                                 } else {
                                     requestStoragePermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                                 }
-                            }, textAlign = TextAlign.Center, color = tintsRedLight
+                            }, textAlign = TextAlign.Center, color = colorLightBlue
                     )
                 }
                 Spacer(Modifier.height(8.sdp()))
@@ -122,7 +141,7 @@ fun UploadPhotoDialog(
                             .fillMaxWidth()
                             .clickable {
                                 onDismiss()
-                            }, textAlign = TextAlign.Center, color = colorLightBlue
+                            }, textAlign = TextAlign.Center, color = tintsRedLight
                     )
                 }
                 Spacer(Modifier.height(14.sdp()))

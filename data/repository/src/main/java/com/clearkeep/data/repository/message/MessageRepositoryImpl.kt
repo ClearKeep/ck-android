@@ -1,12 +1,10 @@
 package com.clearkeep.data.repository.message
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.data.local.clearkeep.message.MessageDAO
-import com.clearkeep.data.local.clearkeep.message.MessageEntity
 import com.clearkeep.data.remote.service.MessageService
 import com.clearkeep.data.repository.group.toEntity
 import com.clearkeep.data.repository.utils.parseError
@@ -160,7 +158,6 @@ class MessageRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getLastMessageByGroupName(groupId: Long): Message? {
-        Log.d("antx: ", "MessageRepositoryImpl getLastMessageByGroupName line = 162:${messageDAO.getLaseMessageByGroupName(groupId)?.toModel().toString()} " );
        return messageDAO.getLaseMessageByGroupName(groupId)?.toModel()
     }
 }

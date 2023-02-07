@@ -2,14 +2,12 @@ package com.clearkeep.features.chat.presentation.profile
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.*
-import com.clearkeep.common.utilities.files.*
-import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
-import com.clearkeep.domain.usecase.profile.GetMfaSettingsUseCase
-import com.clearkeep.domain.usecase.profile.UpdateMfaSettingsUseCase
-import com.clearkeep.domain.usecase.profile.UpdateProfileUseCase
-import com.clearkeep.domain.usecase.profile.UploadAvatarUseCase
-import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import com.clearkeep.common.utilities.files.generatePhotoUri
+import com.clearkeep.common.utilities.files.getFileSize
 import com.clearkeep.common.utilities.network.Status
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.Owner
@@ -17,18 +15,21 @@ import com.clearkeep.domain.model.User
 import com.clearkeep.domain.repository.Environment
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
 import com.clearkeep.domain.usecase.people.DeleteAccountUseCase
-import com.clearkeep.domain.usecase.server.GetIsLogoutUseCase
+import com.clearkeep.domain.usecase.preferences.GetUserPreferenceUseCase
+import com.clearkeep.domain.usecase.profile.GetMfaSettingsUseCase
+import com.clearkeep.domain.usecase.profile.UpdateMfaSettingsUseCase
+import com.clearkeep.domain.usecase.profile.UpdateProfileUseCase
+import com.clearkeep.domain.usecase.profile.UploadAvatarUseCase
+import com.clearkeep.domain.usecase.server.GetDefaultServerProfileAsStateUseCase
 import com.clearkeep.features.chat.presentation.utils.getLinkFromPeople
 import com.clearkeep.features.shared.presentation.BaseViewModel
 import com.google.i18n.phonenumbers.PhoneNumberUtil
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
-import kotlin.Exception
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -163,6 +164,7 @@ class ProfileViewModel @Inject constructor(
 
     fun setSelectedImage(uris: String) {
         _imageUriSelected.value = uris
+        _imageUriSelected.postValue(uris)
         isAvatarChanged = true
     }
 

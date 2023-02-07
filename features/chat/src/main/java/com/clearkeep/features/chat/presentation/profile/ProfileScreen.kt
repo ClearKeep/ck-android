@@ -360,7 +360,7 @@ fun ProfileScreen(
             getPhotoUri = { profileViewModel.getPhotoUri(context) },
             onDismiss = { pickAvatarDialogVisible.value = false },
             onNavigateToAlbums = {
-                navController.navigate("pick_avatar")
+                profileViewModel.setSelectedImage(it.toString())
                 pickAvatarDialogVisible.value = false
             },
             onTakePhoto = {

@@ -393,7 +393,7 @@ fun RoomScreen(
         isUploadPhotoDialogVisible.value = false
     }, onNavigateToAlbums = {
         isUploadPhotoDialogVisible.value = false
-        navHostController.navigate("image_picker")
+        roomViewModel.addImage("$it")
     }, onTakePhoto = {
         roomViewModel.addImage()
     })

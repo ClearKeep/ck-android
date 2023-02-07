@@ -200,15 +200,7 @@ class RoomActivity : AppCompatActivity(), LifecycleObserver {
                             navController
                         )
                     }
-                    composable("image_picker") {
-                        ImagePickerScreen(
-                            roomViewModel.imageUriSelected,
-                            navController,
-                            onSetSelectedImages = {
-                                roomViewModel.setSelectedImages(it)
-                            }
-                        )
-                    }
+
                     composable("photo_detail") {
                         PhotoDetailScreen(
                             roomViewModel,

@@ -2,7 +2,6 @@
 
 package com.clearkeep.features.chat.presentation.home
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
@@ -223,9 +222,7 @@ class HomeViewModel @Inject constructor(
         }
         result.value?.forEach {
             it.lastMessage = getLastMessageByGroupNameUseCase.invoke(it.groupId)
-            Log.d("antx: ", "HomeViewModel  line = 214: ${it.lastMessage}" );
         }
-        Log.d("antx: ", "HomeViewModel  line = 215: " );
         emitSource(result)
     }
 

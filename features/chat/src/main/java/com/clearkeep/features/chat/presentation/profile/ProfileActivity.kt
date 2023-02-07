@@ -33,8 +33,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
     private val profileViewModel: ProfileViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
 
-    @ExperimentalMaterialApi
-        @ExperimentalFoundationApi
+    @OptIn(ExperimentalMaterialApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -48,18 +47,7 @@ class ProfileActivity : AppCompatActivity(), LifecycleObserver {
                     composable("profile") {
                         MainComposable(navController)
                     }
-                    composable("pick_avatar") {
-                        ImagePickerScreen(
-                            profileViewModel.imageUriSelected.map { listOf(it) },
-                            navController,
-                            onlyPickOne = true,
-                            insetEnabled = false,
-                            onSetSelectedImages = {
-                                if (it.isNotEmpty()) {
-                                    profileViewModel.setSelectedImage(it[0])
-                                }
-                            })
-                    }
+
                     composable("country_code_picker") {
                         CountryCodePicker(onPick = {
                             profileViewModel.setCountryCode(it)

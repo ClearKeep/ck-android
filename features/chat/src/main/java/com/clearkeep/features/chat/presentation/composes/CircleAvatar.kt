@@ -1,8 +1,12 @@
 package com.clearkeep.features.chat.presentation.composes
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -50,11 +54,14 @@ fun CircleAvatar(
     } else {
         val displayName = if (name.isNotBlank() && name.length >= 2) name.substring(0, 1) else name
         if (url.isNotEmpty() && url[0].isNotBlank()) {
+            var urlCheck = if (url[0].contains("http(s)?://".toRegex())) {
+                "${url[0]}?cache=$cacheKey"
+            } else {
+                url[0]
+            }
+
             Image(
-                rememberAsyncImagePainter(
-                    "${url[0]}?cache=$cacheKey", // Force recomposition when cache key changes
-                    imageLoader = context.imageLoader
-                ),
+                rememberAsyncImagePainter(urlCheck, imageLoader = context.imageLoader),
                 null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
