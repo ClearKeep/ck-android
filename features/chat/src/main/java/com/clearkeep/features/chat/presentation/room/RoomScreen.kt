@@ -3,6 +3,7 @@ package com.clearkeep.features.chat.presentation.room
 import android.Manifest
 import android.content.Context
 import android.os.*
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -236,7 +237,7 @@ fun RoomScreen(
                             )
                     ) {
                         val lazyListState = rememberLazyListState()
-
+                        Log.d("antx: ", " RoomScreen line = 240: " );
                         MessageListView(
                             messageList = messageList.value!!,
                             clients = group?.clientList ?: emptyList(),
@@ -437,7 +438,7 @@ fun RoomScreen(
     if ((getGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && getGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
         || (createGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && createGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
         || (inviteToGroupResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && inviteToGroupResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
-        || (sendMessageResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR && sendMessageResponse.value?.errorCode == ERROR_CODE_TIMEOUT)
+        || (sendMessageResponse.value?.status == com.clearkeep.common.utilities.network.Status.ERROR )
     ) {
         CKAlertDialog(
             title = stringResource(R.string.network_error_dialog_title),

@@ -774,6 +774,7 @@ class RoomViewModel @Inject constructor(
                         fileUrls.add(urlResponse.data ?: "")
                         filesSizeInBytes.add(fileSize)
                     } else {
+                        clearTempMessage()
                         sendMessageResponse.postValue(urlResponse)
                         return@forEach
                     }
