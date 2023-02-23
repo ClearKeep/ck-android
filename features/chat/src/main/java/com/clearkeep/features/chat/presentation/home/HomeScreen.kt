@@ -1,6 +1,5 @@
 package com.clearkeep.features.chat.presentation.home
 
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -22,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -38,6 +38,7 @@ import com.clearkeep.common.presentation.components.primaryDefault
 import com.clearkeep.common.utilities.defaultNonScalableTextSize
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.common.utilities.sdp
+import com.clearkeep.common.utilities.toNonScalableTextSize
 import com.clearkeep.features.chat.R
 import com.clearkeep.features.chat.presentation.home.composes.CircleAvatarStatus
 import com.clearkeep.features.chat.presentation.home.composes.CircleAvatarWorkSpace
@@ -246,6 +247,7 @@ fun ItemListDirectMessage(
     val partnerUser = chatGroup.clientList.firstOrNull { client ->
         client.userId != clintId
     }
+    val lastMessage = chatGroup.lastMessage?.message
     val roomName: String =
         if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user)
         else
@@ -262,23 +264,44 @@ fun ItemListDirectMessage(
         val avatar = listUserStatus?.firstOrNull { client ->
             client.userId == partnerUser?.userId
         }?.avatar ?: ""
+        Column {
+            Row(
+                modifier = Modifier.padding(top = 16.sdp()),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircleAvatarStatus(url = avatar, name = roomName, status = userStatus, size = 24.sdp())
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = roomName, modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.sdp()),
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
+                            color = LocalColorMapping.current.descriptionText,
+                            fontSize = defaultNonScalableTextSize(),
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    if (!lastMessage.isNullOrEmpty()) {
+                        Text(
+                            text = lastMessage, modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.sdp()),
+                            maxLines = 1, overflow = TextOverflow.Ellipsis, style = TextStyle(
+                                color = LocalColorMapping.current.descriptionText,
+                                fontSize = dimensionResource(com.clearkeep.common.R.dimen._12sdp).toNonScalableTextSize(),
+                                fontWeight = FontWeight.Normal
+                            )
+                        )
+                    }
+                }
 
-        Row(
-            modifier = Modifier.padding(top = 16.sdp()),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircleAvatarStatus(url = avatar, name = roomName, status = userStatus)
-            Text(
-                text = roomName, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.sdp()),
-                maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
-                    color = LocalColorMapping.current.descriptionText,
-                    fontSize = defaultNonScalableTextSize(),
-                    fontWeight = FontWeight.Bold
-                )
-            )
+            }
+
+
         }
+
     }
 }
 
@@ -291,21 +314,36 @@ fun ChatGroupItemView(
     Row(
         modifier = modifier
             .clickable {
-                onItemClickListener?.invoke(chatGroup.groupId,chatGroup.groupName)
+                onItemClickListener?.invoke(chatGroup.groupId, chatGroup.groupName)
             },
     ) {
         Row(modifier = Modifier.padding(top = 16.sdp())) {
-            Text(
-                text = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else chatGroup.groupName,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                style = TextStyle(
-                    color = LocalColorMapping.current.descriptionText,
-                    fontSize = defaultNonScalableTextSize(),
-                    fontWeight = FontWeight.Bold
+            Column() {
+                Text(
+                    text = if (chatGroup.isDeletedUserPeer) stringResource(R.string.deleted_user) else chatGroup.groupName,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = TextStyle(
+                        color = LocalColorMapping.current.descriptionText,
+                        fontSize = defaultNonScalableTextSize(),
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+                val lastMessage = chatGroup.lastMessage?.message
+                if (!lastMessage.isNullOrEmpty()) {
+                    Text(
+                        text = lastMessage, modifier = Modifier
+                            .fillMaxWidth(),
+                        maxLines = 2, overflow = TextOverflow.Ellipsis, style = TextStyle(
+                            color = LocalColorMapping.current.descriptionText,
+                            fontSize = dimensionResource(com.clearkeep.common.R.dimen._12sdp).toNonScalableTextSize(),
+                            fontWeight = FontWeight.Normal
+                        )
+                    )
+                }
+            }
+
         }
     }
 }

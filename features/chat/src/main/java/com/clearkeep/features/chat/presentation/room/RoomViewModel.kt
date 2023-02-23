@@ -653,6 +653,15 @@ class RoomViewModel @Inject constructor(
         _imageUriSelected.value = list
     }
 
+    fun addImage(uri: String) {
+        val list = mutableListOf<String>()
+        list.addAll(_imageUriSelected.value ?: emptyList())
+        list.add(uri)
+        _currentPhotoUri = null
+        _imageUriSelected.value = list
+    }
+
+
     private fun uploadImage(
         context: Context,
         groupId: Long = 0L,
@@ -765,6 +774,7 @@ class RoomViewModel @Inject constructor(
                         fileUrls.add(urlResponse.data ?: "")
                         filesSizeInBytes.add(fileSize)
                     } else {
+                        clearTempMessage()
                         sendMessageResponse.postValue(urlResponse)
                         return@forEach
                     }

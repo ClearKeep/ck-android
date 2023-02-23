@@ -2,13 +2,13 @@
 
 package com.clearkeep.features.chat.presentation.home
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.clearkeep.common.utilities.isValidServerUrl
 import com.clearkeep.common.utilities.printlnCK
 import com.clearkeep.domain.model.*
 import com.clearkeep.domain.repository.*
 import com.clearkeep.domain.usecase.auth.LogoutUseCase
+import com.clearkeep.domain.usecase.chat.GetLastMessageByGroupNameUseCase
 import com.clearkeep.domain.usecase.group.FetchGroupsUseCase
 import com.clearkeep.domain.usecase.group.GetAllPeerGroupByDomainUseCase
 import com.clearkeep.domain.usecase.group.GetAllRoomsAsStateUseCase
@@ -56,7 +56,9 @@ class HomeViewModel @Inject constructor(
     getActiveServerUseCase: GetActiveServerUseCase,
     var senderKeyStore: SenderKeyStore,
 
-    private val setActiveServerUseCase: SetActiveServerUseCase
+    private val setActiveServerUseCase: SetActiveServerUseCase,
+    private val getLastMessageByGroupNameUseCase: GetLastMessageByGroupNameUseCase
+
 ) : BaseViewModel(logoutUseCase) {
     val currentServer = getActiveServerUseCase()
     val servers: LiveData<List<Server>> = getServersAsStateUseCase()
@@ -66,7 +68,8 @@ class HomeViewModel @Inject constructor(
     val isLogout = getIsLogoutUseCase()
 
     val selectingJoinServer = MutableLiveData(false)
-//    val groupName = MutableLiveData<String>()
+
+    //    val groupName = MutableLiveData<String>()
     private val _prepareState = MutableLiveData<PrepareViewState>()
 
     val prepareState: LiveData<PrepareViewState>
@@ -90,6 +93,7 @@ class HomeViewModel @Inject constructor(
         get() = _isServerUrlValidateLoading
 
     private var checkValidServerJob: Job? = null
+
     init {
         viewModelScope.launch {
             async { clearTempMessageUseCase.invoke() }.await()
@@ -115,7 +119,7 @@ class HomeViewModel @Inject constructor(
                     server.serverDomain
                 )
             )
-            if (ownerUser.size>0) {
+            if (ownerUser.isNotEmpty()) {
                 val status = getListClientStatusUseCase(ownerUser)?.firstOrNull()?.userStatus
                 printlnCK("getStatus: $status")
                 if (status != "Online" && status != "Busy") {
@@ -133,9 +137,11 @@ class HomeViewModel @Inject constructor(
 
     fun getDomainOfActiveServer() = environment.getServer().serverDomain
 
-    private fun getAllSenderKey(){
+    suspend fun getLastMessageByGroupId(id: Long) = getLastMessageByGroupNameUseCase.invoke(id)
+
+    private fun getAllSenderKey() {
         viewModelScope.launch {
-            launch(Dispatchers.IO){
+            launch(Dispatchers.IO) {
                 //senderKeyStore.getAllSenderKey()
             }
         }
@@ -162,24 +168,35 @@ class HomeViewModel @Inject constructor(
     val chatGroups = liveData<List<ChatGroup>> {
         val result = MediatorLiveData<List<ChatGroup>>()
         result.addSource(groups) { groupList ->
-            val server = environment.getServer()
-            result.value = groupList.filter {
-                it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.userId
-                        && it.isGroup()
-                        && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
+            viewModelScope.launch {
+                val server = environment.getServer()
+                groupList.forEach {
+                    it.lastMessage = getLastMessageByGroupId(it.groupId)
+                }
+                result.value = groupList.filter {
+                    it.ownerDomain == server.serverDomain
+                            && it.ownerClientId == server.profile.userId
+                            && it.isGroup()
+                            && it.clientList.firstOrNull { it.userId == profile.value?.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
+                }
             }
         }
 
-        result.addSource(selectingJoinServer) { _ ->
+        result.addSource(selectingJoinServer) { groupList ->
             val server = environment.getServer()
-            result.value = groups.value?.filter {
-                it.ownerDomain == server.serverDomain
-                        && it.ownerClientId == server.profile.userId
-                        && it.isGroup()
-                        && it.clientList.firstOrNull { it.userId == server.profile.userId }?.userState == com.clearkeep.domain.model.UserStateTypeInGroup.ACTIVE.value
+            viewModelScope.launch {
+                groups.value?.forEach {
+                    it.lastMessage = getLastMessageByGroupId(it.groupId)
+                }
+                result.value = groups.value?.filter {
+                    it.ownerDomain == server.serverDomain
+                            && it.ownerClientId == server.profile.userId
+                            && it.isGroup()
+                            && it.clientList.firstOrNull { it.userId == server.profile.userId }?.userState == UserStateTypeInGroup.ACTIVE.value
+                }
             }
         }
+
         emitSource(result)
     }
 
@@ -202,6 +219,9 @@ class HomeViewModel @Inject constructor(
                         && it.ownerClientId == server.profile.userId
                         && !it.isGroup()
             }
+        }
+        result.value?.forEach {
+            it.lastMessage = getLastMessageByGroupNameUseCase.invoke(it.groupId)
         }
         emitSource(result)
     }

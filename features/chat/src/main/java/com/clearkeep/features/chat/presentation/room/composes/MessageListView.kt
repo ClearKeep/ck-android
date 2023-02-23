@@ -142,6 +142,7 @@ private fun MessageListView(
                     }
                 }
                 item {
+                    Log.d("antx: ", " MessageListView line = 145: isLoading: $isLoading" );
                     if (isLoading) {
                         Column(
                             Modifier

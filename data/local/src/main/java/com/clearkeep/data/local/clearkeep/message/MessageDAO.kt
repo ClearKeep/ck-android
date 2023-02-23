@@ -51,4 +51,7 @@ interface MessageDAO {
 
     @Query("DELETE FROM message WHERE owner_domain = :domain AND owner_client_id = :ownerClientId")
     suspend fun deleteMessageByDomain(domain: String, ownerClientId: String): Int
+
+    @Query("SELECT * FROM message WHERE group_id = :groupId ORDER BY created_time DESC LIMIT 1")
+    suspend fun getLaseMessageByGroupName(groupId: Long): MessageEntity?
 }

@@ -89,8 +89,11 @@ fun MessageByMe(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isTempMessage(message))
+                Log.d("antx: ", " MessageByMe line = 92: ${message}" );
+                if (isTempMessage(message)) {
+                    Log.d("antx: ", " MessageByMe line = 93: ");
                     CircularProgressIndicator(Modifier.size(20.sdp()), grayscale1, 2.sdp())
+                }
                 Spacer(Modifier.width(18.sdp()))
                 Card(
                     Modifier.pointerInput(messageDisplayInfo.message.hashCode()) {

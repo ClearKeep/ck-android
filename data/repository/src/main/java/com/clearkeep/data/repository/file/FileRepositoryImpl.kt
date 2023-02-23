@@ -40,7 +40,7 @@ class FileRepositoryImpl @Inject constructor(
                         .setFileToUpload(fileUri)
                         .startUpload()
 
-                val isSuccessful = suspendCoroutine<Boolean> { cont ->
+                val isSuccessful = suspendCoroutine { cont ->
                     val requestObserverDelegate = object : RequestObserverDelegate {
                         override fun onCompleted(context: Context, uploadInfo: UploadInfo) {
                             printlnCK("uploadFile onCompleted")
@@ -64,7 +64,9 @@ class FileRepositoryImpl @Inject constructor(
                             cont.resume(false)
                         }
 
-                        override fun onProgress(context: Context, uploadInfo: UploadInfo) {}
+                        override fun onProgress(context: Context, uploadInfo: UploadInfo) {
+
+                        }
 
                         override fun onSuccess(
                             context: Context,

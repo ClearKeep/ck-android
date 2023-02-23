@@ -4,14 +4,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.clearkeep.common.utilities.network.Resource
 import com.clearkeep.common.utilities.printlnCK
-import com.clearkeep.data.remote.service.MessageService
 import com.clearkeep.data.local.clearkeep.message.MessageDAO
+import com.clearkeep.data.remote.service.MessageService
 import com.clearkeep.data.repository.group.toEntity
 import com.clearkeep.data.repository.utils.parseError
-import com.clearkeep.domain.repository.MessageRepository
-import com.clearkeep.domain.model.*
+import com.clearkeep.domain.model.Message
+import com.clearkeep.domain.model.Owner
+import com.clearkeep.domain.model.Server
 import com.clearkeep.domain.model.response.GetMessagesInGroupResponse
 import com.clearkeep.domain.model.response.MessageObjectResponse
+import com.clearkeep.domain.repository.MessageRepository
 import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -94,11 +96,11 @@ class MessageRepositoryImpl @Inject constructor(
         groupId: Long,
         ownerDomain: String,
         ownerClientId: String
-    ):Int = withContext(Dispatchers.IO) {
+    ): Int = withContext(Dispatchers.IO) {
         return@withContext messageDAO.deleteMessageFromGroupId(groupId, ownerDomain, ownerClientId)
     }
 
-    override suspend fun deleteMessageByDomain(domain: String, userId: String): Int  =
+    override suspend fun deleteMessageByDomain(domain: String, userId: String): Int =
         withContext(Dispatchers.IO) {
             return@withContext messageDAO.deleteMessageByDomain(domain, userId)
         }
@@ -153,5 +155,9 @@ class MessageRepositoryImpl @Inject constructor(
 
     override suspend fun updateMessage(message: Message) = withContext(Dispatchers.IO) {
         messageDAO.updateMessage(message.toEntity())
+    }
+
+    override suspend fun getLastMessageByGroupName(groupId: Long): Message? {
+       return messageDAO.getLaseMessageByGroupName(groupId)?.toModel()
     }
 }
