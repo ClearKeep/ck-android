@@ -21,5 +21,4 @@ dependencies {
     }
     implementation Dependencies.javaxAnnotations
 
-    implementation files('../domain/libs/libsignal-android-debug.aar')
 }
