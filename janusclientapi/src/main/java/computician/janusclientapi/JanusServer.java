@@ -50,8 +50,8 @@ public class JanusServer implements Runnable, IJanusMessageObserver, IJanusSessi
     private volatile Thread keep_alive;
     private Boolean peerConnectionFactoryInitialized = false;
 
-    private class AsyncAttach extends AsyncTask<IJanusPluginCallbacks, Void ,Void>{
-        protected Void doInBackground(IJanusPluginCallbacks... cbs){
+    private class AsyncAttach extends AsyncTask<IJanusPluginCallbacks, Void, Void> {
+        protected Void doInBackground(IJanusPluginCallbacks... cbs) {
             IJanusPluginCallbacks cb = cbs[0];
             try {
                 JSONObject obj = new JSONObject();
@@ -68,7 +68,9 @@ public class JanusServer implements Runnable, IJanusMessageObserver, IJanusSessi
                 onCallbackError(ex.getMessage());
             }
             return null;
-        };
+        }
+
+        ;
     }
 
     public JanusServer(IJanusGatewayCallbacks gatewayCallbacks) {
@@ -300,7 +302,7 @@ public class JanusServer implements Runnable, IJanusMessageObserver, IJanusSessi
                     break;
                 }
                 case hangup: {
-                    if(handle != null) {
+                    if (handle != null) {
                         handle.hangUp();
                     }
                     break;

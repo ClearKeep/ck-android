@@ -1,0 +1,21 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android-extensions'
+}
+
+apply from: '../../android_commons.gradle'
+apply from: '../../android_feature_dependencies.gradle'
+
+dependencies {
+    //Glide
+    implementation Dependencies.glide
+    annotationProcessor Dependencies.glideCompiler
+    implementation Dependencies.glideTransformations
+    implementation Dependencies.toggleImageButton
+
+    //Janus
+    implementation project(Modules.janus)
+    implementation Dependencies.circleImageView
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation Dependencies.webRtc
+}

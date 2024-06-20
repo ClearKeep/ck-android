@@ -1,0 +1,49 @@
+plugins {
+    id 'com.android.library'
+}
+
+apply from: '../android_commons.gradle'
+
+android {
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion "$jetpack_compose_version"
+    }
+}
+
+dependencies {
+    implementation Dependencies.androidCore
+    implementation Dependencies.appCompat
+    implementation Dependencies.materialDesign
+
+// Test
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.junitExt
+    androidTestImplementation Dependencies.espresso
+
+    implementation Dependencies.coroutinesCore
+
+    // Jetpack Compose
+    implementation Dependencies.composeActivity
+    implementation Dependencies.composeCompiler
+    implementation Dependencies.composeRuntime
+    implementation Dependencies.composeRuntimeLiveData
+    implementation Dependencies.composeNavigation
+    implementation Dependencies.composeUi
+    implementation Dependencies.composeMaterialIcons
+    implementation Dependencies.composeMaterialIconsExtended
+    implementation Dependencies.composeMaterial
+    implementation Dependencies.composeFoundation
+    implementation Dependencies.composeFoundationLayout
+    implementation Dependencies.composeAnimation
+    implementation Dependencies.composeConstraintLayout
+    implementation Dependencies.composeUiTooling
+
+    //Jetpack Accompanist
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
+}

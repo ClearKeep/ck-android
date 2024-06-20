@@ -1,0 +1,47 @@
+android {
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerVersion "$kotlin_version"
+        kotlinCompilerExtensionVersion "$jetpack_compose_version"
+    }
+}
+
+dependencies {
+    implementation project(Modules.common)
+    implementation project(Modules.domain)
+    implementation project(Modules.navigation)
+    implementation project(Modules.featureShared)
+
+    //Core Android
+    implementation Dependencies.androidCore
+    implementation Dependencies.appCompat
+    implementation Dependencies.materialDesign
+
+    //Compose
+    implementation Dependencies.composeActivity
+    implementation Dependencies.composeCompiler
+    implementation Dependencies.composeRuntime
+    implementation Dependencies.composeRuntimeLiveData
+    implementation Dependencies.composeNavigation
+    implementation Dependencies.composeUi
+    implementation Dependencies.composeMaterialIcons
+    implementation Dependencies.composeMaterialIconsExtended
+    implementation Dependencies.composeMaterial
+    implementation Dependencies.composeFoundation
+    implementation Dependencies.composeFoundationLayout
+    implementation Dependencies.composeAnimation
+    implementation Dependencies.composeConstraintLayout
+    implementation Dependencies.composeUiTooling
+
+    //Architecture components
+    implementation Dependencies.lifecycleLiveData
+    implementation Dependencies.lifecycleExtensions
+
+    //Testing
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.junitExt
+    androidTestImplementation Dependencies.espresso
+}

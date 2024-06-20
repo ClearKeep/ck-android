@@ -10,6 +10,7 @@ public class PluginHandleWebRTCCallbacks implements IPluginHandleWebRTCCallbacks
     private final JanusMediaConstraints constraints;
     private final JSONObject jsep;
     private final boolean trickle;
+
     public PluginHandleWebRTCCallbacks(JanusMediaConstraints constraints, JSONObject jsep, boolean trickle) {
         this.constraints = constraints;
         this.jsep = jsep;

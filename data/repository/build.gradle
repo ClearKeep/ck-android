@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.library'
+}
+
+apply from: '../../android_commons.gradle'
+
+dependencies {
+    implementation project(Modules.domain)
+    implementation project(Modules.common)
+    implementation project(Modules.local)
+    implementation project(Modules.remote)
+
+    implementation Dependencies.androidCore
+
+    // Test
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.junitExt
+    androidTestImplementation Dependencies.espresso
+
+    implementation Dependencies.coroutinesCore
+
+    // gRPC
+    implementation Dependencies.okhttp
+    implementation Dependencies.grpcStub
+    implementation Dependencies.grpcOkhttp
+    implementation(Dependencies.grpcProtoBufUtil) {
+        exclude module: "protobuf-lite"
+    }
+    implementation Dependencies.javaxAnnotations
+
+    //Architecture components
+    implementation Dependencies.lifecycleLiveData
+    implementation Dependencies.lifecycleExtensions
+
+    //Signal
+    implementation(Dependencies.signal)
+
+    implementation Dependencies.androidUploadService
+}

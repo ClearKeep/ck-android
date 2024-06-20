@@ -84,3 +84,6 @@ lint/tmp/
 key.properties
 keystore/
 
+/fastlane/ck-firebase-adminsdk.json
+/fastlane/.env
+/Gemfile.lock

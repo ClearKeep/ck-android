@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.library'
+}
+
+apply from: '../../android_commons.gradle'
+apply from: '../../android_feature_dependencies.gradle'
+
+dependencies {
+    //Glide
+    implementation Dependencies.glide
+    implementation project(path: ':data:local')
+    annotationProcessor Dependencies.glideCompiler
+    implementation Dependencies.glideTransformations
+    implementation Dependencies.toggleImageButton
+
+    //Coil
+    implementation Dependencies.coil
+    implementation Dependencies.coilCompose
+
+    //Jetpack Accompanist
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
+
+    //FCM
+    implementation Dependencies.firebaseMessaging
+
+    implementation Dependencies.libPhoneNumber
+}

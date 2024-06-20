@@ -1,0 +1,22 @@
+plugins {
+    id 'com.android.library'
+}
+
+apply from: '../../android_commons.gradle'
+apply from: '../../android_feature_dependencies.gradle'
+
+dependencies {
+    //Coil
+    implementation Dependencies.coil
+    implementation Dependencies.coilCompose
+
+    //Jetpack Accompanist
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
+
+    //Third party login
+    implementation Dependencies.googleAuth
+    implementation Dependencies.microsoftAuth
+    implementation Dependencies.facebookAuth
+}

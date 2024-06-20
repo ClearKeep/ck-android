@@ -1,3 +1,27 @@
-include ':app'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+        maven {
+            url 'https://pkgs.dev.azure.com/MicrosoftDeviceSDK/DuoSDK-Public/_packaging/Duo-SDK-Feed/maven/v1'
+        }
+    }
+}
+
 rootProject.name = "ClearKeep"
-include ':januswrapper'
+include ':app',
+        ':domain',
+        ':common',
+        ':data:local',
+        ':data:remote',
+        ':data:repository',
+        ':features:splash',
+        ':features:calls',
+        ':features:shared',
+        ':navigation',
+        ':januswrapper',
+        ':srp',
+        ':features:chat',
+        ':features:auth'

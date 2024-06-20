@@ -12,7 +12,7 @@
     <attr name="buttonAnswer" format="reference" />
     <attr name="buttonAnswerDescription" format="string" />
     <attr name="actionBarIcon" format="reference" />
-    <attr name="appCallBackgroundColor" format="color"/>
-    <attr name="appCallTextColor" format="color"/>
+    <attr name="appCallBackgroundColor" format="color" />
+    <attr name="appCallTextColor" format="color" />
 
 </resources>

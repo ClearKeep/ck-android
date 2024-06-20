@@ -15,28 +15,35 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
-
 android {
-    compileSdkVersion 30
+    compileSdk 32
 
     defaultConfig {
         applicationId "com.clearkeep.ck"
-        minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0.0"
+        minSdkVersion ConfigData.minSdk
+        targetSdkVersion ConfigData.targetSdk
+        versionCode ConfigData.versionCode
+        versionName ConfigData.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        vectorDrawables {
+            useSupportLibrary true
+        }
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments["dagger.hilt.disableModulesHaveInstallInCheck"] = "true"
-                /*arguments += ["room.schemaLocation":
-                                     "$projectDir/schemas".toString()]*/
             }
+        }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86','x86_64'
         }
     }
 
@@ -65,8 +72,8 @@ android {
         prod {
             dimension "version"
             resValue 'string', 'app_name', "ClearKeep"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
-            buildConfigField "int", 'PORT', "5000"
+            buildConfigField "String", 'BASE_URL', "\"ckserver.org\""
+            buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "8188"
         }
@@ -74,7 +81,7 @@ android {
             dimension "version"
             applicationIdSuffix ".staging"
             versionNameSuffix "-staging"
-            resValue 'string', 'app_name', "CK Stag"
+            resValue 'string', 'app_name', "ClearKeep"
             buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
@@ -85,7 +92,7 @@ android {
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             resValue 'string', 'app_name', "CK Dev"
-            buildConfigField "String", 'BASE_URL', "\"54.235.68.160\""
+            buildConfigField "String", 'BASE_URL', "\"ckserver.org\""
             buildConfigField "int", 'PORT', "25000"
             buildConfigField "String", 'BASE_JANUS_URL', "\"54.235.68.160\""
             buildConfigField "int", 'JANUS_PORT', "28188"
@@ -98,6 +105,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
+//        useIR = true
     }
     buildFeatures {
         compose true
@@ -118,37 +126,12 @@ android {
         checkReleaseBuilds false
         abortOnError false
     }
-    packagingOptions{
+    packagingOptions {
         exclude("META-INF/jersey-module-version")
-    }
-}
-protobuf {
-    protoc {
-        artifact = 'com.google.protobuf:protoc:3.11.4'
-    }
-    plugins {
-        grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.27.1'
-        }
-        javalite {
-            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
-        }
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {
-                    option 'lite'
-                }
-            }
-
-            task.plugins {
-                grpc {
-                    // Options added to --grpc_out
-                    option 'lite'
-                }
-            }
-        }
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/arm64-v8a/libc++_shared.so'
+        pickFirst 'lib/x86_64/libc++_shared.so'
+        pickFirst 'lib/armeabi-v7a/libc++_shared.so'
     }
 }
 
@@ -160,94 +143,101 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 }
 
 dependencies {
+    implementation project(Modules.local)
+    implementation project(Modules.remote)
+    implementation project(Modules.domain)
+    implementation project(Modules.common)
+    implementation project(Modules.repository)
+    implementation project(Modules.featureSplash)
+    implementation project(Modules.featureCall)
+    implementation project(Modules.featureShared)
+    implementation project(Modules.featureChat)
+    implementation project(Modules.featureAuth)
+    implementation project(Modules.navigation)
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.2'
-    implementation 'androidx.appcompat:appcompat:1.3.0-beta01'
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation('androidx.activity:activity-ktx:1.1.0')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9"
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation Dependencies.jdk8
+    implementation Dependencies.androidCore
+    implementation Dependencies.appCompat
+    implementation Dependencies.materialDesign
+    implementation Dependencies.activity
 
-    // architect components
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0"
+    implementation Dependencies.coroutinesCore
+    implementation Dependencies.coroutinesAndroid
+
+    implementation Dependencies.gson
+
+    //Architecture components
+    implementation Dependencies.lifecycleExtensions
+    implementation Dependencies.lifecycleLiveData
+    implementation Dependencies.lifecycleLiveDataKtx
+    implementation Dependencies.lifecycleViewModel
+    implementation Dependencies.lifecycleViewModelKtx
 
     // Jetpack Compose
-    implementation "androidx.activity:activity-compose:1.3.0-alpha06"
-    implementation "androidx.compose.compiler:compiler:$jetpack_compose_version"
-    implementation("androidx.compose.runtime:runtime:$jetpack_compose_version")
-    implementation "androidx.navigation:navigation-compose:$navComposeVersion"
-    implementation "androidx.compose.runtime:runtime-livedata:$jetpack_compose_version"
-    implementation("androidx.compose.ui:ui:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-core:$jetpack_compose_version")
-    implementation("androidx.compose.material:material-icons-extended:$jetpack_compose_version")
-    implementation("androidx.compose.material:material:$jetpack_compose_version")
-    implementation("androidx.compose.foundation:foundation:$jetpack_compose_version")
-    implementation "androidx.compose.foundation:foundation-layout:$jetpack_compose_version"
-    implementation("androidx.compose.animation:animation:$jetpack_compose_version")
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha05"
-    implementation "androidx.compose.ui:ui-tooling:$jetpack_compose_version"
+    implementation Dependencies.composeActivity
+    implementation Dependencies.composeCompiler
+    implementation Dependencies.composeRuntime
+    implementation Dependencies.composeRuntimeLiveData
+    implementation Dependencies.composeNavigation
+    implementation Dependencies.composeUi
+    implementation Dependencies.composeMaterialIcons
+    implementation Dependencies.composeMaterialIconsExtended
+    implementation Dependencies.composeMaterial
+    implementation Dependencies.composeFoundation
+    implementation Dependencies.composeFoundationLayout
+    implementation Dependencies.composeAnimation
+    implementation Dependencies.composeConstraintLayout
+    implementation Dependencies.composeUiTooling
 
     // gRPC
-    implementation 'com.squareup.okhttp:okhttp:2.7.5'
-    implementation "io.grpc:grpc-stub:$grpcVersion"
-    implementation "io.grpc:grpc-okhttp:$grpcVersion"
-    implementation("io.grpc:grpc-protobuf-lite:$grpcVersion") {
+    implementation Dependencies.okhttp
+    implementation Dependencies.grpcStub
+    implementation Dependencies.grpcOkhttp
+    implementation(Dependencies.grpcProtoBufUtil) {
         exclude module: "protobuf-lite"
     }
+    implementation Dependencies.javaxAnnotations
+
     //Signal
-    implementation("org.whispersystems:signal-protocol-android:$signal_version") {
+    implementation(Dependencies.signal) {
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+
     // Room components
-    implementation "androidx.room:room-runtime:$room_db_version"
-    implementation "androidx.room:room-ktx:$room_db_version"
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    kapt "androidx.room:room-compiler:$room_db_version"
-    androidTestImplementation "androidx.room:room-testing:$room_db_version"
+    implementation Dependencies.roomRuntime
+    implementation Dependencies.roomKtx
+    kapt Dependencies.roomCompiler
+    androidTestImplementation Dependencies.roomTesting
+
+    implementation Dependencies.constraintLayout
 
     // dagger
-    implementation "com.google.dagger:dagger:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-android-processor:$rootProject.daggerVersion"
-    implementation "com.google.dagger:dagger-android-support:$rootProject.daggerVersion"
-    kapt "com.google.dagger:dagger-compiler:$rootProject.daggerVersion"
-    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:$rootProject.assistedInjectVersion"
-    kapt "com.squareup.inject:assisted-inject-processor-dagger2:$rootProject.assistedInjectVersion"
-    implementation "com.google.dagger:hilt-android:$rootProject.hiltVersion"
-    implementation "androidx.hilt:hilt-lifecycle-viewmodel:$rootProject.hiltViewModelVersion"
-    kapt "com.google.dagger:hilt-android-compiler:$rootProject.hiltVersion"
-    kapt "androidx.hilt:hilt-compiler:$rootProject.hiltViewModelVersion"
+    implementation Dependencies.hilt
+    kapt Dependencies.hiltCompiler
 
     // firebase
-    implementation 'com.google.firebase:firebase-messaging-ktx:21.0.0'
-    implementation 'com.google.firebase:firebase-analytics-ktx:18.0.0'
-    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation Dependencies.firebaseMessaging
+    implementation Dependencies.firebaseAnalytics
 
     // Test
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    testImplementation Dependencies.junit
+    androidTestImplementation Dependencies.junitExt
+    androidTestImplementation Dependencies.espresso
 
-    // janus
-    implementation project(':januswrapper')
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation(name:'libwebrtc', ext:'aar')
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
+    //Glide
+    implementation Dependencies.glide
+    annotationProcessor Dependencies.glideCompiler
+    implementation Dependencies.glideTransformations
+    implementation Dependencies.toggleImageButton
 
-    implementation 'com.microsoft.identity.client:msal:2.0.8'
-    implementation 'com.facebook.android:facebook-android-sdk:8.2.0'
+    //Coil
+    implementation Dependencies.coil
+    implementation Dependencies.coilCompose
 
-    implementation 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    implementation 'jp.wasabeef:glide-transformations:4.0.0'
-    implementation 'net.colindodd:toggleimagebutton:1.2'
+    //Jetpack Accompanist
+    implementation Dependencies.accompanistSystemUi
+    implementation Dependencies.accompanistInsets
+    implementation Dependencies.accompanistSwipeRefresh
 
-    implementation "com.google.accompanist:accompanist-coil:0.9.0"
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.9.0"
-    implementation "com.google.accompanist:accompanist-insets:0.9.0"
-    implementation "com.google.accompanist:accompanist-swiperefresh:0.9.0"
-
+    implementation Dependencies.androidUploadService
 }
-

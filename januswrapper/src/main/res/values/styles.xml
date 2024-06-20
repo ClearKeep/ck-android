@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Theme.FastGo.Call" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="buttonSpeakerOn">@drawable/ic_string_ee_sound_on</item>
         <item name="buttonSpeakerOff">@drawable/ic_string_ee_sound_off</item>

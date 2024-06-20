@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootViewCallIn"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_background_gradient_call" />
+
+    <TextView
+        android:id="@+id/tvUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="@dimen/_32sdp"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:layout_marginEnd="@dimen/_32sdp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/_32sdp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgThumb"
+        tools:text="Kitagawa Keiko" />
+
+
+    <ImageView
+        android:id="@+id/imgEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_16sdp"
+        android:src="@drawable/ic_button_decline"
+        app:layout_constraintBottom_toTopOf="@+id/tvEndButtonDescription"
+        app:layout_constraintEnd_toEndOf="@+id/tvEndButtonDescription"
+        app:layout_constraintStart_toStartOf="@+id/tvEndButtonDescription"
+        tools:src="@drawable/ic_button_decline" />
+
+    <TextView
+        android:id="@+id/tvEndButtonDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_42sdp"
+        android:layout_marginBottom="@dimen/_60sdp"
+        android:text="Decline"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_16sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Decline"
+        tools:textColor="@android:color/white" />
+
+    <ImageView
+        android:id="@+id/imgAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_button_answer"
+        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="@+id/imgEnd"
+        tools:src="@drawable/ic_button_answer" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_42sdp"
+        android:text="Answer"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="@dimen/_16sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/tvEndButtonDescription"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvEndButtonDescription"
+        tools:text="Answer"
+        tools:textColor="@android:color/white" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imgThumb"
+        android:layout_width="@dimen/_159sdp"
+        android:layout_height="@dimen/_159sdp"
+        android:layout_marginTop="@dimen/_24sdp"
+        android:layout_marginBottom="@dimen/_24sdp"
+        android:src="@drawable/ic_bg_gradient"
+        app:layout_constraintBottom_toTopOf="@+id/tvUserName"
+        app:layout_constraintEnd_toEndOf="@+id/txtAudioMode"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/txtAudioMode"
+        app:layout_constraintTop_toBottomOf="@+id/txtAudioMode" />
+
+    <TextView
+        android:id="@+id/tvNickName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_40sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/imgThumb"
+        app:layout_constraintEnd_toEndOf="@+id/imgThumb"
+        app:layout_constraintStart_toStartOf="@+id/imgThumb"
+        app:layout_constraintTop_toTopOf="@+id/imgThumb" />
+
+
+    <TextView
+        android:id="@+id/txtAudioMode"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/_100sdp"
+        android:text="Incoming Voice Call"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/_18sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

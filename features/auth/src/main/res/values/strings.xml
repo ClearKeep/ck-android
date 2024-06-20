@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    Firebase config, for multi module project https://medium.com/@samstern_58566/how-to-use-firebase-on-android-without-the-google-services-plugin-93ecc7dc6c4-->
+    <string name="default_web_client_id" translatable="false">1092685949059-31fdlstnskjc799is97moat5bagskrsr.apps.googleusercontent.com</string>
+</resources>

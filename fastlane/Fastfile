@@ -1,0 +1,91 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+# FIREBASEAPPDISTRO_APP=ENV['FIREBASEAPPDISTRO_ANDROID_APP']
+
+default_platform(:android)
+
+platform :android do
+  desc "Build android dev"
+  lane :deploy_android_to_firebase_dev do
+    # firebase_app_distribution_get_latest_release
+    # FIREBASE_APP_DISTRO_LATEST_RELEASE = Actions.lane_context[::FIREBASE_APP_DISTRO_LATEST_RELEASE]
+    gradle(
+      task: 'clean',
+     # project_dir: 'android/'
+    )
+    gradle(
+      task: 'assemble',
+      build_type: 'devRelease'
+    )
+    firebase_app_distribution(
+      app: ENV['FIREBASEAPPDISTRO_ANDROID_DEV'],
+      debug: true,
+      android_artifact_type: 'APK',
+      android_artifact_path: lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH],
+      release_notes_file: 'fastlane/notes/dev-note.txt'
+    )
+  end
+
+  lane :deploy_android_to_firebase_qa do
+      # firebase_app_distribution_get_latest_release
+      # FIREBASE_APP_DISTRO_LATEST_RELEASE = Actions.lane_context[::FIREBASE_APP_DISTRO_LATEST_RELEASE]
+      gradle(
+        task: 'clean',
+       # project_dir: 'android/'
+      )
+      gradle(
+        task: 'assemble',
+        build_type: 'qaRelease',
+      #  project_dir: 'android/',
+      #  properties: {
+      #    "versionCode" => ENV['BUILD_VERSION_CODE'],
+      #    "versionName" => ENV['MARKETING_VERSION'],
+      #  }
+      )
+      firebase_app_distribution(
+        app: ENV['FIREBASEAPPDISTRO_ANDROID_STAGING'],
+        debug: true,
+        android_artifact_type: 'APK',
+        android_artifact_path: lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH],
+        release_notes_file: 'fastlane/notes/qa-note.txt'
+      )
+    end
+
+    lane :deploy_android_to_firebase_prod do
+          # firebase_app_distribution_get_latest_release
+          # FIREBASE_APP_DISTRO_LATEST_RELEASE = Actions.lane_context[::FIREBASE_APP_DISTRO_LATEST_RELEASE]
+          gradle(
+            task: 'clean',
+           # project_dir: 'android/'
+          )
+          gradle(
+            task: 'assemble',
+            build_type: 'prodRelease',
+          #  project_dir: 'android/',
+          #  properties: {
+          #    "versionCode" => ENV['BUILD_VERSION_CODE'],
+          #    "versionName" => ENV['MARKETING_VERSION'],
+          #  }
+          )
+          firebase_app_distribution(
+            app: ENV['FIREBASEAPPDISTRO_ANDROID_PROD'],
+            debug: true,
+            android_artifact_type: 'APK',
+            android_artifact_path: lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH],
+            release_notes_file: 'fastlane/notes/prod-note.txt'
+          )
+        end
+end
